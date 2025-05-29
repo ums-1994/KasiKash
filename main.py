@@ -7,6 +7,7 @@ import plotly.express as px
 import json
 import warnings
 import support
+import bcrypt
 
 warnings.filterwarnings("ignore")
 
@@ -33,19 +34,26 @@ def login():
 @app.route('/login_validation', methods=['POST'])
 def login_validation():
     if 'user_id' not in session:  # if user not logged-in
-        email = request.form.get('email')
-        passwd = request.form.get('password')
-        query = """SELECT * FROM user_login WHERE email LIKE '{}' AND password LIKE '{}'""".format(email, passwd)
-        users = support.execute_query("search", query)
-        if len(users) > 0:  # if user details matched in db
-            session['user_id'] = users[0][0]
+        email_or_username = request.form.get('email_or_username') # Changed to accept username or email
+        password = request.form.get('password')
+
+        # Attempt to fetch user by username first
+        query = """SELECT id, username, password FROM users WHERE username = %s"""
+        user = support.execute_query(query, params=(email_or_username,), fetch=True)
+
+        # If no user found by username, attempt to fetch by email
+        if not user:
+            query = """SELECT id, username, password FROM users WHERE email = %s"""
+            user = support.execute_query(query, params=(email_or_username,), fetch=True)
+
+        if user and bcrypt.checkpw(password.encode('utf-8'), user[0][2].encode('utf-8')):
+            session['user_id'] = user[0][0]  # set session user id
+            session['username'] = user[0][1] # set session username
+            flash('Login successful!', 'success')
             return redirect('/home')
-        else:  # if user details not matched in db
-            flash("Invalid email and password!")
+        else:
+            flash('Invalid username/email or password', 'danger')
             return redirect('/login')
-    else:  # if user already logged-in
-        flash("Already a user is logged-in!")
-        return redirect('/home')
 
 
 @app.route('/reset', methods=['POST'])
@@ -53,11 +61,11 @@ def reset():
     if 'user_id' not in session:
         email = request.form.get('femail')
         pswd = request.form.get('pswd')
-        userdata = support.execute_query('search', """select * from user_login where email LIKE '{}'""".format(email))
+        userdata = support.execute_query('select * from users where email = %s', params=(email,), fetch=True)
         if len(userdata) > 0:
             try:
-                query = """update user_login set password = '{}' where email = '{}'""".format(pswd, email)
-                support.execute_query('insert', query)
+                query = """update users set password = %s where email = %s"""
+                support.execute_query(query, params=(pswd, email))
                 flash("Password has been changed!!")
                 return redirect('/login')
             except:
@@ -79,32 +87,45 @@ def register():
         return render_template("register.html")
 
 
-@app.route('/registration', methods=['POST'])
-def registration():
-    if 'user_id' not in session:  # if not logged-in
-        name = request.form.get('name')
+@app.route('/register_validation', methods=['POST'])
+def register_validation():
+    if 'user_id' not in session:  # if user not logged-in
+        username = request.form.get('username') # Get username from form
         email = request.form.get('email')
         passwd = request.form.get('password')
-        if len(name) > 5 and len(email) > 10 and len(passwd) > 5:  # if input details satisfy length condition
-            try:
-                query = """INSERT INTO user_login(username, email, password) VALUES('{}','{}','{}')""".format(name,
-                                                                                                              email,
-                                                                                                              passwd)
-                support.execute_query('insert', query)
 
-                user = support.execute_query('search',
-                                             """SELECT * from user_login where email LIKE '{}'""".format(email))
-                session['user_id'] = user[0][0]  # set session on successful registration
-                flash("Successfully Registered!!")
-                return redirect('/home')
-            except:
-                flash("Email id already exists, use another email!!")
-                return redirect('/register')
-        else:  # if input condition length not satisfy
-            flash("Not enough data to register, try again!!")
+        # Check if username or email already exists
+        existing_user = support.execute_query(
+            """SELECT id FROM users WHERE username = %s OR email = %s""",
+            params=(username, email), fetch=True)
+
+        if existing_user:
+            flash('Username or Email already exists. Please use different credentials.', 'danger')
             return redirect('/register')
-    else:  # if already logged-in
-        flash("Already a user is logged-in!")
+
+        # Hash password
+        hashed_password = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
+
+        # Insert new user into database
+        query = """INSERT INTO users(username, email, password) VALUES(%s,%s,%s)"""
+        support.execute_query(query, params=(username, email, hashed_password.decode('utf-8')))
+
+        # Fetch the newly created user to get the id and username
+        new_user = support.execute_query(
+            """SELECT id, username FROM users WHERE username = %s""",
+            params=(username,), fetch=True)
+
+        if new_user:
+            session['user_id'] = new_user[0][0]  # set session on successful registration
+            session['username'] = new_user[0][1] # set session username
+            flash('Registration successful!', 'success')
+            return redirect('/home')
+        else:
+            flash('Registration failed. Please try again.', 'danger')
+            return redirect('/register')
+
+    else:
+        flash("Already logged in!", 'info')
         return redirect('/home')
 
 
@@ -127,12 +148,11 @@ def feedback():
 @app.route('/home')
 def home():
     if 'user_id' in session:  # if user is logged-in
-        query = """select * from user_login where user_id = {} """.format(session['user_id'])
-        userdata = support.execute_query("search", query)
+        query = """select * from users where id = %s """
+        userdata = support.execute_query(query, params=(session['user_id'],), fetch=True)
 
-        table_query = """select * from user_expenses where user_id = {} order by pdate desc""".format(
-            session['user_id'])
-        table_data = support.execute_query("search", table_query)
+        table_query = """select * from expenses where user_id = %s order by date desc"""
+        table_data = support.execute_query(table_query, params=(session['user_id'],), fetch=True)
         df = pd.DataFrame(table_data, columns=['#', 'User_Id', 'Date', 'Expense', 'Amount', 'Note'])
 
         df = support.generate_df(df)
@@ -169,7 +189,7 @@ def home():
         except:
             pie1, pie2, pie3, pie4, pie5, pie6 = None, None, None, None, None, None
         return render_template('home.html',
-                               user_name=userdata[0][1],
+                               user_name=userdata[0][1], # Assuming username is at index 1 in the users table
                                df_size=df.shape[0],
                                df=jsonify(df.to_json()),
                                earning=earning,
@@ -204,12 +224,12 @@ def add_expense():
             amount = request.form.get('amount')
             notes = request.form.get('notes')
             try:
-                query = """insert into user_expenses (user_id, pdate, expense, amount, pdescription) values 
-                ({}, '{}','{}',{},'{}')""".format(user_id, date, expense, amount, notes)
-                support.execute_query('insert', query)
+                query = """INSERT INTO expenses (user_id, date, category, amount, notes) VALUES (%s, %s, %s, %s, %s)"""
+                support.execute_query(query, params=(user_id, date, expense, amount, notes))
                 flash("Saved!!")
-            except:
+            except Exception as e:
                 flash("Something went wrong.")
+                print(f"Add expense error: {e}") # Log the error for debugging
                 return redirect("/home")
             return redirect('/home')
     else:
@@ -219,12 +239,12 @@ def add_expense():
 @app.route('/analysis')
 def analysis():
     if 'user_id' in session:  # if already logged-in
-        query = """select * from user_login where user_id = {} """.format(session['user_id'])
-        userdata = support.execute_query('search', query)
-        query2 = """select pdate,expense, pdescription, amount from user_expenses where user_id = {}""".format(
-            session['user_id'])
+        query = """select * from users where id = %s """
+        userdata = support.execute_query(query, params=(session['user_id'],), fetch=True)
+        # Note: Updated column names based on new schema
+        query2 = """select date, category, notes, amount from expenses where user_id = %s"""
 
-        data = support.execute_query('search', query2)
+        data = support.execute_query(query2, params=(session['user_id'],), fetch=True)
         df = pd.DataFrame(data, columns=['Date', 'Expense', 'Note', 'Amount(₹)'])
         df = support.generate_df(df)
 
@@ -243,7 +263,7 @@ def analysis():
             sun = support.meraSunburst(df, 280)
 
             return render_template('analysis.html',
-                                   user_name=userdata[0][1],
+                                   user_name=userdata[0][1], # Assuming username is at index 1
                                    pie=pie,
                                    bar=bar,
                                    line=line,
@@ -263,9 +283,9 @@ def analysis():
 @app.route('/profile')
 def profile():
     if 'user_id' in session:  # if logged-in
-        query = """select * from user_login where user_id = {} """.format(session['user_id'])
-        userdata = support.execute_query('search', query)
-        return render_template('profile.html', user_name=userdata[0][1], email=userdata[0][2])
+        query = """select * from users where id = %s """
+        userdata = support.execute_query(query, params=(session['user_id'],), fetch=True)
+        return render_template('profile.html', user_name=userdata[0][1], email=userdata[0][2]) # Assuming username at 1, email at 2
     else:  # if not logged-in
         return redirect('/')
 
@@ -274,37 +294,36 @@ def profile():
 def update_profile():
     name = request.form.get('name')
     email = request.form.get("email")
-    query = """select * from user_login where user_id = {} """.format(session['user_id'])
-    userdata = support.execute_query('search', query)
-    query = """select * from user_login where email = "{}" """.format(email)
-    email_list = support.execute_query('search', query)
-    if name != userdata[0][1] and email != userdata[0][2] and len(email_list) == 0:
-        query = """update user_login set username = '{}', email = '{}' where user_id = '{}'""".format(name, email,
-                                                                                                      session[
-                                                                                                          'user_id'])
-        support.execute_query('insert', query)
-        flash("Name and Email updated!!")
-        return redirect('/profile')
-    elif name != userdata[0][1] and email != userdata[0][2] and len(email_list) > 0:
-        flash("Email already exists, try another!!")
-        return redirect('/profile')
-    elif name == userdata[0][1] and email != userdata[0][2] and len(email_list) == 0:
-        query = """update user_login set email = '{}' where user_id = '{}'""".format(email, session['user_id'])
-        support.execute_query('insert', query)
-        flash("Email updated!!")
-        return redirect('/profile')
-    elif name == userdata[0][1] and email != userdata[0][2] and len(email_list) > 0:
+    # Fetch current user data
+    query_current = """select * from users where id = %s """
+    userdata = support.execute_query(query_current, params=(session['user_id'],), fetch=True)
+    
+    # Check if the new email already exists for another user
+    query_email_exists = """select * from users where email = %s AND id != %s"""
+    email_exists = support.execute_query(query_email_exists, params=(email, session['user_id']), fetch=True)
+    
+    if email_exists:
         flash("Email already exists, try another!!")
         return redirect('/profile')
 
-    elif name != userdata[0][1] and email == userdata[0][2]:
-        query = """update user_login set username = '{}' where user_id = '{}'""".format(name, session['user_id'])
-        support.execute_query('insert', query)
-        flash("Name updated!!")
-        return redirect("/profile")
+    # Update username and/or email if they have changed
+    if name != userdata[0][1] or email != userdata[0][2]:
+        if name != userdata[0][1] and email != userdata[0][2]:
+            query_update = """UPDATE users SET username = %s, email = %s WHERE id = %s"""
+            support.execute_query(query_update, params=(name, email, session['user_id']))
+            flash("Name and Email updated!!")
+        elif name != userdata[0][1]:
+            query_update = """UPDATE users SET username = %s WHERE id = %s"""
+            support.execute_query(query_update, params=(name, session['user_id']))
+            flash("Name updated!!")
+        elif email != userdata[0][2]:
+             query_update = """UPDATE users SET email = %s WHERE id = %s"""
+             support.execute_query(query_update, params=(email, session['user_id']))
+             flash("Email updated!!")
     else:
         flash("No Change!!")
-        return redirect("/profile")
+        
+    return redirect('/profile')
 
 
 @app.route('/logout')
@@ -315,6 +334,38 @@ def logout():
     except:  # if already logged-out but in another tab still logged-in
         return redirect('/')
 
+def init_db():
+    with support.db_connection() as conn:
+        with conn.cursor() as cursor:
+            # Drop existing tables (optional, but good for development resets)
+            cursor.execute("DROP TABLE IF EXISTS expenses CASCADE")
+            cursor.execute("DROP TABLE IF EXISTS users CASCADE")
+
+            # Create users table
+            cursor.execute("""
+            CREATE TABLE users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                password VARCHAR(100) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""")
+
+            # Create expenses table
+            cursor.execute("""
+            CREATE TABLE expenses (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                amount DECIMAL(10,2) NOT NULL,
+                category VARCHAR(50) NOT NULL,
+                date DATE NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""")
+            conn.commit() # Commit the schema changes
+    print("Database schema initialized")
+
 
 if __name__ == "__main__":
+    init_db()  # Initialize database schema
     app.run(debug=True)
