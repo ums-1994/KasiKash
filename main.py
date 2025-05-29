@@ -15,6 +15,11 @@ app.secret_key = os.urandom(24)
 
 
 @app.route('/')
+def welcome():
+    return render_template("welcome.html")
+
+
+@app.route('/login')
 def login():
     session.permanent = True
     app.permanent_session_lifetime = timedelta(minutes=15)
@@ -37,7 +42,7 @@ def login_validation():
             return redirect('/home')
         else:  # if user details not matched in db
             flash("Invalid email and password!")
-            return redirect('/')
+            return redirect('/login')
     else:  # if user already logged-in
         flash("Already a user is logged-in!")
         return redirect('/home')
@@ -54,13 +59,13 @@ def reset():
                 query = """update user_login set password = '{}' where email = '{}'""".format(pswd, email)
                 support.execute_query('insert', query)
                 flash("Password has been changed!!")
-                return redirect('/')
+                return redirect('/login')
             except:
                 flash("Something went wrong!!")
-                return redirect('/')
+                return redirect('/login')
         else:
             flash("Invalid email address!!")
-            return redirect('/')
+            return redirect('/login')
     else:
         return redirect('/home')
 
