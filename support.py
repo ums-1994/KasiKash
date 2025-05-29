@@ -1,3 +1,7 @@
+import os
+import psycopg2
+from dotenv import load_dotenv
+from contextlib import contextmanager
 import datetime
 import pandas as pd
 # import mysql.connector  # pip install mysql-connector-python==8.0.31
@@ -5,6 +9,42 @@ import sqlite3
 import plotly
 import plotly.express as px
 import json
+import warnings
+
+warnings.filterwarnings("ignore")
+
+load_dotenv()
+
+@contextmanager
+def db_connection():
+    conn = psycopg2.connect(
+        dbname=os.getenv('DB_NAME', 'kasikash_db'),
+        user=os.getenv('DB_USER', 'kasikash_user'),
+        password=os.getenv('DB_PASSWORD', 'dev_password'),
+        host=os.getenv('DB_HOST', 'localhost'),
+        port=os.getenv('DB_PORT', '5432')
+    )
+    conn.autocommit = False
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+@contextmanager
+def db_cursor():
+    with db_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            yield cursor
+        finally:
+            cursor.close()
+
+def execute_query(query, params=None, fetch=False):
+    with db_cursor() as cursor:
+        cursor.execute(query, params or ())
+        if fetch:
+            return cursor.fetchall()
+        cursor.connection.commit()
 
 
 # Use this function for SQLITE3
@@ -51,27 +91,6 @@ def close_db(connection=None, cursor=None):
     """
     cursor.close()
     connection.close()
-
-
-def execute_query(operation=None, query=None):
-    """
-    Execute Query
-    :param operation:
-    :param query:
-    :return: data incase search query or write to database
-    """
-    connection, cursor = connect_db()
-    if operation == 'search':
-        cursor.execute(query)
-        data = cursor.fetchall()
-        cursor.close()
-        return data
-    elif operation == 'insert':
-        cursor.execute(query)
-        connection.commit()
-        cursor.close()
-        connection.close()
-        return None
 
 
 def generate_df(df):
