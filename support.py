@@ -5,7 +5,6 @@ from contextlib import contextmanager
 import datetime
 import pandas as pd
 # import mysql.connector  # pip install mysql-connector-python==8.0.31
-import sqlite3
 import plotly
 import plotly.express as px
 import json
@@ -17,18 +16,23 @@ load_dotenv()
 
 @contextmanager
 def db_connection():
-    conn = psycopg2.connect(
-        dbname=os.getenv('DB_NAME', 'kasikash_db'),
-        user=os.getenv('DB_USER', 'kasikash_user'),
-        password=os.getenv('DB_PASSWORD', 'dev_password'),
-        host=os.getenv('DB_HOST', 'localhost'),
-        port=os.getenv('DB_PORT', '5432')
-    )
-    conn.autocommit = False
     try:
+        conn = psycopg2.connect(
+            dbname=os.getenv('DB_NAME', 'kasikash_db'),
+            user=os.getenv('DB_USER', 'postgres'),
+            password=os.getenv('DB_PASSWORD', 'dev_password'),
+            host=os.getenv('DB_HOST', 'localhost'),
+            port=os.getenv('DB_PORT', '5432')
+        )
+        conn.autocommit = False
+        print(f"Successfully connected to database: {os.getenv('DB_NAME')}")
         yield conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        raise e
     finally:
-        conn.close()
+        if 'conn' in locals():
+            conn.close()
 
 @contextmanager
 def db_cursor():
@@ -39,27 +43,48 @@ def db_cursor():
         finally:
             cursor.close()
 
-def execute_query(query, params=None, fetch=False):
-    with db_cursor() as cursor:
-        cursor.execute(query, params or ())
-        if fetch:
-            return cursor.fetchall()
-        cursor.connection.commit()
+def verify_db_connection():
+    """Verify database connection and return True if successful"""
+    try:
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                return True
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return False
+
+def execute_query(operation=None, query=None, params=None):
+    """Execute a database query with better error handling"""
+    try:
+        with db_cursor() as cursor:
+            if operation == 'search':
+                cursor.execute(query, params or ())
+                return cursor.fetchall()
+            elif operation == 'insert':
+                cursor.execute(query, params or ())
+                cursor.connection.commit()
+                return None
+    except Exception as e:
+        print(f"Query execution error: {e}")
+        print(f"Query: {query}")
+        print(f"Params: {params}")
+        raise e
 
 
 # Use this function for SQLITE3
-def connect_db():
-    conn = sqlite3.connect("expense.db")
-    cur = conn.cursor()
-    cur.execute(
-        '''CREATE TABLE IF NOT EXISTS user_login (user_id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(30) NOT NULL, 
-        email VARCHAR(30) NOT NULL UNIQUE, password VARCHAR(20) NOT NULL)''')
-    cur.execute(
-        '''CREATE TABLE IF NOT EXISTS user_expenses (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, pdate DATE NOT 
-        NULL, expense VARCHAR(10) NOT NULL, amount INTEGER NOT NULL, pdescription VARCHAR(50), FOREIGN KEY (user_id) 
-        REFERENCES user_login(user_id))''')
-    conn.commit()
-    return conn, cur
+# def connect_db():
+#     conn = sqlite3.connect("expense.db")
+#     cur = conn.cursor()
+#     cur.execute(
+#         '''CREATE TABLE IF NOT EXISTS user_login (user_id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(30) NOT NULL, 
+#         email VARCHAR(30) NOT NULL UNIQUE, password VARCHAR(20) NOT NULL)''')
+#     cur.execute(
+#         '''CREATE TABLE IF NOT EXISTS user_expenses (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, pdate DATE NOT 
+#         NULL, expense VARCHAR(10) NOT NULL, amount INTEGER NOT NULL, pdescription VARCHAR(50), FOREIGN KEY (user_id) 
+#         REFERENCES user_login(user_id))''')
+#     conn.commit()
+#     return conn, cur
 
 
 # Use this function for mysql
@@ -99,7 +124,7 @@ def generate_df(df):
     :param df:
     :return: df
     """
-    df = df
+    df = df.copy()
     df['Date'] = pd.to_datetime(df['Date'])
     df['Year'] = df['Date'].dt.year
     df['Month_name'] = df['Date'].dt.month_name()
@@ -188,7 +213,6 @@ def generate_Graph(df=None):
 
         # Sunburst pie chart
         pie = px.sunburst(df, path=['Expense', 'Note'], values='Amount', height=280, template="plotly_dark")
-        # pie.update_layout(title_text='Utility Chart', title_x=0.5)
         pie.update_layout(margin=dict(l=0, r=0, t=0, b=0),
                           paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
 
