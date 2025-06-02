@@ -1,0 +1,7 @@
+                                 List of schemas
+  Name  |     Owner     |       Access privileges        |      Description       
+--------+---------------+--------------------------------+------------------------
+ public | kasikash_user | kasikash_user=UC/kasikash_user+| standard public schema
+        |               | =U/kasikash_user               | 
+(1 row)
+

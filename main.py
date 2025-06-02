@@ -151,9 +151,16 @@ def home():
         query = """select * from users where id = %s """
         userdata = support.execute_query(query, params=(session['user_id'],), fetch=True)
 
-        table_query = """select * from expenses where user_id = %s order by date desc"""
+        # Explicitly select the 6 columns that should match the DataFrame columns
+        # Assuming the expenses table has columns: id, user_id, date, category, amount, notes
+        table_query = """select id, user_id, date, category, amount, notes from expenses where user_id = %s order by date desc"""
         table_data = support.execute_query(table_query, params=(session['user_id'],), fetch=True)
-        df = pd.DataFrame(table_data, columns=['#', 'User_Id', 'Date', 'Expense', 'Amount', 'Note'])
+
+        # Match the DataFrame column names to the selected database columns
+        # The '#' column in the original DataFrame names seems to be the row index in the table display,
+        # which is not a database column needed for the DataFrame construction itself.
+        # We will use the actual column names from the select query.
+        df = pd.DataFrame(table_data, columns=['id', 'user_id', 'Date', 'Expense', 'Amount', 'Note'])
 
         df = support.generate_df(df)
         try:
@@ -188,6 +195,18 @@ def home():
             pie6 = support.makePieChart(df, 'Investment', 'Note', size=size)
         except:
             pie1, pie2, pie3, pie4, pie5, pie6 = None, None, None, None, None, None
+
+        # Placeholder data for new dashboard elements
+        active_stokvels = 3 # Example value
+        upcoming_payments = [ # Example data structure
+            {'stokvel_name': 'Ubuntu Savings Circle', 'due_date': '01 Feb 2024', 'amount': 1200},
+            {'stokvel_name': 'Festive Season Fund', 'due_date': '05 Feb 2024', 'amount': 800},
+            {'stokvel_name': 'Property Investment Club', 'due_date': '10 Feb 2024', 'amount': 2000},
+        ]
+        next_payout_date = "Apr 15" # Example value
+        next_payout_amount = 14400 # Example value
+
+
         return render_template('home.html',
                                user_name=userdata[0][1], # Assuming username is at index 1 in the users table
                                df_size=df.shape[0],
@@ -199,7 +218,7 @@ def home():
                                monthly_data=monthly_data,
                                card_data=card_data,
                                goals=goals,
-                               table_data=table_data[:4],
+                               table_data=table_data, # Pass the full table_data
                                bar=bar,
                                line=line,
                                stack_bar=stack_bar,
@@ -209,6 +228,10 @@ def home():
                                pie4=pie4,
                                pie5=pie5,
                                pie6=pie6,
+                               active_stokvels=active_stokvels, # Pass placeholder data
+                               upcoming_payments=upcoming_payments, # Pass placeholder data
+                               next_payout_date=next_payout_date, # Pass placeholder data
+                               next_payout_amount=next_payout_amount # Pass placeholder data
                                )
     else:  # if not logged-in
         return redirect('/')
