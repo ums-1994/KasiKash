@@ -1,71 +1,109 @@
 import sqlite3
-from support import db_connection
-import os
+import psycopg2
 from dotenv import load_dotenv
-import datetime
+import os
+from datetime import datetime
 
-load_dotenv() # Load environment variables from .env file
+# Load environment variables
+load_dotenv()
 
-def migrate():
-    print("Starting database migration...")
+def get_sqlite_connection():
+    """Connect to the SQLite database"""
+    return sqlite3.connect("expense.db")
 
-    # SQLite connection
-    sqlite_conn = sqlite3.connect('expense.db')
+def get_postgres_connection():
+    """Connect to the PostgreSQL database"""
+    return psycopg2.connect(
+        dbname=os.getenv('DB_NAME', 'kasikash_db'),
+        user=os.getenv('DB_USER', 'postgres'),
+        password=os.getenv('DB_PASSWORD', 'dev_password'),
+        host=os.getenv('DB_HOST', 'localhost'),
+        port=os.getenv('DB_PORT', '5432')
+    )
+
+def migrate_users(sqlite_conn, pg_conn):
+    """Migrate users from SQLite to PostgreSQL"""
     sqlite_cur = sqlite_conn.cursor()
-
-    # Migrate users
-    print("Migrating users...")
-    sqlite_cur.execute("SELECT email, password FROM user_login") # Corrected table name
+    pg_cur = pg_conn.cursor()
+    
+    # Get all users from SQLite
+    sqlite_cur.execute("SELECT username, email, password FROM user_login")
     users = sqlite_cur.fetchall()
-
-    with db_connection() as conn:
-        with conn.cursor() as cursor:
-            # Note: We don't insert the old SQLite 'id' since PostgreSQL SERIAL will generate a new one
-            cursor.executemany(
-                "INSERT INTO users (email, password) VALUES (%s, %s)",
-                users
+    
+    # Insert users into PostgreSQL
+    for user in users:
+        try:
+            pg_cur.execute(
+                "INSERT INTO users (username, email, password, created_at) VALUES (%s, %s, %s, %s)",
+                (user[0], user[1], user[2], datetime.now())
             )
-            print(f"Migrated {len(users)} users")
-        conn.commit() # Commit after inserting users
+        except psycopg2.IntegrityError as e:
+            print(f"Error inserting user {user[1]}: {e}")
+            continue
+    
+    pg_conn.commit()
+    print(f"Migrated {len(users)} users")
 
-    # Migrate expenses
-    print("Migrating expenses...")
-    # Fetch user_id mapping from SQLite to PostgreSQL
-    sqlite_cur.execute("SELECT user_id, email FROM user_login") # Assuming email can be used to map
-    user_email_map = {email: user_id for user_id, email in sqlite_cur.fetchall()}
-
-    sqlite_cur.execute("SELECT user_id, pdate, expense, amount, pdescription FROM user_expenses")
+def migrate_expenses(sqlite_conn, pg_conn):
+    """Migrate expenses from SQLite to PostgreSQL"""
+    sqlite_cur = sqlite_conn.cursor()
+    pg_cur = pg_conn.cursor()
+    
+    # Get all expenses from SQLite
+    sqlite_cur.execute("""
+        SELECT ue.user_id, ue.pdate, ue.expense, ue.amount, ue.pdescription, ul.email 
+        FROM user_expenses ue 
+        JOIN user_login ul ON ue.user_id = ul.user_id
+    """)
     expenses = sqlite_cur.fetchall()
-
-    migrated_count = 0
-    with db_connection() as conn:
-        with conn.cursor() as cursor:
-            for user_id_sqlite, pdate, expense, amount, pdescription in expenses:
-                # Find the new user_id in PostgreSQL using email
-                sqlite_cur.execute("SELECT email FROM user_login WHERE user_id = ?", (user_id_sqlite,))
-                email = sqlite_cur.fetchone()[0]
-                user_id_postgres = None
-                # Look up the user_id in the PostgreSQL database based on email
-                pg_user = support.execute_query("SELECT id FROM users WHERE email = %s", params=(email,), fetch=True)
-                if pg_user:
-                    user_id_postgres = pg_user[0][0]
-                else:
-                    print(f"Warning: Could not find PostgreSQL user for SQLite user_id {user_id_sqlite} with email {email}. Skipping expense.")
-                    continue # Skip this expense if user not found
-
-                # Use the current date and time for created_at
-                created_at = datetime.datetime.now()
-
-                cursor.execute(
-                    "INSERT INTO expenses (user_id, date, category, amount, notes, created_at) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (user_id_postgres, pdate, expense, amount, pdescription, created_at)
+    
+    # Insert expenses into PostgreSQL
+    for expense in expenses:
+        try:
+            # Get the new user_id from PostgreSQL
+            pg_cur.execute("SELECT id FROM users WHERE email = %s", (expense[5],))
+            new_user_id = pg_cur.fetchone()
+            
+            if new_user_id:
+                pg_cur.execute(
+                    """
+                    INSERT INTO expenses 
+                    (user_id, date, category, amount, notes, created_at) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (new_user_id[0], expense[1], expense[2], float(expense[3]), expense[4], datetime.now())
                 )
-                migrated_count += 1
-        conn.commit() # Commit after inserting expenses
-    print(f"Migrated {migrated_count} expenses")
+        except Exception as e:
+            print(f"Error inserting expense for user {expense[5]}: {e}")
+            continue
+    
+    pg_conn.commit()
+    print(f"Migrated {len(expenses)} expenses")
 
-    sqlite_conn.close()
-    print("Database migration finished.")
+def main():
+    try:
+        # Connect to both databases
+        sqlite_conn = get_sqlite_connection()
+        pg_conn = get_postgres_connection()
+        
+        print("Starting migration...")
+        
+        # Migrate users first
+        migrate_users(sqlite_conn, pg_conn)
+        
+        # Then migrate expenses
+        migrate_expenses(sqlite_conn, pg_conn)
+        
+        print("Migration completed successfully!")
+        
+    except Exception as e:
+        print(f"An error occurred during migration: {e}")
+    finally:
+        # Close connections
+        if 'sqlite_conn' in locals():
+            sqlite_conn.close()
+        if 'pg_conn' in locals():
+            pg_conn.close()
 
 if __name__ == "__main__":
-    migrate() 
+    main() 
