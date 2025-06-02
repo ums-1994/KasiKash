@@ -7,131 +7,18 @@ import plotly.express as px
 import json
 import warnings
 import support
-import bcrypt
 
 warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
 
 @app.route('/')
 def welcome():
     return render_template("welcome.html")
-
-
-@app.route('/login')
-def login():
-    session.permanent = True
-    app.permanent_session_lifetime = timedelta(minutes=15)
-    if 'user_id' in session:  # if logged-in
-        flash("Already a user is logged-in!")
-        return redirect('/home')
-    else:  # if not logged-in
-        return render_template("login.html")
-
-
-@app.route('/login_validation', methods=['POST'])
-def login_validation():
-    if 'user_id' not in session:  # if user not logged-in
-        email_or_username = request.form.get('email_or_username') # Changed to accept username or email
-        password = request.form.get('password')
-
-        # Attempt to fetch user by username first
-        query = """SELECT id, username, password FROM users WHERE username = %s"""
-        user = support.execute_query(query, params=(email_or_username,), fetch=True)
-
-        # If no user found by username, attempt to fetch by email
-        if not user:
-            query = """SELECT id, username, password FROM users WHERE email = %s"""
-            user = support.execute_query(query, params=(email_or_username,), fetch=True)
-
-        if user and bcrypt.checkpw(password.encode('utf-8'), user[0][2].encode('utf-8')):
-            session['user_id'] = user[0][0]  # set session user id
-            session['username'] = user[0][1] # set session username
-            flash('Login successful!', 'success')
-            return redirect('/home')
-        else:
-            flash('Invalid username/email or password', 'danger')
-            return redirect('/login')
-
-
-@app.route('/reset', methods=['POST'])
-def reset():
-    if 'user_id' not in session:
-        email = request.form.get('femail')
-        pswd = request.form.get('pswd')
-        userdata = support.execute_query('select * from users where email = %s', params=(email,), fetch=True)
-        if len(userdata) > 0:
-            try:
-                query = """update users set password = %s where email = %s"""
-                support.execute_query(query, params=(pswd, email))
-                flash("Password has been changed!!")
-                return redirect('/login')
-            except:
-                flash("Something went wrong!!")
-                return redirect('/login')
-        else:
-            flash("Invalid email address!!")
-            return redirect('/login')
-    else:
-        return redirect('/home')
-
-
-@app.route('/register')
-def register():
-    if 'user_id' in session:  # if user is logged-in
-        flash("Already a user is logged-in!")
-        return redirect('/home')
-    else:  # if not logged-in
-        return render_template("register.html")
-
-
-@app.route('/register_validation', methods=['POST'])
-def register_validation():
-    if 'user_id' not in session:  # if user not logged-in
-        username = request.form.get('username') # Get username from form
-        email = request.form.get('email')
-        passwd = request.form.get('password')
-
-        # Check if username or email already exists
-        existing_user = support.execute_query(
-            """SELECT id FROM users WHERE username = %s OR email = %s""",
-            params=(username, email), fetch=True)
-
-        if existing_user:
-            flash('Username or Email already exists. Please use different credentials.', 'danger')
-            return redirect('/register')
-
-        # Hash password
-        hashed_password = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
-
-        # Insert new user into database
-        query = """INSERT INTO users(username, email, password) VALUES(%s,%s,%s)"""
-        support.execute_query(query, params=(username, email, hashed_password.decode('utf-8')))
-
-        # Fetch the newly created user to get the id and username
-        new_user = support.execute_query(
-            """SELECT id, username FROM users WHERE username = %s""",
-            params=(username,), fetch=True)
-
-        if new_user:
-            session['user_id'] = new_user[0][0]  # set session on successful registration
-            session['username'] = new_user[0][1] # set session username
-            flash('Registration successful!', 'success')
-            return redirect('/home')
-        else:
-            flash('Registration failed. Please try again.', 'danger')
-            return redirect('/register')
-
-    else:
-        flash("Already logged in!", 'info')
-        return redirect('/home')
-
-
-@app.route('/contact')
-def contact():
-    return render_template("contact.html")
 
 
 @app.route('/feedback', methods=['POST'])
@@ -148,9 +35,10 @@ def feedback():
 @app.route('/home')
 def home():
     if 'user_id' in session:  # if user is logged-in
-        query = """select * from users where id = %s """
-        userdata = support.execute_query(query, params=(session['user_id'],), fetch=True)
+        query = """select * from users where id = {} """.format(session['user_id'])
+        userdata = support.execute_query("search", query)
 
+<<<<<<< HEAD
         # Explicitly select the 6 columns that should match the DataFrame columns
         # Assuming the expenses table has columns: id, user_id, date, category, amount, notes
         table_query = """select id, user_id, date, category, amount, notes from expenses where user_id = %s order by date desc"""
@@ -161,6 +49,12 @@ def home():
         # which is not a database column needed for the DataFrame construction itself.
         # We will use the actual column names from the select query.
         df = pd.DataFrame(table_data, columns=['id', 'user_id', 'Date', 'Expense', 'Amount', 'Note'])
+=======
+        table_query = """select * from expenses where user_id = {} order by date desc""".format(
+            session['user_id'])
+        table_data = support.execute_query("search", table_query)
+        df = pd.DataFrame(table_data, columns=['#', 'User_Id', 'Date', 'Expense', 'Amount', 'Note'])
+>>>>>>> a779f4ea6b11433729bb6405f244914b18b4ba36
 
         df = support.generate_df(df)
         try:
@@ -208,7 +102,7 @@ def home():
 
 
         return render_template('home.html',
-                               user_name=userdata[0][1], # Assuming username is at index 1 in the users table
+                               user_name=userdata[0][1],
                                df_size=df.shape[0],
                                df=jsonify(df.to_json()),
                                earning=earning,
@@ -237,37 +131,15 @@ def home():
         return redirect('/')
 
 
-@app.route('/home/add_expense', methods=['POST'])
-def add_expense():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        if request.method == 'POST':
-            date = request.form.get('e_date')
-            expense = request.form.get('e_type')
-            amount = request.form.get('amount')
-            notes = request.form.get('notes')
-            try:
-                query = """INSERT INTO expenses (user_id, date, category, amount, notes) VALUES (%s, %s, %s, %s, %s)"""
-                support.execute_query(query, params=(user_id, date, expense, amount, notes))
-                flash("Saved!!")
-            except Exception as e:
-                flash("Something went wrong.")
-                print(f"Add expense error: {e}") # Log the error for debugging
-                return redirect("/home")
-            return redirect('/home')
-    else:
-        return redirect('/')
-
-
 @app.route('/analysis')
 def analysis():
     if 'user_id' in session:  # if already logged-in
-        query = """select * from users where id = %s """
-        userdata = support.execute_query(query, params=(session['user_id'],), fetch=True)
-        # Note: Updated column names based on new schema
-        query2 = """select date, category, notes, amount from expenses where user_id = %s"""
+        query = """select * from user_login where user_id = {} """.format(session['user_id'])
+        userdata = support.execute_query('search', query)
+        query2 = """select pdate,expense, pdescription, amount from user_expenses where user_id = {}""".format(
+            session['user_id'])
 
-        data = support.execute_query(query2, params=(session['user_id'],), fetch=True)
+        data = support.execute_query('search', query2)
         df = pd.DataFrame(data, columns=['Date', 'Expense', 'Note', 'Amount(₹)'])
         df = support.generate_df(df)
 
@@ -284,111 +156,116 @@ def analysis():
             heat = support.meraHeatmap(df, 'Day_name', 'Month_name', height=200, title="Transaction count Day vs Month")
             month_bar = support.month_bar(df, 280)
             sun = support.meraSunburst(df, 280)
-
             return render_template('analysis.html',
-                                   user_name=userdata[0][1], # Assuming username is at index 1
+                                   user_name=userdata[0][1],
                                    pie=pie,
                                    bar=bar,
                                    line=line,
                                    scatter=scatter,
                                    heat=heat,
                                    month_bar=month_bar,
-                                   sun=sun
+                                   sun=sun,
                                    )
         else:
-            flash("No data records to analyze.")
-            return redirect('/home')
-
+            return render_template('analysis.html',
+                                   user_name=userdata[0][1],
+                                   pie=None,
+                                   bar=None,
+                                   line=None,
+                                   scatter=None,
+                                   heat=None,
+                                   month_bar=None,
+                                   sun=None,
+                                   )
     else:  # if not logged-in
         return redirect('/')
 
 
-@app.route('/profile')
-def profile():
+@app.route('/login')
+def login():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=15)
     if 'user_id' in session:  # if logged-in
-        query = """select * from users where id = %s """
-        userdata = support.execute_query(query, params=(session['user_id'],), fetch=True)
-        return render_template('profile.html', user_name=userdata[0][1], email=userdata[0][2]) # Assuming username at 1, email at 2
+        flash("Already a user is logged-in!")
+        return redirect('/home')
     else:  # if not logged-in
-        return redirect('/')
-
-
-@app.route("/updateprofile", methods=['POST'])
-def update_profile():
-    name = request.form.get('name')
-    email = request.form.get("email")
-    # Fetch current user data
-    query_current = """select * from users where id = %s """
-    userdata = support.execute_query(query_current, params=(session['user_id'],), fetch=True)
-    
-    # Check if the new email already exists for another user
-    query_email_exists = """select * from users where email = %s AND id != %s"""
-    email_exists = support.execute_query(query_email_exists, params=(email, session['user_id']), fetch=True)
-    
-    if email_exists:
-        flash("Email already exists, try another!!")
-        return redirect('/profile')
-
-    # Update username and/or email if they have changed
-    if name != userdata[0][1] or email != userdata[0][2]:
-        if name != userdata[0][1] and email != userdata[0][2]:
-            query_update = """UPDATE users SET username = %s, email = %s WHERE id = %s"""
-            support.execute_query(query_update, params=(name, email, session['user_id']))
-            flash("Name and Email updated!!")
-        elif name != userdata[0][1]:
-            query_update = """UPDATE users SET username = %s WHERE id = %s"""
-            support.execute_query(query_update, params=(name, session['user_id']))
-            flash("Name updated!!")
-        elif email != userdata[0][2]:
-             query_update = """UPDATE users SET email = %s WHERE id = %s"""
-             support.execute_query(query_update, params=(email, session['user_id']))
-             flash("Email updated!!")
-    else:
-        flash("No Change!!")
-        
-    return redirect('/profile')
+        return render_template("login.html")
 
 
 @app.route('/logout')
 def logout():
-    try:
-        session.pop("user_id")  # delete the user_id in session (deleting session)
-        return redirect('/')
-    except:  # if already logged-out but in another tab still logged-in
+    session.clear()
+    flash("You have been logged out successfully!")
         return redirect('/')
 
-def init_db():
-    with support.db_connection() as conn:
-        with conn.cursor() as cursor:
-            # Drop existing tables (optional, but good for development resets)
-            cursor.execute("DROP TABLE IF EXISTS expenses CASCADE")
-            cursor.execute("DROP TABLE IF EXISTS users CASCADE")
 
-            # Create users table
-            cursor.execute("""
-            CREATE TABLE users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(100) UNIQUE NOT NULL,
-                email VARCHAR(100) UNIQUE NOT NULL,
-                password VARCHAR(100) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )""")
+@app.route('/login_validation', methods=['POST'])
+def login_validation():
+    if 'user_id' not in session:
+        email = request.form.get('email')
+        passwd = request.form.get('password')
+        
+        # First check if user exists
+        query = "SELECT * FROM users WHERE email = %s"
+        users = support.execute_query("search", query, (email,))
+        
+        if len(users) > 0:
+            # Then verify password
+            if users[0][3] == passwd:  # Assuming password is in the 4th column
+                session['user_id'] = users[0][0]
+                flash("Login successful!")
+                return redirect('/home')
+        
+        flash("Invalid email or password!")
+        return redirect('/login')
+    else:
+        flash("Already logged in!")
+        return redirect('/home')
 
-            # Create expenses table
-            cursor.execute("""
-            CREATE TABLE expenses (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                amount DECIMAL(10,2) NOT NULL,
-                category VARCHAR(50) NOT NULL,
-                date DATE NOT NULL,
-                notes TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )""")
-            conn.commit() # Commit the schema changes
-    print("Database schema initialized")
+
+@app.route('/register')
+def register():
+    if 'user_id' in session:  # if user is logged-in
+        flash("Already a user is logged-in!")
+        return redirect('/home')
+    else:  # if not logged-in
+        return render_template("register.html")
+
+
+@app.route('/registration', methods=['POST'])
+def registration():
+    if 'user_id' not in session:
+        username = request.form.get('username')
+        email = request.form.get('email')
+        passwd = request.form.get('password')
+        if len(username) > 5 and len(email) > 10 and len(passwd) > 5:
+            try:
+                query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+                support.execute_query('insert', query, (username, email, passwd))
+
+                user = support.execute_query('search',
+                    "SELECT * FROM users WHERE email = %s", (email,))
+                session['user_id'] = user[0][0]
+                flash("Successfully Registered!!")
+                return redirect('/home')
+            except Exception as e:
+                print(f"Registration error: {e}")
+                flash("Email id already exists, use another email!!")
+                return redirect('/register')
+        else:
+            flash("Not enough data to register, try again!!")
+            return redirect('/register')
+    else:
+        flash("Already a user is logged-in!")
+        return redirect('/home')
+
+
+@app.route('/get_started')
+def get_started():
+    if 'user_id' in session:
+        return redirect('/home')
+    return redirect('/login')
 
 
 if __name__ == "__main__":
-    init_db()  # Initialize database schema
     app.run(debug=True)
