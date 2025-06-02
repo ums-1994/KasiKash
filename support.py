@@ -18,11 +18,11 @@ load_dotenv()
 @contextmanager
 def db_connection():
     conn = psycopg2.connect(
-        dbname=os.getenv('DB_NAME', 'kasikash_db'),
-        user=os.getenv('DB_USER', 'kasikash_user'),
-        password=os.getenv('DB_PASSWORD', 'dev_password'),
-        host=os.getenv('DB_HOST', 'localhost'),
-        port=os.getenv('DB_PORT', '5432')
+        dbname=os.getenv('DB_NAME'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        host=os.getenv('DB_HOST'),
+        port=os.getenv('DB_PORT')
     )
     conn.autocommit = False
     try:
