@@ -39,7 +39,7 @@ def home():
         userdata = support.execute_query("search", query)
 
         table_query = """select id, user_id, date, category, amount, notes from expenses where user_id = %s order by date desc"""
-        table_data = support.execute_query(table_query, params=(session['user_id'],), fetch=True)
+        table_data = support.execute_query("search", table_query, params=(session['user_id'],))
         df = pd.DataFrame(table_data, columns=['id', 'user_id', 'Date', 'Expense', 'Amount', 'Note'])
 
         df = support.generate_df(df)
@@ -250,7 +250,7 @@ def registration():
 def get_started():
     if 'user_id' in session:
         return redirect('/home')
-    return redirect('/login')
+    return redirect('/register')
 
 
 if __name__ == "__main__":
