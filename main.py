@@ -38,23 +38,9 @@ def home():
         query = """select * from users where id = {} """.format(session['user_id'])
         userdata = support.execute_query("search", query)
 
-<<<<<<< HEAD
-        # Explicitly select the 6 columns that should match the DataFrame columns
-        # Assuming the expenses table has columns: id, user_id, date, category, amount, notes
         table_query = """select id, user_id, date, category, amount, notes from expenses where user_id = %s order by date desc"""
         table_data = support.execute_query(table_query, params=(session['user_id'],), fetch=True)
-
-        # Match the DataFrame column names to the selected database columns
-        # The '#' column in the original DataFrame names seems to be the row index in the table display,
-        # which is not a database column needed for the DataFrame construction itself.
-        # We will use the actual column names from the select query.
         df = pd.DataFrame(table_data, columns=['id', 'user_id', 'Date', 'Expense', 'Amount', 'Note'])
-=======
-        table_query = """select * from expenses where user_id = {} order by date desc""".format(
-            session['user_id'])
-        table_data = support.execute_query("search", table_query)
-        df = pd.DataFrame(table_data, columns=['#', 'User_Id', 'Date', 'Expense', 'Amount', 'Note'])
->>>>>>> a779f4ea6b11433729bb6405f244914b18b4ba36
 
         df = support.generate_df(df)
         try:
@@ -196,7 +182,7 @@ def login():
 def logout():
     session.clear()
     flash("You have been logged out successfully!")
-        return redirect('/')
+    return redirect('/')
 
 
 @app.route('/login_validation', methods=['POST'])
