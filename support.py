@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from contextlib import contextmanager
 import datetime
 import pandas as pd
-# import mysql.connector  # pip install mysql-connector-python==8.0.31
+# import mysql.connector  # pip install mysql-connector-python
 import plotly
 import plotly.express as px
 import json
@@ -16,17 +16,6 @@ load_dotenv()
 
 @contextmanager
 def db_connection():
-<<<<<<< HEAD
-    conn = psycopg2.connect(
-        dbname=os.getenv('DB_NAME'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        host=os.getenv('DB_HOST'),
-        port=os.getenv('DB_PORT')
-    )
-    conn.autocommit = False
-=======
->>>>>>> a779f4ea6b11433729bb6405f244914b18b4ba36
     try:
         conn = psycopg2.connect(
             dbname=os.getenv('DB_NAME', 'kasikash_db'),
