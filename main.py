@@ -253,5 +253,44 @@ def get_started():
     return redirect('/register')
 
 
+@app.route('/home/add_expense', methods=['POST'])
+def add_expense():
+    if 'user_id' in session:
+        # Get data from the form
+        e_date = request.form.get('e_date')
+        e_type = request.form.get('e_type')
+        amount = request.form.get('amount')
+        notes = request.form.get('notes')
+        user_id = session['user_id']
+
+        # Validate data (optional but recommended)
+        if not all([e_date, e_type, amount, notes]):
+            flash("All fields are required to add an expense record!", "warning")
+            return redirect('/home')
+
+        try:
+            # Convert amount to appropriate type (e.g., float or integer)
+            amount = float(amount) # or int(amount) depending on your database schema
+
+            # Prepare and execute the insert query
+            # Assuming your expenses table has columns: user_id, date, category, amount, notes
+            query = """
+            INSERT INTO expenses (user_id, date, category, amount, notes)
+            VALUES (%s, %s, %s, %s, %s)
+            """
+            support.execute_query('insert', query, (user_id, e_date, e_type, amount, notes))
+
+            flash("Expense record added successfully!", "success")
+            return redirect('/home')
+
+        except Exception as e:
+            print(f"Error adding expense record: {e}")
+            flash("An error occurred while adding the expense record.", "danger")
+            return redirect('/home')
+    else:
+        flash("You need to be logged in to add expense records.", "warning")
+        return redirect('/login') # Redirect to login if user is not in session
+
+
 if __name__ == "__main__":
     app.run(debug=True)
