@@ -154,18 +154,25 @@ def top_tiles(df=None):
     """
     Sum of total expenses
     :param df:
-    :return: sum
+    :return: sum (as numerical values)
     """
     if df is not None:
         tiles_data = df[['Expense', 'Amount']].groupby('Expense').sum()
-        tiles = {'Earning': 0, 'Investment': 0, 'Saving': 0, 'Spend': 0}
-        for i in list(tiles_data.index):
-            try:
-                tiles[i] = num2MB(tiles_data.loc[i][0])
-            except:
-                pass
+        # Initialize tiles with numerical values (0)
+        tiles = {'Earning': 0.0, 'Investment': 0.0, 'Saving': 0.0, 'Spend': 0.0} # Use floats for potential decimal amounts
+        for expense_type in ['Earning', 'Investment', 'Saving', 'Spend']:
+            if expense_type in tiles_data.index:
+                try:
+                    # Store the raw numerical amount directly
+                    tiles[expense_type] = float(tiles_data.loc[expense_type]['Amount'])
+                except Exception as e:
+                    print(f"Error processing amount for {expense_type}: {e}")
+                    tiles[expense_type] = 0.0 # Default to 0.0 if there's an issue
+
+        # Return numerical values
         return tiles['Earning'], tiles['Spend'], tiles['Investment'], tiles['Saving']
-    return
+    # Return default numerical values if df is None
+    return 0.0, 0.0, 0.0, 0.0
 
 
 def generate_Graph(df=None):
