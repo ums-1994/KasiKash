@@ -9,23 +9,32 @@ import plotly
 import plotly.express as px
 import json
 import warnings
+import plotly.graph_objects as go
+from plotly.offline import plot
 
 warnings.filterwarnings("ignore")
 
 load_dotenv()
 
+# Database connection parameters
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+
 @contextmanager
 def db_connection():
     try:
         conn = psycopg2.connect(
-            dbname=os.getenv('DB_NAME', 'kasikash_db'),
-            user=os.getenv('DB_USER', 'postgres'),
-            password=os.getenv('DB_PASSWORD', 'dev_password'),
-            host=os.getenv('DB_HOST', 'localhost'),
-            port=os.getenv('DB_PORT', '5432')
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
         )
         conn.autocommit = False
-        print(f"Successfully connected to database: {os.getenv('DB_NAME')}")
+        print(f"Successfully connected to database: {DB_NAME}")
         yield conn
     except Exception as e:
         print(f"Database connection error: {e}")
@@ -54,22 +63,54 @@ def verify_db_connection():
         print(f"Database connection error: {e}")
         return False
 
-def execute_query(operation=None, query=None, params=None):
-    """Execute a database query with better error handling"""
+def execute_query(operation, query, params=None):
+    """
+    Executes a database query or command.
+
+    Args:
+        operation (str): 'search', 'insert', 'update', or 'delete'.
+        query (str): The SQL query string with placeholders (%s).
+        params (tuple, optional): A tuple of values to substitute into the query.
+
+    Returns:
+        list: Results of the query for 'search' operation, otherwise None.
+    """
+    conn = None
+    cur = None
     try:
-        with db_cursor() as cursor:
-            if operation == 'search':
-                cursor.execute(query, params or ())
-                return cursor.fetchall()
-            elif operation == 'insert':
-                cursor.execute(query, params or ())
-                cursor.connection.commit()
-                return None
-    except Exception as e:
-        print(f"Query execution error: {e}")
-        print(f"Query: {query}")
-        print(f"Params: {params}")
-        raise e
+        conn = psycopg2.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
+        )
+        cur = conn.cursor()
+
+        cur.execute(query, params)
+
+        if operation == 'search':
+            results = cur.fetchall()
+            return results
+        else:
+            # For insert, update, delete, commit changes
+            conn.commit()
+            # If it's an insert with RETURNING, fetch the result
+            if operation == 'insert' and 'RETURNING' in query.upper():
+                 result = cur.fetchone()
+                 return result
+            return None # Return None for other operations
+
+    except (psycopg2.Error, Exception) as e:
+        if conn:
+            conn.rollback()
+        print(f"Database error during {operation}: {e}")
+        return None
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 # Use this function for SQLITE3
@@ -367,100 +408,70 @@ def expense_goal(df):
 
 
 # --------------- Analysis -----------------
-def meraPie(df=None, names=None, values=None, color=None, width=None, height=None, hole=None, hole_text=None,
-            margin=None, hole_font=10):
-    fig = px.pie(data_frame=df, names=names, values=values, color=color, hole=hole, width=width, height=height)
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    fig.update_layout(annotations=[dict(text=hole_text, y=0.5, font_size=hole_font, showarrow=False)])
-    fig.update_layout(margin=margin, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    fig.update(layout_showlegend=False)
-    # fig.update_layout(title='Total Balance', title_font_size=15, title_font_color='green')
-    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+def meraPie(df, names, values, hole=0, hole_text="", hole_font=14, height=200, width=200, margin=None):
+    """Generates a Plotly Pie Chart."""
+    fig = px.pie(df, names=names, values=values, hole=hole, height=height, width=width, margin=margin)
+    fig.update_traces(textinfo="percent+label", insidetextorientation="radial")
+    if hole > 0 and hole_text:
+        fig.add_annotation(text=hole_text, x=0.5, y=0.5, showarrow=False, font=dict(size=hole_font))
+    fig.update_layout(showlegend=True, font=dict(size=10))
+    plot_div = plot(fig, output_type='div', include_plotlyjs=False)
+    return plot_div
 
 
-def meraLine(df=None, x=None, y=None, color=None, slider=True, title=None, height=180, width=None, show_legend=True):
-    # Line Chart
-    line = px.line(data_frame=df, x=x, y=y, color=color, template="plotly_dark", height=height, width=width)
-    line.update_xaxes(rangeslider_visible=slider)
-    line.update(layout_showlegend=show_legend)
-    line.update_layout(title_text=title, title_x=0.,
-                       legend=dict(
-                           orientation="h",
-                           yanchor="bottom",
-                           y=1.02,
-                           xanchor="right",
-                           x=1
-                       ),
-                       margin=dict(l=2, r=2, t=2, b=2),
-                       paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
-                       )
-    return json.dumps(line, cls=plotly.utils.PlotlyJSONEncoder)
+def meraLine(df, x, y, color, slider=False, show_legend=True, height=250):
+    """Generates a Plotly Line Chart."""
+    fig = px.line(df, x=x, y=y, color=color, height=height)
+    fig.update_layout(xaxis_title=x, yaxis_title=y, showlegend=show_legend, font=dict(size=10))
+    if slider:
+        fig.update_layout(xaxis=dict(rangeslider=dict(visible=True)))
+    plot_div = plot(fig, output_type='div', include_plotlyjs=False)
+    return plot_div
 
 
-def meraScatter(df=None, x=None, y=None, color=None, size=None, slider=True, title=None, height=180, width=None,
-                legend=False):
-    scatter = px.scatter(data_frame=df, x=x, y=y, color=color, size=size, template="plotly_dark", height=height,
-                         width=width)
-    scatter.update_xaxes(rangeslider_visible=slider)
-    scatter.update(layout_showlegend=legend)
-    scatter.update_layout(xaxis={'visible': False})
-    scatter.update_layout(title_text=title, title_x=0.5,
-                          legend=dict(
-                              orientation="h",
-                              yanchor="bottom",
-                              y=1.02,
-                              xanchor="left",
-                              x=1
-                          ),
-                          margin=dict(l=2, r=2, t=2, b=2),
-                          paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
-                          )
-    return json.dumps(scatter, cls=plotly.utils.PlotlyJSONEncoder)
+def meraScatter(df, x, y, color, y_label, slider=False, height=250):
+    """Generates a Plotly Scatter Plot."""
+    fig = px.scatter(df, x=x, y=y, color=color, height=height)
+    fig.update_layout(xaxis_title=x, yaxis_title=y_label, font=dict(size=10))
+    if slider:
+        fig.update_layout(xaxis=dict(rangeslider=dict(visible=True)))
+    plot_div = plot(fig, output_type='div', include_plotlyjs=False)
+    return plot_div
 
 
-def meraHeatmap(df=None, x=None, y=None, text_auto=True, aspect='auto', height=None, width=None, title=None):
-    fig = px.imshow(pd.crosstab(df[x], df[y]), text_auto=text_auto, aspect=aspect, height=height, width=width,
-                    template='plotly_dark')
-    fig.update(layout_showlegend=False)
-    fig.update_layout(xaxis=dict(showticklabels=False),
-                      yaxis=dict(showticklabels=False))
-    fig.update_layout(title_text=title, title_x=0.5,
-                      margin=dict(l=2, r=2, t=30, b=2),
-                      paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
-                      )
-    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+def meraHeatmap(df, x, y, height=250, title=""):
+    """Generates a Plotly Heatmap."""
+    fig = px.density_heatmap(df, x=x, y=y, height=height, title=title)
+    fig.update_layout(xaxis_title=x, yaxis_title=y, font=dict(size=10))
+    plot_div = plot(fig, output_type='div', include_plotlyjs=False)
+    return plot_div
 
 
-def month_bar(df=None, height=None, width=None):
-    t = df.groupby(['Month', 'Expense']).sum().reset_index()[['Month', 'Expense', 'Amount(₹)']]
-
-    month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
-             "November", "December"]
-    m = {}
-    count = 1
-    for i in month:
-        m[count] = i
-        count += 1
-
-    t['Month'] = t['Month'].apply(lambda x: m[x])
-
-    fig = px.bar(t, x='Month', y='Amount(₹)', color='Expense', text_auto=True, height=height, width=width,
-                 template='plotly_dark')
-    fig.update_layout(legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="right",
-        x=1
-    ))
-    fig.update_layout(margin=dict(l=2, r=2, t=30, b=2),
-                      paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
-                      )
-    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+def month_bar(df, height=250):
+    """Generates a monthly bar chart."""
+    df["month_name"] = df["Date"].dt.strftime("%b")
+    df3 = df.groupby(["month_name", 'Expense']).sum().reset_index()
+    month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    df3["month_name"] = pd.Categorical(df3["month_name"], categories=month_order, ordered=True)
+    df3 = df3.sort_values("month_name")
+    fig = px.bar(df3, x='month_name', y='Amount(₹)', color='Expense', height=height)
+    fig.update_layout(xaxis_title="Month", yaxis_title="Total Amount(₹)", font=dict(size=10))
+    plot_div = plot(fig, output_type='div', include_plotlyjs=False)
+    return plot_div
 
 
-def meraSunburst(df=None, height=None, width=None):
-    fig = px.sunburst(df, path=['Year', 'Expense', 'Note'], values='Amount(₹)', height=height, width=width)
-    fig.update_layout(margin=dict(l=1, r=1, t=1, b=1), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    fig.update(layout_showlegend=False)
-    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+def meraSunburst(df, height=300):
+    """Generates a Plotly Sunburst Chart."""
+    fig = px.sunburst(df, path=['Expense', 'Note'], values='Amount(₹)', height=height)
+    fig.update_layout(margin=dict(t=0, l=0, r=0, b=0), font=dict(size=10))
+    plot_div = plot(fig, output_type='div', include_plotlyjs=False)
+    return plot_div
+
+
+def get_user_data(user_id):
+    """Fetches user data by user ID."""
+    query = "SELECT id, username, email FROM users WHERE id = %s"
+    user_data = execute_query('search', query, (user_id,))
+    if user_data:
+        return dict(zip(['id', 'username', 'email'], user_data[0]))
+    return None
