@@ -12,7 +12,7 @@
 
     <!-- Payment Methods Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for method in methods %}
+        {% for method in payment_methods %}
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-start">
                 <h2 class="text-xl font-semibold mb-2">{{ method.type }}</h2>
