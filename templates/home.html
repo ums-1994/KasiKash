@@ -232,34 +232,40 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 
-    <script type='text/javascript'>
+<!-- Add hidden divs to store chart data -->
+<div id="chart-data" style="display: none;"
+    data-bar='{% if bar %}{{ bar | safe }}{% else %}null{% endif %}'
+    data-stack-bar='{% if stack_bar %}{{ stack_bar | safe }}{% else %}null{% endif %}'
+    data-pie1='{% if pie1 %}{{ pie1 | safe }}{% else %}null{% endif %}'
+    data-pie2='{% if pie2 %}{{ pie2 | safe }}{% else %}null{% endif %}'
+    data-pie3='{% if pie3 %}{{ pie3 | safe }}{% else %}null{% endif %}'
+    data-pie4='{% if pie4 %}{{ pie4 | safe }}{% else %}null{% endif %}'
+></div>
+
+<script type='text/javascript'>
     // Auto-close alerts after 3 seconds
     setTimeout(function() {
         $('.alert').alert('close');
     }, 3000);
 
-    // Plot charts if data exists
-    {% if bar %}
-      var graphs = {{bar | safe}};
-    Plotly.plot('bar', graphs, {});
-    {% endif %}
+    // Get chart data from data attributes and initialize charts
+    const chartDataElement = document.getElementById('chart-data');
+    if (chartDataElement) { // Check if the element exists
+        const chartData = {
+            bar: safeJSONParse(chartDataElement.dataset.bar),
+            stack_bar: safeJSONParse(chartDataElement.dataset.stackBar),
+            pie1: safeJSONParse(chartDataElement.dataset.pie1),
+            pie2: safeJSONParse(chartDataElement.dataset.pie2),
+            pie3: safeJSONParse(chartDataElement.dataset.pie3),
+            pie4: safeJSONParse(chartDataElement.dataset.pie4)
+        };
 
-    {% if stack_bar %}
-      var graphs4 = {{stack_bar | safe}};
-    Plotly.plot('stack', graphs4, {});
-    {% endif %}
-
-    {% if pie1 or pie2 or pie3 or pie4 %}
-      var pie_graph1 = {{pie1 | safe}};
-      var pie_graph2 = {{pie2 | safe}};
-      var pie_graph3 = {{pie3 | safe}};
-      var pie_graph4 = {{pie4 | safe}};
-
-    if (pie_graph1) Plotly.plot('pie11', pie_graph1, {});
-    if (pie_graph2) Plotly.plot('pie22', pie_graph2, {});
-    if (pie_graph3) Plotly.plot('pie33', pie_graph3, {});
-    if (pie_graph4) Plotly.plot('pie44', pie_graph4, {});
-    {% endif %}
-    </script>
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts(chartData);
+        });
+    }
+</script>
 {% endblock %}
