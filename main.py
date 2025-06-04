@@ -292,5 +292,14 @@ def add_expense():
         return redirect('/login') # Redirect to login if user is not in session
 
 
+@app.route('/profile')
+def profile():
+    if 'user_id' in session:
+        return render_template('profile.html', active_page='profile')
+    else:
+        flash("You need to be logged in to view your profile.", "warning")
+        return redirect('/login')
+
+
 if __name__ == "__main__":
     app.run(debug=True)
