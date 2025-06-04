@@ -64,7 +64,16 @@ def execute_query(operation=None, query=None, params=None):
             elif operation == 'insert':
                 cursor.execute(query, params or ())
                 cursor.connection.commit()
-                return None
+                # Check if the query included a RETURNING clause
+                if " RETURNING " in query.upper():
+                    # Fetch the result (e.g., the returned ID)
+                    result = cursor.fetchone()
+                    return result
+                return None # Return None for inserts without RETURNING
+            elif operation == 'delete': # Added delete operation handling
+                cursor.execute(query, params or ())
+                cursor.connection.commit()
+                return None # Delete operations typically don't return data
     except Exception as e:
         print(f"Query execution error: {e}")
         print(f"Query: {query}")
