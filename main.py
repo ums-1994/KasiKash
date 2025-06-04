@@ -431,10 +431,10 @@ def make_contribution():
 
     try:
         query = """
-            INSERT INTO transactions (stokvel_id, user_id, type, amount, description, status)
-            VALUES (%s, %s, 'contribution', %s, %s, 'completed')
+            INSERT INTO transactions (stokvel_id, user_id, type, amount, description, status, transaction_date, created_at)
+            VALUES (%s, %s, 'contribution', %s, %s, 'completed', %s, %s)
         """
-        support.execute_query('insert', query, (stokvel_id, session['user_id'], amount, description))
+        support.execute_query('insert', query, (stokvel_id, session['user_id'], amount, description, datetime.datetime.now(), datetime.datetime.now()))
 
         update_query = """
             UPDATE stokvels
@@ -857,10 +857,26 @@ def delete_payment_method():
 @app.route('/profile')
 def profile():
     if 'user_id' in session:
-        return render_template('profile.html', active_page='profile')
+        user_id = session['user_id']
+
+        # Fetch user data from the database
+        # Assuming the users table has id, username, email columns
+        query = "SELECT username, email FROM users WHERE id = %s"
+        user_data = support.execute_query("search", query, (user_id,))
+
+        if user_data:
+            user_name = user_data[0][0]
+            user_email = user_data[0][1]
+            # Render the profile template, passing the user data
+            return render_template("profile.html", user_name=user_name, user_email=user_email, active_page='profile')
+        else:
+            # Should not happen if user_id is in session, but good practice to handle
+            flash("Could not retrieve user information.", "danger")
+            return redirect(url_for('home'))
     else:
-        flash("You need to be logged in to view your profile.", "warning")
-        return redirect('/login')
+        # If user is not logged in, redirect to login page
+        flash("Please log in to view your profile.", "warning")
+        return redirect(url_for('login'))
 
 
 if __name__ == "__main__":
