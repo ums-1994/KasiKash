@@ -1,0 +1,122 @@
+{% extends 'base.html' %} {% block title %}Dashboard - KasiKash{% endblock %} {% block extra_css %}
+<!-- Add any additional CSS for this page here -->
+{% endblock %} {% block content %}
+
+<!-- Welcome Banner -->
+<div class="relative h-48 w-full bg-gradient-to-r from-green-500 to-orange-500 flex items-center p-8 rounded-lg shadow-md text-white text-xl font-semibold overflow-hidden">
+    <div class="absolute inset-0 pattern-wavy pattern-green-600 pattern-opacity-20 pattern-size-6"></div>
+    <div class="relative z-10">
+        <h2 class="text-3xl font-bold mb-2">Sawubona, {{ user_name }}! 👋</h2>
+        <p>You're doing great with your savings journey. Keep up the excellent work!</p>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+            <p class="text-gray-600">Total Saved</p>
+            <h3 class="text-2xl font-bold text-gray-800">R {{ total_saved | default("0.00") }}</h3>
+            <p class="text-sm text-gray-500">Across all stokvels</p>
+        </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M9 7l3 1m0 0l-3 9a5.002 5.002 0 006.001 0m0-7l-3 1m0 0l-3 9a5.002 5.002 0 006.001 0m0 7H3m18 0h-3M6 7H3m3 10h9m2 2H7m2 4h3m0-3v3"></path>
+            </svg>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+            <p class="text-gray-600">Monthly Contributions</p>
+            <h3 class="text-2xl font-bold text-gray-800">R {{ monthly_contribution | default("0.00") }}</h3>
+            <p class="text-sm text-gray-500">Total per month</p>
+        </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+            <p class="text-gray-600">Active Stokvels</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ active_stokvels | default(0) }}</h3>
+            <p class="text-sm text-gray-500">Participating groups</p>
+        </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+            <p class="text-gray-600">Next Payout</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ next_payout_date | default("N/A") }}</h3>
+            <p class="text-sm text-gray-500">R {{ next_payout_amount | default("0.00") }}</p>
+        </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2m7-3h.01M17 16H7"></path>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Payments and Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Payments</h3>
+        <p class="text-gray-600 mb-4">Your contribution schedule</p>
+        <ul>
+            {% if upcoming_payments %} {% for payment in upcoming_payments %}
+            <li class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                <div>
+                    <p class="font-semibold text-gray-800">{{ payment.stokvel_name }}</p>
+                    <p class="text-sm text-gray-500">Due: {{ payment.due_date | default("N/A") }}</p>
+                </div>
+                <span class="font-semibold text-green-600">R {{ payment.amount | default("0.00") }}</span>
+            </li>
+            {% endfor %} {% else %}
+            <li>
+                <p class="text-gray-500">No upcoming payments.</p>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h3>
+        <p class="text-gray-600 mb-4">Your latest transactions</p>
+        <ul>
+            {% if recent_transactions %} {% for transaction in recent_transactions %}
+            <li class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 text-blue-600">
+                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">{{ transaction.description | default("Transaction") }}</p>
+                        <p class="text-sm text-gray-500">{{ transaction.stokvel_name | default("") }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="font-semibold text-green-600">R {{ transaction.amount | default("0.00") }}</span>
+                    <p class="text-sm text-gray-500">{{ transaction.date | default("N/A") }}</p>
+                </div>
+            </li>
+            {% endfor %} {% else %}
+            <li>
+                <p class="text-gray-500">No recent activity.</p>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %} {% block extra_js %}
+<!-- Add any additional JS for this page here -->
+{% endblock %}
