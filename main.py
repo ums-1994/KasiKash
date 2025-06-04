@@ -8,6 +8,7 @@ import json
 import warnings
 import support
 import datetime
+from functools import wraps
 
 warnings.filterwarnings("ignore")
 
@@ -16,6 +17,14 @@ app.secret_key = os.urandom(24)
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.')
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 def welcome():
@@ -41,6 +50,11 @@ def home():
         # Fetch user data
         user_query = "SELECT username FROM users WHERE id = %s"
         user_data = support.execute_query("search", user_query, (user_id,))
+        
+        if user_data is None:
+            flash("Error fetching user data. Please try again later.")
+            return redirect('/')
+            
         user_name = user_data[0][0] if user_data else "User"
 
         # Fetch user's stokvel memberships and associated stokvels
@@ -51,7 +65,12 @@ def home():
             WHERE sm.user_id = %s
         """
         memberships_data = support.execute_query("search", memberships_query, (user_id,))
-
+        
+        # Handle case when memberships_data is None
+        if memberships_data is None:
+            flash("Error fetching stokvel memberships. Please try again later.")
+            return redirect('/')
+            
         active_stokvels = len(memberships_data)
         total_monthly_contribution = sum([row[2] for row in memberships_data if row[2] is not None])
 
@@ -85,7 +104,7 @@ def home():
                     'type': row[4] if row[4] is not None else "N/A"
                 })
 
-        # Determine Next Payout and Upcoming Payments (Simplified Placeholder Logic)
+        # Determine Next Payout and Upcoming Payments
         next_payout_query = """
             SELECT t.transaction_date, t.amount, s.name
             FROM transactions t
@@ -117,7 +136,6 @@ def home():
 
         bar, line, stack_bar = None, None, None
         pie1, pie2, pie3, pie4, pie5, pie6 = None, None, None, None, None, None
-
 
         return render_template('dashboard.html',
                                user_name=user_name,
@@ -854,30 +872,122 @@ def delete_payment_method():
     return redirect('/payment_methods')
 
 
-@app.route('/profile')
-def profile():
-    if 'user_id' in session:
-        user_id = session['user_id']
+@app.route('/settings')
+@login_required
+def settings():
+    # Get user settings from database
+    user_settings = get_user_settings(session['user_id'])
+    return render_template('settings.html', user=user_settings)
 
-        # Fetch user data from the database
-        # Assuming the users table has id, username, email columns
-        query = "SELECT username, email FROM users WHERE id = %s"
-        user_data = support.execute_query("search", query, (user_id,))
+@app.route('/settings/update', methods=['POST'])
+@login_required
+def update_settings():
+    try:
+        data = request.get_json()
+        section = data.get('section')
+        setting = data.get('setting')
+        value = data.get('value')
+        
+        # Update setting in database
+        success = update_user_setting(session['user_id'], section, setting, value)
+        
+        return jsonify({'success': success})
+    except Exception as e:
+        print(f"Error updating settings: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
 
+def get_user_settings(user_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Get user profile information
+        cur.execute("""
+            SELECT full_name, email, phone, profile_picture, 
+                   two_factor_enabled, reminders_enabled,
+                   email_notifications, sms_notifications, weekly_summary,
+                   dark_mode, remember_me
+            FROM users 
+            WHERE id = %s
+        """, (user_id,))
+        
+        user_data = cur.fetchone()
+        
         if user_data:
-            user_name = user_data[0][0]
-            user_email = user_data[0][1]
-            # Render the profile template, passing the user data
-            return render_template("profile.html", user_name=user_name, user_email=user_email, active_page='profile')
-        else:
-            # Should not happen if user_id is in session, but good practice to handle
-            flash("Could not retrieve user information.", "danger")
-            return redirect(url_for('home'))
-    else:
-        # If user is not logged in, redirect to login page
-        flash("Please log in to view your profile.", "warning")
-        return redirect(url_for('login'))
+            return {
+                'full_name': user_data[0],
+                'email': user_data[1],
+                'phone': user_data[2],
+                'profile_picture': user_data[3],
+                'two_factor_enabled': user_data[4],
+                'reminders_enabled': user_data[5],
+                'email_notifications': user_data[6],
+                'sms_notifications': user_data[7],
+                'weekly_summary': user_data[8],
+                'dark_mode': user_data[9],
+                'remember_me': user_data[10]
+            }
+        return None
+    except Exception as e:
+        print(f"Error getting user settings: {str(e)}")
+        return None
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
 
+def update_user_setting(user_id, section, setting, value):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Map section and setting to database column
+        setting_map = {
+            'Profile Settings': {
+                'Full Name': 'full_name',
+                'Email': 'email',
+                'Phone Number': 'phone',
+                'Profile Picture': 'profile_picture'
+            },
+            'Account Security': {
+                'Two-Factor Authentication': 'two_factor_enabled'
+            },
+            'Group Preferences': {
+                'Contribution Reminders': 'reminders_enabled'
+            },
+            'Notifications': {
+                'Email Notifications': 'email_notifications',
+                'SMS Notifications': 'sms_notifications',
+                'Weekly Summary': 'weekly_summary'
+            },
+            'App Preferences': {
+                'Dark Mode': 'dark_mode',
+                'Remember Me': 'remember_me'
+            }
+        }
+        
+        column = setting_map.get(section, {}).get(setting)
+        if not column:
+            return False
+        
+        # Update the setting in the database
+        cur.execute(f"""
+            UPDATE users 
+            SET {column} = %s 
+            WHERE id = %s
+        """, (value, user_id))
+        
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error updating user setting: {str(e)}")
+        return False
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=8080)
