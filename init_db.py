@@ -1,43 +1,46 @@
-import support
-from dotenv import load_dotenv
+import psycopg2
 import os
 
-load_dotenv()
-
 def init_db():
+    # Connect to PostgreSQL
+    conn = psycopg2.connect(
+        dbname='postgres',  # Connect to default database first
+        user='postgres',
+        password='12345',
+        host='localhost',
+        port='5432'
+    )
+    conn.autocommit = True
+    cursor = conn.cursor()
+
     try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Create users table
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS users (
-                        id SERIAL PRIMARY KEY,
-                        username VARCHAR(30) NOT NULL,
-                        email VARCHAR(30) NOT NULL UNIQUE,
-                        password VARCHAR(100) NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    );
-                """)
-                
-                # Create expenses table
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS expenses (
-                        id SERIAL PRIMARY KEY,
-                        user_id INTEGER NOT NULL,
-                        date DATE NOT NULL,
-                        expense VARCHAR(10) NOT NULL,
-                        amount DECIMAL(10,2) NOT NULL,
-                        note VARCHAR(50),
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (user_id) REFERENCES users(id)
-                    );
-                """)
-                
-                conn.commit()
-                print("Database tables created successfully!")
-                
+        # Create database if it doesn't exist
+        cursor.execute("SELECT 1 FROM pg_database WHERE datname = 'kasikash'")
+        if not cursor.fetchone():
+            cursor.execute("CREATE DATABASE kasikash")
+        
+        # Connect to the new database
+        conn.close()
+        conn = psycopg2.connect(
+            dbname='kasikash',
+            user='postgres',
+            password='12345',
+            host='localhost',
+            port='5432'
+        )
+        cursor = conn.cursor()
+
+        # Read and execute the schema.sql file
+        with open('schema.sql', 'r') as f:
+            schema_sql = f.read()
+            cursor.execute(schema_sql)
+
+        print("Database initialized successfully!")
     except Exception as e:
         print(f"Error initializing database: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == "__main__":
     init_db() 
