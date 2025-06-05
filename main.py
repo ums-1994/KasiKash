@@ -9,6 +9,7 @@ import warnings
 import support
 import datetime
 from functools import wraps
+import psycopg2
 
 warnings.filterwarnings("ignore")
 
@@ -262,11 +263,7 @@ def login_validation():
 
 @app.route('/register')
 def register():
-    if 'user_id' in session:
-        flash("Already a user is logged-in!")
-        return redirect('/home')
-    else:
-        return render_template("register.html")
+    return render_template("register.html")
 
 
 @app.route('/registration', methods=['POST'])
@@ -448,20 +445,27 @@ def make_contribution():
         return redirect('/contributions')
 
     try:
+        # Insert the contribution
         query = """
-            INSERT INTO transactions (stokvel_id, user_id, type, amount, description, status, transaction_date, created_at)
-            VALUES (%s, %s, 'contribution', %s, %s, 'completed', %s, %s)
+            INSERT INTO transactions (stokvel_id, user_id, type, amount, description, status)
+            VALUES (%s, %s, 'contribution', %s, %s, 'completed')
+            RETURNING id
         """
-        support.execute_query('insert', query, (stokvel_id, session['user_id'], amount, description, datetime.datetime.now(), datetime.datetime.now()))
+        result = support.execute_query('insert', query, (stokvel_id, session['user_id'], amount, description))
+        
+        if result:
+            # Update the stokvel's total pool
+            update_query = """
+                UPDATE stokvels
+                SET total_pool = total_pool + %s
+                WHERE id = %s
+            """
+            support.execute_query('insert', update_query, (amount, stokvel_id))
 
-        update_query = """
-            UPDATE stokvels
-            SET total_pool = total_pool + %s
-            WHERE id = %s
-        """
-        support.execute_query('insert', update_query, (amount, stokvel_id))
-
-        flash('Contribution made successfully!')
+            flash('Contribution made successfully!')
+        else:
+            flash('Error making contribution: No transaction ID returned')
+            
         return redirect('/contributions')
     except Exception as e:
         flash('Error making contribution: ' + str(e))
@@ -494,7 +498,73 @@ def payouts():
         for row in payouts_data:
             payouts_list.append(dict(zip(columns, row)))
 
-    return render_template('payouts.html', payouts=payouts_list)
+    # Get stokvels for the dropdown
+    stokvels_query = """
+        SELECT s.id, s.name
+        FROM stokvels s
+        JOIN stokvel_members sm ON s.id = sm.stokvel_id
+        WHERE sm.user_id = %s
+        ORDER BY s.name ASC
+    """
+    stokvels_list_for_dropdown = support.execute_query('search', stokvels_query, (user_id,))
+
+    return render_template('payouts.html', payouts=payouts_list, stokvels=stokvels_list_for_dropdown)
+
+
+@app.route('/request_payout', methods=['POST'])
+def request_payout():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    stokvel_id = request.form.get('stokvel_id')
+    amount = request.form.get('amount')
+    description = request.form.get('description')
+
+    if not stokvel_id or not amount:
+        flash('Stokvel and amount are required for a payout request.')
+        return redirect('/payouts')
+
+    try:
+        # Check if user is a member of the stokvel
+        membership_query = """
+            SELECT 1 FROM stokvel_members
+            WHERE stokvel_id = %s AND user_id = %s
+        """
+        is_member = support.execute_query('search', membership_query, (stokvel_id, session['user_id']))
+
+        if not is_member:
+            flash('You are not a member of this stokvel.')
+            return redirect('/payouts')
+
+        # Check if stokvel has enough funds
+        stokvel_query = """
+            SELECT total_pool FROM stokvels
+            WHERE id = %s
+        """
+        stokvel_data = support.execute_query('search', stokvel_query, (stokvel_id,))
+        
+        if not stokvel_data or float(stokvel_data[0][0]) < float(amount):
+            flash('The stokvel does not have enough funds for this payout.')
+            return redirect('/payouts')
+
+        # Insert the payout request
+        query = """
+            INSERT INTO transactions (stokvel_id, user_id, type, amount, description, status)
+            VALUES (%s, %s, 'payout', %s, %s, 'pending')
+            RETURNING id
+        """
+        result = support.execute_query('insert', query, (stokvel_id, session['user_id'], amount, description))
+        
+        if result:
+            flash('Payout request submitted successfully!')
+        else:
+            flash('Error submitting payout request: No transaction ID returned')
+            
+        return redirect('/payouts')
+    except Exception as e:
+        flash('Error submitting payout request: ' + str(e))
+        print(f"Error submitting payout request: {e}")
+        return redirect('/payouts')
 
 
 @app.route('/savings_goals')
@@ -541,18 +611,34 @@ def create_savings_goal():
     target_amount = request.form.get('target_amount')
     target_date = request.form.get('target_date')
 
+    if not name or not target_amount or not target_date:
+        flash('All fields are required for creating a savings goal.')
+        return redirect('/savings_goals')
+
     try:
         query = """
             INSERT INTO savings_goals (user_id, name, target_amount, target_date, current_amount, status)
             VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
         """
-        support.execute_query('insert', query, (session['user_id'], name, target_amount, target_date, 0, 'in_progress'))
-
-        flash('Savings goal created successfully!')
-        return redirect('/savings_goals')
+        result = support.execute_query('insert', query, (
+            session['user_id'],
+            name,
+            float(target_amount),
+            target_date,
+            0.0,
+            'in_progress'
+        ))
+        
+        if result and result[0]:
+            flash('Savings goal created successfully!')
+        else:
+            flash('Error creating savings goal: No ID returned')
+            
     except Exception as e:
-        flash('Error creating savings goal: ' + str(e))
-        return redirect('/savings_goals')
+        flash(f'Error creating savings goal: {str(e)}')
+
+    return redirect('/savings_goals')
 
 
 @app.route('/stokvel/<int:stokvel_id>/members')
@@ -988,6 +1074,52 @@ def update_user_setting(user_id, section, setting, value):
             cur.close()
         if 'conn' in locals():
             conn.close()
+
+@app.route('/profile')
+@login_required
+def profile():
+    user_id = session['user_id']
+    query = "SELECT username, email FROM users WHERE id = %s"
+    user_data = support.execute_query("search", query, (user_id,))
+    
+    if user_data:
+        user = {
+            'username': user_data[0][0],
+            'email': user_data[0][1]
+        }
+        return render_template('profile.html', user=user)
+    else:
+        flash("Error fetching user data")
+        return redirect('/home')
+
+@app.route('/profile/update', methods=['POST'])
+@login_required
+def update_profile():
+    user_id = session['user_id']
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+
+    try:
+        # Update username and email
+        query = "UPDATE users SET username = %s, email = %s WHERE id = %s"
+        support.execute_query('insert', query, (username, email, user_id))
+
+        # Update password if provided
+        if password and confirm_password:
+            if password == confirm_password:
+                update_password_query = "UPDATE users SET password = %s WHERE id = %s"
+                support.execute_query('insert', update_password_query, (password, user_id))
+            else:
+                flash("Passwords do not match!")
+                return redirect('/profile')
+
+        flash("Profile updated successfully!")
+        return redirect('/profile')
+    except Exception as e:
+        flash(f"Error updating profile: {str(e)}")
+        return redirect('/profile')
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)

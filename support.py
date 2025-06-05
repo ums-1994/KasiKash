@@ -17,11 +17,11 @@ warnings.filterwarnings("ignore")
 load_dotenv()
 
 # Database connection parameters
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST')
-DB_PORT = os.getenv('DB_PORT')
+DB_NAME = os.getenv('DB_NAME', 'kasikash')
+DB_USER = os.getenv('DB_USER', 'postgres')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '5432')
 
 @contextmanager
 def db_connection():
@@ -87,24 +87,33 @@ def execute_query(operation, query, params=None):
         )
         cur = conn.cursor()
 
+        print(f"Executing {operation} query: {query}")
+        print(f"With parameters: {params}")
+        
         cur.execute(query, params)
 
         if operation == 'search':
             results = cur.fetchall()
+            print(f"Search results: {results}")
             return results
         else:
             # For insert, update, delete, commit changes
             conn.commit()
             # If it's an insert with RETURNING, fetch the result
             if operation == 'insert' and 'RETURNING' in query.upper():
-                 result = cur.fetchone()
-                 return result
+                result = cur.fetchone()
+                print(f"Insert result: {result}")
+                if result is None:
+                    print("Warning: No result returned from RETURNING clause")
+                return result
             return None # Return None for other operations
 
     except (psycopg2.Error, Exception) as e:
         if conn:
             conn.rollback()
-        print(f"Database error during {operation}: {e}")
+        print(f"Database error during {operation}: {str(e)}")
+        print(f"Query: {query}")
+        print(f"Parameters: {params}")
         return None
     finally:
         if cur:
