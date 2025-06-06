@@ -1,40 +1,58 @@
-.bg-nav{
-    background: #e65c00;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #F9D423, #e65c00);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #F9D423, #e65c00); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+:root {
+    --primary-color: #00A651;  /* StokFella's green */
+    --secondary-color: #333333;
+    --accent-color: #00A651;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --border-color: #e0e0e0;
+    --success-color: #00A651;
+    --error-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-gray: #f8f9fa;
+    --dark-gray: #343a40;
+    --white: #ffffff;
+    --black: #000000;
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
 
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+}
+
+.bg-nav{
+    background: var(--primary-color);  /* StokFella's green */
+    background: linear-gradient(to right, var(--primary-color), #008c45); /* Darker shade of green */
 }
 .body{
-    background: #5C258D;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #4389A2, #5C258D);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #4389A2, #5C258D); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--white);
 }
 .page-bg{
-    background: #0F2027;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #2C5364, #203A43, #0F2027);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #2C5364, #203A43, #0F2027); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--white);
 }
 
 .deep-purple{
-    background: #673AB7;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #512DA8, #673AB7);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #512DA8, #673AB7); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), #008c45);
 }
 
 .alive{
-    background: #CB356B;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #BD3F32, #CB356B);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #BD3F32, #CB356B); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), #008c45);
 }
 .citrus{
-    background: #FDC830;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #F37335, #FDC830);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #F37335, #FDC830); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), #008c45);
 }
 .green{
-    background: #11998e;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #38ef7d, #11998e);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #38ef7d, #11998e); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), #008c45);
 }
 
 
@@ -73,8 +91,9 @@ input {
   position: relative;
   font-size: 30px;
   font-weight: 600;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0 0 35px;
+  color: var(--text-color);
 }
 
 .sec-pad {
@@ -83,17 +102,17 @@ input {
 }
 
 .contact-sec {
-  align-items: center;
-  display: flex;
-  background-color: #5cbde466;
+    align-items: center;
+    display: flex;
+    background-color: var(--light-gray);
 }
 
 .contact-sec .contact-ul li,
 .contact-ul b {
-  font-size: 20px;
-  margin: 10px 0;
-  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
-  word-wrap: break-word;
+    font-size: 20px;
+    margin: 10px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    word-wrap: break-word;
 }
 
 .contact-sec .contact-ul i {
@@ -112,18 +131,18 @@ input {
 }
 
 .contact-sec .contact-ul li .fa-location-dot {
-  color: #f44337;
-  border: 2px solid #f4433790;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
 .contact-sec .contact-ul li .fa-phone {
-  color: #00b055;
-  border: 2px solid #00b05590;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
 .contact-sec .contact-ul li .fa-envelope {
-  color: #ff6347;
-  border: 2px solid #ff634790;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
 .contact-detail span {
@@ -139,30 +158,30 @@ input {
   margin: 0px 5px;
 }
 .contact-detail span .fb {
-  color: #3b5998;
-  border: 3px solid #3b5998;
+  color: var(--primary-color);
+  border: 3px solid var(--primary-color);
 }
 .contact-detail span .fb:hover {
-  color: #fff;
-  background-color: #3b5998;
+  color: var(--white);
+  background-color: var(--primary-color);
 }
 
 .contact-detail span .insta {
-  color: #833ab4;
-  border: 3px solid #833ab4;
+  color: var(--primary-color);
+  border: 3px solid var(--primary-color);
 }
 .contact-detail span .insta:hover {
-  color: #fff;
-  background-color: #833ab4;
+  color: var(--white);
+  background-color: var(--primary-color);
 }
 
 .contact-detail span .twitter {
-  color: #00acee;
-  border: 3px solid #00acee;
+  color: var(--primary-color);
+  border: 3px solid var(--primary-color);
 }
 .contact-detail span .twitter:hover {
-  color: #fff;
-  background-color: #00acee;
+  color: var(--white);
+  background-color: var(--primary-color);
 }
 
 form.contFrm {
@@ -171,19 +190,21 @@ form.contFrm {
 }
 
 .inptFld {
-  width: 100%;
-  height: 50px;
-  border: 0;
-  margin: 0 0 10px;
-  border-radius: 8px;
-  padding: 0 20px;
-  font-size: 16px;
-  color: #000;
+    width: 100%;
+    height: 50px;
+    border: 1px solid var(--border-color);
+    margin: 0 0 10px;
+    border-radius: 8px;
+    padding: 0 20px;
+    font-size: 16px;
+    color: var(--text-color);
+    transition: var(--transition);
 }
 
 .inptFld:focus {
-  outline-offset: -4px;
-  outline: 1px solid #f93;
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.1);
 }
 
 .contFrm textarea {
@@ -191,16 +212,24 @@ form.contFrm {
   padding-top: 5px;
 }
 .inptBtn {
-  height: 50px;
-  border: 0;
-  background: #00b055;
-  font-size: 14px;
-  color: #fff;
-  margin: auto;
-  letter-spacing: 1px;
-  cursor: pointer;
-  width: 100%;
-  max-width: 200px;
+    height: 50px;
+    border: 0;
+    background: var(--primary-color);
+    font-size: 14px;
+    color: var(--white);
+    margin: auto;
+    letter-spacing: 1px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 200px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.inptBtn:hover {
+    background: #008c45;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 /* Responcive css Start */
@@ -411,3 +440,183 @@ form.contFrm {
 .width-100 {
     width: 100%;
   }
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    text-align: center;
+}
+
+.btn:hover {
+    background-color: #008c45;  /* Darker shade of StokFella green */
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background-color: #1a1a1a;
+}
+
+.card {
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.1);
+}
+
+.navbar {
+    background-color: var(--white);
+    box-shadow: var(--shadow);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.navbar-nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Pricing Section Styles */
+.pricing-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: var(--transition);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card.featured {
+    border: 2px solid var(--primary-color);
+    transform: scale(1.05);
+}
+
+.pricing-card.featured:hover {
+    transform: scale(1.05) translateY(-5px);
+}
+
+.popular-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 5px 15px;
+    font-size: 14px;
+    border-bottom-left-radius: 10px;
+}
+
+.price {
+    margin: 20px 0;
+    font-size: 48px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.currency {
+    font-size: 24px;
+    vertical-align: super;
+}
+
+.period {
+    font-size: 16px;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.features-list li {
+    padding: 10px 0;
+    color: var(--text-color);
+}
+
+.features-list i {
+    color: var(--primary-color);
+    margin-right: 10px;
+}
+
+.btn-block {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 5px;
+    margin-top: 20px;
+}

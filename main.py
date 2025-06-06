@@ -10,8 +10,15 @@ import support
 import datetime
 from functools import wraps
 import psycopg2
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
 
 warnings.filterwarnings("ignore")
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -388,6 +395,7 @@ def contributions():
         return redirect('/login')
 
     user_id = session['user_id']
+    print(f"Debug: User ID from session: {user_id}")  # Debug log
 
     contributions_query = """
         SELECT
@@ -406,6 +414,7 @@ def contributions():
         ORDER BY t.transaction_date DESC
     """
     contributions_data = support.execute_query('search', contributions_query, (user_id,))
+    print(f"Debug: Contributions data: {contributions_data}")  # Debug log
 
     contributions_list = []
     columns = [
@@ -417,7 +426,6 @@ def contributions():
             contribution_dict = dict(zip(columns, row))
             contributions_list.append(contribution_dict)
 
-
     stokvels_query = """
         SELECT s.id, s.name
         FROM stokvels s
@@ -426,7 +434,7 @@ def contributions():
         ORDER BY s.name ASC
     """
     stokvels_list_for_dropdown = support.execute_query('search', stokvels_query, (user_id,))
-
+    print(f"Debug: Stokvels for dropdown: {stokvels_list_for_dropdown}")  # Debug log
 
     return render_template('contributions.html', contributions=contributions_list, stokvels=stokvels_list_for_dropdown)
 
@@ -479,6 +487,7 @@ def payouts():
         return redirect('/login')
 
     user_id = session['user_id']
+    print(f"Debug: User ID from session: {user_id}")  # Debug log
 
     query = """
         SELECT t.id, t.stokvel_id, t.user_id, t.type, t.amount, t.status, t.description, t.transaction_date, s.name as stokvel_name
@@ -488,6 +497,7 @@ def payouts():
         ORDER BY t.transaction_date DESC
     """
     payouts_data = support.execute_query('search', query, (user_id,))
+    print(f"Debug: Payouts data: {payouts_data}")  # Debug log
 
     payouts_list = []
     columns = [
@@ -507,6 +517,7 @@ def payouts():
         ORDER BY s.name ASC
     """
     stokvels_list_for_dropdown = support.execute_query('search', stokvels_query, (user_id,))
+    print(f"Debug: Stokvels for dropdown: {stokvels_list_for_dropdown}")  # Debug log
 
     return render_template('payouts.html', payouts=payouts_list, stokvels=stokvels_list_for_dropdown)
 
@@ -708,46 +719,75 @@ def add_stokvel_member(stokvel_id):
 
     user_id = session['user_id']
     member_email = request.form.get('email')
+    print(f"Debug: Attempting to add member with email: {member_email} to stokvel: {stokvel_id}")
 
     is_admin_query = """
         SELECT 1 FROM stokvel_members
         WHERE stokvel_id = %s AND user_id = %s AND role = 'admin'
     """
     is_admin = support.execute_query('search', is_admin_query, (stokvel_id, user_id))
+    print(f"Debug: Is user admin? {is_admin}")
 
     if not is_admin:
         flash("You do not have permission to add members to this stokvel.")
         return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
-    find_user_query = "SELECT id FROM users WHERE email = %s"
+    find_user_query = "SELECT id, username FROM users WHERE email = %s"
     user_to_add_data = support.execute_query('search', find_user_query, (member_email,))
+    print(f"Debug: Found user data: {user_to_add_data}")
 
     if not user_to_add_data:
         flash(f"User with email {member_email} not found.")
         return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
     user_to_add_id = user_to_add_data[0][0]
+    username = user_to_add_data[0][1]
 
     already_member_query = """
         SELECT 1 FROM stokvel_members
         WHERE stokvel_id = %s AND user_id = %s
     """
     already_member = support.execute_query('search', already_member_query, (stokvel_id, user_to_add_id))
+    print(f"Debug: Is user already a member? {already_member}")
 
     if already_member:
         flash(f"User {member_email} is already a member of this stokvel.")
         return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
     try:
+        # Get stokvel name
+        stokvel_query = "SELECT name FROM stokvels WHERE id = %s"
+        stokvel_data = support.execute_query('search', stokvel_query, (stokvel_id,))
+        stokvel_name = stokvel_data[0][0] if stokvel_data else "Unknown Stokvel"
+
         add_member_query = """
             INSERT INTO stokvel_members (stokvel_id, user_id, role)
             VALUES (%s, %s, 'member')
         """
-        support.execute_query('insert', add_member_query, (stokvel_id, user_to_add_id))
-        flash(f"User {member_email} added to stokvel successfully!")
+        result = support.execute_query('insert', add_member_query, (stokvel_id, user_to_add_id))
+        print(f"Debug: Add member query result: {result}")
+
+        # Send email notification
+        subject = f"Welcome to {stokvel_name}!"
+        body = f"""
+        <html>
+            <body>
+                <h2>Welcome to {stokvel_name}!</h2>
+                <p>Hello {username},</p>
+                <p>You have been added as a member to the stokvel "{stokvel_name}".</p>
+                <p>You can now make contributions and request payouts through the stokvel.</p>
+                <p>Log in to your account to get started!</p>
+            </body>
+        </html>
+        """
+        email_sent = send_email(member_email, subject, body)
+        if email_sent:
+            flash(f"User {member_email} added to stokvel successfully and notification email sent!")
+        else:
+            flash(f"User {member_email} added to stokvel successfully, but failed to send notification email.")
     except Exception as e:
-        flash(f"Error adding member: {e}")
-        print(f"Error adding member: {e}")
+        print(f"Debug: Error adding member: {str(e)}")
+        flash(f"Error adding member: {str(e)}")
 
     return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
@@ -875,6 +915,7 @@ def add_payment_method():
     is_default = request.form.get('is_default') == 'true'
 
     try:
+        # First, update all existing payment methods to not be default
         if is_default:
             update_query = """
                 UPDATE payment_methods
@@ -883,12 +924,18 @@ def add_payment_method():
             """
             support.execute_query('insert', update_query, (user_id,))
 
+        # Then insert the new payment method
         query = """
             INSERT INTO payment_methods (user_id, type, details, is_default)
             VALUES (%s, %s, %s, %s)
+            RETURNING id
         """
-        support.execute_query('insert', query, (user_id, payment_type, details, is_default))
-        flash('Payment method added successfully!')
+        result = support.execute_query('insert', query, (user_id, payment_type, details, is_default))
+        
+        if result:
+            flash('Payment method added successfully!')
+        else:
+            flash('Error adding payment method: No ID returned')
     except Exception as e:
         flash(f'Error adding payment method: {e}')
         print(f"Error adding payment method: {e}")
@@ -1120,6 +1167,58 @@ def update_profile():
     except Exception as e:
         flash(f"Error updating profile: {str(e)}")
         return redirect('/profile')
+
+@app.context_processor
+def inject_user_name():
+    user_name = None
+    if 'user_id' in session:
+        user_query = "SELECT username FROM users WHERE id = %s"
+        user_data = support.execute_query("search", user_query, (session['user_id'],))
+        if user_data:
+            user_name = user_data[0][0]
+    return dict(user_name=user_name)
+
+def send_email(to_email, subject, body):
+    try:
+        # Get email settings from environment variables
+        smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+        smtp_port = int(os.getenv('SMTP_PORT', '587'))
+        smtp_username = os.getenv('SMTP_USERNAME')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+        from_email = os.getenv('FROM_EMAIL', smtp_username)
+
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+
+        # Add body
+        msg.attach(MIMEText(body, 'html'))
+
+        # Create SMTP session
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        
+        # Send email
+        server.send_message(msg)
+        server.quit()
+        print(f"Debug: Email sent successfully to {to_email}")
+        return True
+    except Exception as e:
+        print(f"Debug: Error sending email: {str(e)}")
+        return False
+
+@app.route('/pricing')
+def pricing():
+    if 'user_id' in session:
+        cursor = mysql.connection.cursor(dictionary=True)
+        cursor.execute("SELECT name FROM users WHERE id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+        cursor.close()
+        return render_template('pricing.html', user_name=user['name'] if user else None)
+    return render_template('pricing.html', user_name=None)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
