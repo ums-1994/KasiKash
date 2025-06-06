@@ -49,7 +49,7 @@
                     </svg>
                     Savings Goals
                 </a>
-                <a href="/payment-methods" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors duration-200">
+                <a href="/payment_methods" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors duration-200">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                     </svg>
@@ -69,7 +69,13 @@
         <div class="absolute bottom-0 w-full p-4 border-t border-gray-100">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <img class="w-8 h-8 rounded-full" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User avatar">
+                    <div class="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-base">
+                        {% if user_name %}
+                            {{ user_name.split()[0][0] }}{% if user_name.split()|length > 1 %}{{ user_name.split()[-1][0] }}{% endif %}
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="ml-3">
                     <a href="/logout" class="text-sm text-gray-500 hover:text-green-600">Logout</a>
