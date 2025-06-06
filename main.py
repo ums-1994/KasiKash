@@ -248,7 +248,7 @@ def login_validation():
         query = "SELECT * FROM users WHERE email = %s"
         users = support.execute_query("search", query, (email,))
 
-        if len(users) > 0:
+        if users and len(users) > 0:
             if users[0][3] == passwd:
                 session['user_id'] = users[0][0]
                 flash("Login successful!")
