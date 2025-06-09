@@ -35,28 +35,10 @@ def init_db():
         )
         cursor = conn.cursor()
 
-        # Create users table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(30) NOT NULL UNIQUE,
-                email VARCHAR(30) NOT NULL UNIQUE,
-                password VARCHAR(100) NOT NULL
-            )
-        """)
-
-        # Create expenses table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS expenses (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                date DATE NOT NULL,
-                category VARCHAR(10) NOT NULL,
-                amount DECIMAL(10,2) NOT NULL,
-                notes VARCHAR(50),
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        """)
+        # Read and execute the complete schema.sql file
+        with open('schema.sql', 'r') as f:
+            schema_sql = f.read()
+            cursor.execute(schema_sql)
 
         print("Database initialized successfully!")
     except Exception as e:

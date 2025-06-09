@@ -14,16 +14,25 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+import openai
+from flask_wtf.csrf import CSRFProtect
 
 warnings.filterwarnings("ignore")
 
 # Load environment variables
 load_dotenv()
 
+# Set OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv('SECRET_KEY', '823d26fd5b5651cc6f9072c5b2866d909e6e5f8785a027bb713f08846cadda6f')  # Set a secure secret key
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+csrf = CSRFProtect(app)
+
+# Initialize OpenAI client at application level
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def login_required(f):
     @wraps(f)
@@ -252,17 +261,24 @@ def login_validation():
         email = request.form.get('email')
         passwd = request.form.get('password')
 
-        query = "SELECT * FROM users WHERE email = %s"
-        users = support.execute_query("search", query, (email,))
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+                    users = cur.fetchall()
 
-        if len(users) > 0:
-            if users[0][3] == passwd:
-                session['user_id'] = users[0][0]
-                flash("Login successful!")
-                return redirect('/home')
+                    if len(users) > 0:
+                        if users[0][3] == passwd:
+                            session['user_id'] = users[0][0]
+                            flash("Login successful!")
+                            return redirect('/home')
 
-        flash("Invalid email or password!")
-        return redirect('/login')
+            flash("Invalid email or password!")
+            return redirect('/login')
+        except Exception as e:
+            print(f"Login error: {str(e)}")
+            flash("An error occurred during login. Please try again.")
+            return redirect('/login')
     else:
         flash("Already logged in!")
         return redirect('/home')
@@ -281,22 +297,33 @@ def registration():
         passwd = request.form.get('password')
         if len(username) > 5 and len(email) > 10 and len(passwd) > 5:
             try:
-                query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s) RETURNING id"
-                user_id_result = support.execute_query('insert', query, (username, email, passwd))
+                with support.db_connection() as conn:
+                    with conn.cursor() as cur:
+                        # Check if email already exists
+                        cur.execute("SELECT id FROM users WHERE email = %s", (email,))
+                        if cur.fetchone():
+                            flash("Email id already exists, use another email!!")
+                            return redirect('/register')
 
-                user_id = user_id_result[0] if user_id_result else None
+                        # Insert new user
+                        cur.execute(
+                            "INSERT INTO users (username, email, password) VALUES (%s, %s, %s) RETURNING id",
+                            (username, email, passwd)
+                        )
+                        user_id = cur.fetchone()[0]
+                        conn.commit()
 
-                if user_id:
-                    session['user_id'] = user_id
-                    flash("Successfully Registered!!")
-                    return redirect('/home')
-                else:
-                    flash("Registration failed: Could not retrieve user ID.")
-                    return redirect('/register')
+                        if user_id:
+                            session['user_id'] = user_id
+                            flash("Successfully Registered!!")
+                            return redirect('/home')
+                        else:
+                            flash("Registration failed: Could not retrieve user ID.")
+                            return redirect('/register')
 
             except Exception as e:
                 print(f"Registration error: {e}")
-                flash("Email id already exists, use another email!!")
+                flash("An error occurred during registration. Please try again.")
                 return redirect('/register')
         else:
             flash("Not enough data to register, try again!!")
@@ -1031,7 +1058,7 @@ def update_settings():
 
 def get_user_settings(user_id):
     try:
-        conn = get_db_connection()
+        conn = support.db_connection()
         cur = conn.cursor()
         
         # Get user profile information
@@ -1072,7 +1099,7 @@ def get_user_settings(user_id):
 
 def update_user_setting(user_id, section, setting, value):
     try:
-        conn = get_db_connection()
+        conn = support.db_connection()
         cur = conn.cursor()
         
         # Map section and setting to database column
@@ -1219,6 +1246,86 @@ def pricing():
         cursor.close()
         return render_template('pricing.html', user_name=user['name'] if user else None)
     return render_template('pricing.html', user_name=None)
+
+@app.route('/chat', methods=['POST'])
+@login_required
+def handle_chat():
+    try:
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({'error': 'No message provided'}), 400
+
+        user_message = data['message'].lower()
+        user_id = session.get('user_id')
+        
+        if not user_id:
+            return jsonify({'error': 'User not logged in'}), 401
+
+        # Get user context from database
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get user info
+                cur.execute("SELECT username FROM users WHERE id = %s", (user_id,))
+                user = cur.fetchone()
+                if not user:
+                    return jsonify({'error': 'User not found'}), 404
+                
+                username = user[0]
+                
+                # Get total savings
+                cur.execute("""
+                    SELECT SUM(amount) FROM transactions
+                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
+                """, (user_id,))
+                total_saved = cur.fetchone()[0] or 0
+                
+                # Get stokvel memberships
+                cur.execute("""
+                    SELECT s.name, s.monthly_contribution, s.target_date 
+                    FROM stokvels s 
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id 
+                    WHERE sm.user_id = %s
+                """, (user_id,))
+                stokvels = cur.fetchall()
+                
+                # Get recent transactions
+                cur.execute("""
+                    SELECT amount, type, description, transaction_date 
+                    FROM transactions 
+                    WHERE user_id = %s 
+                    ORDER BY transaction_date DESC 
+                    LIMIT 5
+                """, (user_id,))
+                transactions = cur.fetchall()
+
+        # Simple rule-based response system
+        response = "I'm not sure how to help with that. You can ask me about your savings, stokvels, or recent transactions."
+
+        if "how much" in user_message and "saved" in user_message:
+            response = f"You have saved R{total_saved} in total across all your stokvels."
+        
+        elif "stokvel" in user_message:
+            if stokvels:
+                stokvel_list = "\n".join([f"- {s[0]}: R{s[1]} monthly" for s in stokvels])
+                response = f"You are a member of these stokvels:\n{stokvel_list}"
+            else:
+                response = "You are not currently a member of any stokvels."
+        
+        elif "recent" in user_message and "transaction" in user_message:
+            if transactions:
+                transaction_list = "\n".join([f"- {t[1]}: R{t[0]} ({t[2]}) on {t[3]}" for t in transactions])
+                response = f"Your recent transactions:\n{transaction_list}"
+            else:
+                response = "You don't have any recent transactions."
+        
+        elif "hello" in user_message or "hi" in user_message:
+            response = f"Hello {username}! How can I help you today? You can ask me about your savings, stokvels, or recent transactions."
+
+        return jsonify({'response': response})
+
+    except Exception as e:
+        print(f"Error in handle_chat: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
