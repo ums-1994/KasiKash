@@ -131,3 +131,10 @@ dmypy.json
 # Miniconda installers
 Miniconda3-latest-Linux-x86_64.sh
 Miniconda3-latest-Linux-x86_64.sh.1
+
+# Firebase
+kasikashapp-4f72a-firebase-adminsdk-fbsvc-90d6afe7c3.json
+firebase-service-account.json
+*.json
+!package.json
+!package-lock.json
