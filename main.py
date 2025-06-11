@@ -31,9 +31,6 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 csrf = CSRFProtect(app)
 
-# Initialize OpenAI client at application level
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
