@@ -36,9 +36,8 @@ load_dotenv()
 print(f"DEBUG: DB_NAME loaded from .env: {os.getenv('DB_NAME')}")
 
 # Initialize Firebase Admin SDK
-# Ensure your 'firebase-service-account.json' is in the root directory
-# You should have a FIREBASE_SERVICE_ACCOUNT_KEY_PATH in your .env pointing to this file.
-cred = credentials.Certificate(os.getenv("FIREBASE_SERVICE_ACCOUNT_KEY_PATH", "firebase-service-account.json"))
+# Ensure your Firebase service account key file is in the root directory
+cred = credentials.Certificate(os.getenv("FIREBASE_SERVICE_ACCOUNT_KEY_PATH", "kasikashapp-4f72a-firebase-adminsdk-fbsvc-b3a75155f2.json"))
 firebase_admin.initialize_app(cred)
 
 # Set OpenAI API key
@@ -273,8 +272,8 @@ def login_validation():
             flash("Login successful!")
             return redirect('/home')
 
-        except auth.AuthError as e: # Catch specific Firebase auth errors
-            print(f"Firebase Login error: {e.code} - {e.message}")
+        except auth.UserNotFoundError as e: # Catch specific Firebase auth errors
+            print(f"Firebase Login error: User not found - {str(e)}")
             flash("Invalid email or password! Please try again.")
             return redirect('/login')
         except Exception as e:
@@ -1152,7 +1151,7 @@ def update_profile():
 
         flash("Profile updated successfully!")
         return redirect('/profile')
-    except auth.AuthError as e:
+    except auth.UserNotFoundError as e:
         print(f"Firebase Profile Update error: {e.code} - {e.message}")
         flash(f"Error updating profile in Firebase: {e.message}")
         return redirect('/profile')

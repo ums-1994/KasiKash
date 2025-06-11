@@ -3,120 +3,261 @@
 {% endblock %} {% block content %}
 
 <!-- Welcome Banner -->
-<div class="relative h-48 w-full bg-gradient-to-r from-sky-500 to-sky-300 flex items-center p-8 rounded-lg shadow-md text-white text-xl font-semibold overflow-hidden">
-    <div class="absolute inset-0 pattern-wavy pattern-sky-600 pattern-opacity-20 pattern-size-6"></div>
+<div class="relative h-48 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 flex items-center p-8 rounded-lg shadow-lg text-white text-xl font-semibold overflow-hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-20"></div>
     <div class="relative z-10">
-        <h2 class="text-3xl font-bold mb-2">Sawubona, {{ user_name }}! 👋</h2>
-        <p>You're doing great with your savings journey. Keep up the excellent work!</p>
+        <h2 class="text-3xl font-bold mb-2 text-white drop-shadow-lg">Sawubona, {{ user_name }}! 👋</h2>
+        <p class="text-white drop-shadow-md">You're doing great with your savings journey. Keep up the excellent work!</p>
+    </div>
+    <!-- Decorative elements -->
+    <div class="absolute top-4 right-4 text-white opacity-30">
+        <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
     </div>
 </div>
 
-<!-- Key Metrics -->
+<!-- Account Summary -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
-        <div>
-            <p class="text-gray-600">Total Saved</p>
-            <h3 class="text-2xl font-bold text-gray-800">R {{ total_saved | default("0.00") }}</h3>
-            <p class="text-sm text-gray-500">Across all stokvels</p>
-        </div>
-        <div class="p-3 bg-sky-200 rounded-full">
-            <svg class="w-6 h-6 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M9 7l3 1m0 0l-3 9a5.002 5.002 0 006.001 0m0-7l-3 1m0 0l-3 9a5.002 5.002 0 006.001 0m0 7H3m18 0h-3M6 7H3m3 10h9m2 2H7m2 4h3m0-3v3"></path>
-            </svg>
-        </div>
+    <!-- Current Balance -->
+    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
+        <p class="text-gray-600">Current Balance</p>
+        <h3 class="text-2xl font-bold text-gray-800">R {{ current_balance | default("0.00") }}</h3>
     </div>
-
-    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
-        <div>
-            <p class="text-gray-600">Monthly Contributions</p>
-            <h3 class="text-2xl font-bold text-gray-800">R {{ monthly_contribution | default("0.00") }}</h3>
-            <p class="text-sm text-gray-500">Total per month</p>
-        </div>
-        <div class="p-3 bg-sky-200 rounded-full">
-            <svg class="w-6 h-6 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-            </svg>
-        </div>
+    <!-- Total Contributions -->
+    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
+        <p class="text-gray-600">Total Contributions</p>
+        <h3 class="text-2xl font-bold text-gray-800">R {{ total_contributions | default("0.00") }}</h3>
     </div>
-
-    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
-        <div>
-            <p class="text-gray-600">Active Stokvels</p>
-            <h3 class="text-2xl font-bold text-gray-800">{{ active_stokvels | default(0) }}</h3>
-            <p class="text-sm text-gray-500">Participating groups</p>
-        </div>
-        <div class="p-3 bg-sky-200 rounded-full">
-            <svg class="w-6 h-6 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-            </svg>
-        </div>
+    <!-- Total Withdrawals -->
+    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
+        <p class="text-gray-600">Total Withdrawals</p>
+        <h3 class="text-2xl font-bold text-gray-800">R {{ total_withdrawals | default("0.00") }}</h3>
     </div>
-
-    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
-        <div>
-            <p class="text-gray-600">Next Payout</p>
-            <h3 class="text-2xl font-bold text-gray-800">{{ next_payout_date | default("N/A") }}</h3>
-            <p class="text-sm text-gray-500">R {{ next_payout_amount | default("0.00") }}</p>
-        </div>
-        <div class="p-3 bg-sky-200 rounded-full">
-            <svg class="w-6 h-6 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2m7-3h.01M17 16H7"></path>
-            </svg>
-        </div>
+    <!-- Pending Repayments -->
+    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
+        <p class="text-gray-600">Pending Repayments</p>
+        <h3 class="text-2xl font-bold text-gray-800">R {{ pending_repayments | default("0.00") }}</h3>
     </div>
 </div>
 
-<!-- Upcoming Payments and Recent Activity -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+<!-- Contribution Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+    <!-- Recent Contributions List -->
     <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Payments</h3>
-        <p class="text-gray-600 mb-4">Your contribution schedule</p>
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Contributions</h3>
         <ul>
-            {% if upcoming_payments %} {% for payment in upcoming_payments %}
-            <li class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
-                <div>
-                    <p class="font-semibold text-gray-800">{{ payment.stokvel_name }}</p>
-                    <p class="text-sm text-gray-500">Due: {{ payment.due_date | default("N/A") }}</p>
-                </div>
-                <span class="font-semibold text-sky-600">R {{ payment.amount | default("0.00") }}</span>
+            {% for contrib in recent_contributions %}
+            <li class="flex justify-between py-2 border-b border-gray-200">
+                <span>{{ contrib.date }} - {{ contrib.stokvel_name }}</span>
+                <span class="font-semibold text-sky-600">R {{ contrib.amount }}</span>
             </li>
-            {% endfor %} {% else %}
-            <li>
-                <p class="text-gray-500">No upcoming payments.</p>
-            </li>
-            {% endif %}
+            {% else %}
+            <li>No recent contributions.</li>
+            {% endfor %}
         </ul>
     </div>
-
+    <!-- Upcoming Contributions Timeline -->
     <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h3>
-        <p class="text-gray-600 mb-4">Your latest transactions</p>
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Contributions</h3>
         <ul>
-            {% if recent_transactions %} {% for transaction in recent_transactions %}
-            <li class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center mr-3 text-sky-600">
-                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z"></path></svg>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-800">{{ transaction.description | default("Transaction") }}</p>
-                        <p class="text-sm text-gray-500">{{ transaction.stokvel_name | default("") }}</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="font-semibold text-sky-600">R {{ transaction.amount | default("0.00") }}</span>
-                    <p class="text-sm text-gray-500">{{ transaction.date | default("N/A") }}</p>
-                </div>
+            {% for up in upcoming_contributions %}
+            <li class="flex justify-between py-2 border-b border-gray-200">
+                <span>{{ up.due_date }} - {{ up.stokvel_name }}</span>
+                <span class="font-semibold text-sky-600">R {{ up.amount }}</span>
             </li>
-            {% endfor %} {% else %}
-            <li>
-                <p class="text-gray-500">No recent activity.</p>
-            </li>
-            {% endif %}
+            {% else %}
+            <li>No upcoming contributions.</li>
+            {% endfor %}
         </ul>
+    </div>
+    <!-- Missed Contributions Alert -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-red-600 mb-4">Missed Contributions</h3>
+        <ul>
+            {% for missed in missed_contributions %}
+            <li class="flex justify-between py-2 border-b border-gray-200">
+                <span>{{ missed.due_date }} - {{ missed.stokvel_name }}</span>
+                <span class="font-semibold text-red-600">R {{ missed.amount }}</span>
+            </li>
+            {% else %}
+            <li>No missed contributions. 🎉</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<!-- Loan Overview -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+    <!-- Outstanding Loans List -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Outstanding Loans</h3>
+        <ul>
+            {% for loan in outstanding_loans %}
+            <li class="flex justify-between py-2 border-b border-gray-200">
+                <span>{{ loan.stokvel_name }}</span>
+                <span class="font-semibold text-sky-600">R {{ loan.amount }}</span>
+            </li>
+            {% else %}
+            <li>No outstanding loans.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <!-- Loan Requests Table -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Loan Requests</h3>
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th>Requester</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in loan_requests %}
+                <tr>
+                    <td>{{ req.requester }}</td>
+                    <td>R {{ req.amount }}</td>
+                    <td>{{ req.status }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">No loan requests.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Repayment Progress -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Repayment Progress</h3>
+        <ul>
+            {% for repay in repayment_progress %}
+            <li>{{ repay.stokvel_name }}: {{ repay.progress }}%</li>
+            {% else %}
+            <li>No repayments in progress.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<!-- Group Summary -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <p class="text-gray-600">Member Count</p>
+        <h3 class="text-2xl font-bold text-gray-800">{{ member_count | default(0) }}</h3>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <p class="text-gray-600">Monthly Target</p>
+        <h3 class="text-2xl font-bold text-gray-800">R {{ monthly_target | default("0.00") }}</h3>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <p class="text-gray-600">Total Group Balance</p>
+        <h3 class="text-2xl font-bold text-gray-800">R {{ total_group_balance | default("0.00") }}</h3>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Savings Growth</h3>
+        <canvas id="savingsGrowthChart"></canvas>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Contribution Breakdown</h3>
+        <canvas id="contributionBreakdownChart"></canvas>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Loan Trends</h3>
+        <canvas id="loanTrendsChart"></canvas>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="mt-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">🛠️ Quick Actions</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
+            💰 Request Loan
+        </button>
+        <button class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
+            💳 Make Contribution
+        </button>
+        <button class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
+            💸 Withdraw Funds
+        </button>
+        <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
+            👥 Invite Members
+        </button>
+    </div>
+</div>
+
+<!-- Calendar Events -->
+<div class="bg-white rounded-lg shadow-md p-6 mt-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Events</h3>
+    <ul>
+        {% for event in calendar_events %}
+        <li>{{ event.date }}: {{ event.title }}</li>
+        {% else %}
+        <li>No upcoming events.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Voting Polls -->
+<div class="bg-white rounded-lg shadow-md p-6 mt-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Voting Polls</h3>
+    <ul>
+        {% for poll in active_polls %}
+        <li>
+            <strong>{{ poll.question }}</strong>
+            <ul>
+                {% for option in poll.options %}
+                <li>{{ option.text }} - {{ option.votes }} votes</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% else %}
+        <li>No active polls.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Tips Section -->
+<div class="bg-white rounded-lg shadow-md p-6 mt-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Weekly Tip</h3>
+    <div>
+        {% for tip in tips %}
+        <div class="mb-2">{{ tip.text }}</div>
+        {% else %}
+        <div>No tips available.</div>
+        {% endfor %}
     </div>
 </div>
 
 {% endblock %} {% block extra_js %}
-<!-- Add any additional JS for this page here -->
+<!-- Example: Chart.js scripts for the charts (you need to provide chart data from Flask) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Example chart setup, replace with your actual data
+    var ctx1 = document.getElementById('savingsGrowthChart').getContext('2d');
+    var savingsGrowthChart = new Chart(ctx1, {
+        type: 'line',
+        data: {{ savings_growth_chart_data|safe }},
+        options: {}
+    });
+
+    var ctx2 = document.getElementById('contributionBreakdownChart').getContext('2d');
+    var contributionBreakdownChart = new Chart(ctx2, {
+        type: 'pie',
+        data: {{ contribution_breakdown_chart_data|safe }},
+        options: {}
+    });
+
+    var ctx3 = document.getElementById('loanTrendsChart').getContext('2d');
+    var loanTrendsChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {{ loan_trends_chart_data|safe }},
+        options: {}
+    });
+</script>
 {% endblock %}
