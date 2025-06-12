@@ -278,7 +278,7 @@
   <div class="login-container">
     <h2>Login</h2>
     <form action="/login_validation" method="POST" class="login-form">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <div class="form-group">
         <input type="email" name="email" placeholder="Email" required>
         <i class="fas fa-user input-icon"></i>
