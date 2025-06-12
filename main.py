@@ -34,6 +34,11 @@ load_dotenv()
 
 # Debugging .env loading
 print(f"DEBUG: DB_NAME loaded from .env: {os.getenv('DB_NAME')}")
+print(f"DEBUG: FIREBASE_SERVICE_ACCOUNT_KEY_PATH from .env: {os.getenv('FIREBASE_SERVICE_ACCOUNT_KEY_PATH')}")
+
+# Debugging SendGrid environment variables
+print(f"DEBUG: SENDGRID_API_KEY loaded from .env: {os.getenv('SENDGRID_API_KEY')}")
+print(f"DEBUG: MAIL_SENDER_EMAIL loaded from .env: {os.getenv('MAIL_SENDER_EMAIL')}")
 
 # Initialize Firebase Admin SDK
 # Ensure your 'firebase-service-account.json' is in the root directory
@@ -223,67 +228,46 @@ def logout():
 
 @app.route('/login_validation', methods=['POST'])
 def login_validation():
-    if 'user_id' not in session:
+    try:
         email = request.form.get('email')
-        passwd = request.form.get('password') # This password is for client-side authentication or hypothetical JWT
-
-        print(f"Login attempt - Email: {email}") # Removed password from log for security
-
+        password = request.form.get('password')
+        
+        print(f"Login attempt for email: {email}")  # Debug log
+        
+        # Try to get user by email first
         try:
-            # Authenticate user with Firebase
-            # IMPORTANT: For production, client-side Firebase SDK should handle login
-            # and send the ID token to the server. The server then verifies the ID token.
-            # For this example, we'll try to sign in with email/password directly
-            # using a workaround (which is not secure for production but for demonstration).
-            # A more robust solution would be to use a client SDK (JS) to get the ID token
-            # and send it to this endpoint.
-            # Example (if using Firebase JS SDK on client):
-            # firebase.auth().signInWithEmailAndPassword(email, passwd)
-            # .then(userCredential => userCredential.user.getIdToken())
-            # .then(idToken => fetch('/login_validation', { headers: { 'Authorization': 'Bearer ' + idToken } }));
-
-            # For server-side password authentication (less common/recommended with Admin SDK for direct user login):
-            # You would generally use a client-side SDK for user sign-in flows.
-            # The Admin SDK is more for managing users (creation, deletion, etc.) and verifying tokens.
-
-            # To enable direct email/password sign-in from backend (NOT RECOMMENDED for production):
-            # This would require using Firebase REST API with API key (not Admin SDK service account key)
-            # and is generally not the recommended way for user sign-in.
-
-            # For this example, we will simulate a successful login if the user exists in Firebase Auth
-            # and is verified. In a real app, client-side would send Firebase ID token here.
+            print("Attempting to get user from Firebase...")  # Debug log
             user_record = auth.get_user_by_email(email)
-
-            # Check if password matches (this is NOT how Firebase Admin SDK directly verifies passwords for login)
-            # This is a placeholder; real Firebase authentication happens client-side for passwords.
-            # If `passwd` was a Firebase ID token from client, we would verify it here:
-            # decoded_token = auth.verify_id_token(passwd) # Assuming passwd is the ID token from client
-
-            # For now, if user exists in Firebase Auth and is verified, assume login success.
-            # This is a simplification for demonstration purposes.
-            if not user_record.email_verified:
-                flash("Please verify your email address before logging in.")
-                return redirect('/login')
-
-            # Set session variables
-            session['user_id'] = user_record.uid # Store Firebase UID in session
-            session['username'] = user_record.display_name
+            print(f"User found: {user_record.uid}")  # Debug log
+            
+            # If we get here, the user exists
+            session['user_id'] = user_record.uid
+            session['username'] = user_record.display_name or email
             session['is_verified'] = user_record.email_verified
             session.permanent = True
+            
+            if not user_record.email_verified:
+                print("User email not verified")  # Debug log
+                flash("Please verify your email address before logging in.")
+                return redirect('/login')
+                
+            print("Login successful, redirecting to home")  # Debug log
             flash("Login successful!")
             return redirect('/home')
-
-        except auth.AuthError as e: # Catch specific Firebase auth errors
-            print(f"Firebase Login error: {e.code} - {e.message}")
-            flash("Invalid email or password! Please try again.")
+            
+        except auth.UserNotFoundError as e:
+            print(f"User not found error: {str(e)}")  # Debug log
+            flash('Invalid email or password')
             return redirect('/login')
         except Exception as e:
-            print(f"General Login error: {str(e)}")
-            flash("An unexpected error occurred during login. Please try again.")
+            print(f"Firebase auth error: {str(e)}")  # Debug log
+            flash('An error occurred during login. Please try again.')
             return redirect('/login')
-    else:
-        flash("Already logged in!")
-        return redirect('/home')
+            
+    except Exception as e:
+        print(f"Login validation error: {str(e)}")  # Debug log
+        flash('An error occurred during login. Please try again.')
+        return redirect('/login')
 
 
 @app.route('/register')
@@ -469,41 +453,64 @@ def get_started():
 
 
 @app.route('/stokvels')
+@login_required
 def stokvels():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT s.id, s.name, s.purpose, s.monthly_contribution, 
-                               s.target_amount, s.target_date, s.created_at,
-                               COUNT(sm.user_id) as member_count
-                        FROM stokvels s
-                        LEFT JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                        GROUP BY s.id
-                        ORDER BY s.created_at DESC
-                    """)
-                    stokvels = cur.fetchall()
+    user_id = session['user_id']
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get all stokvels, and if the current user is a member, their role
+                cur.execute("""
+                    SELECT 
+                        s.id, s.name, s.description, s.monthly_contribution, 
+                        s.target_amount, s.target_date, s.created_at,
+                        s.total_pool, -- Include total_pool
+                        COUNT(sm.user_id) as member_count,
+                        COALESCE(curr_member.role, 'none') as current_user_role -- Get current user's role or 'none'
+                    FROM stokvels s
+                    LEFT JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    LEFT JOIN stokvel_members curr_member ON s.id = curr_member.stokvel_id AND curr_member.user_id = %s
+                    GROUP BY s.id, s.name, s.description, s.monthly_contribution, 
+                             s.target_amount, s.target_date, s.created_at, s.total_pool, curr_member.role
+                    ORDER BY s.created_at DESC
+                """, (user_id,))
+                stokvels_tuples = cur.fetchall()
 
-                    cur.execute("""
-                        SELECT s.id, s.name, s.purpose, s.monthly_contribution, 
-                               s.target_amount, s.target_date, s.created_at
-                        FROM stokvels s
-                        JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                        WHERE sm.user_id = %s
-                        ORDER BY s.created_at DESC
-                    """, (user_id,))
-                    my_stokvels = cur.fetchall()
+                # Convert all stokvels tuples to dictionaries
+                stokvel_keys_all = ['id', 'name', 'description', 'monthly_contribution',
+                                    'target_amount', 'target_date', 'created_at',
+                                    'total_pool', 'member_count', 'role']
+                stokvels_list = []
+                for s_tuple in stokvels_tuples:
+                    stokvels_list.append(dict(zip(stokvel_keys_all, s_tuple)))
 
-            return render_template('stokvels.html', stokvels=stokvels, my_stokvels=my_stokvels)
-        except Exception as e:
-            print(f"Stokvels page error: {e}")
-            flash("An error occurred while loading stokvels. Please try again.")
-            return redirect('/home')
-    else:
-        flash("Please log in to view stokvels.")
-        return redirect('/login')
+                # Get user's stokvels (the ones they are directly a member of)
+                cur.execute("""
+                    SELECT 
+                        s.id, s.name, s.description, s.monthly_contribution, 
+                        s.target_amount, s.target_date, s.created_at,
+                        s.total_pool, -- Include total_pool
+                        sm.role -- Get the member's role
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE sm.user_id = %s
+                    ORDER BY s.created_at DESC
+                """, (user_id,))
+                my_stokvels_tuples = cur.fetchall()
+
+                # Convert user's stokvels tuples to dictionaries
+                stokvel_keys_my = ['id', 'name', 'description', 'monthly_contribution',
+                                   'target_amount', 'target_date', 'created_at',
+                                   'total_pool', 'role']
+                my_stokvels_list = []
+                for ms_tuple in my_stokvels_tuples:
+                    my_stokvels_list.append(dict(zip(stokvel_keys_my, ms_tuple)))
+
+        return render_template('stokvels.html', stokvels=stokvels_list, my_stokvels=my_stokvels_list)
+    except Exception as e:
+        print(f"Stokvels page error: {e}")
+        flash("An error occurred while loading stokvels. Please try again.")
+        return redirect('/home')
 
 @app.route('/create_stokvel', methods=['POST'])
 @login_required
@@ -513,36 +520,34 @@ def create_stokvel():
         return redirect('/login')
 
     name = request.form.get('name')
-    purpose = request.form.get('purpose')
+    description = request.form.get('description')
     monthly_contribution = request.form.get('monthly_contribution')
     target_amount = request.form.get('target_amount')
     target_date = request.form.get('target_date') # Format 'YYYY-MM-DD'
 
-    if not all([name, purpose, monthly_contribution, target_amount, target_date]):
+    if not all([name, description, monthly_contribution, target_amount, target_date]):
         flash("All fields are required to create a stokvel.")
         return redirect('/stokvels')
 
     try:
         monthly_contribution = float(monthly_contribution)
         target_amount = float(target_amount)
-        # Ensure target_date is a valid date object if needed by DB driver or helper
-        # For psycopg2, string 'YYYY-MM-DD' is usually fine.
 
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 # Insert new stokvel
                 cur.execute("""
-                    INSERT INTO stokvels (name, purpose, monthly_contribution, target_amount, target_date)
-                    VALUES (%s, %s, %s, %s, %s) RETURNING id
-                """, (name, purpose, monthly_contribution, target_amount, target_date))
+                    INSERT INTO stokvels (name, description, monthly_contribution, target_amount, target_date, created_by)
+                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+                """, (name, description, monthly_contribution, target_amount, target_date, session['user_id']))
                 stokvel_id = cur.fetchone()[0]
                 conn.commit()
 
                 # Add creator as a member
                 cur.execute("""
-                    INSERT INTO stokvel_members (stokvel_id, user_id)
-                    VALUES (%s, %s)
-                """, (stokvel_id, session['user_id'])) # Use Firebase UID here
+                    INSERT INTO stokvel_members (stokvel_id, user_id, role)
+                    VALUES (%s, %s, 'admin')
+                """, (stokvel_id, session['user_id']))
                 conn.commit()
 
         flash(f"Stokvel '{name}' created successfully!")
@@ -709,10 +714,10 @@ def savings_goals():
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, name, target_amount, current_amount, deadline
+                    SELECT id, name, target_amount, current_amount, target_date, status, created_at
                     FROM savings_goals
                     WHERE user_id = %s
-                    ORDER BY deadline ASC
+                    ORDER BY target_date ASC
                 """, (user_id,))
                 goals = cur.fetchall()
 
@@ -728,9 +733,9 @@ def create_savings_goal():
     user_id = session['user_id']
     name = request.form.get('name')
     target_amount = request.form.get('target_amount')
-    deadline = request.form.get('deadline') # Format 'YYYY-MM-DD'
+    target_date = request.form.get('target_date') # Format 'YYYY-MM-DD'
 
-    if not all([name, target_amount, deadline]):
+    if not all([name, target_amount, target_date]):
         flash("All fields are required to create a savings goal.")
         return redirect('/savings_goals')
 
@@ -741,9 +746,9 @@ def create_savings_goal():
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    INSERT INTO savings_goals (user_id, name, target_amount, current_amount, deadline)
-                    VALUES (%s, %s, %s, %s, %s) RETURNING id
-                """, (user_id, name, target_amount, 0.0, deadline))
+                    INSERT INTO savings_goals (user_id, name, target_amount, current_amount, target_date, status)
+                    VALUES (%s, %s, %s, %s, %s, 'active')
+                """, (user_id, name, target_amount, 0.0, target_date))
                 conn.commit()
 
         flash(f"Savings goal '{name}' created successfully!")
@@ -759,34 +764,59 @@ def create_savings_goal():
 @app.route('/stokvel/<int:stokvel_id>/members')
 @login_required
 def view_stokvel_members(stokvel_id):
+    print(f"DEBUG: Navigating to view_stokvel_members for stokvel_id: {stokvel_id}") # Debug log
     try:
+        user_id = session.get('user_id') # Ensure user_id is retrieved for permission checks
+        if not user_id:
+            flash("Please log in to view stokvel members.")
+            return redirect('/login')
+
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Get stokvel details
-                cur.execute("SELECT name, purpose, monthly_contribution, target_amount, target_date FROM stokvels WHERE id = %s", (stokvel_id,))
-                stokvel = cur.fetchone()
-                if not stokvel:
+                # Get stokvel details, including id and description
+                cur.execute("SELECT id, name, description, purpose, monthly_contribution, target_amount, target_date, total_pool FROM stokvels WHERE id = %s", (stokvel_id,))
+                stokvel_tuple = cur.fetchone()
+                print(f"DEBUG: Stokvel query result: {stokvel_tuple}") # Debug log
+
+                if not stokvel_tuple:
                     flash("Stokvel not found.")
+                    print(f"DEBUG: Stokvel with id {stokvel_id} not found.") # Debug log
                     return redirect('/stokvels')
 
-                # Get members of the stokvel
+                # Convert stokvel tuple to a dictionary
+                stokvel_keys = ['id', 'name', 'description', 'purpose', 'monthly_contribution', 'target_amount', 'target_date', 'total_pool']
+                stokvel = dict(zip(stokvel_keys, stokvel_tuple))
+                print(f"DEBUG: Converted stokvel dict: {stokvel}") # Debug log
+
+                # Get members of the stokvel, including their role and member_id
                 cur.execute("""
-                    SELECT u.username, u.email
+                    SELECT u.username, u.email, sm.role, sm.id as member_id
                     FROM users u
                     JOIN stokvel_members sm ON u.firebase_uid = sm.user_id
                     WHERE sm.stokvel_id = %s
                 """, (stokvel_id,))
-                members = cur.fetchall()
+                members_tuples = cur.fetchall()
+                print(f"DEBUG: Members query result: {members_tuples}") # Debug log
 
-                # Check if current user is a member
+                # Convert members tuples to a list of dictionaries
+                members_list = []
+                member_keys = ['username', 'email', 'role', 'member_id']
+                for member_tuple in members_tuples:
+                    members_list.append(dict(zip(member_keys, member_tuple)))
+                print(f"DEBUG: Converted members list: {members_list}") # Debug log
+
+                # Check if current user is a member and their role
                 cur.execute("""
-                    SELECT 1 FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s
-                """, (stokvel_id, session['user_id']))
-                is_member = cur.fetchone() is not None
+                    SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s
+                """, (stokvel_id, user_id))
+                user_stokvel_role = cur.fetchone()
+                is_member = user_stokvel_role is not None
+                user_role_in_stokvel = user_stokvel_role[0] if user_stokvel_role else 'none'
+                print(f"DEBUG: Current user {user_id} role in stokvel {stokvel_id}: {user_role_in_stokvel}, Is member: {is_member}") # Debug log
 
-        return render_template('stokvel_members.html', stokvel=stokvel, members=members, stokvel_id=stokvel_id, is_member=is_member)
+        return render_template('stokvel_members.html', stokvel=stokvel, members=members_list, stokvel_id=stokvel_id, is_member=is_member, user_role_in_stokvel=user_role_in_stokvel)
     except Exception as e:
-        print(f"Error viewing stokvel members: {e}")
+        print(f"ERROR: view_stokvel_members failed: {e}") # Enhanced error logging
         flash("An error occurred while loading stokvel members. Please try again.")
         return redirect('/stokvels')
 
@@ -863,13 +893,25 @@ def payment_methods():
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, card_number_last_four, card_type, is_default
+                    SELECT id, type, details, is_default, created_at
                     FROM payment_methods
                     WHERE user_id = %s
                     ORDER BY is_default DESC, id DESC
                 """, (user_id,))
                 methods = cur.fetchall()
-        return render_template('payment_methods.html', payment_methods=methods)
+                
+                # Convert tuples to dictionaries
+                payment_methods_list = []
+                for method in methods:
+                    payment_methods_list.append({
+                        'id': method[0],
+                        'type': method[1],
+                        'details': method[2],
+                        'is_default': method[3],
+                        'created_at': method[4]
+                    })
+                
+        return render_template('payment_methods.html', payment_methods=payment_methods_list)
     except Exception as e:
         print(f"Payment methods page error: {e}")
         flash("An error occurred while loading payment methods. Please try again.")
@@ -879,21 +921,19 @@ def payment_methods():
 @login_required
 def add_payment_method():
     user_id = session['user_id']
-    card_number = request.form.get('card_number')
-    card_type = request.form.get('card_type')
-    is_default = request.form.get('is_default') == 'on' # Checkbox value
+    payment_type = request.form.get('type')
+    details = request.form.get('details')
+    is_default = request.form.get('is_default') == 'true' # Checkbox value
 
-    if not all([card_number, card_type]):
-        flash("Card number and type are required.")
+    if not all([payment_type, details]):
+        flash("Payment type and details are required.")
         return redirect('/payment_methods')
-
-    # Basic validation and storage of last four digits
-    if len(card_number) < 4:
-        flash("Please enter at least the last four digits of the card number.")
-        return redirect('/payment_methods')
-    card_number_last_four = card_number[-4:] # Store only last four for security
 
     try:
+        # Validate that details is valid JSON
+        import json
+        details_json = json.loads(details)
+
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 # If new method is set as default, clear existing default
@@ -901,12 +941,15 @@ def add_payment_method():
                     cur.execute("UPDATE payment_methods SET is_default = FALSE WHERE user_id = %s", (user_id,))
                 
                 cur.execute("""
-                    INSERT INTO payment_methods (user_id, card_number_last_four, card_type, is_default)
+                    INSERT INTO payment_methods (user_id, type, details, is_default)
                     VALUES (%s, %s, %s, %s)
-                """, (user_id, card_number_last_four, card_type, is_default))
+                """, (user_id, payment_type, details, is_default))
                 conn.commit()
 
         flash("Payment method added successfully!")
+        return redirect('/payment_methods')
+    except json.JSONDecodeError:
+        flash("Invalid payment details format. Please provide valid JSON.")
         return redirect('/payment_methods')
     except Exception as e:
         print(f"Error adding payment method: {e}")
@@ -920,35 +963,28 @@ def set_default_payment_method():
     method_id = request.form.get('method_id')
 
     if not method_id:
-        flash("Payment method ID is required.")
+        flash("Method ID is required.")
         return redirect('/payment_methods')
-    
+
     try:
-        method_id = int(method_id)
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Ensure the method belongs to the user
-                cur.execute("SELECT 1 FROM payment_methods WHERE id = %s AND user_id = %s", (method_id, user_id))
-                if not cur.fetchone():
-                    flash("Invalid payment method.")
-                    return redirect('/payment_methods')
-
-                # Clear existing default for the user
+                # Clear existing default
                 cur.execute("UPDATE payment_methods SET is_default = FALSE WHERE user_id = %s", (user_id,))
                 # Set new default
-                cur.execute("UPDATE payment_methods SET is_default = TRUE WHERE id = %s", (method_id,))
+                cur.execute("""
+                    UPDATE payment_methods 
+                    SET is_default = TRUE 
+                    WHERE id = %s AND user_id = %s
+                """, (method_id, user_id))
                 conn.commit()
 
         flash("Default payment method updated successfully!")
         return redirect('/payment_methods')
-    except ValueError:
-        flash("Invalid method ID.")
-        return redirect('/payment_methods')
     except Exception as e:
         print(f"Error setting default payment method: {e}")
-        flash("An error occurred while setting the default payment method. Please try again.")
+        flash("An error occurred while updating the default payment method. Please try again.")
         return redirect('/payment_methods')
-
 
 @app.route('/delete_payment_method', methods=['POST'])
 @login_required
@@ -957,41 +993,19 @@ def delete_payment_method():
     method_id = request.form.get('method_id')
 
     if not method_id:
-        flash("Payment method ID is required.")
+        flash("Method ID is required.")
         return redirect('/payment_methods')
-    
+
     try:
-        method_id = int(method_id)
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Ensure the method belongs to the user and is not the last one if it's the default
-                cur.execute("SELECT is_default FROM payment_methods WHERE id = %s AND user_id = %s", (method_id, user_id))
-                method_data = cur.fetchone()
-
-                if not method_data:
-                    flash("Invalid payment method.")
-                    return redirect('/payment_methods')
-                
-                is_default_method = method_data[0]
-
-                # If it's the default, consider if there are other methods to make default
-                if is_default_method:
-                    cur.execute("SELECT COUNT(*) FROM payment_methods WHERE user_id = %s", (user_id,))
-                    count = cur.fetchone()[0]
-                    if count == 1:
-                        # Allow deleting last default method, but warn
-                        flash("Warning: Deleting your last payment method.")
-                    else:
-                        flash("Cannot delete default payment method. Please set another as default first.")
-                        return redirect('/payment_methods')
-
-                cur.execute("DELETE FROM payment_methods WHERE id = %s AND user_id = %s", (method_id, user_id))
+                cur.execute("""
+                    DELETE FROM payment_methods 
+                    WHERE id = %s AND user_id = %s
+                """, (method_id, user_id))
                 conn.commit()
 
         flash("Payment method deleted successfully!")
-        return redirect('/payment_methods')
-    except ValueError:
-        flash("Invalid method ID.")
         return redirect('/payment_methods')
     except Exception as e:
         print(f"Error deleting payment method: {e}")
@@ -1271,3 +1285,4 @@ def handle_chat():
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
+
