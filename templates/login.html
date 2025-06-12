@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html
 <html>
   <head>
   <title>Login - kasiKash</title>
@@ -329,24 +329,459 @@
         <p>Phone: +27 11 123 4567</p>
         <p>Address: Johannesburg, South Africa</p>
       </div>
+=======
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - KasiKash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ocean-1': '#0061ff',
+                        'ocean-2': '#60efff',
+                        'ocean-3': '#00ff87',
+                        'ocean-4': '#0061ff',
+                        'ocean-5': '#45caff',
+                    },
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-reverse': 'float-reverse 8s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        'float-reverse': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(10px)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000428, #004e92);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .rainbow-gradient {
+            background: linear-gradient(135deg, 
+                rgba(0, 97, 255, 0.8) 0%, 
+                rgba(96, 239, 255, 0.8) 25%, 
+                rgba(0, 255, 135, 0.8) 50%, 
+                rgba(0, 97, 255, 0.8) 75%, 
+                rgba(69, 202, 255, 0.8) 100%);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .glow {
+            text-shadow: 0 0 10px rgba(96, 239, 255, 0.7);
+        }
+        
+        .btn-glow {
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 135, 0.8);
+            transform: translateY(-3px);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .login-card {
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .input-field {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            border-color: #60efff;
+            box-shadow: 0 0 0 3px rgba(96, 239, 255, 0.3);
+        }
+        
+        .input-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus + .input-icon {
+            color: #60efff;
+            transform: scale(1.1);
+        }
+        
+        .remember-checkbox:checked {
+            background-color: #60efff;
+            border-color: #60efff;
+        }
+        
+        /* Globe Animation Container */
+        .globe-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.2;
+        }
+        
+        /* Page transition animation */
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000428, #004e92);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        
+        .transition-logo {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Ensure content is visible */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- 3D Globe Animation -->
+    <div class="globe-container" id="globe"></div>
+    
+    <!-- Page Transition Overlay -->
+    <div class="page-transition" id="pageTransition">
+        <div class="transition-logo">KasiKash</div>
+>>>>>>> 48b245db8286828263a76b6012ef2125059a3ce0
     </div>
-    <hr>
-    <div class="footer-bottom">
-      &copy; 2024 KasiKash. All rights reserved.
-    </div>
-  </footer>
+    
+    <div class="content-wrapper relative z-10">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="text-2xl font-bold text-gradient glow">KasiKash</a>
+                <ul class="hidden md:flex space-x-8">
+                    <li><a href="/" class="nav-link text-white hover:text-cyan-300 font-medium">Home</a></li>
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
+                    <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                    <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a></li>
+                    <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                </ul>
+                <button class="md:hidden text-white">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </nav>
 
-  <!-- Add Bootstrap JS and Popper.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
-  
-  <!-- Auto-dismiss alerts after 5 seconds -->
-  <script>
-    window.setTimeout(function() {
-      $(".alert").fadeTo(500, 0).slideUp(500, function(){
-        $(this).remove(); 
-      });
-    }, 5000);
-  </script>
+        <!-- Main Content -->
+        <main class="min-h-screen flex items-center justify-center pt-20 pb-12 px-4">
+            <div class="login-card max-w-md w-full p-8 rounded-2xl shadow-xl transform transition-all duration-500">
+                <!-- Flash Messages -->
+                <div class="mb-6">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert {% if category == 'success' %}bg-green-500{% else %}bg-red-500{% endif %} text-white p-4 rounded-lg mb-4">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                
+                <h2 class="text-3xl font-bold mb-8 text-center text-gradient">Welcome Back</h2>
+                
+                <form action="/login_validation" method="POST" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="relative">
+                        <input type="email" name="email" placeholder="Email" required
+                            class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2">
+                        <i class="fas fa-envelope input-icon absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="password" id="password" name="password" placeholder="Password" required
+                            class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2">
+                        <i class="fas fa-lock input-icon absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="remember" class="remember-checkbox h-5 w-5 rounded border-gray-300 text-ocean-2 focus:ring-ocean-2">
+                            <span class="text-gray-300">Remember me</span>
+                        </label>
+                        <a href="/reset" class="text-ocean-2 hover:text-ocean-3 text-sm font-medium">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-glow w-full bg-gradient-to-r from-ocean-2 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-lg transition duration-300 transform hover:scale-105">
+                        Login <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                    
+                    <div class="text-center text-gray-300">
+                        Don't have an account? 
+                        <a href="/register" class="text-ocean-2 hover:text-ocean-3 font-medium">Register</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-black bg-opacity-50 text-white py-12">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
+                        <p class="text-gray-400 mb-4">
+                            Your digital stokvel platform for community wealth building.
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-3 transition duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-5 transition duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-4 transition duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
+                        <ul class="space-y-2">
+                            <li><a href="/" class="text-gray-400 hover:text-white">Home</a></li>
+                            <li><a href="/features" class="text-gray-400 hover:text-white">Features</a></li>
+                            <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
+                            <li><a href="/about" class="text-gray-400 hover:text-white">About</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Licenses</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
+                        <ul class="space-y-2">
+                            <li class="text-gray-400">Email: support@kasikash.co.za</li>
+                            <li class="text-gray-400">Phone: +27 11 123 4567</li>
+                            <li class="text-gray-400">Address: Johannesburg, South Africa</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                    <p>&copy; 2024 KasiKash. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize 3D Globe
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show content immediately
+            document.querySelector('.content-wrapper').style.opacity = '1';
+            
+            // Create a simple 3D globe using Three.js
+            const container = document.getElementById('globe');
+            if (container) {
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                container.appendChild(renderer.domElement);
+
+                // Create a sphere (globe)
+                const geometry = new THREE.SphereGeometry(5, 32, 32);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x45caff,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.2
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+                scene.add(sphere);
+
+                // Position camera
+                camera.position.z = 8;
+
+                // Animation loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    sphere.rotation.x += 0.001;
+                    sphere.rotation.y += 0.002;
+                    renderer.render(scene, camera);
+                }
+
+                // Handle window resize
+                window.addEventListener('resize', function() {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+
+                animate();
+            }
+            
+            // Initialize GSAP animations
+            if (typeof gsap !== 'undefined') {
+                // Animate in the login form
+                gsap.from('.login-card', {
+                    y: 20,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power2.out"
+                });
+                
+                // Animate form elements sequentially
+                gsap.utils.toArray('.login-card > *').forEach((el, i) => {
+                    gsap.from(el, {
+                        y: 10,
+                        opacity: 0,
+                        duration: 0.5,
+                        ease: "power2.out",
+                        delay: 0.2 + (i * 0.1)
+                    });
+                });
+                
+                // Auto-dismiss alerts after 5 seconds
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    setTimeout(() => {
+                        gsap.to(alert, {
+                            opacity: 0,
+                            height: 0,
+                            padding: 0,
+                            margin: 0,
+                            duration: 0.5,
+                            onComplete: () => alert.remove()
+                        });
+                    }, 5000);
+                });
+            }
+        });
+        
+        // Smooth transition when navigating back to welcome page
+        document.querySelectorAll('a[href="/"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const transition = document.getElementById('pageTransition');
+                if (transition) {
+                    transition.style.display = 'flex';
+                    if (typeof gsap !== 'undefined') {
+                        gsap.to(transition, {
+                            opacity: 1,
+                            duration: 0.8,
+                            ease: "power2.in",
+                            onComplete: () => {
+                                window.location.href = '/';
+                            }
+                        });
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
