@@ -131,3 +131,6 @@ dmypy.json
 # Miniconda installers
 Miniconda3-latest-Linux-x86_64.sh
 Miniconda3-latest-Linux-x86_64.sh.1
+
+# Firebase service account key
+firebase-service-account.json
