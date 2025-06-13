@@ -10,11 +10,9 @@ import support
 import datetime
 from functools import wraps
 import psycopg2
-# Removed smtplib and email.mime imports
 from dotenv import load_dotenv
 import openai
 from flask_wtf.csrf import CSRFProtect
-# Removed secrets and string imports
 import firebase_admin
 from firebase_admin import credentials, auth
 
