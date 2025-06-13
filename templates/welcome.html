@@ -176,6 +176,48 @@
             z-index: 0;
             opacity: 0.3;
         }
+
+        /* Dropdown styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .contact-info {
+            color: #fff;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .contact-info i {
+            color: #60efff;
+            width: 20px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -186,12 +228,24 @@
         <!-- Navbar -->
         <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300">
             <div class="container mx-auto flex justify-between items-center">
-                <a href="/" class="text-2xl font-bold text-gradient glow">KasiKash</a>
+                <a href="/" class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto animate-float">
+                    <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                </a>
                 <ul class="hidden md:flex space-x-8">
                     <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
                     <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
                     <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
-                    <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a></li>
+                    <li class="dropdown">
+                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a>
+                        <div class="dropdown-content">
+                            <div class="contact-info">
+                                <p class="mb-3"><i class="fas fa-envelope"></i> Email: support@kasikash.co.za</p>
+                                <p class="mb-3"><i class="fas fa-phone"></i> Phone: +27 11 123 4567</p>
+                                <p><i class="fas fa-map-marker-alt"></i> Address: Johannesburg, South Africa</p>
+                            </div>
+                        </div>
+                    </li>
                     <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
                 </ul>
                 <button class="md:hidden text-white">
@@ -268,169 +322,6 @@
                         </p>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Pricing Section -->
-        <section class="py-20 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden">
-            <div class="container mx-auto px-4">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">Choose Your Plan</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                        From testing the waters to building wealth empires, we have a plan that grows with your community dreams.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <!-- Free Plan -->
-                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
-                        <div class="p-8">
-                            <div class="text-6xl mb-6 text-center text-ocean-2 animate-float">🆓</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Free</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-2">R0<span class="text-lg font-normal text-gray-300">/month</span></p>
-                            <ul class="space-y-4 mb-8">
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 5 Members</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Monthly Tips & Resources</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Pay-as-you-go)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Pay-as-you-go)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (6.00% p.a.)</span>
-                                </li>
-                            </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-2 to-ocean-2 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-3 hover:to-ocean-3">
-                                Get Started Free
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Silver Plan -->
-                    <div class="card-hover bg-gray-900 bg-opacity-70 rounded-2xl overflow-hidden border-2 border-ocean-3 transform transition-all duration-500 hover:-translate-y-5 relative">
-                        <div class="absolute top-0 right-0 bg-ocean-3 text-black px-6 py-1 rounded-bl-lg font-bold">Most Popular</div>
-                        <div class="p-8">
-                            <div class="text-6xl mb-6 text-center text-ocean-3 animate-float-reverse">🥈</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Silver</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-3">R50<span class="text-lg font-normal text-gray-300">/month</span></p>
-                            <ul class="space-y-4 mb-8">
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 10 Members (+R50 per 10 more)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Monthly Learning Session</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Up to 10% Discount)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Up to 10% Discount)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (6.25% p.a.)</span>
-                                </li>
-                            </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-3 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-4 hover:to-ocean-4">
-                                Choose Silver
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Gold Plan -->
-                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
-                        <div class="p-8">
-                            <div class="text-6xl mb-6 text-center text-ocean-5 animate-float">🥇</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Gold</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-5">R100<span class="text-lg font-normal text-gray-300">/month</span></p>
-                            <ul class="space-y-4 mb-8">
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 15 Members (+R75 per 10 more)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Group Coach Access</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Up to 30% Discount)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Up to 30% Discount)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (6.75% p.a.)</span>
-                                </li>
-                            </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-5 to-ocean-5 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-2 hover:to-ocean-2">
-                                Choose Gold
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Platinum Plan -->
-                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
-                        <div class="p-8">
-                            <div class="text-6xl mb-6 text-center text-ocean-4 animate-float-reverse">💎</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Platinum</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-4">R150<span class="text-lg font-normal text-gray-300">/month</span></p>
-                            <ul class="space-y-4 mb-8">
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 20 Members (+R100 per 10 more)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Executive Coach</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">0.5 Hour Quarterly Check-in</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Up to 50% Discount)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Exhibitor Stand</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Up to 50% Discount)</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (7.25% p.a.)</span>
-                                </li>
-                            </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-4 to-ocean-4 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-5 hover:to-ocean-5">
-                                Choose Platinum
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <p class="text-center text-gray-400 mt-12">
-                    All plans include our core stokvel management tools and 24/7 customer support.
-                </p>
             </div>
         </section>
 

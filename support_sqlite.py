@@ -20,7 +20,6 @@ DB_FILE = "kasikash.db"
 
 @contextmanager
 def db_connection():
-    conn = None
     try:
         conn = sqlite3.connect(DB_FILE)
         conn.row_factory = sqlite3.Row
@@ -30,38 +29,25 @@ def db_connection():
         print(f"Database connection error: {e}")
         raise e
     finally:
-        if conn:
+        if 'conn' in locals():
             conn.close()
 
 @contextmanager
 def db_cursor():
-    conn = None
-    cursor = None
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        conn.row_factory = sqlite3.Row
+    with db_connection() as conn:
         cursor = conn.cursor()
-        yield cursor
-        conn.commit()
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        print(f"Database cursor error: {e}")
-        raise e
-    finally:
-        if cursor:
+        try:
+            yield cursor
+        finally:
             cursor.close()
-        if conn:
-            conn.close()
 
 def verify_db_connection():
     """Verify database connection and return True if successful"""
     try:
         with db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT 1")
-            cursor.close()
-            return True
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                return True
     except Exception as e:
         print(f"Database connection error: {e}")
         return False
@@ -72,12 +58,11 @@ def execute_query(operation, query, params=None):
 
     Args:
         operation (str): 'search', 'insert', 'update', or 'delete'.
-        query (str): The SQL query string with placeholders (%s or ?).
+        query (str): The SQL query string with placeholders (?).
         params (tuple, optional): A tuple of values to substitute into the query.
 
     Returns:
         list: Results of the query for 'search' operation, otherwise None.
-        int: For 'insert' operations, returns the lastrowid (inserted row ID).
     """
     conn = None
     cur = None
@@ -88,20 +73,7 @@ def execute_query(operation, query, params=None):
         print(f"Executing {operation} query: {query}")
         print(f"With parameters: {params}")
         
-        # Convert PostgreSQL %s placeholders to SQLite ? placeholders
-        if params and '%s' in query:
-            query = query.replace('%s', '?')
-        
-        # Remove RETURNING clause for SQLite compatibility
-        if 'RETURNING' in query.upper():
-            query = query.split('RETURNING')[0].strip()
-            print(f"Modified query (removed RETURNING): {query}")
-        
-        # Execute with or without parameters
-        if params:
-            cur.execute(query, params)
-        else:
-            cur.execute(query)
+        cur.execute(query, params)
 
         if operation == 'search':
             results = cur.fetchall()
@@ -110,11 +82,13 @@ def execute_query(operation, query, params=None):
         else:
             # For insert, update, delete, commit changes
             conn.commit()
-            # For insert operations, return the lastrowid
-            if operation == 'insert':
-                lastrowid = cur.lastrowid
-                print(f"Insert result (lastrowid): {lastrowid}")
-                return lastrowid
+            # If it's an insert with RETURNING, fetch the result
+            if operation == 'insert' and 'RETURNING' in query.upper():
+                result = cur.fetchone()
+                print(f"Insert result: {result}")
+                if result is None:
+                    print("Warning: No result returned from RETURNING clause")
+                return result
             return None # Return None for other operations
 
     except (sqlite3.Error, Exception) as e:
@@ -137,10 +111,8 @@ def close_db(connection=None, cursor=None):
     :param cursor:
     :return: close connection
     """
-    if cursor:
-        cursor.close()
-    if connection:
-        connection.close()
+    cursor.close()
+    connection.close()
 
 def generate_df(df):
     """
@@ -186,8 +158,6 @@ def init_database():
                     firebase_uid TEXT UNIQUE,
                     username TEXT NOT NULL,
                     email TEXT UNIQUE NOT NULL,
-                    notification_preferences TEXT DEFAULT 'email',
-                    two_factor_enabled BOOLEAN DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
@@ -231,9 +201,6 @@ def init_database():
                 )
             ''')
             
-            # Run database migrations
-            migrate_database(cursor)
-            
             conn.commit()
             print("✅ Database tables created successfully!")
             return True
@@ -241,32 +208,6 @@ def init_database():
     except Exception as e:
         print(f"❌ Error creating database tables: {e}")
         return False
-
-def migrate_database(cursor):
-    """Add missing columns to existing tables"""
-    try:
-        # Check if notification_preferences column exists in users table
-        cursor.execute("PRAGMA table_info(users)")
-        columns = [column[1] for column in cursor.fetchall()]
-        
-        # Add notification_preferences column if it doesn't exist
-        if 'notification_preferences' not in columns:
-            cursor.execute('''
-                ALTER TABLE users 
-                ADD COLUMN notification_preferences TEXT DEFAULT 'email'
-            ''')
-            print("✅ Added notification_preferences column to users table")
-        
-        # Add two_factor_enabled column if it doesn't exist
-        if 'two_factor_enabled' not in columns:
-            cursor.execute('''
-                ALTER TABLE users 
-                ADD COLUMN two_factor_enabled BOOLEAN DEFAULT 0
-            ''')
-            print("✅ Added two_factor_enabled column to users table")
-            
-    except Exception as e:
-        print(f"❌ Error during database migration: {e}")
 
 # Import all the plotting functions from the original support.py
 # (These functions should work the same with SQLite)
