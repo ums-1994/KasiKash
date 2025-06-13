@@ -1,17 +1,10 @@
 import os
-<<<<<<< HEAD
-import sqlite3
-=======
 import psycopg2
->>>>>>> origin/main
 from dotenv import load_dotenv
 from contextlib import contextmanager
 import datetime
 import pandas as pd
-<<<<<<< HEAD
-=======
 # import mysql.connector  # pip install mysql-connector-python
->>>>>>> origin/main
 import plotly
 import plotly.express as px
 import json
@@ -23,18 +16,6 @@ warnings.filterwarnings("ignore")
 
 load_dotenv()
 
-<<<<<<< HEAD
-# SQLite database file
-DB_FILE = "kasikash.db"
-
-@contextmanager
-def db_connection():
-    conn = None
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        conn.row_factory = sqlite3.Row
-        print(f"Successfully connected to SQLite database: {DB_FILE}")
-=======
 # Database connection parameters
 DB_NAME = os.getenv('DB_NAME')
 DB_USER = os.getenv('DB_USER')
@@ -54,63 +35,30 @@ def db_connection():
         )
         conn.autocommit = False
         print(f"Successfully connected to database: {DB_NAME}")
->>>>>>> origin/main
         yield conn
     except Exception as e:
         print(f"Database connection error: {e}")
         raise e
     finally:
-<<<<<<< HEAD
-        if conn:
-=======
         if 'conn' in locals():
->>>>>>> origin/main
             conn.close()
 
 @contextmanager
 def db_cursor():
-<<<<<<< HEAD
-    conn = None
-    cursor = None
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        yield cursor
-        conn.commit()
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        print(f"Database cursor error: {e}")
-        raise e
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-=======
     with db_connection() as conn:
         cursor = conn.cursor()
         try:
             yield cursor
         finally:
             cursor.close()
->>>>>>> origin/main
 
 def verify_db_connection():
     """Verify database connection and return True if successful"""
     try:
         with db_connection() as conn:
-<<<<<<< HEAD
-            cursor = conn.cursor()
-            cursor.execute("SELECT 1")
-            cursor.close()
-            return True
-=======
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
                 return True
->>>>>>> origin/main
     except Exception as e:
         print(f"Database connection error: {e}")
         return False
@@ -121,26 +69,15 @@ def execute_query(operation, query, params=None):
 
     Args:
         operation (str): 'search', 'insert', 'update', or 'delete'.
-<<<<<<< HEAD
-        query (str): The SQL query string with placeholders (%s or ?).
-=======
         query (str): The SQL query string with placeholders (%s).
->>>>>>> origin/main
         params (tuple, optional): A tuple of values to substitute into the query.
 
     Returns:
         list: Results of the query for 'search' operation, otherwise None.
-<<<<<<< HEAD
-        int: For 'insert' operations, returns the lastrowid (inserted row ID).
-=======
->>>>>>> origin/main
     """
     conn = None
     cur = None
     try:
-<<<<<<< HEAD
-        conn = sqlite3.connect(DB_FILE)
-=======
         conn = psycopg2.connect(
             dbname=DB_NAME,
             user=DB_USER,
@@ -148,30 +85,12 @@ def execute_query(operation, query, params=None):
             host=DB_HOST,
             port=DB_PORT
         )
->>>>>>> origin/main
         cur = conn.cursor()
 
         print(f"Executing {operation} query: {query}")
         print(f"With parameters: {params}")
         
-<<<<<<< HEAD
-        # Convert PostgreSQL %s placeholders to SQLite ? placeholders
-        if params and '%s' in query:
-            query = query.replace('%s', '?')
-        
-        # Remove RETURNING clause for SQLite compatibility
-        if 'RETURNING' in query.upper():
-            query = query.split('RETURNING')[0].strip()
-            print(f"Modified query (removed RETURNING): {query}")
-        
-        # Execute with or without parameters
-        if params:
-            cur.execute(query, params)
-        else:
-            cur.execute(query)
-=======
         cur.execute(query, params)
->>>>>>> origin/main
 
         if operation == 'search':
             results = cur.fetchall()
@@ -180,16 +99,6 @@ def execute_query(operation, query, params=None):
         else:
             # For insert, update, delete, commit changes
             conn.commit()
-<<<<<<< HEAD
-            # For insert operations, return the lastrowid
-            if operation == 'insert':
-                lastrowid = cur.lastrowid
-                print(f"Insert result (lastrowid): {lastrowid}")
-                return lastrowid
-            return None # Return None for other operations
-
-    except (sqlite3.Error, Exception) as e:
-=======
             # If it's an insert with RETURNING, fetch the result
             if operation == 'insert' and 'RETURNING' in query.upper():
                 result = cur.fetchone()
@@ -200,7 +109,6 @@ def execute_query(operation, query, params=None):
             return None # Return None for other operations
 
     except (psycopg2.Error, Exception) as e:
->>>>>>> origin/main
         if conn:
             conn.rollback()
         print(f"Database error during {operation}: {str(e)}")
@@ -213,8 +121,6 @@ def execute_query(operation, query, params=None):
         if conn:
             conn.close()
 
-<<<<<<< HEAD
-=======
 
 # Use this function for SQLITE3
 # def connect_db():
@@ -251,7 +157,6 @@ def execute_query(operation, query, params=None):
 #     return conn, cursor
 
 
->>>>>>> origin/main
 def close_db(connection=None, cursor=None):
     """
     close database connection
@@ -259,16 +164,9 @@ def close_db(connection=None, cursor=None):
     :param cursor:
     :return: close connection
     """
-<<<<<<< HEAD
-    if cursor:
-        cursor.close()
-    if connection:
-        connection.close()
-=======
     cursor.close()
     connection.close()
 
->>>>>>> origin/main
 
 def generate_df(df):
     """
@@ -286,10 +184,7 @@ def generate_df(df):
     df['Week'] = df['Date'].dt.isocalendar().week
     return df
 
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/main
 def num2MB(num):
     """
         num: int, float
@@ -304,193 +199,6 @@ def num2MB(num):
     else:
         return f'{float("%.2f" % (num / 1000000000))}B'
 
-<<<<<<< HEAD
-# Initialize database with required tables
-def init_database():
-    """Initialize the SQLite database with required tables"""
-    try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
-            
-            # Create users table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    firebase_uid TEXT UNIQUE,
-                    username TEXT NOT NULL,
-                    email TEXT UNIQUE NOT NULL,
-                    notification_preferences TEXT DEFAULT 'email',
-                    two_factor_enabled BOOLEAN DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            
-            # Create stokvels table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS stokvels (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    purpose TEXT,
-                    monthly_contribution REAL,
-                    target_amount REAL,
-                    target_date DATE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            
-            # Create stokvel_members table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS stokvel_members (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    stokvel_id INTEGER,
-                    user_id INTEGER,
-                    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (stokvel_id) REFERENCES stokvels (id),
-                    FOREIGN KEY (user_id) REFERENCES users (id)
-                )
-            ''')
-            
-            # Create contributions table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS contributions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    stokvel_id INTEGER,
-                    user_id INTEGER,
-                    amount REAL NOT NULL,
-                    contribution_date DATE DEFAULT CURRENT_DATE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (stokvel_id) REFERENCES stokvels (id),
-                    FOREIGN KEY (user_id) REFERENCES users (id)
-                )
-            ''')
-            
-            # Run database migrations
-            migrate_database(cursor)
-            
-            conn.commit()
-            print("✅ Database tables created successfully!")
-            return True
-            
-    except Exception as e:
-        print(f"❌ Error creating database tables: {e}")
-        return False
-
-def migrate_database(cursor):
-    """Add missing columns to existing tables"""
-    try:
-        # Check if notification_preferences column exists in users table
-        cursor.execute("PRAGMA table_info(users)")
-        columns = [column[1] for column in cursor.fetchall()]
-        
-        # Add notification_preferences column if it doesn't exist
-        if 'notification_preferences' not in columns:
-            cursor.execute('''
-                ALTER TABLE users 
-                ADD COLUMN notification_preferences TEXT DEFAULT 'email'
-            ''')
-            print("✅ Added notification_preferences column to users table")
-        
-        # Add two_factor_enabled column if it doesn't exist
-        if 'two_factor_enabled' not in columns:
-            cursor.execute('''
-                ALTER TABLE users 
-                ADD COLUMN two_factor_enabled BOOLEAN DEFAULT 0
-            ''')
-            print("✅ Added two_factor_enabled column to users table")
-            
-    except Exception as e:
-        print(f"❌ Error during database migration: {e}")
-
-# Import all the plotting functions from the original support.py
-# (These functions should work the same with SQLite)
-
-def top_tiles(df=None):
-    """Generate top tiles for dashboard"""
-    if df is None:
-        return []
-    
-    total_expense = df['Amount(₹)'].sum()
-    total_income = df[df['Expense'] == 'Income']['Amount(₹)'].sum()
-    total_expense_excluding_income = df[df['Expense'] != 'Income']['Amount(₹)'].sum()
-    total_savings = total_income - total_expense_excluding_income
-    
-    tiles = [
-        {'title': 'Total Income', 'value': f'₹{num2MB(total_income)}', 'color': 'success'},
-        {'title': 'Total Expense', 'value': f'₹{num2MB(total_expense_excluding_income)}', 'color': 'danger'},
-        {'title': 'Total Savings', 'value': f'₹{num2MB(total_savings)}', 'color': 'info'},
-        {'title': 'Total Transactions', 'value': len(df), 'color': 'warning'}
-    ]
-    
-    return tiles
-
-def meraPie(df, names, values, hole=0, hole_text="", hole_font=14, height=200, width=200, margin=None):
-    """Create a pie chart"""
-    fig = px.pie(df, names=names, values=values, hole=hole, height=height, width=width)
-    if hole_text:
-        fig.add_annotation(text=hole_text, x=0.5, y=0.5, font=dict(size=hole_font), showarrow=False)
-    if margin:
-        fig.update_layout(margin=margin)
-    return plot(fig, output_type='div', include_plotlyjs=False)
-
-def meraBarChart(df=None, x=None, y=None, color=None, x_label=None, y_label=None, height=None, width=None,
-                 show_legend=False, show_xtick=True, show_ytick=True, x_tickangle=0, y_tickangle=0, barmode='relative'):
-    """Create a bar chart"""
-    fig = px.bar(df, x=x, y=y, color=color, height=height, width=width, barmode=barmode)
-    fig.update_layout(
-        showlegend=show_legend,
-        xaxis=dict(showticklabels=show_xtick, tickangle=x_tickangle),
-        yaxis=dict(showticklabels=show_ytick, tickangle=y_tickangle)
-    )
-    if x_label:
-        fig.update_xaxis(title=x_label)
-    if y_label:
-        fig.update_yaxis(title=y_label)
-    return plot(fig, output_type='div', include_plotlyjs=False)
-
-def meraLine(df, x, y, color, slider=False, show_legend=True, height=250):
-    """Create a line chart"""
-    fig = px.line(df, x=x, y=y, color=color, height=height)
-    fig.update_layout(showlegend=show_legend)
-    if slider:
-        fig.update_xaxes(rangeslider_visible=True)
-    return plot(fig, output_type='div', include_plotlyjs=False)
-
-def meraScatter(df, x, y, color, y_label, slider=False, height=250):
-    """Create a scatter plot"""
-    fig = px.scatter(df, x=x, y=y, color=color, height=height)
-    fig.update_yaxes(title=y_label)
-    if slider:
-        fig.update_xaxes(rangeslider_visible=True)
-    return plot(fig, output_type='div', include_plotlyjs=False)
-
-def meraHeatmap(df, x, y, height=250, title=""):
-    """Create a heatmap"""
-    pivot_table = df.pivot_table(index=y, columns=x, aggfunc='size', fill_value=0)
-    fig = px.imshow(pivot_table, height=height, title=title)
-    return plot(fig, output_type='div', include_plotlyjs=False)
-
-def month_bar(df, height=250):
-    """Create a monthly bar chart"""
-    monthly_data = df.groupby('Month_name')['Amount(₹)'].sum().reset_index()
-    fig = px.bar(monthly_data, x='Month_name', y='Amount(₹)', height=height)
-    return plot(fig, output_type='div', include_plotlyjs=False)
-
-def meraSunburst(df, height=300):
-    """Create a sunburst chart"""
-    fig = px.sunburst(df, path=['Expense', 'Note'], values='Amount(₹)', height=height)
-    return plot(fig, output_type='div', include_plotlyjs=False)
-
-def get_user_data(user_id):
-    """Get user data by user_id"""
-    try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users WHERE firebase_uid = ?", (user_id,))
-            return cursor.fetchone()
-    except Exception as e:
-        print(f"Error getting user data: {e}")
-        return None 
-=======
 
 def top_tiles(df=None):
     """
@@ -776,4 +484,3 @@ def get_user_data(user_id):
     if user_data:
         return dict(zip(['id', 'username', 'email'], user_data[0]))
     return None
->>>>>>> origin/main

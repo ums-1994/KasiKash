@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="100" cy="100" r="90" fill="url(#gradient)" />
+    
+    <!-- Piggy Bank Body -->
+    <path d="M140 80C140 93.255 129.255 104 116 104H84C70.745 104 60 93.255 60 80V60C60 46.745 70.745 36 84 36H116C129.255 36 140 46.745 140 60V80Z" fill="#FF69B4" />
+    
+    <!-- Coin Slot -->
+    <rect x="90" y="30" width="20" height="10" rx="5" fill="#FFD700" />
+    
+    <!-- Piggy Face -->
+    <circle cx="85" cy="70" r="8" fill="white" />
+    <circle cx="115" cy="70" r="8" fill="white" />
+    <path d="M95 85C95 85 100 95 105 85" stroke="white" stroke-width="3" stroke-linecap="round" />
+    
+    <!-- Digital Currency Symbol -->
+    <path d="M70 120L130 120" stroke="#00FF87" stroke-width="4" stroke-linecap="round" />
+    <path d="M80 110L120 110" stroke="#60EFFF" stroke-width="4" stroke-linecap="round" />
+    <path d="M90 130L110 130" stroke="#0061FF" stroke-width="4" stroke-linecap="round" />
+    
+    <!-- Gradient Definition -->
+    <defs>
+        <linearGradient id="gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0061FF" />
+            <stop offset="50%" stop-color="#60EFFF" />
+            <stop offset="100%" stop-color="#00FF87" />
+        </linearGradient>
+    </defs>
+</svg> 
