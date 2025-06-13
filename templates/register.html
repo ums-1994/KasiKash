@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -29,6 +30,8 @@
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
                         'float-reverse': 'float-reverse 8s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+                        'wave': 'wave 3s ease-in-out infinite',
                     },
                     keyframes: {
                         float: {
@@ -39,6 +42,16 @@
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(20px)' },
                         },
+                        'pulse-glow': {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(96, 239, 255, 0.5)' },
+                            '50%': { boxShadow: '0 0 30px rgba(96, 239, 255, 0.8)' },
+                        },
+                        'wave': {
+                            '0%, 100%': { transform: 'translateX(0) translateY(0)' },
+                            '25%': { transform: 'translateX(5px) translateY(-5px)' },
+                            '50%': { transform: 'translateX(0) translateY(0)' },
+                            '75%': { transform: 'translateX(-5px) translateY(5px)' },
+                        },
                     },
                 }
             }
@@ -47,12 +60,24 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #000428, #004e92);
+            background: linear-gradient(135deg, #000428 0%, #004e92 50%, #000428 100%);
             color: white;
             overflow-x: hidden;
             min-height: 100vh;
             margin: 0;
             padding: 0;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(96, 239, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
         
         h1, h2, h3, h4, h5, h6 {
@@ -151,17 +176,16 @@
         }
         
         .register-card {
-            position: relative;
-            z-index: 2;
-            backdrop-filter: blur(20px);
             background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            max-width: 450px;
+            width: 100%;
+            transform: translateY(0);
             transition: all 0.3s ease;
             transform-style: preserve-3d;
-            width: 100%;
-            max-width: 450px;
-            margin: 0 auto;
-            border-radius: 1.5rem;
             overflow: hidden;
         }
         
@@ -172,16 +196,25 @@
         }
         
         .input-field {
-            background: rgba(0, 0, 0, 0.2);
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            color: white;
             transition: all 0.3s ease;
             backdrop-filter: blur(5px);
         }
         
         .input-field:focus {
+            outline: none;
             border-color: #60efff;
-            box-shadow: 0 0 15px rgba(96, 239, 255, 0.3);
-            transform: translateY(-2px);
+            box-shadow: 0 0 0 2px rgba(96, 239, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .input-icon {
@@ -203,7 +236,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 0;
-            opacity: 0.2;
+            opacity: 0.15;
         }
         
         #globe {
@@ -248,12 +281,100 @@
         main {
             flex: 1;
         }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #60efff, #00ff87);
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(96, 239, 255, 0.3);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 25px rgba(96, 239, 255, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        /* Feature icon animations */
+        .feature-icon {
+            transition: all 0.3s ease;
+        }
+
+        .feature-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+            color: #60efff;
+        }
+
+        /* Wave shape */
+        .wave-shape {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, transparent, rgba(96, 239, 255, 0.1));
+            clip-path: polygon(
+                0% 100%,
+                100% 100%,
+                100% 0%,
+                75% 50%,
+                50% 0%,
+                25% 50%,
+                0% 0%
+            );
+            animation: wave 3s ease-in-out infinite;
+        }
+
+        /* Particles container */
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="antialiased">
+    <div id="particles-js"></div>
     <div class="globe-container">
         <div id="globe"></div>
     </div>
+    <div class="wave-shape"></div>
 
     <div class="content-wrapper">
         <!-- Navbar -->
@@ -302,40 +423,37 @@
                     <form method="post" action="/registration" class="space-y-6">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-300">Username</label>
-                            <div class="relative">
-                                <input type="text" name="username" required
-                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none"
+                        <div class="space-y-6">
+                            <div>
+                                <label for="username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                                <input type="text" id="username" name="username" required
+                                    class="input-field"
                                     placeholder="Enter your username">
-                                <i class="fas fa-user input-icon absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-300">Email</label>
-                            <div class="relative">
-                                <input type="email" name="email" required
-                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none"
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                                <input type="email" id="email" name="email" required
+                                    class="input-field"
                                     placeholder="Enter your email">
-                                <i class="fas fa-envelope input-icon absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-300">Password</label>
-                            <div class="relative">
-                                <input type="password" name="password" required
-                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none"
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                                <input type="password" id="password" name="password" required
+                                    class="input-field"
                                     placeholder="Enter your password">
-                                <i class="fas fa-lock input-icon absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <div>
+                                <label for="confirm_password" class="block text-sm font-medium text-gray-300 mb-2">Retype Password</label>
+                                <input type="password" id="confirm_password" name="confirm_password" required
+                                    class="input-field"
+                                    placeholder="Confirm your password">
+                            </div>
+                            <div>
+                                <button type="submit" class="btn-primary">
+                                    Create Account
+                                </button>
                             </div>
                         </div>
-
-                        <button type="submit"
-                            class="btn-glow w-full font-bold py-3 px-6 rounded-lg transition duration-300">
-                            Register
-                        </button>
                     </form>
 
                     <div class="mt-6 text-center space-y-4">
@@ -354,46 +472,100 @@
     </div>
 
     <script>
-        // Initialize Three.js scene
+        // Initialize particles.js
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: '#60efff' },
+                shape: { type: 'circle' },
+                opacity: {
+                    value: 0.5,
+                    random: true,
+                    anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false }
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: { enable: true, speed: 2, size_min: 0.1, sync: false }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#60efff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false,
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: { enable: true, mode: 'repulse' },
+                    onclick: { enable: true, mode: 'push' },
+                    resize: true
+                },
+                modes: {
+                    repulse: { distance: 100, duration: 0.4 },
+                    push: { particles_nb: 4 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Enhanced Three.js globe
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById('globe').appendChild(renderer.domElement);
 
-        // Create globe
-        const geometry = new THREE.SphereGeometry(50, 32, 32);
+        // Create enhanced globe
+        const geometry = new THREE.SphereGeometry(70, 64, 64);
         const material = new THREE.MeshPhongMaterial({
             color: 0x60efff,
             transparent: true,
-            opacity: 0.15,
-            wireframe: true
+            opacity: 0.1,
+            wireframe: true,
+            wireframeLinewidth: 1
         });
         const globe = new THREE.Mesh(geometry, material);
         scene.add(globe);
 
-        // Add lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        // Enhanced lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
         scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xffffff, 0.6);
-        pointLight.position.set(80, 80, 80);
+        const pointLight = new THREE.PointLight(0xffffff, 0.4);
+        pointLight.position.set(100, 100, 100);
         scene.add(pointLight);
 
-        // Position camera
-        camera.position.z = 120;
+        // Add hemisphere light for better depth
+        const hemiLight = new THREE.HemisphereLight(0x60efff, 0x00ff87, 0.3);
+        scene.add(hemiLight);
 
-        // Animation
+        camera.position.z = 150;
+
+        // Enhanced animation
         function animate() {
             requestAnimationFrame(animate);
-            globe.rotation.y += 0.0002;
+            globe.rotation.y += 0.0001;
+            globe.rotation.x += 0.00005;
             renderer.render(scene, camera);
         }
 
-        // Handle window resize
+        // Enhanced window resize handling
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            particlesJS('particles-js', 'particles');
         });
 
         animate();
