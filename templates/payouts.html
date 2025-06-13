@@ -37,13 +37,19 @@
                 {% for payout in payouts %}
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+<<<<<<< HEAD
                         {% if payout[2] is not none %}
                             {{ payout[2] }}
+=======
+                        {% if payout.transaction_date is not none %}
+                            {{ payout.transaction_date.strftime('%Y-%m-%d %H:%M') }}
+>>>>>>> origin/main
                         {% else %}
                             N/A
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+<<<<<<< HEAD
                         {{ payout[3] }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -59,6 +65,23 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500">
                         {{ payout[1] }}
+=======
+                        {{ payout.stokvel_name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        R{{ payout.amount }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if payout.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif payout.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}>
+                            {{ payout.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        {{ payout.description }}
+>>>>>>> origin/main
                     </td>
                 </tr>
                 {% endfor %}
@@ -72,7 +95,10 @@
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Request Payout</h3>
                 <form action="{{ url_for('request_payout') }}" method="POST">
+<<<<<<< HEAD
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+=======
+>>>>>>> origin/main
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="stokvel_id">
                             Select Stokvel

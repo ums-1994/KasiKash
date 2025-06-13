@@ -38,6 +38,7 @@
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {# Safely access and format the date #}
+<<<<<<< HEAD
                         {% if contribution[2] is not none %}
                             {{ contribution[2] }}
                         {% else %}
@@ -60,6 +61,30 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500">
                         {{ contribution[1] }}
+=======
+                        {% if contribution.transaction_date is not none %}
+                            {{ contribution.transaction_date.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            N/A {# Or handle as needed if it's still a string or None #}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ contribution.stokvel_name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        R{{ contribution.amount }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if contribution.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif contribution.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}>
+                            {{ contribution.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        {{ contribution.description }}
+>>>>>>> origin/main
                     </td>
                 </tr>
                 {% endfor %}
@@ -73,7 +98,10 @@
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Make Contribution</h3>
                 <form action="{{ url_for('make_contribution') }}" method="POST">
+<<<<<<< HEAD
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+=======
+>>>>>>> origin/main
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="stokvel_id">
                             Select Stokvel

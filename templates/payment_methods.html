@@ -15,14 +15,20 @@
         {% for method in payment_methods %}
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-start">
+<<<<<<< HEAD
                 <h2 class="text-xl font-semibold mb-2">{{ method[2] }}</h2>
                 {% if method[3] %}
+=======
+                <h2 class="text-xl font-semibold mb-2">{{ method.type }}</h2>
+                {% if method.is_default %}
+>>>>>>> origin/main
                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                     Default
                 </span>
                 {% endif %}
             </div>
             <div class="space-y-2">
+<<<<<<< HEAD
                 <p class="text-gray-600">****{{ method[1] }}</p>
                 <p class="text-sm text-gray-500">Added on {{ method[4] }}</p>
             </div>
@@ -31,6 +37,15 @@
                 <form action="/set_default_payment_method" method="POST" class="inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="method_id" value="{{ method[0] }}">
+=======
+                <p class="text-gray-600">{{ method.details }}</p>
+                <p class="text-sm text-gray-500">Added on {{ method.created_at.strftime('%Y-%m-%d') }}</p>
+            </div>
+            <div class="mt-4 flex space-x-2">
+                {% if not method.is_default %}
+                <form action="/set_default_payment_method" method="POST" class="inline">
+                    <input type="hidden" name="method_id" value="{{ method.id }}">
+>>>>>>> origin/main
                     <button type="submit" 
                             class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                         Set as Default
@@ -38,8 +53,12 @@
                 </form>
                 {% endif %}
                 <form action="/delete_payment_method" method="POST" class="inline">
+<<<<<<< HEAD
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="method_id" value="{{ method[0] }}">
+=======
+                    <input type="hidden" name="method_id" value="{{ method.id }}">
+>>>>>>> origin/main
                     <button type="submit" 
                             class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                         Delete
@@ -56,12 +75,20 @@
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Add Payment Method</h3>
                 <form action="/add_payment_method" method="POST">
+<<<<<<< HEAD
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="card_type">
                             Payment Type
                         </label>
                         <select name="card_type" id="card_type" required
+=======
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="type">
+                            Payment Type
+                        </label>
+                        <select name="type" id="type" required
+>>>>>>> origin/main
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                             <option value="bank_account">Bank Account</option>
                             <option value="credit_card">Credit Card</option>
@@ -70,12 +97,21 @@
                         </select>
                     </div>
                     <div class="mb-4">
+<<<<<<< HEAD
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="card_number">
                             Card/Account Number
                         </label>
                         <input type="text" name="card_number" id="card_number" required
                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                placeholder="Enter card or account number">
+=======
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="details">
+                            Payment Details (JSON)
+                        </label>
+                        <textarea name="details" id="details" required
+                                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                  placeholder='{"account_number": "1234567890", "bank_name": "Example Bank"}'></textarea>
+>>>>>>> origin/main
                     </div>
                     <div class="mb-4">
                         <label class="flex items-center">

@@ -143,4 +143,4 @@ config.py
 .env
 *.env
 
-# Database Configuration 
+# Database Configuration

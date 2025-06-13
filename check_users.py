@@ -1,9 +1,13 @@
 import sys
 import os
+from dotenv import load_dotenv
 
 # Add current directory to path so we can import support
 sys.path.append('.')
 from support import execute_query
+
+# Load environment variables
+load_dotenv()
 
 def check_users():
     """Check users in the database"""
