@@ -10,20 +10,18 @@ import support
 import datetime
 from functools import wraps
 import psycopg2
-# Removed smtplib and email.mime imports
 from dotenv import load_dotenv
 import openai
 from flask_wtf.csrf import CSRFProtect
-# Removed secrets and string imports
 import firebase_admin
 from firebase_admin import credentials, auth
 
-# New imports for email sending
+# Email handling imports
 import smtplib
 import ssl
 from email.message import EmailMessage
 
-# New imports for SendGrid
+# SendGrid imports
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
@@ -433,17 +431,6 @@ def registration():
         flash("Already a user is logged-in!")
         return redirect('/home')
 
-# Removed the old /verify-email/<token> route as Firebase handles this
-# @app.route('/verify-email/<token>')
-# def verify_email(token):
-#     # ... (old verification logic)
-#     pass
-
-# Removed old send_email function as it's no longer needed for Firebase email verification
-# @app.route('/send_email_old') # Dummy route to avoid conflict if you had it
-# def send_email_old():
-#     pass
-
 
 @app.route('/get_started')
 def get_started():
@@ -451,6 +438,27 @@ def get_started():
         return redirect('/home')
     return redirect('/login')
 
+
+@app.route('/test_nav')
+@login_required
+def test_nav():
+    return render_template('test_nav.html')
+
+@app.route('/debug_session')
+def debug_session():
+    """Debug route to check session status"""
+    debug_info = {
+        'user_id_in_session': session.get('user_id', 'Not set'),
+        'all_session_keys': list(session.keys()),
+        'is_logged_in': 'user_id' in session
+    }
+    return f"""
+    <h1>Session Debug Info</h1>
+    <pre>{debug_info}</pre>
+    <p><a href="/login">Go to Login</a></p>
+    <p><a href="/home">Go to Home</a></p>
+    <p><a href="/test_nav">Go to Test Nav</a></p>
+    """
 
 @app.route('/stokvels')
 @login_required
@@ -1185,11 +1193,6 @@ def inject_user_name():
             user_name = user_data[0][0]
     return dict(user_name=user_name)
 
-# Removed old send_email function as it's no longer needed for Firebase email verification
-# The original send_email function definition was removed earlier.
-# This comment serves as a final confirmation that it should not exist here.
-
-
 @app.route('/pricing')
 def pricing():
     if 'user_id' in session:
@@ -1285,4 +1288,3 @@ def handle_chat():
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
-
