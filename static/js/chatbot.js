@@ -1,28 +1,49 @@
 document.addEventListener('DOMContentLoaded', () => {
     const chatbotContainer = document.getElementById('chatbot-container');
-    const chatbotToggle = document.getElementById('chatbot-toggle');
+    const chatbotMain = document.getElementById('chatbot-main'); // The main chatbot content wrapper
+    const chatbotFab = document.getElementById('chatbot-fab'); // The floating action button
+    const chatbotToggle = document.getElementById('chatbot-toggle'); // The minimize button inside the chat
     const chatMessages = document.getElementById('chatbot-messages');
     const userInput = document.getElementById('user-message');
     const sendButton = document.getElementById('send-message');
     const quickTipsBtn = document.getElementById('quick-tips');
     const quickTipsMenu = document.getElementById('quick-tips-menu');
     
-    let isMinimized = false;
     let isProcessing = false;
     
-    // Toggle chat window
+    // Initial state: chatbot starts minimized (class already on container)
+    // No need for isMinimized flag here, controlled by classList
+
+    // Function to set chatbot state
+    function setChatbotState(minimized) {
+        if (minimized) {
+            chatbotContainer.classList.add('minimized');
+            chatbotToggle.title = 'Open Chat';
+            chatbotToggle.textContent = '+';
+        } else {
+            chatbotContainer.classList.remove('minimized');
+            chatbotToggle.title = 'Minimize';
+            chatbotToggle.textContent = '−';
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom when opened
+        }
+    }
+
+    // Toggle chat window from header button
     chatbotToggle.addEventListener('click', () => {
-        isMinimized = !isMinimized;
-        chatbotToggle.textContent = isMinimized ? '+' : '−';
-        chatbotContainer.classList.toggle('minimized');
-        chatMessages.style.display = isMinimized ? 'none' : 'block';
-        document.getElementById('chatbot-input').style.display = isMinimized ? 'none' : 'flex';
+        const currentlyMinimized = chatbotContainer.classList.contains('minimized');
+        setChatbotState(!currentlyMinimized);
     });
 
-    // Allow clicking the header to minimize/maximize
+    // Open chat window from FAB
+    chatbotFab.addEventListener('click', () => {
+        setChatbotState(false); // Open the chatbot
+    });
+
+    // Allow clicking the header to minimize/maximize (excluding controls)
     document.getElementById('chatbot-header').addEventListener('click', (e) => {
-        if (e.target !== chatbotToggle && e.target !== quickTipsBtn) {
-            chatbotToggle.click();
+        if (e.target !== chatbotToggle && e.target !== quickTipsBtn && !e.target.closest('.chat-controls')) {
+            const currentlyMinimized = chatbotContainer.classList.contains('minimized');
+            setChatbotState(!currentlyMinimized);
         }
     });
     
@@ -174,19 +195,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function loadChatHistory() {
         const history = JSON.parse(localStorage.getItem('kasiChatHistory') || '[]');
-        history.forEach(msg => {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', `${msg.type}-message`);
-            messageDiv.innerHTML = msg.html || msg.text;
-            chatMessages.appendChild(messageDiv);
-        });
+        if (history.length > 0) {
+            history.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', `${msg.type}-message`);
+                messageDiv.innerHTML = msg.html || msg.text;
+                chatMessages.appendChild(messageDiv);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom after loading
+            return true; // History was loaded
+        }
+        return false; // No history
     }
     
-    // Load history on startup
-    loadChatHistory();
-    
-    // Add welcome message when page loads
-    window.addEventListener('load', () => {
+    // Load history on startup, add welcome message only if no history
+    const historyLoaded = loadChatHistory();
+    if (!historyLoaded) {
         addMessage('Hello! I\'m KasiKash Assistant. How can I help you today?', 'bot');
-    });
+    }
+
+    // Initial state check for FAB display (since it's minimized by default in HTML)
+    setChatbotState(true); 
 }); 

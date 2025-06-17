@@ -12,6 +12,7 @@
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Add New Member</h2>
         <form action="{{ url_for('add_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">Member Email</label>
                 <input type="email" name="email" id="email" required
@@ -68,6 +69,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {% if member.role != 'admin' or (member.role == 'admin' and members|selectattr('role', 'equalto', 'admin')|list|length > 1) %}
                             <form action="{{ url_for('remove_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" class="inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="member_id" value="{{ member.member_id }}">
                                 <button type="submit" onclick="return confirm('Are you sure you want to remove this member?')"
                                     class="text-red-600 hover:text-red-900 focus:outline-none">

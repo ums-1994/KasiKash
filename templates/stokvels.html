@@ -72,6 +72,7 @@
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Stokvel</h3>
                 <form action="{{ url_for('create_stokvel') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="space-y-4">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700">Stokvel Name</label>
