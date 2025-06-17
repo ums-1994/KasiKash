@@ -109,4 +109,32 @@ body {
     .main-content {
         margin-left: 0;
     }
+}
+
+/* Logo animations */
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.text-gradient {
+    background: linear-gradient(45deg, #059669, #10b981);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.glow {
+    text-shadow: 0 0 10px rgba(5, 150, 105, 0.3);
 } 
