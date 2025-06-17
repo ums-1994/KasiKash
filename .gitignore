@@ -132,5 +132,15 @@ dmypy.json
 Miniconda3-latest-Linux-x86_64.sh
 Miniconda3-latest-Linux-x86_64.sh.1
 
-# Firebase service account key
+# Firebase
 firebase-service-account.json
+*.json
+!package.json
+!package-lock.json
+
+# Configuration files
+config.py
+.env
+*.env
+
+# Database Configuration
