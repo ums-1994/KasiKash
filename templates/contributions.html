@@ -37,11 +37,10 @@
                 {% for contribution in contributions %}
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {# Safely access and format the date #}
                         {% if contribution.transaction_date is not none %}
                             {{ contribution.transaction_date.strftime('%Y-%m-%d %H:%M') }}
                         {% else %}
-                            N/A {# Or handle as needed if it's still a string or None #}
+                            N/A
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

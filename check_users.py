@@ -1,32 +1,35 @@
-import psycopg2
+import sys
+import os
+from dotenv import load_dotenv
+
+# Add current directory to path so we can import support
+sys.path.append('.')
+from support import execute_query
+
+# Load environment variables
+load_dotenv()
 
 def check_users():
-    # Connect to the database
-    conn = psycopg2.connect(
-        dbname='kasikash',
-        user='postgres',
-        password='12345',
-        host='localhost',
-        port='5432'
-    )
-    cursor = conn.cursor()
-
+    """Check users in the database"""
+    print("Checking users in database...")
+    print("=" * 40)
+    
     try:
-        # Query all users
-        cursor.execute("SELECT id, username, email FROM users ORDER BY id")
-        users = cursor.fetchall()
+        # Check if users table exists and has data
+        users = execute_query('search', "SELECT * FROM users")
         
-        print("\nExisting users in the database:")
-        print("ID | Username | Email")
-        print("-" * 50)
-        for user in users:
-            print(f"{user[0]} | {user[1]} | {user[2]}")
+        if users:
+            print(f"Found {len(users)} users:")
+            for user in users:
+                print(f"  ID: {user[0]}, Firebase UID: {user[1]}, Username: {user[2]}, Email: {user[3]}")
+        else:
+            print("No users found in database.")
             
+        # Check if the user is in session (this would be set during login)
+        print("\nNote: If you're logged in, check if your Firebase UID is stored in the session.")
+        
     except Exception as e:
         print(f"Error checking users: {e}")
-    finally:
-        cursor.close()
-        conn.close()
 
 if __name__ == "__main__":
     check_users() 
