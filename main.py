@@ -12,7 +12,7 @@ from functools import wraps
 import psycopg2
 from dotenv import load_dotenv
 import openai
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 import firebase_admin
 from firebase_admin import credentials, auth
 
@@ -214,7 +214,8 @@ def login():
         flash("Already a user is logged-in!")
         return redirect('/home')
     else:
-        return render_template("login.html")
+        csrf_token = generate_csrf()
+        return render_template("login.html", csrf_token=csrf_token)
 
 
 @app.route('/logout')
@@ -1285,6 +1286,10 @@ def handle_chat():
     except Exception as e:
         print(f"Error in handle_chat: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/features')
+def features():
+    return render_template('features.html')
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
