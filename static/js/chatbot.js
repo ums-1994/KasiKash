@@ -8,9 +8,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('send-message');
     const quickTipsBtn = document.getElementById('quick-tips');
     const quickTipsMenu = document.getElementById('quick-tips-menu');
+    const aiModeToggle = document.getElementById('ai-mode-toggle');
+    const currentMode = document.getElementById('current-mode');
     
     let isProcessing = false;
+    let isAIMode = true; // Default to AI mode
     
+    // Clear chat history on page load to start fresh
+    localStorage.removeItem('kasiChatHistory');
+    
+    // Load AI mode preference from localStorage
+    const savedAIMode = localStorage.getItem('kasiAIMode');
+    if (savedAIMode !== null) {
+        isAIMode = savedAIMode === 'true';
+        aiModeToggle.checked = isAIMode;
+        updateModeDisplay();
+    }
+    
+    // AI Mode Toggle Handler
+    aiModeToggle.addEventListener('change', () => {
+        isAIMode = aiModeToggle.checked;
+        localStorage.setItem('kasiAIMode', isAIMode.toString());
+        updateModeDisplay();
+        
+        // Add a mode change message
+        const modeMessage = isAIMode ? 
+            '🤖 Switched to AI Mode - Powered by Google Gemma 3n 4B' : 
+            '📋 Switched to Rule-based Mode - Quick responses';
+        addMessage(modeMessage, 'bot');
+    });
+    
+    function updateModeDisplay() {
+        if (isAIMode) {
+            currentMode.textContent = '🤖 AI Mode';
+            chatbotContainer.classList.remove('rule-based-mode');
+        } else {
+            currentMode.textContent = '📋 Rule-based Mode';
+            chatbotContainer.classList.add('rule-based-mode');
+        }
+    }
+
     // Initial state: chatbot starts minimized (class already on container)
     // No need for isMinimized flag here, controlled by classList
 

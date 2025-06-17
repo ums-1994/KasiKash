@@ -1,0 +1,29 @@
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=kasikash_db
+DB_USER=kasikash_user
+DB_PASSWORD=kasikash_password
+
+# Firebase Configuration
+FIREBASE_SERVICE_ACCOUNT_KEY_PATH=kasikashapp-4f72a-firebase-adminsdk-fbsvc-b3a75155f2.json
+FIREBASE_PROJECT_ID=kasikashapp-4f72a
+
+# Email Configuration (Gmail SMTP)
+MAIL_SENDER_EMAIL=umsibanda.1994@gmail.com
+MAIL_SENDER_NAME=KasiKash App
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=umsibanda.1994@gmail.com
+SMTP_PASSWORD=mego plxx yrln gwxr
+FROM_EMAIL=umsibanda.1994@gmail.com
+
+# SendGrid Configuration (for email sending)
+SENDGRID_API_KEY=your-sendgrid-api-key-here
+
+# OpenRouter Configuration (for chatbot using Google Gemma 3n 4B)
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+
+# Flask Configuration
+SECRET_KEY=your-super-secret-key-change-this-in-production
+FLASK_ENV=development 

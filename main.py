@@ -49,6 +49,7 @@ load_dotenv()
 # Debugging .env loading
 print(f"DEBUG: DB_NAME loaded from .env: {os.getenv('DB_NAME')}")
 print(f"DEBUG: FIREBASE_SERVICE_ACCOUNT_KEY_PATH from .env: {os.getenv('FIREBASE_SERVICE_ACCOUNT_KEY_PATH')}")
+print(f"DEBUG: OPENROUTER_API_KEY loaded from .env: {'Yes' if os.getenv('OPENROUTER_API_KEY') else 'No'}")
 
 # Debugging SendGrid environment variables
 print(f"DEBUG: SENDGRID_API_KEY loaded from .env: {os.getenv('SENDGRID_API_KEY')}")
@@ -72,12 +73,20 @@ app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session_data')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 Session(app)  # Initialize Flask-Session
 
-# Initialize OpenAI client at application level
+# Initialize OpenRouter client at application level
 try:
-    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    # Use requests method for OpenRouter since openai client has compatibility issues
+    import requests
+    openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+    if openrouter_api_key and openrouter_api_key != 'your-openrouter-api-key-here':
+        print("OpenRouter client initialized successfully with Google Gemma 3n 4B model.")
+        openrouter_available = True
+    else:
+        print("Warning: OpenRouter API key not found. Chat features will be disabled.")
+        openrouter_available = False
 except Exception as e:
-    print("Warning: OpenAI client not initialized. Chat features will be disabled.")
-    client = None
+    print(f"Warning: OpenRouter client not initialized. Chat features will be disabled. Error: {e}")
+    openrouter_available = False
 
 def login_required(f):
     @wraps(f)
@@ -1191,13 +1200,50 @@ def settings():
                 cur.execute("SELECT notification_preferences, two_factor_enabled FROM users WHERE firebase_uid = %s", (user_id,))
                 settings_data = cur.fetchone()
                 if settings_data:
-                    user_settings['notification_preferences'] = settings_data[0]
-                    user_settings['two_factor_enabled'] = settings_data[1]
+                    # Handle notification_preferences as JSON
+                    notification_prefs = settings_data[0]
+                    if isinstance(notification_prefs, dict):
+                        # Convert dict to template-friendly format
+                        user_settings['notification_preferences'] = 'both' if notification_prefs.get('email') and notification_prefs.get('sms') else 'email' if notification_prefs.get('email') else 'sms' if notification_prefs.get('sms') else 'none'
+                        user_settings['email_notifications'] = notification_prefs.get('email', False)
+                        user_settings['sms_notifications'] = notification_prefs.get('sms', False)
+                        user_settings['push_notifications'] = notification_prefs.get('push', False)
+                    elif isinstance(notification_prefs, str):
+                        # If it's a string, try to parse as JSON
+                        try:
+                            import json
+                            parsed_prefs = json.loads(notification_prefs)
+                            user_settings['notification_preferences'] = 'both' if parsed_prefs.get('email') and parsed_prefs.get('sms') else 'email' if parsed_prefs.get('email') else 'sms' if parsed_prefs.get('sms') else 'none'
+                            user_settings['email_notifications'] = parsed_prefs.get('email', False)
+                            user_settings['sms_notifications'] = parsed_prefs.get('sms', False)
+                            user_settings['push_notifications'] = parsed_prefs.get('push', False)
+                        except json.JSONDecodeError:
+                            # If JSON parsing fails, use default
+                            user_settings['notification_preferences'] = 'email'
+                            user_settings['email_notifications'] = True
+                            user_settings['sms_notifications'] = False
+                            user_settings['push_notifications'] = True
+                    else:
+                        # Default if None or other type
+                        user_settings['notification_preferences'] = 'email'
+                        user_settings['email_notifications'] = True
+                        user_settings['sms_notifications'] = False
+                        user_settings['push_notifications'] = True
+                    
+                    user_settings['two_factor_enabled'] = settings_data[1] or False
+                    user_settings['weekly_summary'] = True  # Default value
+                    user_settings['reminders_enabled'] = True  # Default value
                 else:
                     # Provide default settings if not found
                     user_settings['notification_preferences'] = 'email'
+                    user_settings['email_notifications'] = True
+                    user_settings['sms_notifications'] = False
+                    user_settings['push_notifications'] = True
                     user_settings['two_factor_enabled'] = False
-        return render_template('settings.html', user_settings=user_settings)
+                    user_settings['weekly_summary'] = True
+                    user_settings['reminders_enabled'] = True
+        print("user_settings:", user_settings)
+        return render_template('settings.html', user=user_settings)
     except Exception as e:
         print(f"Error loading settings: {e}")
         flash("An error occurred while loading settings. Please try again.")
@@ -1234,9 +1280,26 @@ def get_user_settings(user_id):
                 cur.execute("SELECT notification_preferences, two_factor_enabled FROM users WHERE firebase_uid = %s", (user_id,))
                 settings_data = cur.fetchone()
                 if settings_data:
+                    # Handle notification_preferences as JSON
+                    notification_prefs = settings_data[0]
+                    if isinstance(notification_prefs, dict):
+                        # If it's already a dict, use it directly
+                        notification_preferences = notification_prefs
+                    elif isinstance(notification_prefs, str):
+                        # If it's a string, try to parse as JSON
+                        try:
+                            import json
+                            notification_preferences = json.loads(notification_prefs)
+                        except json.JSONDecodeError:
+                            # If JSON parsing fails, use default
+                            notification_preferences = {'email': True, 'sms': False, 'push': True}
+                    else:
+                        # Default if None or other type
+                        notification_preferences = {'email': True, 'sms': False, 'push': True}
+                    
                     return {
-                        'notification_preferences': settings_data[0],
-                        'two_factor_enabled': settings_data[1]
+                        'notification_preferences': notification_preferences,
+                        'two_factor_enabled': settings_data[1] or False
                     }
                 return None
     except Exception as e:
@@ -1411,7 +1474,7 @@ def handle_chat():
         if not data or 'message' not in data:
             return jsonify({'error': 'No message provided'}), 400
 
-        user_message = data['message'].lower()
+        user_message = data['message']
         user_id = session.get('user_id')
         
         if not user_id:
@@ -1454,28 +1517,62 @@ def handle_chat():
                 """, (user_id,))
                 transactions = cur.fetchall()
 
-        # Simple rule-based response system
-        response = "I'm not sure how to help with that. You can ask me about your savings, stokvels, or recent transactions."
+        # Use OpenRouter with Google Gemma 3n 4B model
+        if openrouter_available:
+            try:
+                # Simplified system prompt for faster responses
+                system_prompt = f"You are KasiKash AI, a helpful assistant for stokvel (community savings). User: {username}, Saved: R{total_saved}, Stokvels: {len(stokvels)}. Be concise and helpful.\n\n"
+                full_message = f"{system_prompt}{user_message}"
+                
+                response = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openrouter_api_key}"},
+                    json={
+                        "model": "google/gemma-3n-e4b-it:free",
+                        "messages": [{"role": "user", "content": full_message}],
+                        "max_tokens": 300,  # Reduced for faster responses
+                        "temperature": 0.7
+                    },
+                    timeout=10  # 10 second timeout
+                )
+                
+                if response.status_code == 200:
+                    response_data = response.json()
+                    response = response_data['choices'][0]['message']['content']
+                else:
+                    print(f"OpenRouter API error: {response.status_code} - {response.text}")
+                    response = "I'm having trouble connecting to my AI service right now. Please try again later."
+                    
+            except requests.exceptions.Timeout:
+                print("OpenRouter API timeout")
+                response = "The AI service is taking too long to respond. Please try again."
+            except Exception as e:
+                print(f"OpenRouter API error: {e}")
+                response = "I'm having trouble connecting to my AI service right now. Please try again later or contact support if the issue persists."
+        else:
+            # Fallback to simple rule-based responses if OpenRouter is not available
+            user_message_lower = user_message.lower()
+            response = "I'm not sure how to help with that. You can ask me about your savings, stokvels, or recent transactions."
 
-        if "how much" in user_message and "saved" in user_message:
-            response = f"You have saved R{total_saved} in total across all your stokvels."
-        
-        elif "stokvel" in user_message:
-            if stokvels:
-                stokvel_list = "\n".join([f"- {s[0]}: R{s[1]} monthly" for s in stokvels])
-                response = f"You are a member of these stokvels:\n{stokvel_list}"
-            else:
-                response = "You are not currently a member of any stokvels."
-        
-        elif "recent" in user_message and "transaction" in user_message:
-            if transactions:
-                transaction_list = "\n".join([f"- {t[1]}: R{t[0]} ({t[2]}) on {t[3]}" for t in transactions])
-                response = f"Your recent transactions:\n{transaction_list}"
-            else:
-                response = "You don't have any recent transactions."
-        
-        elif "hello" in user_message or "hi" in user_message:
-            response = f"Hello {username}! How can I help you today? You can ask me about your savings, stokvels, or recent transactions."
+            if "how much" in user_message_lower and "saved" in user_message_lower:
+                response = f"You have saved R{total_saved} in total across all your stokvels."
+            
+            elif "stokvel" in user_message_lower:
+                if stokvels:
+                    stokvel_list = "\n".join([f"- {s[0]}: R{s[1]} monthly" for s in stokvels])
+                    response = f"You are a member of these stokvels:\n{stokvel_list}"
+                else:
+                    response = "You are not currently a member of any stokvels."
+            
+            elif "recent" in user_message_lower and "transaction" in user_message_lower:
+                if transactions:
+                    transaction_list = "\n".join([f"- {t[1]}: R{t[0]} ({t[2]}) on {t[3]}" for t in transactions])
+                    response = f"Your recent transactions:\n{transaction_list}"
+                else:
+                    response = "You don't have any recent transactions."
+            
+            elif "hello" in user_message_lower or "hi" in user_message_lower:
+                response = f"Hello {username}! How can I help you today? You can ask me about your savings, stokvels, or recent transactions."
 
         return jsonify({'response': response})
 
