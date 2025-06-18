@@ -405,14 +405,16 @@
                     </div>
 
                     <div class="flex items-center justify-between">
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            {{ form.remember(class="remember-checkbox h-5 w-5 rounded border-gray-300 text-ocean-2 focus:ring-ocean-2") }}
-                            <span class="text-gray-300">Remember me</span>
+                        <label class="flex items-center text-white">
+                            {{ form.remember(class="mr-2") }}
+                            Remember me
                         </label>
-                        <a href="/reset" class="text-ocean-2 hover:text-ocean-3 text-sm font-medium">Forgot password?</a>
+                        <a href="{{ url_for('forgot_password') }}" class="text-white hover:text-ocean-2 transition-colors duration-300">
+                            Forgot password?
+                        </a>
                     </div>
 
-                    {{ form.submit(class="btn-glow w-full bg-gradient-to-r from-ocean-2 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-lg transition duration-300 transform hover:scale-105") }}
+                    {{ form.submit(class="w-full py-3 px-6 rounded-full bg-gradient-to-r from-ocean-2 to-ocean-3 text-white font-semibold hover:from-ocean-3 hover:to-ocean-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ocean-2") }}
 
                     <div class="text-center text-gray-300">
                         Don't have an account?

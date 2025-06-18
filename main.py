@@ -1,39 +1,83 @@
-from flask import Flask, render_template, request, redirect, session, flash, jsonify, url_for
+from flask import Flask, render_template, request, redirect, session, flash, jsonify, url_for, Response, send_file
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 import pandas as pd
 import plotly
 import plotly.express as px
 import json
 import warnings
 import support
-import datetime
 from functools import wraps
 import psycopg2
+import psycopg2.extras
 from dotenv import load_dotenv
 import openai
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 import firebase_admin
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired, Email
 from firebase_admin import credentials, auth
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from flask_session import Session
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 # Email handling imports
 import smtplib
 import ssl
-from email.message import EmailMessage
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-# SendGrid imports
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-
-# New imports for Flask-WTF
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email, Length
-
-from flask_session import Session # Import Flask-Session
+from email.mime.multipart import MIMEMultipart
 from werkzeug.utils import secure_filename
+
+# Load environment variables
+load_dotenv()
+
+# Initialize Flask app
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
+
+UPLOAD_FOLDER = 'static/profile_pics'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+KYC_UPLOAD_FOLDER = 'static/kyc_docs'
+ALLOWED_KYC_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+app.config['KYC_UPLOAD_FOLDER'] = KYC_UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def allowed_kyc_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_KYC_EXTENSIONS
+
+# Initialize Firebase Admin SDK
+if not firebase_admin._apps:
+    cred = credentials.Certificate(os.getenv("FIREBASE_SERVICE_ACCOUNT_KEY_PATH", "firebase-service-account.json"))
+    firebase_admin.initialize_app(cred)
+
+# Database connection function
+def get_db():
+    try:
+        conn = psycopg2.connect(
+            dbname=os.getenv('DB_NAME'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            host=os.getenv('DB_HOST'),
+            port=os.getenv('DB_PORT')
+        )
+        return conn
+    except Exception as e:
+        print(f"Database connection error: {str(e)}")
+        return None
 
 # Define LoginForm class
 class LoginForm(FlaskForm):
@@ -42,10 +86,26 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
-warnings.filterwarnings("ignore")
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Send Reset Link')
 
-# Load environment variables
-load_dotenv()
+def create_firebase_user(email, password):
+    """Create a Firebase user account for an existing database user"""
+    try:
+        print(f"Attempting to create Firebase user for: {email}")
+        user = auth.create_user(
+            email=email,
+            password=password,
+            email_verified=True  # Since they've been using the account
+        )
+        print(f"Successfully created Firebase user: {user.uid}")
+        return user
+    except Exception as e:
+        print(f"Error creating Firebase user: {str(e)}")
+        return None
+
+warnings.filterwarnings("ignore")
 
 # Debugging .env loading
 print(f"DEBUG: DB_NAME loaded from .env: {os.getenv('DB_NAME')}")
@@ -56,16 +116,9 @@ print(f"DEBUG: OPENROUTER_API_KEY loaded from .env: {'Yes' if os.getenv('OPENROU
 print(f"DEBUG: SENDGRID_API_KEY loaded from .env: {os.getenv('SENDGRID_API_KEY')}")
 print(f"DEBUG: MAIL_SENDER_EMAIL loaded from .env: {os.getenv('MAIL_SENDER_EMAIL')}")
 
-# Initialize Firebase Admin SDK
-# Ensure your 'firebase-service-account.json' is in the root directory
-# You should have a FIREBASE_SERVICE_ACCOUNT_KEY_PATH in your .env pointing to this file.
-cred = credentials.Certificate(os.getenv("FIREBASE_SERVICE_ACCOUNT_KEY_PATH", "firebase-service-account.json"))
-firebase_admin.initialize_app(cred)
-
 # Set OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 csrf = CSRFProtect(app)  # Initialize CSRF protection
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -88,13 +141,6 @@ try:
 except Exception as e:
     print(f"Warning: OpenRouter client not initialized. Chat features will be disabled. Error: {e}")
     openrouter_available = False
-
-UPLOAD_FOLDER = 'static/profile_pics'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def login_required(f):
     @wraps(f)
@@ -136,6 +182,15 @@ def verification_required(f):
             return redirect('/login')
         return f(*args, **kwargs)
     return decorated_function
+
+# Helper function to get notification count (simulate for now)
+def get_notification_count(user_id):
+    # In a real application, this would query the database for unread notifications
+    # For now, let's use a session variable to simulate this.
+    # Initialize if not set, otherwise return current value
+    if 'notification_count' not in session:
+        session['notification_count'] = 2  # Default to 2 unread notifications for demonstration
+    return session.get('notification_count', 0)
 
 @app.route('/')
 def welcome():
@@ -194,6 +249,8 @@ def home():
             print(f"Database error: {str(e)}")
             # Continue with default values if database query fails
 
+        notification_count = get_notification_count(session.get('user_id')) # Get notification count
+
         return render_template('dashboard.html',
                             user_name=user_name,
                             current_balance=current_balance,
@@ -212,7 +269,8 @@ def home():
                             calendar_events=calendar_events,
                             savings_growth_chart_data=savings_growth_chart_data,
                             contribution_breakdown_chart_data=contribution_breakdown_chart_data,
-                            loan_trends_chart_data=loan_trends_chart_data)
+                            loan_trends_chart_data=loan_trends_chart_data,
+                            notification_count=notification_count) # Pass notification count
     except Exception as e:
         print(f"Dashboard error: {str(e)}")
         flash("Error loading dashboard. Please try again.")
@@ -302,12 +360,75 @@ def login_validation():
                 user_record = auth.get_user_by_email(email)
                 print(f"User found: {user_record.uid}")  # Debug log
 
-                # If we get here, the user exists
                 session.clear()  # Clear any existing session data
                 session['user_id'] = str(user_record.uid)  # Ensure it's a string
                 session['username'] = str(user_record.display_name or email)  # Ensure it's a string
                 session['is_verified'] = bool(user_record.email_verified)  # Ensure it's a boolean
                 session.permanent = bool(remember)  # Ensure it's a boolean
+
+                # Update local database with firebase_uid if not already present or different
+                try:
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            # Get current internal ID and firebase_uid from local db
+                            cur.execute("SELECT id, firebase_uid FROM users WHERE email = %s", (email,))
+                            user_data = cur.fetchone()
+                            
+                            if user_data:
+                                internal_user_id = user_data[0]
+                                old_firebase_uid = user_data[1]
+                                new_firebase_uid = user_record.uid
+
+                                if not old_firebase_uid or old_firebase_uid != new_firebase_uid:
+                                    print(f"Firebase UID mismatch or not set. Updating references for user {email}. Old: {old_firebase_uid}, New: {new_firebase_uid}")
+
+                                    # Update all tables referencing firebase_uid *before* updating users table
+                                    update_queries = [
+                                        ("UPDATE stokvels SET created_by = %s WHERE created_by = %s", (new_firebase_uid, old_firebase_uid)),
+                                        ("UPDATE stokvel_members SET firebase_uid = %s WHERE firebase_uid = %s", (new_firebase_uid, old_firebase_uid)), # Assuming stokvel_members uses firebase_uid, not user_id for FK to users.firebase_uid based on \d users output
+                                        ("UPDATE transactions SET user_id = %s WHERE user_id = %s", (internal_user_id, internal_user_id)), # This still uses internal_user_id, not firebase_uid
+                                        ("UPDATE chat_history SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
+                                        ("UPDATE chatbot_preferences SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
+                                        ("UPDATE payment_methods SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
+                                        ("UPDATE payouts SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
+                                        ("UPDATE savings_goals SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
+                                    ]
+                                    
+                                    for query, params in update_queries:
+                                        try:
+                                            # Special handling for transactions if it uses internal_user_id rather than firebase_uid as FK
+                                            if "FROM transactions t JOIN stokvels s ON t.stokvel_id = s.id WHERE t.user_id = %s" in query:
+                                                # This specific query from /contributions route has already been updated to use internal_user_id
+                                                # The update logic here in login_validation is for the foreign key reference from transactions.user_id to users.firebase_uid
+                                                # Based on \d users output: expenses_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)
+                                                # So, transactions.user_id references users.id, not users.firebase_uid
+                                                # We need to update existing transactions to ensure their user_id is the correct internal_user_id.
+                                                # We need to *ensure* that internal_user_id is stable and tied to firebase_uid.
+                                                # The current main.py does SELECT id FROM users WHERE firebase_uid = %s for internal_user_id.
+                                                # This logic below will update existing *user_id* in transactions to the correct *internal_user_id*.
+                                                # If user_id is already the correct internal_user_id then this update does nothing
+                                                # If it's an old internal_user_id, it will be updated.
+                                                print(f"Attempting to update transactions user_id from previous internal_user_id to current: {internal_user_id}")
+                                                cur.execute("UPDATE transactions SET user_id = %s WHERE user_id = (SELECT id FROM users WHERE firebase_uid = %s)", (internal_user_id, new_firebase_uid))
+                                            else:
+                                                print(f"Executing update query for related table: {query} with params {params}")
+                                                cur.execute(query, params)
+                                        except Exception as update_e:
+                                            print(f"Error updating related table {query}: {str(update_e)}")
+                                            # Log but don't stop the process, as some tables might not exist or have the column
+
+                                    # Now update the users table with the new firebase_uid
+                                    print(f"Updating users.firebase_uid for {email} to {new_firebase_uid}")
+                                    cur.execute("UPDATE users SET firebase_uid = %s WHERE email = %s", (new_firebase_uid, email))
+                                    conn.commit()
+                                    print(f"Successfully updated firebase_uid for {email} and related tables.")
+                                else:
+                                    print(f"firebase_uid for {email} already set and matches: {new_firebase_uid}")
+                            else:
+                                print(f"User with email {email} not found in local database during login_validation for firebase_uid update.")
+                except Exception as db_e:
+                    print(f"Database update error during login: {str(db_e)}")
+                    # This error is not critical enough to prevent login, but should be logged.
 
                 if not user_record.email_verified:
                     print("User email not verified")  # Debug log
@@ -348,52 +469,177 @@ def register():
     return render_template("register.html")
 
 
-# Helper function to send password reset email
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        try:
+            # Check if user exists in Firebase
+            try:
+                print(f"Attempting to find user with email: {email}")
+                user = auth.get_user_by_email(email)
+                print(f"Found user for password reset: {user.uid}")
+                print(f"User email verified: {user.email_verified}")
+                
+                # Generate password reset link
+                print("Generating password reset link...")
+                reset_link = auth.generate_password_reset_link(email)
+                print(f"Generated password reset link for {email}")
+                
+                # Send password reset email
+                print("Attempting to send password reset email...")
+                if send_password_reset_email(email, reset_link):
+                    print(f"Successfully sent password reset email to {email}")
+                    flash("Password reset link has been sent to your email.", "success")
+                else:
+                    print(f"Failed to send password reset email to {email}")
+                    flash("Failed to send password reset email. Please try again later.", "error")
+            except auth.UserNotFoundError as e:
+                print(f"Firebase UserNotFoundError: {str(e)}")
+                print(f"Password reset requested for non-existent email: {email}")
+                # Check if user exists in local database
+                try:
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            # First check if user exists
+                            cur.execute("SELECT id, firebase_uid FROM users WHERE email = %s", (email,))
+                            user_data = cur.fetchone()
+                            if user_data:
+                                print(f"User found in local database but not in Firebase: {email}")
+                                # Generate a random password for Firebase
+                                import secrets
+                                import string
+                                alphabet = string.ascii_letters + string.digits
+                                temp_password = ''.join(secrets.choice(alphabet) for i in range(12))
+                                
+                                # Create Firebase account for existing user
+                                firebase_user = create_firebase_user(email, temp_password)
+                                if firebase_user:
+                                    old_firebase_uid = user_data[1]
+                                    new_firebase_uid = firebase_user.uid
+                                    
+                                    # Update stokvels table first
+                                    cur.execute("""
+                                        UPDATE stokvels 
+                                        SET created_by = %s 
+                                        WHERE created_by = %s
+                                    """, (new_firebase_uid, old_firebase_uid))
+                                    
+                                    # Update stokvel_members table
+                                    cur.execute("""
+                                        UPDATE stokvel_members 
+                                        SET firebase_uid = %s 
+                                        WHERE firebase_uid = %s
+                                    """, (new_firebase_uid, old_firebase_uid))
+                                    
+                                    # Update contributions table
+                                    cur.execute("""
+                                        UPDATE contributions 
+                                        SET firebase_uid = %s 
+                                        WHERE firebase_uid = %s
+                                    """, (new_firebase_uid, old_firebase_uid))
+                                    
+                                    # Now update the users table
+                                    cur.execute("""
+                                        UPDATE users 
+                                        SET firebase_uid = %s 
+                                        WHERE email = %s
+                                    """, (new_firebase_uid, email))
+                                    
+                                    conn.commit()
+                                    print(f"Successfully updated all references from {old_firebase_uid} to {new_firebase_uid}")
+                                    
+                                    # Generate and send reset link
+                                    reset_link = auth.generate_password_reset_link(email)
+                                    if send_password_reset_email(email, reset_link):
+                                        flash("Your account has been migrated. A password reset link has been sent to your email.", "success")
+                                    else:
+                                        flash("Your account has been migrated, but we couldn't send the reset email. Please try again.", "error")
+                                else:
+                                    flash("There was an issue migrating your account. Please contact support.", "error")
+                            else:
+                                print(f"User not found in either Firebase or local database: {email}")
+                                flash("If an account exists with this email, a password reset link will be sent.", "success")
+                except Exception as db_e:
+                    print(f"Database error while checking user: {str(db_e)}")
+                    flash("An error occurred. Please try again later.", "error")
+            except Exception as e:
+                print(f"Error in password reset for {email}: {str(e)}")
+                flash("An error occurred. Please try again later.", "error")
+        except Exception as e:
+            print(f"Unexpected error in password reset for {email}: {str(e)}")
+            flash("An error occurred. Please try again later.", "error")
+        return redirect(url_for('login'))
+    return render_template("forgot_password.html", form=form)
+
+
 def send_password_reset_email(to_email, reset_link):
     sender_email = os.getenv("MAIL_SENDER_EMAIL")
     sender_name = os.getenv("MAIL_SENDER_NAME")
-    
-    subject = "Password Reset for Your KasiKash Account"
+    sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
+
+    print(f"Preparing to send password reset email to: {to_email}")
+    print(f"Using sender email: {sender_email}")
+    print(f"Using sender name: {sender_name}")
+
+    if not sendgrid_api_key:
+        print("Error: SENDGRID_API_KEY not found in environment variables.")
+        return False
+    if not sender_email:
+        print("Error: MAIL_SENDER_EMAIL not found in environment variables.")
+        return False
+    if not sender_name:
+        print("Error: MAIL_SENDER_NAME not found in environment variables.")
+        return False
+
+    subject = "Reset Your KasiKash Password"
     html_content = f"""
     <html>
-    <body>
-        <p>Hello,</p>
-        <p>You have requested to reset the password for your KasiKash account.</p>
-        <p>Please click on the link below to reset your password:</p>
-        <p><a href=\"{reset_link}\">Reset Your Password</a></p>
-        <p>This link is valid for a limited time. If you did not request a password reset, please ignore this email.</p>
-        <p>Thanks,</p>
-        <p>The KasiKash App Team</p>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #2c5282;">Reset Your Password</h2>
+            <p>Hello,</p>
+            <p>We received a request to reset your password for your KasiKash account.</p>
+            <p>Click the button below to reset your password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{reset_link}" style="background-color: #2c5282; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
+            </div>
+            <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+            <p>This link will expire in 1 hour.</p>
+            <hr style="border: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #666; font-size: 0.9em;">Thanks,<br>The KasiKash Team</p>
+        </div>
     </body>
     </html>
     """
 
-    return send_email(to_email, subject, html_content)
+    message = Mail(
+        from_email=(sender_email, sender_name),
+        to_emails=to_email,
+        subject=subject,
+        html_content=html_content
+    )
 
-
-@app.route('/forgot_password', methods=['GET', 'POST'])
-def forgot_password():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        if not email:
-            flash("Please enter your email address.")
-            return redirect(url_for('forgot_password'))
-        try:
-            # Generate the password reset link using Firebase Auth
-            reset_link = auth.generate_password_reset_link(email)
-            
-            # Send the password reset email using our custom helper
-            if send_password_reset_email(email, reset_link):
-                flash("A password reset link has been sent to your email address. Please check your inbox and follow the instructions.")
-            else:
-                flash("Failed to send password reset email. Please try again or contact support.")
-            
-            return redirect(url_for('login'))
-        except Exception as e:
-            print(f"Password reset error: {e}")
-            flash(f"Error sending password reset email: {e}")
-            return redirect(url_for('forgot_password'))
-    return render_template("forgot_password.html")
+    try:
+        print("Initializing SendGrid client...")
+        sendgrid_client = SendGridAPIClient(sendgrid_api_key)
+        print("Sending email via SendGrid...")
+        response = sendgrid_client.send(message)
+        print(f"SendGrid password reset email sent status code: {response.status_code}")
+        print(f"SendGrid response headers: {response.headers}")
+        if response.status_code == 202:
+            print(f"Password reset email sent successfully to {to_email}")
+            return True
+        else:
+            print(f"Failed to send password reset email. Status: {response.status_code}")
+            print(f"Response body: {response.body}")
+            return False
+    except Exception as e:
+        print(f"Error sending password reset email to {to_email}: {str(e)}")
+        print(f"Error type: {type(e)}")
+        print(f"Error details: {str(e)}")
+        return False
 
 
 @app.route('/reset')
@@ -455,92 +701,43 @@ def registration():
                 return redirect('/register')
 
             try:
-                user = None # Initialize user to None
-                # Try to get user by email first to check if they already exist in Firebase
-                try:
-                    user = auth.get_user_by_email(email)
-                    # If user exists in Firebase
-                    if not user.email_verified:
-                        # User exists but email is not verified, resend verification email
-                        verification_link = auth.generate_email_verification_link(email)
-                        if send_email_verification(email, verification_link):
-                            flash("Account already exists but email not verified. A new verification link has been sent to your email.")
-                        else:
-                            flash("Account already exists but email not verified. Failed to resend verification link. Please contact support.")
-                        return redirect('/login') # Redirect to login after resending link
-                    else:
-                        # User exists and email is verified, prompt to login
-                        flash("An account with this email already exists and is verified. Please log in.")
-                        return redirect('/login')
-                except auth.UserNotFoundError:
-                    # User does not exist in Firebase, proceed with creation
-                    pass # Continue to the user creation block
-
-                # 1. Create user in Firebase Authentication (only if not found above and not in local DB)
+                # Create user in Firebase Authentication
                 user = auth.create_user(
                     email=email,
                     password=passwd,
                     display_name=username,
-                    email_verified=False  # Initially false, Firebase will send verification email
+                    email_verified=True  # Set to True since we're using email/password auth
                 )
+                print(f"Created Firebase user: {user.uid}")
 
-                # 2. Generate and Send email verification link via custom SMTP
-                verification_link = auth.generate_email_verification_link(email)
-                if send_email_verification(email, verification_link):
-                    flash("Registration successful! Please check your email to verify your account.")
-                else:
-                    flash("Registration successful, but failed to send verification email. Please contact support.")
-                    # IMPORTANT: If email sending failed, delete the Firebase user here
-                    auth.delete_user(user.uid)
-                    print(f"Cleaned up Firebase user {user.uid} due to email sending failure.")
-                    return redirect('/register')
-
-                # 3. Store Firebase UID and user data in your PostgreSQL database
+                # Store Firebase UID and username/email in your PostgreSQL database
                 with support.db_connection() as conn:
                     with conn.cursor() as cur:
-                        # Insert new user into your local DB with all profile fields
-                        cur.execute("""
-                            INSERT INTO users (
-                                firebase_uid, username, email, full_name, phone, 
-                                id_number, address, date_of_birth, bio
-                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) 
-                            RETURNING id
-                        """, (
-                            user.uid, username, email, full_name, phone,
-                            id_number, address, date_of_birth, bio
-                        ))
+                        cur.execute(
+                            "INSERT INTO users (firebase_uid, username, email, password) VALUES (%s, %s, %s, %s) RETURNING id",
+                            (user.uid, username, email, passwd)
+                        )
                         local_user_id = cur.fetchone()[0]
                         conn.commit()
 
                         if local_user_id:
-                            session['user_id'] = user.uid  # Store Firebase UID in session
+                            session['user_id'] = user.uid
                             session['username'] = username
-                            session['is_verified'] = False  # Will be updated after email verification by Firebase
+                            session['is_verified'] = True
                             session.permanent = True
-
-                            return redirect('/home')
+                            flash("Registration successful! You can now log in.")
+                            return redirect('/login')
                         else:
                             flash("Registration failed: Could not retrieve local user ID.")
-                            auth.delete_user(user.uid)  # Delete Firebase user if local DB insertion fails
-                            print(f"Cleaned up Firebase user {user.uid} due to local DB insertion failure.")
+                            auth.delete_user(user.uid)
                             return redirect('/register')
 
-            except Exception as e:  # Catch all Firebase auth errors (for user creation/general issues)
-                print(f"Firebase Registration error: {str(e)}")
-                # If the error is still 'email-already-exists' here, it means it wasn't caught by the initial DB check
-                # or Firebase get_user_by_email. This is a final fallback.
-                if "email-already-exists" in str(e) or "The user with the provided email already exists" in str(e):
+            except Exception as e:
+                print(f"Registration error: {str(e)}")
+                if "email-already-exists" in str(e):
                     flash("Email address is already in use. Please use a different email or log in.")
                 else:
                     flash(f"An unexpected error occurred during registration: {str(e)}")
-                # IMPORTANT: If a Firebase user was created but local DB insertion failed, delete Firebase user
-                # Ensure 'user' variable is defined and not None before attempting deletion
-                if 'user' in locals() and user and not user.email_verified: # Only delete if user was newly created and unverified
-                    try:
-                        auth.delete_user(user.uid)
-                        print(f"Cleaned up Firebase user {user.uid} due to registration error.")
-                    except Exception as delete_e:
-                        print(f"Error deleting Firebase user {user.uid} during cleanup: {delete_e}")
                 return redirect('/register')
         else:
             flash("Not enough data to register, try again!!")
@@ -690,98 +887,168 @@ def create_stokvel():
 @app.route('/contributions')
 @login_required
 def contributions():
-    user_id = session['user_id']
+    firebase_uid = session.get('user_id')
+    if not firebase_uid:
+        flash("Please log in to view contributions.", "error")
+        return redirect(url_for('login'))
+
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Get user's contributions
+                print(f"Fetching contributions for user: {firebase_uid}")
+                
+                # Get user's contributions from transactions table
                 cur.execute("""
-                    SELECT t.amount, t.description, t.transaction_date, s.name as stokvel_name, t.status
+                    SELECT 
+                        t.id, t.amount, t.status, t.transaction_date, 
+                        s.name as stokvel_name, t.description
                     FROM transactions t
                     JOIN stokvels s ON t.stokvel_id = s.id
                     WHERE t.user_id = %s AND t.type = 'contribution'
                     ORDER BY t.transaction_date DESC
-                """, (user_id,))
-                contributions_tuples = cur.fetchall()
-
-                # Convert tuples to dictionaries for easier access in template
-                contributions_list = []
-                contribution_keys = ['amount', 'description', 'transaction_date', 'stokvel_name', 'status'] # Include status as it's used in template
-                for c_tuple in contributions_tuples:
-                    # Assuming status is implicitly part of the query or derived. 
-                    # If not, it needs to be added to the SQL query as well.
-                    # For now, let's assume it's part of the tuple, or we need to derive it.
-                    # Re-checking the template, status is often derived, so we need to pass it explicitly.
-                    # Looking at the original query, status is conditional in template.
-                    # I need to ensure the SQL query for contributions includes `t.status`
-                    # And then map it correctly.
-                    # The query currently is: SELECT t.amount, t.description, t.transaction_date, s.name as stokvel_name
-                    # It should be: SELECT t.amount, t.description, t.transaction_date, s.name as stokvel_name, t.status
-                    # I will make the change to the query as well.
-
-                    # Re-executing current file contents (I don't have this but need to assume it is in the file)
-                    # So I will assume the current code has `t.status` in the query and map the keys as so.
-                    contributions_list.append(dict(zip(contribution_keys, c_tuple)))
-
-                # Get stokvels the user is a member of
+                """, (firebase_uid,))
+                contributions = cur.fetchall()
+                print(f"Found {len(contributions)} contributions")
+                
+                # Get user's stokvels for the dropdown
                 cur.execute("""
                     SELECT s.id, s.name
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
                     WHERE sm.user_id = %s
-                """, (user_id,))
-                stokvel_options = cur.fetchall()
+                    ORDER BY s.name
+                """, (firebase_uid,))
+                stokvels = cur.fetchall()
+                print(f"Found {len(stokvels)} stokvels")
 
-        return render_template('contributions.html', contributions=contributions_list, stokvel_options=stokvel_options)
+                # Convert contributions to list of dictionaries for easier template access
+                contributions_list = []
+                for row in contributions:
+                    try:
+                        # Convert transaction_date to string if it's a datetime object
+                        transaction_date = row[3]
+                        if transaction_date:
+                            try:
+                                transaction_date = transaction_date.strftime('%Y-%m-%d %H:%M')
+                            except AttributeError:
+                                transaction_date = str(transaction_date)
+                        else:
+                            transaction_date = 'N/A'
+                        
+                        contribution_dict = {
+                            'id': row[0],
+                            'amount': float(row[1]) if row[1] is not None else 0.0,
+                            'status': row[2] or 'pending',
+                            'created_at': transaction_date,
+                            'stokvel_name': row[4] or 'Unknown Stokvel',
+                            'description': row[5] or 'No description'
+                        }
+                        contributions_list.append(contribution_dict)
+                    except Exception as e:
+                        print(f"Error processing contribution row: {e}")
+                        continue
+
+                # Convert stokvels to list of dictionaries
+                stokvels_list = []
+                for row in stokvels:
+                    try:
+                        stokvels_list.append({
+                            'id': row[0],
+                            'name': row[1]
+                        })
+                    except Exception as e:
+                        print(f"Error processing stokvel row: {e}")
+                        continue
+
+                print(f"Successfully processed {len(contributions_list)} contributions and {len(stokvels_list)} stokvels")
+                return render_template('contributions.html', 
+                                     contributions=contributions_list,
+                                     stokvels=stokvels_list)
+
     except Exception as e:
-        print(f"Contributions page error: {e}")
-        flash("An error occurred while loading contributions. Please try again.")
-        return redirect('/home')
+        print(f"Error in contributions route: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        flash("Error loading contributions. Please try again.", "error")
+        return redirect(url_for('home'))
 
-@app.route('/make_contribution', methods=['POST'])
+@app.route('/make_contribution', methods=['GET', 'POST'])
 @login_required
 def make_contribution():
-    user_id = session['user_id']
-    stokvel_id = request.form.get('stokvel_id')
-    amount = request.form.get('amount')
-    description = request.form.get('description')
+    if request.method == 'POST':
+        user_id = session.get('user_id')
+        if not user_id:
+            flash("Please log in to make a contribution.", "error")
+            return redirect(url_for('login'))
 
-    if not all([stokvel_id, amount]):
-        flash("Stokvel and amount are required for a contribution.")
-        return redirect('/contributions')
+        stokvel_id = request.form.get('stokvel_id')
+        amount = request.form.get('amount')
+        description = request.form.get('description')
 
-    try:
-        amount = float(amount)
-        stokvel_id = int(stokvel_id)
+        if not all([stokvel_id, amount, description]):
+            flash("Stokvel, amount, and description are required for a contribution.")
+            return redirect('/contributions')
 
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Check if the user is actually a member of this stokvel
-                cur.execute("SELECT 1 FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id))
-                if not cur.fetchone():
-                    flash("You are not a member of this stokvel.")
-                    return redirect('/contributions')
+        try:
+            amount = float(amount)
+            stokvel_id = int(stokvel_id)
 
-                # Insert the contribution transaction
-                cur.execute("""
-                    INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
-                    VALUES (%s, %s, %s, 'contribution', %s, CURRENT_DATE, 'completed')
-                """, (user_id, stokvel_id, amount, description))
-                conn.commit()
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    # Check if the user is actually a member of this stokvel
+                    cur.execute("SELECT 1 FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id))
+                    if not cur.fetchone():
+                        flash("You are not a member of this stokvel.")
+                        return redirect('/contributions')
 
-                # Update the stokvel's total pool
-                cur.execute("UPDATE stokvels SET total_pool = COALESCE(total_pool, 0) + %s WHERE id = %s", (amount, stokvel_id))
-                conn.commit()
+                    # Insert the contribution transaction
+                    cur.execute("""
+                        INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
+                        VALUES (%s, %s, %s, 'contribution', %s, CURRENT_DATE, 'completed')
+                    """, (user_id, stokvel_id, amount, description))
+                    conn.commit()
 
-        flash("Contribution recorded successfully!")
-        return redirect('/contributions')
-    except ValueError:
-        flash("Amount must be a number.")
-        return redirect('/contributions')
-    except Exception as e:
-        print(f"Error making contribution: {e}")
-        flash("An error occurred while recording your contribution. Please try again.")
-        return redirect('/contributions')
+                    # Update the stokvel's total pool
+                    cur.execute("UPDATE stokvels SET total_pool = COALESCE(total_pool, 0) + %s WHERE id = %s", (amount, stokvel_id))
+                    conn.commit()
+
+            flash("Contribution recorded successfully!")
+            return redirect('/contributions')
+        except ValueError:
+            flash("Amount must be a number.")
+            return redirect('/contributions')
+        except Exception as e:
+            print(f"Error making contribution: {e}")
+            flash("An error occurred while recording your contribution. Please try again.")
+            return redirect('/contributions')
+    else: # GET request
+        user_id = session.get('user_id')
+        if not user_id:
+            flash("Please log in to make a contribution.", "error")
+            return redirect(url_for('login'))
+
+        stokvels = []
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    # Fetch stokvels where the user is a member
+                    cur.execute("""
+                        SELECT s.id, s.name 
+                        FROM stokvels s
+                        JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                        WHERE sm.firebase_uid = %s
+                    """, (user_id,))
+                    stokvels_data = cur.fetchall()
+                    for stokvel in stokvels_data:
+                        stokvels.append({'id': stokvel[0], 'name': stokvel[1]})
+            print(f"Fetched stokvels for user {user_id}: {stokvels}")
+        except Exception as e:
+            print(f"Error fetching stokvels: {str(e)}")
+            flash("Error loading stokvels. Please try again.", "error")
+            stokvels = [] # Ensure stokvels is empty on error
+
+        return render_template("make_contribution.html", stokvels=stokvels)
 
 @app.route('/payouts')
 @login_required
@@ -1341,48 +1608,41 @@ def update_user_setting(user_id, section, setting, value):
 @app.route('/profile')
 @login_required
 def profile():
-    user_id = session['user_id'] # This is now firebase_uid
-    print(f"Debug: Fetching profile for user_id: {user_id}")
-    
-    query = "SELECT username, email, full_name, phone, id_number, address, date_of_birth, bio, profile_picture, id_document, proof_of_address, last_login FROM users WHERE firebase_uid = %s"
-    user_data = support.execute_query("search", query, (user_id,))
-    print(f"Debug: User data from database: {user_data}")
-    
-    from datetime import datetime
-    current_time = datetime.now()
-    
-    if user_data:
-        # Also fetch Firebase user data for email verification status
-        try:
-            firebase_user = auth.get_user(user_id)
-            is_verified = firebase_user.email_verified
-            print(f"Debug: Firebase user verification status: {is_verified}")
-        except Exception as e:
-            print(f"Error fetching Firebase user for profile: {e}")
-            is_verified = False # Assume not verified if error
-
-        user = {
-            'username': user_data[0][0],
-            'email': user_data[0][1],
-            'full_name': user_data[0][2],
-            'phone': user_data[0][3],
-            'id_number': user_data[0][4],
-            'address': user_data[0][5],
-            'date_of_birth': user_data[0][6],
-            'bio': user_data[0][7],
-            'profile_picture': user_data[0][8],
-            'id_document': user_data[0][9],
-            'proof_of_address': user_data[0][10],
-            'last_login': user_data[0][11],
-            'is_verified': is_verified
-        }
-        print(f"Debug: Constructed user object: {user}")
-        print(f"Debug: user['email']: {user['email']}")
-        print(f"Debug: user['username']: {user['username']}")
-    else:
-        print("Debug: No user data found in database")
-        user = None
-    return render_template('profile.html', user=user, current_time=current_time)
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Get user data
+                cur.execute("""
+                    SELECT u.*, 
+                           COUNT(DISTINCT s.id) as active_stokvels_count,
+                           COALESCE(SUM(CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END), 0) as total_contributions,
+                           COALESCE(SUM(CASE WHEN t.type = 'withdrawal' THEN t.amount ELSE 0 END), 0) as total_withdrawals
+                    FROM users u
+                    LEFT JOIN stokvel_members sm ON u.firebase_uid = sm.user_id
+                    LEFT JOIN stokvels s ON sm.stokvel_id = s.id
+                    LEFT JOIN transactions t ON u.firebase_uid = t.user_id
+                    WHERE u.firebase_uid = %s
+                    GROUP BY u.id
+                """, (session['user_id'],))
+                user = cur.fetchone()
+                
+                if not user:
+                    flash('User profile not found')
+                    return redirect(url_for('home'))
+                
+                # Get current time for greeting
+                current_time = datetime.now()
+                
+                return render_template('profile.html', 
+                                     user=user, 
+                                     current_time=current_time,
+                                     active_stokvels_count=user['active_stokvels_count'],
+                                     total_contributions=user['total_contributions'],
+                                     total_withdrawals=user['total_withdrawals'])
+    except Exception as e:
+        print(f"Error in profile route: {e}")
+        flash('Error loading profile')
+        return redirect(url_for('home'))
 
 @app.route('/profile/update', methods=['POST'])
 @login_required
@@ -1452,16 +1712,17 @@ def send_email(to_email, subject, body):
 
 @app.route('/pricing')
 def pricing():
-    if 'user_id' in session:
-        # Changed to firebase_uid
-        cursor = support.db_connection().cursor() # Assuming support.db_connection() returns a connection object directly
-        cursor.execute("SELECT username FROM users WHERE firebase_uid = %s", (session['user_id'],))
-        user_data = cursor.fetchone()
-        cursor.close()
-        # Ensure the connection is closed in support.py's context manager or explicitly here
-        user_name = user_data[0] if user_data else None
-        return render_template('pricing.html', user_name=user_name)
-    return render_template('pricing.html', user_name=None)
+    try:
+        # Correctly use support.db_connection() as a context manager
+        with support.db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM pricing_plans")
+                pricing_plans = cursor.fetchall()
+        return render_template('pricing.html', pricing_plans=pricing_plans)
+    except Exception as e:
+        print(f"Error fetching pricing plans: {e}")
+        flash("Could not load pricing plans. Please try again later.", "error")
+        return render_template('pricing.html', pricing_plans=[]) # Render with empty list on error
 
 @app.route('/chat', methods=['POST'])
 @login_required
@@ -1701,25 +1962,281 @@ def remove_stokvel_member(stokvel_id):
 
     return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
+@app.route('/notifications')
+@login_required
+def notifications():
+    # When user views notifications, clear the count (simulate marking as read)
+    session['notification_count'] = 0
+    # In a real application, you would fetch user-specific notifications from the database here
+    # For now, we are just rendering the template.
+    return render_template('notifications.html', notification_count=0) # Pass 0 to ensure badge disappears
+
 @app.route('/resend-verification', methods=['POST'])
-@csrf.exempt
+@login_required
 def resend_verification():
-    data = request.get_json()
-    email = data.get('email')
-    if not email:
-        return jsonify({'success': False, 'error': 'No email provided'}), 400
+    print("Resend verification called. Session user_id:", session.get('user_id'))
     try:
-        user = auth.get_user_by_email(email)
+        user_id = session['user_id']
+        # Get user from Firebase
+        user = auth.get_user(user_id)
+        
         if user.email_verified:
-            return jsonify({'success': False, 'error': 'Email already verified'}), 400
-        verification_link = auth.generate_email_verification_link(email)
-        if send_email_verification(email, verification_link):
-            return jsonify({'success': True})
+            return jsonify({
+                'success': False,
+                'message': 'Email is already verified'
+            }), 200  # Changed from 400 to 200
+
+        # Generate email verification link
+        verification_link = auth.generate_email_verification_link(user.email)
+        
+        # Send verification email
+        if send_email_verification(user.email, verification_link):
+            return jsonify({
+                'success': True,
+                'message': 'Verification email sent successfully'
+            })
         else:
-            return jsonify({'success': False, 'error': 'Failed to send email'}), 500
+            return jsonify({
+                'success': False,
+                'message': 'Failed to send verification email'
+            }), 500
+
     except Exception as e:
-        print(f"Error in resend_verification: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"Error in resend verification: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred while sending verification email'
+        }), 500
+
+@app.route('/stokvel/<int:stokvel_id>/statement')
+@login_required
+def view_stokvel_statement(stokvel_id):
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            flash('Please log in to view statements', 'error')
+            return redirect(url_for('login'))
+
+        # Get stokvel details
+        cur = get_db().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("""
+            SELECT s.*, u.email as admin_email 
+            FROM stokvels s 
+            JOIN users u ON s.created_by = u.firebase_uid 
+            WHERE s.id = %s
+        """, (stokvel_id,))
+        stokvel = cur.fetchone()
+
+        if not stokvel:
+            flash('Stokvel not found', 'error')
+            return redirect(url_for('home'))
+
+        # Verify user is a member
+        cur.execute("""
+            SELECT * FROM stokvel_members 
+            WHERE stokvel_id = %s AND user_id = %s
+        """, (stokvel_id, user_id))
+        membership = cur.fetchone()
+
+        if not membership:
+            flash('You do not have access to this stokvel', 'error')
+            return redirect(url_for('home'))
+
+        # Get all transactions
+        cur.execute("""
+            SELECT 
+                t.*,
+                u.email as user_email,
+                CASE 
+                    WHEN t.type = 'contribution' THEN t.amount
+                    ELSE 0
+                END as contribution_amount,
+                CASE 
+                    WHEN t.type = 'payout' THEN t.amount
+                    ELSE 0
+                END as payout_amount,
+                CASE 
+                    WHEN t.type = 'expense' THEN t.amount
+                    ELSE 0
+                END as expense_amount
+            FROM transactions t
+            LEFT JOIN users u ON t.user_id = u.firebase_uid
+            WHERE t.stokvel_id = %s
+            ORDER BY t.created_at DESC
+        """, (stokvel_id,))
+        transactions = cur.fetchall()
+
+        # Calculate summary
+        total_contributions = sum(t['contribution_amount'] for t in transactions)
+        total_payouts = sum(t['payout_amount'] for t in transactions)
+        total_expenses = sum(t['expense_amount'] for t in transactions)
+        current_balance = total_contributions - total_payouts - total_expenses
+
+        # Format the data for the template
+        statement_data = {
+            'stokvel': {
+                'id': stokvel['id'],
+                'name': stokvel['name'],
+                'created_at': stokvel['created_at'].strftime('%Y-%m-%d') if isinstance(stokvel['created_at'], datetime) else str(stokvel['created_at']),
+                'admin_email': stokvel['admin_email']
+            },
+            'summary': {
+                'total_contributions': total_contributions,
+                'total_payouts': total_payouts,
+                'total_expenses': total_expenses,
+                'current_balance': current_balance
+            },
+            'transactions': [{
+                'date': t['created_at'].strftime('%Y-%m-%d %H:%M:%S') if isinstance(t['created_at'], datetime) else str(t['created_at']),
+                'type': t['type'],
+                'amount': float(t['amount']),
+                'description': t['description'],
+                'user_email': t['user_email']
+            } for t in transactions]
+        }
+
+        return render_template('stokvel_statement.html', statement=statement_data)
+
+    except Exception as e:
+        print(f"Error generating stokvel statement: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        flash('An error occurred while generating the statement', 'error')
+        return redirect(url_for('home'))
+
+@app.route('/stokvel/<int:stokvel_id>/statement/download')
+@login_required
+def download_statement(stokvel_id):
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            flash('Please log in to download statements', 'error')
+            return redirect(url_for('login'))
+
+        # Use RealDictCursor for all queries
+        cur = get_db().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("""
+            SELECT s.*, u.email as admin_email 
+            FROM stokvels s 
+            JOIN users u ON s.created_by = u.firebase_uid 
+            WHERE s.id = %s
+        """, (stokvel_id,))
+        stokvel = cur.fetchone()
+
+        if not stokvel:
+            flash('Stokvel not found', 'error')
+            return redirect(url_for('home'))
+
+        cur.execute("""
+            SELECT * FROM stokvel_members 
+            WHERE stokvel_id = %s AND user_id = %s
+        """, (stokvel_id, user_id))
+        membership = cur.fetchone()
+
+        if not membership:
+            flash('You do not have access to this stokvel', 'error')
+            return redirect(url_for('home'))
+
+        cur.execute("""
+            SELECT 
+                t.*,
+                u.email as user_email,
+                CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END as contribution_amount,
+                CASE WHEN t.type = 'payout' THEN t.amount ELSE 0 END as payout_amount,
+                CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END as expense_amount
+            FROM transactions t
+            LEFT JOIN users u ON t.user_id = u.firebase_uid
+            WHERE t.stokvel_id = %s
+            ORDER BY t.created_at DESC
+        """, (stokvel_id,))
+        transactions = cur.fetchall()
+
+        # Calculate summary
+        total_contributions = sum(float(t.get('contribution_amount', 0) or 0) for t in transactions)
+        total_payouts = sum(float(t.get('payout_amount', 0) or 0) for t in transactions)
+        total_expenses = sum(float(t.get('expense_amount', 0) or 0) for t in transactions)
+        current_balance = total_contributions - total_payouts - total_expenses
+
+        # Create PDF
+        output = BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=letter)
+        styles = getSampleStyleSheet()
+        elements = []
+
+        # Add title
+        title = Paragraph(f"{stokvel['name']} - Statement", styles['Title'])
+        elements.append(title)
+        elements.append(Spacer(1, 20))
+
+        # Add summary
+        summary_data = [
+            ['Total Contributions', f'R {total_contributions:,.2f}'],
+            ['Total Payouts', f'R {total_payouts:,.2f}'],
+            ['Total Expenses', f'R {total_expenses:,.2f}'],
+            ['Current Balance', f'R {current_balance:,.2f}']
+        ]
+        summary_table = Table(summary_data, colWidths=[200, 100])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 20))
+
+        # Add transactions
+        table_data = [['Date', 'Type', 'Amount', 'Description', 'User']]
+        for t in transactions:
+            created_at = t.get('created_at')
+            if isinstance(created_at, datetime):
+                date_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                date_str = str(created_at) if created_at else ''
+            table_data.append([
+                date_str,
+                (t.get('type') or '').title(),
+                f'R {float(t.get("amount", 0) or 0):,.2f}',
+                t.get('description', '') or '',
+                t.get('user_email', '') or ''
+            ])
+
+        table = Table(table_data, colWidths=[100, 80, 80, 200, 150])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table)
+
+        doc.build(elements)
+        output.seek(0)
+        return send_file(
+            output,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'{stokvel["name"]}_statement_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+
+    except Exception as e:
+        print(f"Error generating statement: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        flash('An error occurred while generating the statement', 'error')
+        return redirect(url_for('view_stokvel_statement', stokvel_id=stokvel_id))
 
 @app.route('/profile/upload_picture', methods=['POST'])
 @login_required
@@ -1727,31 +2244,45 @@ def upload_profile_picture():
     if 'profile_picture' not in request.files:
         flash('No file part')
         return redirect(url_for('profile'))
+    
     file = request.files['profile_picture']
     if file.filename == '':
         flash('No selected file')
         return redirect(url_for('profile'))
+    
     if file and allowed_file(file.filename):
-        filename = secure_filename(f"{session['user_id']}_{file.filename}")
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # Update user's profile_picture in DB
-        query = "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s"
-        support.execute_query('insert', query, (filename, session['user_id']))
-        flash('Profile picture updated!')
+        try:
+            # Create upload folder if it doesn't exist
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            
+            # Generate secure filename
+            filename = secure_filename(f"{session['user_id']}_{file.filename}")
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+            # Save the file
+            file.save(file_path)
+            
+            # Update user's profile_picture in DB
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        UPDATE users 
+                        SET profile_picture = %s 
+                        WHERE firebase_uid = %s
+                    """, (filename, session['user_id']))
+                    conn.commit()
+            
+            flash('Profile picture updated successfully!')
+        except Exception as e:
+            print(f"Error uploading profile picture: {e}")
+            flash('Error uploading profile picture. Please try again.')
     else:
-        flash('Invalid file type')
+        flash('Invalid file type. Please upload an image file (PNG, JPG, JPEG, or GIF).')
+    
     return redirect(url_for('profile'))
-
-KYC_UPLOAD_FOLDER = 'static/kyc_docs'
-ALLOWED_KYC_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
-app.config['KYC_UPLOAD_FOLDER'] = KYC_UPLOAD_FOLDER
-
-def allowed_kyc_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_KYC_EXTENSIONS
 
 @app.route('/profile/upload_kyc', methods=['POST'])
 @login_required
-@csrf.exempt
 def upload_kyc():
     user_id = session['user_id']
     id_document = request.files.get('id_document')
@@ -1759,10 +2290,12 @@ def upload_kyc():
     updates = {}
     if id_document and allowed_kyc_file(id_document.filename):
         filename = secure_filename(f"{user_id}_id_{id_document.filename}")
+        os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
         id_document.save(os.path.join(app.config['KYC_UPLOAD_FOLDER'], filename))
         updates['id_document'] = filename
     if proof_of_address and allowed_kyc_file(proof_of_address.filename):
         filename = secure_filename(f"{user_id}_address_{proof_of_address.filename}")
+        os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
         proof_of_address.save(os.path.join(app.config['KYC_UPLOAD_FOLDER'], filename))
         updates['proof_of_address'] = filename
     # Update user in DB
@@ -1772,34 +2305,6 @@ def upload_kyc():
         query = f"UPDATE users SET {set_clause} WHERE firebase_uid = %s"
         support.execute_query("update", query, tuple(values))
     return redirect(url_for('profile'))
-
-@app.route('/fix_email')
-@login_required
-def fix_email():
-    user_id = session['user_id']
-    try:
-        firebase_user = auth.get_user(user_id)
-        email = firebase_user.email
-        print(f"Fixing email for user_id={user_id}, email={email}")
-        support.execute_query("update", "UPDATE users SET email = %s WHERE firebase_uid = %s", (email, user_id))
-        return f"<h2>Email updated to: {email}</h2><p><a href='/profile'>Go to Profile</a></p>"
-    except Exception as e:
-        print(f"Error in /fix_email: {e}")
-        return f"<h2>Error: {e}</h2><p><a href='/profile'>Go to Profile</a></p>"
-
-@app.route('/debug_show_user')
-@login_required
-def debug_show_user():
-    user_id = session['user_id']
-    try:
-        user_data = support.execute_query(
-            "search",
-            "SELECT username, email, full_name, phone, id_number, address, date_of_birth, bio, profile_picture, id_document, proof_of_address FROM users WHERE firebase_uid = %s",
-            (user_id,)
-        )
-        return f"<pre>{user_data}</pre><p><a href='/profile'>Back to Profile</a></p>"
-    except Exception as e:
-        return f"<h2>Error: {e}</h2><p><a href='/profile'>Go to Profile</a></p>"
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)

@@ -2,6 +2,30 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
+    <!-- Statement Download Section -->
+    <div class="bg-white rounded-lg shadow mb-8">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Download Statement</h2>
+            <div class="flex items-end space-x-4">
+                <div class="flex-1">
+                    <label for="stokvel-select" class="block text-sm font-medium text-gray-700 mb-2">Select Stokvel</label>
+                    <select id="stokvel-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Select a stokvel...</option>
+                        {% for stokvel in stokvels %}
+                        <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button onclick="downloadStatement()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Statement
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -22,49 +46,53 @@
     </div>
 
     <!-- Contributions Table -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stokvel</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for contribution in contributions %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {# Safely access and format the date #}
-                        {% if contribution.transaction_date is not none %}
-                            {{ contribution.transaction_date.strftime('%Y-%m-%d %H:%M') }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ contribution.stokvel_name }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        R{{ contribution.amount }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            {% if contribution.status == 'completed' %}bg-green-100 text-green-800
-                            {% elif contribution.status == 'pending' %}bg-yellow-100 text-yellow-800
-                            {% else %}bg-red-100 text-red-800{% endif %}>
-                            {{ contribution.status }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">
-                        {{ contribution.description }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">My Contributions</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stokvel</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for contribution in contributions %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ contribution.created_at }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ contribution.stokvel_name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                R{{ "%.2f"|format(contribution.amount) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if contribution.status == 'completed' %}
+                                        bg-green-100 text-green-800
+                                    {% elif contribution.status == 'pending' %}
+                                        bg-yellow-100 text-yellow-800
+                                    {% else %}
+                                        bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {{ contribution.status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">
+                                {{ contribution.description }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Make Contribution Modal -->
@@ -130,6 +158,17 @@ window.onclick = function(event) {
     if (event.target == modal) {
         closeModal();
     }
+}
+
+function downloadStatement() {
+    const stokvelId = document.getElementById('stokvel-select').value;
+    if (!stokvelId) {
+        alert('Please select a stokvel first');
+        return;
+    }
+    
+    // Redirect to the statement page
+    window.location.href = `/stokvel/${stokvelId}/statement`;
 }
 </script>
 {% endblock %} 
