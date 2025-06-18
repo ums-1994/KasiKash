@@ -33,6 +33,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, Length
 
 from flask_session import Session # Import Flask-Session
+from werkzeug.utils import secure_filename
 
 # Define LoginForm class
 class LoginForm(FlaskForm):
@@ -87,6 +88,13 @@ try:
 except Exception as e:
     print(f"Warning: OpenRouter client not initialized. Chat features will be disabled. Error: {e}")
     openrouter_available = False
+
+UPLOAD_FOLDER = 'static/profile_pics'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def login_required(f):
     @wraps(f)
@@ -306,6 +314,10 @@ def login_validation():
                     flash("Please verify your email address before logging in.")
                     return redirect('/login')
 
+                # Update last_login in the database
+                from datetime import datetime
+                support.execute_query("update", "UPDATE users SET last_login = %s, email = %s WHERE firebase_uid = %s", (datetime.utcnow(), user_record.email, user_record.uid))
+
                 print("Login successful, redirecting to home")  # Debug log
                 flash("Login successful!")
                 return redirect('/home')
@@ -395,15 +407,6 @@ def reset_password_landing():
 def send_email_verification(to_email, verification_link):
     sender_email = os.getenv("MAIL_SENDER_EMAIL")
     sender_name = os.getenv("MAIL_SENDER_NAME")
-    sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
-
-    if not sendgrid_api_key:
-        print("Error: SENDGRID_API_KEY not found in environment variables.")
-        return False
-    if not sender_email:
-        print("Error: MAIL_SENDER_EMAIL not found in environment variables.")
-        return False
-
     subject = "Verify your email for KasiKash App"
     html_content = f"""
     <html>
@@ -418,29 +421,7 @@ def send_email_verification(to_email, verification_link):
     </body>
     </html>
     """
-
-    message = Mail(
-        from_email=(sender_email, sender_name),
-        to_emails=to_email,
-        subject=subject,
-        html_content=html_content
-    )
-
-    try:
-        sendgrid_client = SendGridAPIClient(sendgrid_api_key)
-        response = sendgrid_client.send(message)
-        print(f"SendGrid email sent status code: {response.status_code}")
-        print(f"SendGrid email response body: {response.body}")
-        print(f"SendGrid email response headers: {response.headers}")
-        if response.status_code == 202:
-            print(f"Verification email sent successfully to {to_email} via SendGrid!")
-            return True
-        else:
-            print(f"Failed to send verification email via SendGrid. Status: {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"Error sending verification email to {to_email} via SendGrid: {e}")
-        return False
+    return send_email(to_email, subject, html_content)
 
 
 @app.route('/registration', methods=['POST'])
@@ -450,6 +431,12 @@ def registration():
         username = request.form.get('username')
         email = request.form.get('email')
         passwd = request.form.get('password')
+        full_name = request.form.get('full_name', '')
+        phone = request.form.get('phone', '')
+        id_number = request.form.get('id_number', '')
+        address = request.form.get('address', '')
+        date_of_birth = request.form.get('date_of_birth', None)
+        bio = request.form.get('bio', '')
 
         print(f"Registration attempt - Username: {username}, Email: {email}")
 
@@ -508,14 +495,20 @@ def registration():
                     print(f"Cleaned up Firebase user {user.uid} due to email sending failure.")
                     return redirect('/register')
 
-                # 3. Store Firebase UID and username/email in your PostgreSQL database
+                # 3. Store Firebase UID and user data in your PostgreSQL database
                 with support.db_connection() as conn:
                     with conn.cursor() as cur:
-                        # Insert new user into your local DB, linking with Firebase UID
-                        cur.execute(
-                            "INSERT INTO users (firebase_uid, username, email) VALUES (%s, %s, %s) RETURNING id",
-                            (user.uid, username, email)
-                        )
+                        # Insert new user into your local DB with all profile fields
+                        cur.execute("""
+                            INSERT INTO users (
+                                firebase_uid, username, email, full_name, phone, 
+                                id_number, address, date_of_birth, bio
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                            RETURNING id
+                        """, (
+                            user.uid, username, email, full_name, phone,
+                            id_number, address, date_of_birth, bio
+                        ))
                         local_user_id = cur.fetchone()[0]
                         conn.commit()
 
@@ -719,7 +712,6 @@ def contributions():
                     # If not, it needs to be added to the SQL query as well.
                     # For now, let's assume it's part of the tuple, or we need to derive it.
                     # Re-checking the template, status is often derived, so we need to pass it explicitly.
-                    # Let's add status to the SELECT statement if it's not there already.
                     # Looking at the original query, status is conditional in template.
                     # I need to ensure the SQL query for contributions includes `t.status`
                     # And then map it correctly.
@@ -1350,14 +1342,21 @@ def update_user_setting(user_id, section, setting, value):
 @login_required
 def profile():
     user_id = session['user_id'] # This is now firebase_uid
-    query = "SELECT username, email FROM users WHERE firebase_uid = %s"
+    print(f"Debug: Fetching profile for user_id: {user_id}")
+    
+    query = "SELECT username, email, full_name, phone, id_number, address, date_of_birth, bio, profile_picture, id_document, proof_of_address, last_login FROM users WHERE firebase_uid = %s"
     user_data = support.execute_query("search", query, (user_id,))
+    print(f"Debug: User data from database: {user_data}")
+    
+    from datetime import datetime
+    current_time = datetime.now()
     
     if user_data:
         # Also fetch Firebase user data for email verification status
         try:
             firebase_user = auth.get_user(user_id)
             is_verified = firebase_user.email_verified
+            print(f"Debug: Firebase user verification status: {is_verified}")
         except Exception as e:
             print(f"Error fetching Firebase user for profile: {e}")
             is_verified = False # Assume not verified if error
@@ -1365,43 +1364,41 @@ def profile():
         user = {
             'username': user_data[0][0],
             'email': user_data[0][1],
+            'full_name': user_data[0][2],
+            'phone': user_data[0][3],
+            'id_number': user_data[0][4],
+            'address': user_data[0][5],
+            'date_of_birth': user_data[0][6],
+            'bio': user_data[0][7],
+            'profile_picture': user_data[0][8],
+            'id_document': user_data[0][9],
+            'proof_of_address': user_data[0][10],
+            'last_login': user_data[0][11],
             'is_verified': is_verified
         }
-        return render_template('profile.html', user=user)
+        print(f"Debug: Constructed user object: {user}")
+        print(f"Debug: user['email']: {user['email']}")
+        print(f"Debug: user['username']: {user['username']}")
     else:
-        flash("Error fetching user data from local DB. Please try logging in again.")
-        return redirect('/home')
+        print("Debug: No user data found in database")
+        user = None
+    return render_template('profile.html', user=user, current_time=current_time)
 
 @app.route('/profile/update', methods=['POST'])
 @login_required
 def update_profile():
-    user_id = session['user_id'] # This is now firebase_uid
+    user_id = session['user_id']
     username = request.form.get('username')
-    email = request.form.get('email')
-    # Password change is now handled by Firebase client-side or specific Firebase Admin SDK methods
-
-    try:
-        # Update Firebase user profile
-        auth.update_user(
-            user_id,
-            email=email,
-            display_name=username
-        )
-        
-        # Update username and email in your local PostgreSQL database
-        # Removed password field from update, as Firebase handles password management
-        query = "UPDATE users SET username = %s, email = %s WHERE firebase_uid = %s"
-        support.execute_query('insert', query, (username, email, user_id))
-
-        flash("Profile updated successfully!")
-        return redirect('/profile')
-    except auth.AuthError as e:
-        print(f"Firebase Profile Update error: {e.code} - {e.message}")
-        flash(f"Error updating profile in Firebase: {e.message}")
-        return redirect('/profile')
-    except Exception as e:
-        flash(f"Error updating profile in local database: {str(e)}")
-        return redirect('/profile')
+    phone = request.form.get('phone')
+    date_of_birth = request.form.get('date_of_birth')
+    bio = request.form.get('bio')
+    full_name = request.form.get('full_name')
+    id_number = request.form.get('id_number')
+    address = request.form.get('address')
+    
+    query = "UPDATE users SET username = %s, phone = %s, date_of_birth = %s, bio = %s, full_name = %s, id_number = %s, address = %s WHERE firebase_uid = %s"
+    support.execute_query("update", query, (username, phone, date_of_birth, bio, full_name, id_number, address, user_id))
+    return redirect(url_for('profile'))
 
 @app.context_processor
 def inject_user_name():
@@ -1703,6 +1700,106 @@ def remove_stokvel_member(stokvel_id):
         flash("An error occurred while removing the member. Please try again.")
 
     return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+
+@app.route('/resend-verification', methods=['POST'])
+@csrf.exempt
+def resend_verification():
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({'success': False, 'error': 'No email provided'}), 400
+    try:
+        user = auth.get_user_by_email(email)
+        if user.email_verified:
+            return jsonify({'success': False, 'error': 'Email already verified'}), 400
+        verification_link = auth.generate_email_verification_link(email)
+        if send_email_verification(email, verification_link):
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to send email'}), 500
+    except Exception as e:
+        print(f"Error in resend_verification: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/profile/upload_picture', methods=['POST'])
+@login_required
+def upload_profile_picture():
+    if 'profile_picture' not in request.files:
+        flash('No file part')
+        return redirect(url_for('profile'))
+    file = request.files['profile_picture']
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(url_for('profile'))
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"{session['user_id']}_{file.filename}")
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        # Update user's profile_picture in DB
+        query = "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s"
+        support.execute_query('insert', query, (filename, session['user_id']))
+        flash('Profile picture updated!')
+    else:
+        flash('Invalid file type')
+    return redirect(url_for('profile'))
+
+KYC_UPLOAD_FOLDER = 'static/kyc_docs'
+ALLOWED_KYC_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+app.config['KYC_UPLOAD_FOLDER'] = KYC_UPLOAD_FOLDER
+
+def allowed_kyc_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_KYC_EXTENSIONS
+
+@app.route('/profile/upload_kyc', methods=['POST'])
+@login_required
+@csrf.exempt
+def upload_kyc():
+    user_id = session['user_id']
+    id_document = request.files.get('id_document')
+    proof_of_address = request.files.get('proof_of_address')
+    updates = {}
+    if id_document and allowed_kyc_file(id_document.filename):
+        filename = secure_filename(f"{user_id}_id_{id_document.filename}")
+        id_document.save(os.path.join(app.config['KYC_UPLOAD_FOLDER'], filename))
+        updates['id_document'] = filename
+    if proof_of_address and allowed_kyc_file(proof_of_address.filename):
+        filename = secure_filename(f"{user_id}_address_{proof_of_address.filename}")
+        proof_of_address.save(os.path.join(app.config['KYC_UPLOAD_FOLDER'], filename))
+        updates['proof_of_address'] = filename
+    # Update user in DB
+    if updates:
+        set_clause = ', '.join([f"{k} = %s" for k in updates.keys()])
+        values = list(updates.values()) + [user_id]
+        query = f"UPDATE users SET {set_clause} WHERE firebase_uid = %s"
+        support.execute_query("update", query, tuple(values))
+    return redirect(url_for('profile'))
+
+@app.route('/fix_email')
+@login_required
+def fix_email():
+    user_id = session['user_id']
+    try:
+        firebase_user = auth.get_user(user_id)
+        email = firebase_user.email
+        print(f"Fixing email for user_id={user_id}, email={email}")
+        support.execute_query("update", "UPDATE users SET email = %s WHERE firebase_uid = %s", (email, user_id))
+        return f"<h2>Email updated to: {email}</h2><p><a href='/profile'>Go to Profile</a></p>"
+    except Exception as e:
+        print(f"Error in /fix_email: {e}")
+        return f"<h2>Error: {e}</h2><p><a href='/profile'>Go to Profile</a></p>"
+
+@app.route('/debug_show_user')
+@login_required
+def debug_show_user():
+    user_id = session['user_id']
+    try:
+        user_data = support.execute_query(
+            "search",
+            "SELECT username, email, full_name, phone, id_number, address, date_of_birth, bio, profile_picture, id_document, proof_of_address FROM users WHERE firebase_uid = %s",
+            (user_id,)
+        )
+        return f"<pre>{user_data}</pre><p><a href='/profile'>Back to Profile</a></p>"
+    except Exception as e:
+        return f"<h2>Error: {e}</h2><p><a href='/profile'>Go to Profile</a></p>"
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
