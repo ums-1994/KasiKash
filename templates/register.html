@@ -1,573 +1,136 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - KasiKash</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'ocean-1': '#0061ff',
-                        'ocean-2': '#60efff',
-                        'ocean-3': '#00ff87',
-                        'ocean-4': '#0061ff',
-                        'ocean-5': '#45caff',
-                    },
-                    fontFamily: {
-                        'montserrat': ['Montserrat', 'sans-serif'],
-                        'inter': ['Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'float-reverse': 'float-reverse 8s ease-in-out infinite',
-                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-                        'wave': 'wave 3s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        },
-                        'float-reverse': {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(20px)' },
-                        },
-                        'pulse-glow': {
-                            '0%, 100%': { boxShadow: '0 0 15px rgba(96, 239, 255, 0.5)' },
-                            '50%': { boxShadow: '0 0 30px rgba(96, 239, 255, 0.8)' },
-                        },
-                        'wave': {
-                            '0%, 100%': { transform: 'translateX(0) translateY(0)' },
-                            '25%': { transform: 'translateX(5px) translateY(-5px)' },
-                            '50%': { transform: 'translateX(0) translateY(0)' },
-                            '75%': { transform: 'translateX(-5px) translateY(5px)' },
-                        },
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #000428 0%, #004e92 50%, #000428 100%);
-            color: white;
-            overflow-x: hidden;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at center, rgba(96, 239, 255, 0.1) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Montserrat', sans-serif;
-        }
-        
-        .rainbow-gradient {
-            background: linear-gradient(135deg, 
-                rgba(0, 97, 255, 0.8) 0%, 
-                rgba(96, 239, 255, 0.8) 25%, 
-                rgba(0, 255, 135, 0.8) 50%, 
-                rgba(0, 97, 255, 0.8) 75%, 
-                rgba(69, 202, 255, 0.8) 100%);
-        }
-        
-        .text-gradient {
-            background: linear-gradient(90deg, #60efff, #00ff87);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .glow {
-            text-shadow: 0 0 10px rgba(96, 239, 255, 0.7);
-        }
-        
-        .btn-glow {
-            box-shadow: 0 0 15px rgba(0, 255, 135, 0.5);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-glow:hover {
-            box-shadow: 0 0 25px rgba(0, 255, 135, 0.8);
-            transform: translateY(-3px);
-        }
-        
-        .nav-link {
-            position: relative;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
-            left: 0;
-            background: linear-gradient(90deg, #60efff, #00ff87);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        /* Dropdown styles */
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
+{% extends "base.html" %}
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            min-width: 300px;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            z-index: 1000;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .contact-info {
-            color: #fff;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        .contact-info i {
-            color: #60efff;
-            width: 20px;
-            margin-right: 10px;
-        }
-        
-        .register-card {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2.5rem;
-            max-width: 450px;
-            width: 100%;
-            transform: translateY(0);
-            transition: all 0.3s ease;
-            transform-style: preserve-3d;
-            overflow: hidden;
-        }
-        
-        .register-card:hover {
-            transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            background: rgba(0, 0, 0, 0.4);
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.5rem;
-            color: white;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: #60efff;
-            box-shadow: 0 0 0 2px rgba(96, 239, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .input-field::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .input-icon {
-            transition: all 0.3s ease;
-        }
-        
-        .input-field:focus + .input-icon {
-            color: #60efff;
-            transform: scale(1.1);
-        }
-        
-        /* Globe Animation Container */
-        .globe-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.5;
-        }
-        
-        #globe {
-            width: 100%;
-            height: 100%;
-        }
-        
-        /* Page transition animation */
-        .page-transition {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #000428, #004e92);
-            z-index: 9999;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-        }
-        
-        .transition-logo {
-            font-size: 3rem;
-            font-weight: bold;
-            background: linear-gradient(90deg, #60efff, #00ff87);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        /* Ensure content is visible */
-        .content-wrapper {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        main {
-            flex: 1;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, #60efff, #00ff87);
-            color: white;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 15px rgba(96, 239, 255, 0.3);
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 0 25px rgba(96, 239, 255, 0.5);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.2),
-                transparent
-            );
-            transition: 0.5s;
-        }
-
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-
-        /* Feature icon animations */
-        .feature-icon {
-            transition: all 0.3s ease;
-        }
-
-        .feature-icon:hover {
-            transform: scale(1.1) rotate(5deg);
-            color: #60efff;
-        }
-
-        /* Wave shape */
-        .wave-shape {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100px;
-            background: linear-gradient(180deg, transparent, rgba(96, 239, 255, 0.1));
-            clip-path: polygon(
-                0% 100%,
-                100% 100%,
-                100% 0%,
-                75% 50%,
-                50% 0%,
-                25% 50%,
-                0% 0%
-            );
-            animation: wave 3s ease-in-out infinite;
-        }
-
-        /* Particles container */
-        #particles-js {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-    </style>
-</head>
-<body class="antialiased">
-    <div id="particles-js"></div>
-    <div class="globe-container">
-        <div id="globe"></div>
+{% block content %}
+<div class="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Create your account
+        </h2>
     </div>
-    <div class="wave-shape"></div>
 
-    <div class="content-wrapper">
-        <!-- Navbar -->
-        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300">
-            <div class="container mx-auto flex justify-between items-center">
-                <a href="/" class="flex items-center space-x-3">
-                    <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto animate-float">
-                    <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
-                </a>
-                <ul class="hidden md:flex space-x-8">
-                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
-                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
-                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
-                    <li class="dropdown">
-                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a>
-                        <div class="dropdown-content">
-                            <div class="contact-info">
-                                <p class="mb-3"><i class="fas fa-envelope"></i> Email: support@kasikash.co.za</p>
-                                <p class="mb-3"><i class="fas fa-phone"></i> Phone: +27 11 123 4567</p>
-                                <p><i class="fas fa-map-marker-alt"></i> Address: Johannesburg, South Africa</p>
-                            </div>
-                        </div>
-                    </li>
-                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
-                </ul>
-                <button class="md:hidden text-white">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
-        </nav>
-
-        <main class="flex-1 flex items-center justify-center px-4 py-20">
-            <div class="w-full max-w-md">
-                {% for message in get_flashed_messages() %}
-                <div class="bg-red-500 bg-opacity-50 border border-red-400 text-white px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ message }}</span>
-                    <button type="button" class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove()">
-                        <span class="sr-only">Dismiss</span>
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                {% endfor %}
-
-                <div class="register-card p-10 animate-float">
-                    <h2 class="text-3xl font-bold text-center mb-8 text-gradient animate-float-reverse">Create Account</h2>
-                    <form method="post" action="/registration" class="space-y-6">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <label for="username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                                <input type="text" id="username" name="username" required
-                                    class="input-field"
-                                    placeholder="Enter your username">
-                            </div>
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                                <input type="email" id="email" name="email" required
-                                    class="input-field"
-                                    placeholder="Enter your email">
-                            </div>
-                            <div>
-                                <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                                <input type="password" id="password" name="password" required
-                                    class="input-field"
-                                    placeholder="Enter your password">
-                            </div>
-                            <div>
-                                <label for="confirm_password" class="block text-sm font-medium text-gray-300 mb-2">Retype Password</label>
-                                <input type="password" id="confirm_password" name="confirm_password" required
-                                    class="input-field"
-                                    placeholder="Confirm your password">
-                            </div>
-                            <div>
-                                <button type="submit" class="btn-primary">
-                                    Create Account
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <div class="mt-6 text-center space-y-4">
-                        <p class="text-gray-300">
-                            Already have an account? 
-                            <a href="/login" class="text-ocean-2 hover:text-ocean-3 transition duration-300">Login here</a>
-                        </p>
-                        <p class="text-gray-300">
-                            Have questions? 
-                            <a href="/contact" class="text-ocean-2 hover:text-ocean-3 transition duration-300">Contact us</a>
-                        </p>
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <form class="space-y-6" action="{{ url_for('registration') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">
+                        Username
+                    </label>
+                    <div class="mt-1">
+                        <input id="username" name="username" type="text" required 
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
                 </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        Email address
+                    </label>
+                    <div class="mt-1">
+                        <input id="email" name="email" type="email" autocomplete="email" required 
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        Password
+                    </label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" required 
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="full_name" class="block text-sm font-medium text-gray-700">
+                        Full Name
+                    </label>
+                    <div class="mt-1">
+                        <input id="full_name" name="full_name" type="text" required 
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">
+                        Phone Number
+                    </label>
+                    <div class="mt-1">
+                        <input id="phone" name="phone" type="tel" required 
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_number" class="block text-sm font-medium text-gray-700">
+                        ID Number
+                    </label>
+                    <div class="mt-1">
+                        <input id="id_number" name="id_number" type="text" required 
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="address" class="block text-sm font-medium text-gray-700">
+                        Address
+                    </label>
+                    <div class="mt-1">
+                        <textarea id="address" name="address" rows="3" required 
+                                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="date_of_birth" class="block text-sm font-medium text-gray-700">
+                        Date of Birth
+                    </label>
+                    <div class="mt-1">
+                        <input id="date_of_birth" name="date_of_birth" type="date" required 
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="bio" class="block text-sm font-medium text-gray-700">
+                        Bio
+                    </label>
+                    <div class="mt-1">
+                        <textarea id="bio" name="bio" rows="3" 
+                                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Register
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">
+                            Already have an account?
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a href="{{ url_for('login') }}" 
+                       class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Sign in
+                    </a>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
-
-    <script>
-        // Initialize particles.js
-        particlesJS('particles-js', {
-            particles: {
-                number: { value: 80, density: { enable: true, value_area: 800 } },
-                color: { value: '#60efff' },
-                shape: { type: 'circle' },
-                opacity: {
-                    value: 0.5,
-                    random: true,
-                    anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false }
-                },
-                size: {
-                    value: 3,
-                    random: true,
-                    anim: { enable: true, speed: 2, size_min: 0.1, sync: false }
-                },
-                line_linked: {
-                    enable: true,
-                    distance: 150,
-                    color: '#60efff',
-                    opacity: 0.2,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 2,
-                    direction: 'none',
-                    random: true,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false,
-                }
-            },
-            interactivity: {
-                detect_on: 'canvas',
-                events: {
-                    onhover: { enable: true, mode: 'repulse' },
-                    onclick: { enable: true, mode: 'push' },
-                    resize: true
-                },
-                modes: {
-                    repulse: { distance: 100, duration: 0.4 },
-                    push: { particles_nb: 4 }
-                }
-            },
-            retina_detect: true
-        });
-
-        // Enhanced Three.js globe
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('globe').appendChild(renderer.domElement);
-
-        // Create enhanced globe with adjusted parameters
-        const geometry = new THREE.SphereGeometry(180, 64, 64);
-        const material = new THREE.MeshPhongMaterial({
-            color: 0x60efff,
-            transparent: true,
-            opacity: 0.3,
-            wireframe: true,
-            wireframeLinewidth: 3
-        });
-        const globe = new THREE.Mesh(geometry, material);
-        scene.add(globe);
-
-        // Enhanced lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xffffff, 0.8);
-        pointLight.position.set(100, 100, 100);
-        scene.add(pointLight);
-
-        // Add hemisphere light for better depth
-        const hemiLight = new THREE.HemisphereLight(0x60efff, 0x00ff87, 0.7);
-        scene.add(hemiLight);
-
-        camera.position.z = 300;
-
-        // Enhanced animation with faster rotation
-        function animate() {
-            requestAnimationFrame(animate);
-            globe.rotation.y += 0.0003;
-            globe.rotation.x += 0.0002;
-            renderer.render(scene, camera);
-        }
-
-        // Enhanced window resize handling
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        animate();
-    </script>
-</body>
-</html>
+</div>
+{% endblock %}

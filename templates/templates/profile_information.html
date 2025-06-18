@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Personal Information - KasiKash{% endblock %}
+{% block content %}
+<div style="background: #f3f2f7; min-height: 100vh; padding: 40px 0;">
+  <div class="container">
+    <a href="{{ url_for('profile') }}" style="text-decoration:none; color:#1976d2; font-weight:bold; display:flex; align-items:center; margin-bottom:2rem;">
+      <i class="fa fa-arrow-left" style="margin-right:8px;"></i> Back to Profile
+    </a>
+    <div class="mx-auto" style="max-width:900px;">
+      <div class="bg-white rounded-4 shadow p-4">
+        <h4 class="mb-4" style="font-weight:bold;">Personal Information</h4>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">FIRST NAME</span><br>
+          {{ current_user.first_name }} <span style="color:#aaa; font-size:0.9em;">(required)</span>
+        </div>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">LAST NAME</span><br>
+          {{ current_user.last_name }} <span style="color:#aaa; font-size:0.9em;">(required)</span>
+        </div>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">EMAIL ADDRESS</span><br>
+          {{ current_user.email }} <span style="color:#aaa; font-size:0.9em;">(required)</span>
+        </div>
+        <hr>
+        <h5 class="mb-3" style="font-weight:bold;">Location and Identity Details</h5>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">COUNTRY CODE</span><br>
+          <i class="fa fa-flag"></i> South Africa
+        </div>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">PHONE NUMBER</span><br>
+          {{ current_user.phone_number }} <span style="color:#aaa; font-size:0.9em;">(required)</span>
+        </div>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">COUNTRY</span><br>
+          <i class="fa fa-globe"></i> {{ current_user.country }}
+        </div>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">ID TYPE</span><br>
+          <i class="fa fa-id-card"></i> {{ current_user.id_type }}
+        </div>
+        <div class="mb-4">
+          <span style="color:#1976d2; font-weight:bold;">ID/PASSPORT NUMBER</span><br>
+          {{ current_user.id_number }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
