@@ -37,8 +37,10 @@ CREATE TABLE IF NOT EXISTS stokvels (
 CREATE TABLE IF NOT EXISTS stokvel_members (
     id SERIAL PRIMARY KEY,
     stokvel_id INTEGER NOT NULL REFERENCES stokvels(id) ON DELETE CASCADE,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    email VARCHAR(255),
     role VARCHAR(50) NOT NULL DEFAULT 'member',
+    status VARCHAR(20) DEFAULT 'pending',
     UNIQUE (stokvel_id, user_id)
 );
 
@@ -156,9 +158,15 @@ END $$;
 
 -- Add missing column to stokvel_members table
 DO $$ BEGIN
-    ALTER TABLE stokvel_members ADD COLUMN role VARCHAR(50) NOT NULL DEFAULT 'member';
+    ALTER TABLE stokvel_members ADD COLUMN email VARCHAR(255);
 EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column role already exists in stokvel_members.';
+    WHEN duplicate_column THEN RAISE NOTICE 'column email already exists in stokvel_members.';
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE stokvel_members ADD COLUMN status VARCHAR(20) DEFAULT 'pending';
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column status already exists in stokvel_members.';
 END $$;
 
 -- Add missing columns to transactions table
