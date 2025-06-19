@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, flash, jsonify, url_for, Response, send_file
 import os
 from datetime import timedelta, datetime
+from datetime import timedelta, datetime
 import pandas as pd
 import plotly
 import plotly.express as px
@@ -216,7 +217,7 @@ def home():
         
     try:
         # Initialize default values
-        user_name = str(session.get('username', 'User'))
+        username = str(session.get('username', 'User'))
         current_balance = float(0.00)
         total_contributions = float(0.00)
         total_withdrawals = float(0.00)
@@ -244,7 +245,7 @@ def home():
                     cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (session['user_id'],))
                     user = cur.fetchone()
                     if user and user[0]:
-                        user_name = str(user[0])
+                        username = str(user[0])
         except Exception as e:
             print(f"Database error: {str(e)}")
             # Continue with default values if database query fails
@@ -252,7 +253,7 @@ def home():
         notification_count = get_notification_count(session.get('user_id')) # Get notification count
 
         return render_template('dashboard.html',
-                            user_name=user_name,
+                            username=username,
                             current_balance=current_balance,
                             total_contributions=total_contributions,
                             total_withdrawals=total_withdrawals,
@@ -304,7 +305,7 @@ def analysis():
             month_bar = support.month_bar(df, 280)
             sun = support.meraSunburst(df, 280)
             return render_template('analysis.html',
-                                   user_name=userdata[0][1],
+                                   username=userdata[0][1],
                                    pie=pie,
                                    bar=bar,
                                    line=line,
@@ -315,7 +316,7 @@ def analysis():
                                    )
         else:
             return render_template('analysis.html',
-                                   user_name=userdata[0][1],
+                                   username=userdata[0][1],
                                    pie=None,
                                    bar=None,
                                    line=None,
@@ -1662,14 +1663,14 @@ def update_profile():
 
 @app.context_processor
 def inject_user_name():
-    user_name = None
+    username = None
     if 'user_id' in session:
         # Changed to firebase_uid
         user_query = "SELECT username FROM users WHERE firebase_uid = %s"
         user_data = support.execute_query("search", user_query, (session['user_id'],))
         if user_data:
-            user_name = user_data[0][0]
-    return dict(user_name=user_name)
+            username = user_data[0][0]
+    return dict(username=username)
 
 def send_email(to_email, subject, body):
     try:
@@ -1733,29 +1734,26 @@ def handle_chat():
             return jsonify({'error': 'No message provided'}), 400
 
         user_message = data['message']
+        mode = data.get('mode', 'ai')  # Default to AI mode if not provided
         user_id = session.get('user_id')
-        
         if not user_id:
             return jsonify({'error': 'User not logged in'}), 401
 
-        # Get user context from database
+        # Fetch user context from database (username, total_saved, stokvels, transactions)
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Get user info by firebase_uid
+                # Get username
                 cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (user_id,))
                 user = cur.fetchone()
-                if not user:
-                    return jsonify({'error': 'User not found'}), 404
-                
-                username = user[0]
-                
+                username = user[0] if user else 'User'
+
                 # Get total savings
                 cur.execute("""
                     SELECT SUM(amount) FROM transactions
                     WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
                 """, (user_id,))
                 total_saved = cur.fetchone()[0] or 0
-                
+
                 # Get stokvel memberships
                 cur.execute("""
                     SELECT s.name, s.monthly_contribution, s.target_date 
@@ -1764,7 +1762,7 @@ def handle_chat():
                     WHERE sm.user_id = %s
                 """, (user_id,))
                 stokvels = cur.fetchall()
-                
+
                 # Get recent transactions
                 cur.execute("""
                     SELECT amount, type, description, transaction_date 
@@ -1775,62 +1773,251 @@ def handle_chat():
                 """, (user_id,))
                 transactions = cur.fetchall()
 
-        # Use OpenRouter with Google Gemma 3n 4B model
-        if openrouter_available:
-            try:
-                # Simplified system prompt for faster responses
-                system_prompt = f"You are KasiKash AI, a helpful assistant for stokvel (community savings). User: {username}, Saved: R{total_saved}, Stokvels: {len(stokvels)}. Be concise and helpful.\n\n"
-                full_message = f"{system_prompt}{user_message}"
-                
-                response = requests.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openrouter_api_key}"},
-                    json={
-                        "model": "google/gemma-3n-e4b-it:free",
-                        "messages": [{"role": "user", "content": full_message}],
-                        "max_tokens": 300,  # Reduced for faster responses
-                        "temperature": 0.7
-                    },
-                    timeout=10  # 10 second timeout
-                )
-                
-                if response.status_code == 200:
-                    response_data = response.json()
-                    response = response_data['choices'][0]['message']['content']
-                else:
-                    print(f"OpenRouter API error: {response.status_code} - {response.text}")
-                    response = "I'm having trouble connecting to my AI service right now. Please try again later."
+        if mode == 'ai':
+            # Use OpenRouter with Google Gemma 3n 4B model
+            if openrouter_available:
+                try:
+                    # System prompt instructs not to use Markdown or asterisks
+                    system_prompt = f"You are KasiKash AI, a helpful assistant for stokvel (community savings). User: {username}, Saved: R{total_saved}, Stokvels: {len(stokvels)}. Be concise and helpful. Do not use Markdown or asterisks for formatting. Respond in plain text only.\n\n"
+                    full_message = f"{system_prompt}{user_message}"
                     
-            except requests.exceptions.Timeout:
-                print("OpenRouter API timeout")
-                response = "The AI service is taking too long to respond. Please try again."
-            except Exception as e:
-                print(f"OpenRouter API error: {e}")
-                response = "I'm having trouble connecting to my AI service right now. Please try again later or contact support if the issue persists."
+                    response = requests.post(
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {openrouter_api_key}"},
+                        json={
+                            "model": "google/gemma-3n-e4b-it:free",
+                            "messages": [{"role": "user", "content": full_message}],
+                            "max_tokens": 300,  # Reduced for faster responses
+                            "temperature": 0.7
+                        },
+                        timeout=10  # 10 second timeout
+                    )
+                    
+                    if response.status_code == 200:
+                        response_data = response.json()
+                        response = response_data['choices'][0]['message']['content']
+                    else:
+                        print(f"OpenRouter API error: {response.status_code} - {response.text}")
+                        response = "I'm having trouble connecting to my AI service right now. Please try again later."
+                        
+                except requests.exceptions.Timeout:
+                    print("OpenRouter API timeout")
+                    response = "The AI service is taking too long to respond. Please try again."
+                except Exception as e:
+                    print(f"OpenRouter API error: {e}")
+                    response = "I'm having trouble connecting to my AI service right now. Please try again later or contact support if the issue persists."
+            else:
+                response = "AI mode is not available right now. Please try again later or use App Mode."
         else:
-            # Fallback to simple rule-based responses if OpenRouter is not available
-            user_message_lower = user_message.lower()
-            response = "I'm not sure how to help with that. You can ask me about your savings, stokvels, or recent transactions."
+            # App Mode (formerly Rule-based Mode)
+            user_message_lower = user_message.lower().strip()
+            response = None
+            chat_state = session.get('chat_state')
+            stokvel_data = session.get('stokvel_data', {})
 
-            if "how much" in user_message_lower and "saved" in user_message_lower:
-                response = f"You have saved R{total_saved} in total across all your stokvels."
-            
-            elif "stokvel" in user_message_lower:
-                if stokvels:
-                    stokvel_list = "\n".join([f"- {s[0]}: R{s[1]} monthly" for s in stokvels])
-                    response = f"You are a member of these stokvels:\n{stokvel_list}"
+            # Multi-turn stokvel creation flow
+            if chat_state == 'stokvel_creation':
+                # Allow cancel
+                if user_message_lower in ['cancel', 'stop', 'exit']:
+                    session.pop('chat_state', None)
+                    session.pop('stokvel_data', None)
+                    response = "Stokvel creation cancelled. Let me know if you want to start again!"
+                # Step 1: Name
+                elif 'name' not in stokvel_data:
+                    stokvel_data['name'] = user_message.strip()
+                    session['stokvel_data'] = stokvel_data
+                    response = "What is the monthly contribution amount? (e.g., 500)"
+                # Step 2: Monthly contribution
+                elif 'monthly_contribution' not in stokvel_data:
+                    try:
+                        amount = float(user_message.strip())
+                        if amount <= 0:
+                            raise ValueError
+                        stokvel_data['monthly_contribution'] = amount
+                        session['stokvel_data'] = stokvel_data
+                        response = "What is the target date for your stokvel? (e.g., 2025-12-31)"
+                    except Exception:
+                        response = "Please enter a valid positive number for the monthly contribution."
+                # Step 3: Target date
+                elif 'target_date' not in stokvel_data:
+                    try:
+                        # Use dateutil to parse a wide range of date formats
+                        dt = date_parser.parse(user_message.strip(), dayfirst=False, yearfirst=True)
+                        stokvel_data['target_date'] = dt.strftime('%Y-%m-%d')  # Store in standard format
+                        session['stokvel_data'] = stokvel_data
+                        response = "Please describe the rules or purpose of your stokvel."
+                    except Exception:
+                        response = "That date is invalid or in the wrong format. Please enter a valid date like 2025-12-31."
+                # Step 4: Rules
+                elif 'rules' not in stokvel_data:
+                    stokvel_data['rules'] = user_message.strip()
+                    session['stokvel_data'] = stokvel_data
+                    # All info collected, create stokvel
+                    try:
+                        with support.db_connection() as conn:
+                            with conn.cursor() as cur:
+                                # Insert into stokvels (store rules in description)
+                                cur.execute("""
+                                    INSERT INTO stokvels (name, monthly_contribution, target_date, description)
+                                    VALUES (%s, %s, %s, %s) RETURNING id
+                                """, (
+                                    stokvel_data['name'],
+                                    stokvel_data['monthly_contribution'],
+                                    stokvel_data['target_date'],
+                                    stokvel_data['rules']
+                                ))
+                                stokvel_id = cur.fetchone()[0]
+                                # Add user as admin member
+                                cur.execute("""
+                                    INSERT INTO stokvel_members (stokvel_id, user_id, role)
+                                    VALUES (%s, %s, 'admin')
+                                """, (stokvel_id, user_id))
+                                conn.commit()
+                        response = f"Your stokvel '{stokvel_data['name']}' has been created! Would you like to add members now? (Type their email or 'no' to finish)"
+                    except Exception as e:
+                        print(f"Error creating stokvel: {e}")
+                        response = "Sorry, there was an error creating your stokvel. Please try again later."
+                    # Clear state
+                    session.pop('chat_state', None)
+                    session.pop('stokvel_data', None)
                 else:
-                    response = "You are not currently a member of any stokvels."
-            
-            elif "recent" in user_message_lower and "transaction" in user_message_lower:
+                    response = "Something went wrong. Please type 'cancel' to start over."
+                return jsonify({'response': response})
+
+            # Start stokvel creation
+            if user_message_lower in [
+                'create stokvel', 'i want to create a stokvel', 'start stokvel', 'open stokvel',
+                'create a stokvel', 'new stokvel', 'add stokvel', 'begin stokvel creation'
+            ]:
+                session['chat_state'] = 'stokvel_creation'
+                session['stokvel_data'] = {}
+                return jsonify({'response': 'Great! What would you like to name your stokvel? (Type "cancel" to stop at any time)'})
+
+            elif any(kw in user_message_lower for kw in ["how much", "total saved", "my savings", "how much have i saved"]):
+                response = f"You have saved R{total_saved} in total across all your stokvels."
+
+            elif any(kw in user_message_lower for kw in ["create stokvel", "new stokvel", "start stokvel", "open stokvel"]):
+                response = (
+                    "To create a new stokvel: Go to the 'Stokvels' section, click 'Create New Stokvel', "
+                    "fill in the details (name, rules, etc.), and invite members."
+                )
+
+            elif any(kw in user_message_lower for kw in ["add member", "invite member", "add someone", "add user", "add person"]):
+                response = (
+                    "To add members to your stokvel: Go to your stokvel's page, click 'Add Member', "
+                    "enter their email address, and send the invitation."
+                )
+
+            elif any(kw in user_message_lower for kw in ["make contribution", "contribute", "add contribution", "pay contribution", "send money to stokvel"]):
+                response = (
+                    "To make a contribution: Go to your stokvel, select 'Make Contribution', "
+                    "choose the amount and payment method, and confirm."
+                )
+
+            elif any(kw in user_message_lower for kw in ["payment method", "add card", "add bank", "my cards", "my banks", "add payment method", "link card", "link bank"]):
+                try:
+                    cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s OR user_id = (SELECT id FROM users WHERE firebase_uid = %s)", (user_id, user_id))
+                    methods = cur.fetchall()
+                    if methods:
+                        method_list = "\n".join([f"- {m[0]}: {m[1]}" for m in methods])
+                        response = f"Your payment methods:\n{method_list}"
+                    else:
+                        response = "You have no payment methods saved. Add one in the Payment Methods section."
+                except Exception as e:
+                    print(f"Error fetching payment methods: {e}")
+                    response = "You have no payment methods saved. Add one in the Payment Methods section."
+
+            elif any(kw in user_message_lower for kw in ["savings goal", "goal", "add goal", "set goal", "my goals", "track savings"]):
+                try:
+                    cur.execute("SELECT name, target_amount FROM savings_goals WHERE user_id = %s", (user_id,))
+                    goals = cur.fetchall()
+                    if goals:
+                        goal_list = "\n".join([f"- {g[0]}: R{g[1]}" for g in goals])
+                        response = f"Your savings goals:\n{goal_list}"
+                    else:
+                        response = "You have no savings goals set. Add one in the Savings Goals section."
+                except Exception as e:
+                    print(f"Error fetching savings goals: {e}")
+                    response = "You have no savings goals set. Add one in the Savings Goals section."
+
+            elif any(kw in user_message_lower for kw in ["payout", "withdraw", "request payout", "get money", "take money out", "withdrawal"]):
+                response = (
+                    "To request a payout: Go to your stokvel, select 'Request Payout', "
+                    "enter the amount and reason, and submit your request."
+                )
+
+            elif any(kw in user_message_lower for kw in ["profile", "my profile", "update profile", "edit profile", "change name", "change email"]):
+                response = (
+                    "To view or update your profile: Click your profile icon in the sidebar or go to the Profile page. "
+                    "You can change your name or email address there."
+                )
+
+            elif any(kw in user_message_lower for kw in ["change password", "reset password", "forgot password", "update password"]):
+                response = (
+                    "To change your password: Go to the Profile page and click 'Reset Password'. "
+                    "You will receive an email with instructions to reset your password."
+                )
+
+            elif any(kw in user_message_lower for kw in ["verify email", "not verified", "email verification", "resend verification"]):
+                response = (
+                    "If your profile says 'not verified', please check your email inbox for a verification link. "
+                    "If you didn't receive one, go to the Profile page and click 'Resend Verification Email'."
+                )
+
+            elif any(kw in user_message_lower for kw in ["dashboard", "home", "main page", "go to dashboard", "go home"]):
+                response = (
+                    "To return to the dashboard, click the 'Dashboard' link in the sidebar or the KasiKash logo."
+                )
+
+            elif any(kw in user_message_lower for kw in ["recent transaction", "transaction history", "my transactions", "show transactions", "latest transactions"]):
                 if transactions:
                     transaction_list = "\n".join([f"- {t[1]}: R{t[0]} ({t[2]}) on {t[3]}" for t in transactions])
                     response = f"Your recent transactions:\n{transaction_list}"
                 else:
                     response = "You don't have any recent transactions."
-            
-            elif "hello" in user_message_lower or "hi" in user_message_lower:
+
+            elif any(kw in user_message_lower for kw in ["help", "what can you do", "features", "how does it work", "how do i use", "explain"]):
+                response = (
+                    "I can help you with: Stokvel management, creating stokvels, adding members, making contributions, "
+                    "managing payment methods, setting savings goals, requesting payouts, updating your profile, changing your password, verifying your email, and navigating the app. "
+                    "Just ask me how to do anything!"
+                )
+
+            elif any(kw in user_message_lower for kw in ["hello", "hi", "hey", "good morning", "good afternoon", "good evening"]):
                 response = f"Hello {username}! How can I help you today? You can ask me about your savings, stokvels, or recent transactions."
+
+            else:
+                response = "I'm not sure how to help with that. You can ask me about your savings, stokvels, or any feature in the app."
+
+            # Add fallback for settings and general 'how do I ...' questions
+            if not response:
+                if "settings" in user_message_lower:
+                    response = (
+                        "The Settings feature lets you manage your notification preferences (email, SMS, push), "
+                        "enable or disable two-factor authentication, and control other account options. "
+                        "Go to the Settings page from the sidebar to make changes."
+                    )
+                elif re.match(r"how do i (do|use|access|change|update|set|enable|disable) it", user_message_lower):
+                    response = (
+                        "Please specify what you want to do, for example: 'How do I add a payment method?' or 'How do I change my password?'"
+                    )
+
+            # Special case for 'add payment method' to always give instructions
+            if any(kw in user_message_lower for kw in ["add payment method", "add a payment method", "link card", "link bank", "how do i add a payment method"]):
+                response = "To add a payment method: Go to the Payment Methods section, click 'Add Payment Method', enter your card or bank details, and save."
+
+            elif any(kw in user_message_lower for kw in ["payment method", "add card", "add bank", "my cards", "my banks"]):
+                try:
+                    cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s OR user_id = (SELECT id FROM users WHERE firebase_uid = %s)", (user_id, user_id))
+                    methods = cur.fetchall()
+                    if methods:
+                        method_list = "\n".join([f"- {m[0]}: {m[1]}" for m in methods])
+                        response = f"Your payment methods:\n{method_list}"
+                    else:
+                        response = "You have no payment methods saved. To add one, go to the Payment Methods section and click 'Add Payment Method'."
+                except Exception as e:
+                    print(f"Error fetching payment methods: {e}")
+                    response = "You have no payment methods saved. To add one, go to the Payment Methods section and click 'Add Payment Method'."
 
         return jsonify({'response': response})
 

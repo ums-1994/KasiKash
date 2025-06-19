@@ -12,16 +12,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentMode = document.getElementById('current-mode');
     
     let isProcessing = false;
-    let isAIMode = true; // Default to AI mode
+    let isAIMode = false; // Default to App Mode
     
-    // Clear chat history on page load to start fresh
-    localStorage.removeItem('kasiChatHistory');
+    // Only clear chat history on the first load of the app (not on every page navigation)
+    if (!sessionStorage.getItem('kasiChatHistoryCleared')) {
+        localStorage.removeItem('kasiChatHistory');
+        sessionStorage.setItem('kasiChatHistoryCleared', 'true');
+    }
     
     // Load AI mode preference from localStorage
     const savedAIMode = localStorage.getItem('kasiAIMode');
     if (savedAIMode !== null) {
         isAIMode = savedAIMode === 'true';
         aiModeToggle.checked = isAIMode;
+        updateModeDisplay();
+    } else {
+        aiModeToggle.checked = false; // Default toggle to App Mode
         updateModeDisplay();
     }
     
@@ -34,17 +40,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add a mode change message
         const modeMessage = isAIMode ? 
             '🤖 Switched to AI Mode - Powered by Google Gemma 3n 4B' : 
-            '📋 Switched to Rule-based Mode - Quick responses';
+            '📱 Switched to App Mode - Quick responses';
         addMessage(modeMessage, 'bot');
     });
     
     function updateModeDisplay() {
         if (isAIMode) {
             currentMode.textContent = '🤖 AI Mode';
-            chatbotContainer.classList.remove('rule-based-mode');
+            document.querySelector('.mode-label').textContent = 'AI Mode';
+            chatbotContainer.classList.remove('app-mode');
         } else {
-            currentMode.textContent = '📋 Rule-based Mode';
-            chatbotContainer.classList.add('rule-based-mode');
+            currentMode.textContent = '📱 App Mode';
+            document.querySelector('.mode-label').textContent = 'App Mode';
+            chatbotContainer.classList.add('app-mode');
         }
     }
 
@@ -154,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
                 },
-                body: JSON.stringify({ message: message })
+                body: JSON.stringify({ message: message, mode: isAIMode ? 'ai' : 'rule' })
             });
             
             // Remove loading indicator
@@ -166,7 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const data = await response.json();
-            addMessage(data.response, 'bot');
+            // Strip asterisks from bot responses before displaying
+            let botResponse = data.response.replace(/\*+/g, '');
+            addMessage(botResponse, 'bot');
         } catch (error) {
             console.error('Error:', error);
             addMessage('Sorry, I encountered an error. Please try again later.', 'bot', 'error');
