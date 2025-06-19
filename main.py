@@ -27,6 +27,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from flask_session import Session
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from dateutil import parser as date_parser
 
 # Email handling imports
 import smtplib
@@ -34,6 +35,7 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from werkzeug.utils import secure_filename
+import re
 
 # Load environment variables
 load_dotenv()
@@ -482,12 +484,10 @@ def forgot_password():
                 user = auth.get_user_by_email(email)
                 print(f"Found user for password reset: {user.uid}")
                 print(f"User email verified: {user.email_verified}")
-                
                 # Generate password reset link
                 print("Generating password reset link...")
                 reset_link = auth.generate_password_reset_link(email)
                 print(f"Generated password reset link for {email}")
-                
                 # Send password reset email
                 print("Attempting to send password reset email...")
                 if send_password_reset_email(email, reset_link):
@@ -513,44 +513,37 @@ def forgot_password():
                                 import string
                                 alphabet = string.ascii_letters + string.digits
                                 temp_password = ''.join(secrets.choice(alphabet) for i in range(12))
-                                
                                 # Create Firebase account for existing user
                                 firebase_user = create_firebase_user(email, temp_password)
                                 if firebase_user:
                                     old_firebase_uid = user_data[1]
                                     new_firebase_uid = firebase_user.uid
-                                    
                                     # Update stokvels table first
                                     cur.execute("""
                                         UPDATE stokvels 
                                         SET created_by = %s 
                                         WHERE created_by = %s
                                     """, (new_firebase_uid, old_firebase_uid))
-                                    
                                     # Update stokvel_members table
                                     cur.execute("""
                                         UPDATE stokvel_members 
                                         SET firebase_uid = %s 
                                         WHERE firebase_uid = %s
                                     """, (new_firebase_uid, old_firebase_uid))
-                                    
                                     # Update contributions table
                                     cur.execute("""
                                         UPDATE contributions 
                                         SET firebase_uid = %s 
                                         WHERE firebase_uid = %s
                                     """, (new_firebase_uid, old_firebase_uid))
-                                    
                                     # Now update the users table
                                     cur.execute("""
                                         UPDATE users 
                                         SET firebase_uid = %s 
                                         WHERE email = %s
                                     """, (new_firebase_uid, email))
-                                    
                                     conn.commit()
                                     print(f"Successfully updated all references from {old_firebase_uid} to {new_firebase_uid}")
-                                    
                                     # Generate and send reset link
                                     reset_link = auth.generate_password_reset_link(email)
                                     if send_password_reset_email(email, reset_link):
@@ -600,7 +593,7 @@ def send_password_reset_email(to_email, reset_link):
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #2c5282;">Reset Your Password</h2>
-            <p>Hello,</p>
+        <p>Hello,</p>
             <p>We received a request to reset your password for your KasiKash account.</p>
             <p>Click the button below to reset your password:</p>
             <div style="text-align: center; margin: 30px 0;">
@@ -935,7 +928,6 @@ def contributions():
                                 transaction_date = str(transaction_date)
                         else:
                             transaction_date = 'N/A'
-                        
                         contribution_dict = {
                             'id': row[0],
                             'amount': float(row[1]) if row[1] is not None else 0.0,
@@ -947,8 +939,7 @@ def contributions():
                         contributions_list.append(contribution_dict)
                     except Exception as e:
                         print(f"Error processing contribution row: {e}")
-                        continue
-
+                        # continue is not needed here, just skip to next
                 # Convert stokvels to list of dictionaries
                 stokvels_list = []
                 for row in stokvels:
@@ -959,8 +950,6 @@ def contributions():
                         })
                     except Exception as e:
                         print(f"Error processing stokvel row: {e}")
-                        continue
-
                 print(f"Successfully processed {len(contributions_list)} contributions and {len(stokvels_list)} stokvels")
                 return render_template('contributions.html', 
                                      contributions=contributions_list,
@@ -982,19 +971,15 @@ def make_contribution():
         if not user_id:
             flash("Please log in to make a contribution.", "error")
             return redirect(url_for('login'))
-
         stokvel_id = request.form.get('stokvel_id')
         amount = request.form.get('amount')
         description = request.form.get('description')
-
         if not all([stokvel_id, amount, description]):
             flash("Stokvel, amount, and description are required for a contribution.")
             return redirect('/contributions')
-
         try:
             amount = float(amount)
             stokvel_id = int(stokvel_id)
-
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
                     # Check if the user is actually a member of this stokvel
@@ -1002,18 +987,15 @@ def make_contribution():
                     if not cur.fetchone():
                         flash("You are not a member of this stokvel.")
                         return redirect('/contributions')
-
                     # Insert the contribution transaction
                     cur.execute("""
                         INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
                         VALUES (%s, %s, %s, 'contribution', %s, CURRENT_DATE, 'completed')
                     """, (user_id, stokvel_id, amount, description))
                     conn.commit()
-
                     # Update the stokvel's total pool
                     cur.execute("UPDATE stokvels SET total_pool = COALESCE(total_pool, 0) + %s WHERE id = %s", (amount, stokvel_id))
                     conn.commit()
-
             flash("Contribution recorded successfully!")
             return redirect('/contributions')
         except ValueError:
@@ -1028,7 +1010,6 @@ def make_contribution():
         if not user_id:
             flash("Please log in to make a contribution.", "error")
             return redirect(url_for('login'))
-
         stokvels = []
         try:
             with support.db_connection() as conn:
@@ -1048,7 +1029,6 @@ def make_contribution():
             print(f"Error fetching stokvels: {str(e)}")
             flash("Error loading stokvels. Please try again.", "error")
             stokvels = [] # Ensure stokvels is empty on error
-
         return render_template("make_contribution.html", stokvels=stokvels)
 
 @app.route('/payouts')
@@ -1223,7 +1203,7 @@ def view_stokvel_members(stokvel_id):
                 stokvel = dict(zip(stokvel_keys, stokvel_tuple))
                 print(f"DEBUG: Converted stokvel dict: {stokvel}") # Debug log
 
-                # Get members of the stokvel, including their role and member_id
+                # Get registered members (joined with users)
                 cur.execute("""
                     SELECT u.username, u.email, sm.role, sm.id as member_id
                     FROM users u
@@ -1233,10 +1213,22 @@ def view_stokvel_members(stokvel_id):
                 members_tuples = cur.fetchall()
                 print(f"DEBUG: Members query result: {members_tuples}") # Debug log
 
+                # Get pending members (no user_id, just email)
+                cur.execute("""
+                    SELECT NULL as username, sm.email, sm.role, sm.id as member_id
+                    FROM stokvel_members sm
+                    WHERE sm.stokvel_id = %s AND sm.user_id IS NULL AND sm.email IS NOT NULL
+                """, (stokvel_id,))
+                pending_members_tuples = cur.fetchall()
+                print(f"DEBUG: Pending members query result: {pending_members_tuples}") # Debug log
+
+                # Combine both lists
+                all_members_tuples = list(members_tuples) + list(pending_members_tuples)
+
                 # Convert members tuples to a list of dictionaries
                 members_list = []
                 member_keys = ['username', 'email', 'role', 'member_id']
-                for member_tuple in members_tuples:
+                for member_tuple in all_members_tuples:
                     members_list.append(dict(zip(member_keys, member_tuple)))
                 print(f"DEBUG: Converted members list: {members_list}") # Debug log
 
@@ -1254,7 +1246,6 @@ def view_stokvel_members(stokvel_id):
         print(f"ERROR: view_stokvel_members failed: {e}") # Enhanced error logging
         flash("An error occurred while loading stokvel members. Please try again.")
         return redirect('/stokvels')
-
 
 @app.route('/stokvel/<int:stokvel_id>/join', methods=['POST'])
 @login_required
@@ -1746,14 +1737,14 @@ def handle_chat():
                 cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (user_id,))
                 user = cur.fetchone()
                 username = user[0] if user else 'User'
-
+                
                 # Get total savings
                 cur.execute("""
                     SELECT SUM(amount) FROM transactions
                     WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
                 """, (user_id,))
                 total_saved = cur.fetchone()[0] or 0
-
+                
                 # Get stokvel memberships
                 cur.execute("""
                     SELECT s.name, s.monthly_contribution, s.target_date 
@@ -1762,7 +1753,7 @@ def handle_chat():
                     WHERE sm.user_id = %s
                 """, (user_id,))
                 stokvels = cur.fetchall()
-
+                
                 # Get recent transactions
                 cur.execute("""
                     SELECT amount, type, description, transaction_date 
@@ -1777,10 +1768,15 @@ def handle_chat():
             # Use OpenRouter with Google Gemma 3n 4B model
             if openrouter_available:
                 try:
-                    # System prompt instructs not to use Markdown or asterisks
-                    system_prompt = f"You are KasiKash AI, a helpful assistant for stokvel (community savings). User: {username}, Saved: R{total_saved}, Stokvels: {len(stokvels)}. Be concise and helpful. Do not use Markdown or asterisks for formatting. Respond in plain text only.\n\n"
+                    # Broader system prompt for general financial and knowledge questions
+                    system_prompt = (
+                        f"You are KasiKash AI, a helpful and knowledgeable assistant. "
+                        f"You can answer questions about stokvels, personal finance, the stock market, general financial topics, and more. "
+                        f"User: {username}, Saved: R{total_saved}, Stokvels: {len(stokvels)}. "
+                        "Be concise, accurate, and helpful. Do not use Markdown or asterisks for formatting. Respond in plain text only. "
+                        "Do not invent organization names, websites, or mix languages/scripts. If you do not know the answer, say so or suggest consulting a reputable source.\n\n"
+                    )
                     full_message = f"{system_prompt}{user_message}"
-                    
                     response = requests.post(
                         "https://openrouter.ai/api/v1/chat/completions",
                         headers={"Authorization": f"Bearer {openrouter_api_key}"},
@@ -1792,14 +1788,12 @@ def handle_chat():
                         },
                         timeout=10  # 10 second timeout
                     )
-                    
                     if response.status_code == 200:
                         response_data = response.json()
                         response = response_data['choices'][0]['message']['content']
                     else:
                         print(f"OpenRouter API error: {response.status_code} - {response.text}")
                         response = "I'm having trouble connecting to my AI service right now. Please try again later."
-                        
                 except requests.exceptions.Timeout:
                     print("OpenRouter API timeout")
                     response = "The AI service is taking too long to respond. Please try again."
@@ -1873,18 +1867,53 @@ def handle_chat():
                                     VALUES (%s, %s, 'admin')
                                 """, (stokvel_id, user_id))
                                 conn.commit()
+                        # Instead of clearing state, go to member adding state
+                        session['chat_state'] = 'adding_stokvel_members'
+                        session['new_stokvel_id'] = stokvel_id
+                        session.pop('stokvel_data', None)
                         response = f"Your stokvel '{stokvel_data['name']}' has been created! Would you like to add members now? (Type their email or 'no' to finish)"
                     except Exception as e:
                         print(f"Error creating stokvel: {e}")
                         response = "Sorry, there was an error creating your stokvel. Please try again later."
-                    # Clear state
-                    session.pop('chat_state', None)
-                    session.pop('stokvel_data', None)
+                        session.pop('chat_state', None)
+                        session.pop('stokvel_data', None)
+                    return jsonify({'response': response})
                 else:
                     response = "Something went wrong. Please type 'cancel' to start over."
                 return jsonify({'response': response})
 
-            # Start stokvel creation
+            # Multi-turn add members to stokvel flow
+            if chat_state == 'adding_stokvel_members':
+                if user_message_lower in ['no', 'done', 'finish', 'skip']:
+                    session.pop('chat_state', None)
+                    session.pop('new_stokvel_id', None)
+                    response = "Stokvel setup complete! You can add more members later from the stokvel page."
+                elif re.match(r"[^@]+@[^@]+\.[^@]+", user_message.strip()):
+                    member_email = user_message.strip()
+                    stokvel_id = session.get('new_stokvel_id')
+                    try:
+                        with support.db_connection() as conn:
+                            with conn.cursor() as cur:
+                                # Try to find user by email
+                                cur.execute("SELECT firebase_uid FROM users WHERE email = %s", (member_email,))
+                                user_to_add = cur.fetchone()
+                                if user_to_add:
+                                    cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, email, role, status) VALUES (%s, %s, %s, 'member', 'active')", (stokvel_id, user_to_add[0], member_email))
+                                    conn.commit()
+                                    response = f"{member_email} has been added to your stokvel! Add another email or type 'no' to finish."
+                                else:
+                                    # Add as pending member by email only
+                                    cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, email, role, status) VALUES (%s, NULL, %s, 'pending', 'pending')", (stokvel_id, member_email))
+                                    conn.commit()
+                                    response = f"{member_email} has been added as a pending member. They will be able to join once they register. Add another email or type 'no' to finish."
+                    except Exception as e:
+                        print(f"Error adding member: {e}")
+                        response = "Sorry, there was an error adding that member. Try again or type 'no' to finish."
+                else:
+                    response = "Please enter a valid email address to add a member, or type 'no' to finish."
+                return jsonify({'response': response})
+
+            # Start stokvel creation (move this above generic Q&A)
             if user_message_lower in [
                 'create stokvel', 'i want to create a stokvel', 'start stokvel', 'open stokvel',
                 'create a stokvel', 'new stokvel', 'add stokvel', 'begin stokvel creation'
@@ -1892,6 +1921,91 @@ def handle_chat():
                 session['chat_state'] = 'stokvel_creation'
                 session['stokvel_data'] = {}
                 return jsonify({'response': 'Great! What would you like to name your stokvel? (Type "cancel" to stop at any time)'})
+
+            # List user's stokvels (move this above generic Q&A)
+            if any(kw in user_message_lower for kw in ["my stokvels", "which stokvels am i a part of", "which stokvels do i belong to", "list my stokvels"]):
+                try:
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("""
+                                SELECT name, description FROM stokvels s
+                                JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                                WHERE sm.user_id = %s
+                            """, (user_id,))
+                            stokvels = cur.fetchall()
+                            if stokvels:
+                                stokvel_list = "\n".join([f"- {s[0]}: {s[1]}" for s in stokvels])
+                                response = f"You are a member of the following stokvels:\n{stokvel_list}"
+                            else:
+                                response = "You are not a member of any stokvels yet."
+                except Exception as e:
+                    print(f"Error fetching stokvels: {e}")
+                    response = "Sorry, I couldn't fetch your stokvels right now."
+                return jsonify({'response': response})
+
+            # --- Universal 5W/How/Feature Q&A ---
+            # Define feature explanations
+            feature_faq = {
+                'stokvel': "A stokvel is a community savings group. You can create one, add members, make contributions, and request payouts.",
+                'contribution': "A contribution is a payment you make to your stokvel. Go to 'Make Contribution' to add one.",
+                'payout': "A payout is money withdrawn from the stokvel pool. You can request a payout from your stokvel page.",
+                'payment method': "Payment methods are your saved cards or bank accounts. Add one in the Payment Methods section.",
+                'savings goal': "A savings goal helps you track your progress toward a target amount. Set one in the Savings Goals section.",
+                'profile': "Your profile contains your personal info. You can update your name, email, and upload a profile picture.",
+                'settings': "Settings let you manage notifications, security, and account preferences.",
+                'notification': "Notifications alert you about important activity in your stokvels.",
+                'dashboard': "The dashboard shows your balances, recent activity, and quick links to features.",
+                'register': "To register, click 'Register' and fill in your details. You'll receive a verification email.",
+                'login': "To log in, enter your email and password on the login page.",
+                'logout': "To log out, click the logout button in the menu.",
+                'profile picture': "Upload a profile picture from your profile page to personalize your account.",
+                'kyc': "KYC (Know Your Customer) documents can be uploaded in your profile for verification.",
+                'statement': "A statement is a summary of all transactions in your stokvel. Download it from the stokvel page.",
+                'member': "A member is a person in your stokvel. You can add members by email, even if they haven't registered yet.",
+                'invite': "To invite someone, add their email as a member. If they're not registered, they'll be added as pending and can join later.",
+                'kasikash': "KasiKash is a financial platform for managing stokvels, contributions, savings goals, and more."
+            }
+            # Regex for 5W/How/Feature questions
+            tellme_re = re.compile(r"(tell me about|what is|who is|when is|where is|why is|how do i|how to|how can i|explain|describe|guide me through|show me|help me with) (.+)", re.I)
+            match = tellme_re.match(user_message_lower)
+            if match:
+                question_type, feature = match.groups()
+                feature = feature.strip()
+                # Try to match feature to known features
+                for key in feature_faq:
+                    if key in feature:
+                        response = feature_faq[key]
+                        break
+                else:
+                    response = (f"Here's how to use that feature: Go to the relevant section in the app, follow the on-screen instructions, or ask me for more details about a specific action. "
+                                f"If you need step-by-step help, try asking 'How do I [action]?' or 'Tell me about [feature]'.")
+                return jsonify({'response': response})
+
+            # New intent: tell me about my stokvels
+            elif any(kw in user_message_lower for kw in ["tell me about my stokvels", "my stokvels", "list my stokvels"]):
+                try:
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("""
+                                SELECT name, description FROM stokvels s
+                                JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                                WHERE sm.user_id = %s
+                            """, (user_id,))
+                            stokvels = cur.fetchall()
+                            if stokvels:
+                                stokvel_list = "\n".join([f"- {s[0]}: {s[1]}" for s in stokvels])
+                                response = f"Your stokvels:\n{stokvel_list}"
+                            else:
+                                response = "You are not a member of any stokvels yet."
+                except Exception as e:
+                    print(f"Error fetching stokvels: {e}")
+                    response = "Sorry, I couldn't fetch your stokvels right now."
+            # New intent: tell me about KasiKash
+            elif any(kw in user_message_lower for kw in ["tell me about kasikash", "what is kasikash", "about kasikash"]):
+                response = (
+                    "KasiKash is a financial platform for managing stokvels (community savings groups), "
+                    "tracking contributions, setting savings goals, and more. It helps you and your group save, contribute, and manage money together easily."
+                )
 
             elif any(kw in user_message_lower for kw in ["how much", "total saved", "my savings", "how much have i saved"]):
                 response = f"You have saved R{total_saved} in total across all your stokvels."
@@ -1975,7 +2089,7 @@ def handle_chat():
                     response = f"Your recent transactions:\n{transaction_list}"
                 else:
                     response = "You don't have any recent transactions."
-
+            
             elif any(kw in user_message_lower for kw in ["help", "what can you do", "features", "how does it work", "how do i use", "explain"]):
                 response = (
                     "I can help you with: Stokvel management, creating stokvels, adding members, making contributions, "
@@ -2050,7 +2164,10 @@ def add_stokvel_member(stokvel_id):
             user_to_add_data = cur.fetchone()
 
             if not user_to_add_data:
-                flash(f"User with email {member_email} not found.")
+                # Add as pending member by email only
+                cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, email, role, status) VALUES (%s, NULL, %s, 'pending', 'pending')", (stokvel_id, member_email))
+                conn.commit()
+                flash(f"{member_email} has been added as a pending member. They will be able to join once they register.")
                 return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
             
             user_to_add_id = user_to_add_data[0]
@@ -2063,7 +2180,7 @@ def add_stokvel_member(stokvel_id):
                 return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
             # Add the user as a new member
-            cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, 'member')", (stokvel_id, user_to_add_id,))
+            cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, email, role, status) VALUES (%s, %s, %s, 'member', 'active')", (stokvel_id, user_to_add_id, member_email))
             conn.commit()
 
             # Get stokvel name for email notification
@@ -2077,12 +2194,11 @@ def add_stokvel_member(stokvel_id):
     <html>
         <body>
             <h2>Welcome to {stokvel_name}!</h2>
-            <p>Hello {username_to_add},</p>
-            <p>You have been added as a member to the stokvel "{stokvel_name}".</p>
-            <p>You can now make contributions and request payouts through the stokvel.</p>
-            <p>If you don't have an account, please <a href="{url_for('register', _external=True)}">register here</a> first.</p>
-            <p>Click <a href="{url_for('view_stokvel_members', stokvel_id=stokvel_id, _external=True)}">here</a> to view your stokvel members page and get started!</p>
-            <p>If you are already registered, please log in: <a href="{url_for('login', _external=True)}">Login Page</a></p>
+            <p>Hello {username_to_add if user_to_add_data else member_email},</p>
+            <p>You have been added as a member to the stokvel \"{stokvel_name}\".</p>
+            <p>If you don't have an account, please <a href=\"{url_for('register', _external=True)}\">register here</a> first.</p>
+            <p>Click <a href=\"{url_for('view_stokvel_members', stokvel_id=stokvel_id, _external=True)}\">here</a> to view your stokvel members page and get started!</p>
+            <p>If you are already registered, please log in: <a href=\"{url_for('login', _external=True)}\">Login Page</a></p>
         </body>
     </html>
     """
