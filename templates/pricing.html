@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasiKash - Digital Stokvel Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ocean-1': '#0061ff',
+                        'ocean-2': '#60efff',
+                        'ocean-3': '#00ff87',
+                        'ocean-4': '#0061ff',
+                        'ocean-5': '#45caff',
+                    },
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-reverse': 'float-reverse 8s ease-in-out infinite',
+                        'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'float-reverse': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(20px)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000428, #004e92);
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .rainbow-gradient {
+            background: linear-gradient(135deg, 
+                rgba(0, 97, 255, 0.8) 0%, 
+                rgba(96, 239, 255, 0.8) 25%, 
+                rgba(0, 255, 135, 0.8) 50%, 
+                rgba(0, 97, 255, 0.8) 75%, 
+                rgba(69, 202, 255, 0.8) 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .glow {
+            text-shadow: 0 0 10px rgba(96, 239, 255, 0.7);
+        }
+        
+        .btn-glow {
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 135, 0.8);
+            transform: translateY(-3px);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .feature-icon {
+            transition: all 0.5s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: rotateY(180deg) scale(1.2);
+        }
+        
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wave-shape {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        
+        .wave-shape svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 150px;
+        }
+        
+        .wave-shape .shape-fill {
+            fill: #000428;
+        }
+        
+        /* Globe Animation Container */
+        .globe-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* Dropdown styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .contact-info {
+            color: #fff;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .contact-info i {
+            color: #60efff;
+            width: 20px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- 3D Globe Animation -->
+    <div class="globe-container" id="globe"></div>
+    
+    <div class="content-wrapper">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto animate-float">
+                    <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                </a>
+                <ul class="hidden md:flex space-x-8">
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
+                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                    <li class="dropdown">
+                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a>
+                        <div class="dropdown-content">
+                            <div class="contact-info">
+                                <p class="mb-3"><i class="fas fa-envelope"></i> Email: support@kasikash.co.za</p>
+                                <p class="mb-3"><i class="fas fa-phone"></i> Phone: +27 11 123 4567</p>
+                                <p><i class="fas fa-map-marker-alt"></i> Address: Johannesburg, South Africa</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                </ul>
+                <button class="md:hidden text-white">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Pricing Section -->
+        <section class="py-20 relative overflow-hidden pt-32">
+            <div id="particles-js"></div>
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">Choose Your Plan</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                        From testing the waters to building wealth empires, we have a plan that grows with your community dreams.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <!-- Free Plan -->
+                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
+                        <div class="p-8">
+                            <div class="text-6xl mb-6 text-center text-ocean-2 animate-float">🆓</div>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Free</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-2">R0<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <ul class="space-y-4 mb-8">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Up to 5 Members</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Monthly Tips & Resources</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Events (Pay-as-you-go)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Marketplace (Pay-as-you-go)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Savings Account (6.00% p.a.)</span>
+                                </li>
+                            </ul>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-2 to-ocean-2 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-3 hover:to-ocean-3">
+                                Get Started Free
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Silver Plan -->
+                    <div class="card-hover bg-gray-900 bg-opacity-70 rounded-2xl overflow-hidden border-2 border-ocean-3 transform transition-all duration-500 hover:-translate-y-5 relative">
+                        <div class="absolute top-0 right-0 bg-ocean-3 text-black px-6 py-1 rounded-bl-lg font-bold">Most Popular</div>
+                        <div class="p-8">
+                            <div class="text-6xl mb-6 text-center text-ocean-3 animate-float-reverse">🥈</div>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Silver</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-3">R50<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <ul class="space-y-4 mb-8">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Up to 10 Members (+R50 per 10 more)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Monthly Learning Session</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Events (Up to 10% Discount)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Marketplace (Up to 10% Discount)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Savings Account (6.25% p.a.)</span>
+                                </li>
+                            </ul>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-3 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-4 hover:to-ocean-4">
+                                Choose Silver
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Gold Plan -->
+                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
+                        <div class="p-8">
+                            <div class="text-6xl mb-6 text-center text-ocean-5 animate-float">🥇</div>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Gold</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-5">R100<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <ul class="space-y-4 mb-8">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Up to 15 Members (+R75 per 10 more)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Group Coach Access</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Events (Up to 30% Discount)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Marketplace (Up to 30% Discount)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Savings Account (6.75% p.a.)</span>
+                                </li>
+                            </ul>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-5 to-ocean-5 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-2 hover:to-ocean-2">
+                                Choose Gold
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Platinum Plan -->
+                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
+                        <div class="p-8">
+                            <div class="text-6xl mb-6 text-center text-ocean-4 animate-float-reverse">💎</div>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Platinum</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-4">R150<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <ul class="space-y-4 mb-8">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Up to 20 Members (+R100 per 10 more)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Executive Coach</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">0.5 Hour Quarterly Check-in</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Events (Up to 50% Discount)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Exhibitor Stand</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Marketplace (Up to 50% Discount)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
+                                    <span class="text-gray-300">Savings Account (7.25% p.a.)</span>
+                                </li>
+                            </ul>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-4 to-ocean-4 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-5 hover:to-ocean-5">
+                                Choose Platinum
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-center text-gray-400 mt-12">
+                    All plans include our core stokvel management tools and 24/7 customer support.
+                </p>
+            </div>
+        </section>
+
+        <!-- Transaction Costs Section -->
+        <section class="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">Transaction Costs</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">The fees are the same for all plans - Free, Silver, Gold, and Platinum. No surprises!</p>
+                </div>
+
+                <div class="max-w-4xl mx-auto">
+                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl border border-gray-800 p-8">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-gray-800">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-ocean-2 uppercase tracking-wider">Service</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-ocean-2 uppercase tracking-wider">Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-gray-900 divide-y divide-gray-800">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-white">Electronic Funds Transfer (EFT)</div>
+                                            <div class="text-sm text-gray-400">Club EFT</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R1.00 per R100</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-white">Group Member Claims</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R14.99 per claim</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-white">SMS Notification</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">60c per sms</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-white">Debit Orders</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">FREE (min R300.00 deposit)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-white">Instant Secure EFT Deposit</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R10.00 per transaction</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-white">Online Card Deposit</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R3.99 per R100</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-white">Cash Deposit (ATM/Retail)</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R2.99 per R100 (min R9.99)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-8 p-4 bg-gray-800 rounded-lg">
+                            <h4 class="font-bold text-ocean-2 mb-2">Important Notes:</h4>
+                            <ul class="text-sm text-gray-300 space-y-2">
+                                <li>• Savings Account services only available in RSA and interest is linked to SARB repo rate changes.</li>
+                                <li>• Admin Account is your stokvel money sitting in an account owned by the Executive(s) with another bank.</li>
+                                <li>• Third-Parties Banking & Services only available in RSA.</li>
+                                <li>• EFT transfers may take 2-3 working days to reflect on your profile.</li>
+                                <li>• Cash payments of R400 or less incur a standard ATM/retail fee of R9.99.</li>
+                                <li>• Cash payments available at selected ATMs and tills of over 5,100 stores across South Africa.</li>
+                                <li>• Consultant Assisted Calls: R10 per call attended to, per club member.</li>
+                                <li>• All fees include VAT.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Custom Plan Section -->
+        <section class="py-20 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-bold text-white mb-4">Need More? Get A Custom Plan</h2>
+                    <p class="text-xl text-gray-300 mb-8">Tailored Just for Your Stokvel's Unique Needs</p>
+                    
+                    <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl border border-gray-800 p-8">
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="text-4xl mr-4">🎯</div>
+                            <h3 class="text-2xl font-bold text-ocean-2">Bespoke Solutions for Your Goals</h3>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="p-4 bg-gray-800 rounded-lg">
+                                <div class="text-2xl mb-2">⚡</div>
+                                <h4 class="font-bold text-ocean-3 mb-2">Specialized Tech Features</h4>
+                                <p class="text-gray-300">Custom integrations and advanced functionality</p>
+                            </div>
+                            <div class="p-4 bg-gray-800 rounded-lg">
+                                <div class="text-2xl mb-2">🎨</div>
+                                <h4 class="font-bold text-ocean-3 mb-2">Custom Branding</h4>
+                                <p class="text-gray-300">Your unique identity and visual style</p>
+                            </div>
+                            <div class="p-4 bg-gray-800 rounded-lg">
+                                <div class="text-2xl mb-2">📋</div>
+                                <h4 class="font-bold text-ocean-3 mb-2">Unique Legal Terms</h4>
+                                <p class="text-gray-300">Tailored agreements and conditions</p>
+                            </div>
+                        </div>
+
+                        <p class="text-gray-300 mb-8">With the Custom Plan, you're not just another customer; you're a partner in creating a stokvel experience that's as unique as you are.</p>
+                        
+                        <a href="/contact" class="inline-block bg-gradient-to-r from-ocean-3 to-ocean-2 text-black font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">
+                            Book a Call with Our Experts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-black text-white py-12">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
+                        <p class="text-gray-400 mb-4">
+                            Your digital stokvel platform for community wealth building.
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-3 transition duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-5 transition duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-4 transition duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
+                        <ul class="space-y-2">
+                            <li><a href="/get_started" class="text-gray-400 hover:text-white">Get Started</a></li>
+                            <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
+                            <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
+                            <li><a href="#about" class="text-gray-400 hover:text-white">About</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Licenses</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
+                        <ul class="space-y-2">
+                            <li class="text-gray-400">Email: support@kasikash.co.za</li>
+                            <li class="text-gray-400">Phone: +27 11 123 4567</li>
+                            <li class="text-gray-400">Address: Johannesburg, South Africa</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                    <p>&copy; 2024 KasiKash. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script>
+        // Initialize particles.js
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 80,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#60efff'
+                },
+                shape: {
+                    type: 'circle'
+                },
+                opacity: {
+                    value: 0.5,
+                    random: false
+                },
+                size: {
+                    value: 3,
+                    random: true
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#60efff',
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 1
+                        }
+                    },
+                    push: {
+                        particles_nb: 4
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Initialize 3D Globe
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        const globeContainer = document.getElementById('globe');
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        globeContainer.appendChild(renderer.domElement);
+
+        // Create globe geometry
+        const geometry = new THREE.SphereGeometry(5, 32, 32);
+        const material = new THREE.MeshPhongMaterial({
+            color: 0x60efff,
+            transparent: true,
+            opacity: 0.3,
+            wireframe: true
+        });
+        const globe = new THREE.Mesh(geometry, material);
+        scene.add(globe);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
+
+        camera.position.z = 15;
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            globe.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html> 

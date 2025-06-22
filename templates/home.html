@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - KasiKash{% endblock %}
+
+{% block extra_css %}
+<!-- Add any additional CSS for this page here -->
+<style>
+    .pattern-wavy {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+     /* Add specific styles for the charts if needed, or rely on Plotly defaults and container size */
+    .chart {
+        width: 100%;
+        height: 300px; /* Adjust height as needed */
+    }
+</style>
+{% endblock %}
+
+{% block header_content %}
+<h1 class="text-2xl font-semibold text-gray-800">Dashboard</h1>
+<span class="ml-4 px-3 py-1 bg-green-200 text-green-800 text-sm font-semibold rounded-full">
+    {{ active_stokvels | default(0) }} Active Stokvels {# Assuming active_stokvels is passed to the template #}
+</span>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Welcome Banner -->
+<div class="relative h-48 w-full bg-gradient-to-r from-green-500 to-orange-500 flex items-center p-8 rounded-lg shadow-md text-white text-xl font-semibold overflow-hidden">
+    <div class="absolute inset-0 pattern-wavy pattern-green-600 pattern-opacity-20 pattern-size-6"></div>
+    <div class="relative z-10">
+        <h2 class="text-3xl font-bold mb-2">Sawubona, {{ user_name }}! 👋</h2>
+        <p>You're doing great with your savings journey. Keep up the excellent work!</p>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+     <div>
+            <p class="text-gray-600">Total Saved</p>
+            <h3 class="text-2xl font-bold text-gray-800">R {{ earning + invest + saving - spend }}</h3> {# Simplified total saved calculation #}
+            <p class="text-sm text-gray-500">Across all stokvels</p>
+        </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M9 7l3 1m0 0l-3 9a5.002 5.002 0 006.001 0m0-7l-3 1m0 0l-3 9a5.002 5.002 0 006.001 0m0 7H3m18 0h-3M6 7H3m3 10h9m2 2H7m2 4h3m0-3v3"></path>
+            </svg>
+                     </div>
+                 </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+            <p class="text-gray-600">Monthly Contributions</p>
+            <h3 class="text-2xl font-bold text-gray-800">R {{ earning }}</h3> {# Using earning as a placeholder for monthly contributions #}
+            <p class="text-sm text-gray-500">Total per month</p>
+             </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+            </svg>
+                     </div>
+                 </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+            <p class="text-gray-600">Active Stokvels</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ active_stokvels | default(0) }}</h3> {# Assuming active_stokvels is passed #}
+            <p class="text-sm text-gray-500">Participating groups</p>
+             </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+                     </div>
+                 </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+            <p class="text-gray-600">Next Payout</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ next_payout_date | default("N/A") }}</h3> {# Placeholder for next payout date #}
+            <p class="text-sm text-gray-500">R {{ next_payout_amount | default("0.00") }}</p> {# Placeholder for next payout amount #}
+             </div>
+        <div class="p-3 bg-gray-200 rounded-full">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2m7-3h.01M17 16H7"></path>
+            </svg>
+                 </div>
+             </div>
+         </div>
+
+<!-- Upcoming Payments and Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+    <!-- Upcoming Payments -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Payments</h3>
+        <p class="text-gray-600 mb-4">Your contribution schedule</p>
+        <ul>
+             {# Loop through upcoming payments data - Placeholder #}
+            {% if upcoming_payments %}
+                {% for payment in upcoming_payments %}
+                <li class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                    <div>
+                        <p class="font-semibold text-gray-800">{{ payment.stokvel_name }}</p>
+                        <p class="text-sm text-gray-500">Due: {{ payment.due_date | default("N/A") }}</p>
+                     </div>
+                    <span class="font-semibold text-orange-500">R {{ payment.amount | default("0.00") }}</span> {# Assuming amount is available #}
+                </li>
+                {% endfor %}
+            {% else %}
+                <li class="py-3 text-gray-500">No upcoming payments.</li>
+            {% endif %}
+        </ul>
+                     </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h3>
+        <p class="text-gray-600 mb-4">Your latest transactions</p>
+        <ul>
+            {% if table_data %} {# Using existing table_data for recent transactions #}
+                {% for transaction in table_data[:5] %} {# Displaying up to 5 recent transactions #}
+                <li class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 text-blue-600">
+                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                        </div>
+         <div>
+                            <p class="font-semibold text-gray-800">{{ transaction[3] }}</p> {# Expense Type #}
+                            <p class="text-sm text-gray-500">{{ transaction[5] }}</p> {# Note #}
+             </div>
+         </div>
+                    <div class="text-right">
+                        <span class="font-semibold text-green-600">R {{ transaction[4] }}</span> {# Amount #}
+                        <p class="text-sm text-gray-500">{{ transaction[2] }}</p> {# Date #}
+             </div>
+                              </li>
+                              {% endfor %}
+            {% else %}
+                <li class="py-3 text-gray-500">No recent activity.</li>
+            {% endif %}
+        </ul>
+              </div>
+         </div>
+
+<!-- Your Stokvels Section - Placeholder -->
+<div class="mt-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Your Stokvels</h3>
+    <p class="text-gray-600 mb-4">Overview of your savings groups</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {# Loop through stokvels data - Placeholder #}
+        {% for i in range(active_stokvels | default(0)) %} {# Displaying dummy stokvels based on active_stokvels count #}
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-semibold text-gray-800">Stokvel Name {{ i + 1 }}</h4> {# Placeholder #}
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">Monthly Savings</span> {# Placeholder #}
+                 </div>
+            <p class="text-gray-600 mb-4">Brief description of the stokvel goals and focus.</p> {# Placeholder #}
+            <div class="text-sm text-gray-700">
+                <p>Members: <span>{{ 5 + i * 2 }}</span></p> {# Placeholder #}
+                <p>Monthly: R <span>{{ 500 + i * 100 }}</span></p> {# Placeholder #}
+                <p>Total Pool: R <span>{{ 5000 + i * 1000 }}</span></p> {# Placeholder #}
+                            </div>
+                        </div>
+                     {% endfor %}
+        {% if (active_stokvels | default(0)) == 0 %}
+             <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-3">
+                <p class="text-gray-500 text-center">No stokvels found.</p>
+             </div>
+        {% endif %}
+    </div>
+                 </div>
+
+
+<!-- Add Record Modal - Using existing structure with Tailwind classes -->
+<div class="modal fade" id="add_record" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-green-500 text-white">
+                <h5 class="modal-title" id="addRecordModalLabel">Add New Expense Record</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                     </div>
+            <div class="modal-body">
+                <form method="post" action="/home/add_expense">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="e_date">Date</label>
+                        <input type="date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="e_date" name="e_date" required>
+                     </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="e_type">Expense Type</label>
+                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="e_type" name="e_type" required>
+                            <option value="" disabled selected>Select type...</option>
+                            <option value="Earning">Earning</option>
+                            <option value="Spend">Spend</option>
+                            <option value="Investment">Investment</option>
+                            <option value="Saving">Saving</option>
+                        </select>
+                     </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">Amount</label>
+                        <input type="number" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="amount" name="amount" placeholder="Enter amount" required>
+                 </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="notes">Note</label>
+                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="notes" name="notes" required>
+                            <option value="" disabled selected>Select note...</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Bonus">Bonus</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Bills">Bills</option>
+                            <option value="Others">Others</option>
+                        </select>
+                     </div>
+                    <div class="flex items-center justify-end">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Add Record
+                        </button>
+                     </div>
+                </form>
+                     </div>
+                 </div>
+             </div>
+         </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<!-- Add hidden divs to store chart data -->
+<div id="chart-data" style="display: none;"
+    data-bar='{% if bar %}{{ bar | safe }}{% else %}null{% endif %}'
+    data-stack-bar='{% if stack_bar %}{{ stack_bar | safe }}{% else %}null{% endif %}'
+    data-pie1='{% if pie1 %}{{ pie1 | safe }}{% else %}null{% endif %}'
+    data-pie2='{% if pie2 %}{{ pie2 | safe }}{% else %}null{% endif %}'
+    data-pie3='{% if pie3 %}{{ pie3 | safe }}{% else %}null{% endif %}'
+    data-pie4='{% if pie4 %}{{ pie4 | safe }}{% else %}null{% endif %}'
+></div>
+
+<script type='text/javascript'>
+    // Auto-close alerts after 3 seconds
+    setTimeout(function() {
+        $('.alert').alert('close');
+    }, 3000);
+
+    // Get chart data from data attributes and initialize charts
+    const chartDataElement = document.getElementById('chart-data');
+    if (chartDataElement) { // Check if the element exists
+        const chartData = {
+            bar: safeJSONParse(chartDataElement.dataset.bar),
+            stack_bar: safeJSONParse(chartDataElement.dataset.stackBar),
+            pie1: safeJSONParse(chartDataElement.dataset.pie1),
+            pie2: safeJSONParse(chartDataElement.dataset.pie2),
+            pie3: safeJSONParse(chartDataElement.dataset.pie3),
+            pie4: safeJSONParse(chartDataElement.dataset.pie4)
+        };
+
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts(chartData);
+        });
+    }
+</script>
+{% endblock %}

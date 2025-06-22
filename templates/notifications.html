@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - KasiKash{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-list-item:hover {
+        background-color: #f7fafc; /* gray-100 */
+    }
+    .notification-unread {
+        background-color: #ebf8ff; /* blue-100 */
+        border-left: 4px solid #4299e1; /* blue-500 */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Notifications</h1>
+            {% if notifications %}
+            <form action="{{ url_for('clear_notifications') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-sm text-blue-600 hover:underline focus:outline-none">Mark all as read</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <ul class="divide-y divide-gray-200">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                    <li class="p-4 transition notification-list-item {% if not notification.is_read %}notification-unread{% endif %}">
+                        <a href="{{ notification.link_url or '#' }}" class="block">
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0">
+                                    <span class="h-10 w-10 rounded-full flex items-center justify-center {% if not notification.is_read %}bg-blue-500{% else %}bg-gray-400{% endif %} text-white">
+                                        <i class="fas fa-bell"></i>
+                                    </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">{{ notification.message }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <i class="far fa-clock mr-1"></i>
+                                        {% if notification.created_at %}
+                                            {{ notification.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                {% if not notification.is_read %}
+                                <div class="flex-shrink-0 self-center">
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="p-8 text-center text-gray-500">
+                        <div class="mb-4">
+                             <i class="fas fa-envelope-open-text fa-3x text-gray-300"></i>
+                        </div>
+                        <h3 class="font-semibold">No notifications yet</h3>
+                        <p class="text-sm">We'll let you know when something important happens.</p>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %} 

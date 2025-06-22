@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasiKash - Digital Stokvel Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ocean-1': '#0061ff',
+                        'ocean-2': '#60efff',
+                        'ocean-3': '#00ff87',
+                        'ocean-4': '#0061ff',
+                        'ocean-5': '#45caff',
+                    },
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-reverse': 'float-reverse 8s ease-in-out infinite',
+                        'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'float-reverse': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(20px)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000428, #004e92);
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .rainbow-gradient {
+            background: linear-gradient(135deg, 
+                rgba(0, 97, 255, 0.8) 0%, 
+                rgba(96, 239, 255, 0.8) 25%, 
+                rgba(0, 255, 135, 0.8) 50%, 
+                rgba(0, 97, 255, 0.8) 75%, 
+                rgba(69, 202, 255, 0.8) 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .glow {
+            text-shadow: 0 0 10px rgba(96, 239, 255, 0.7);
+        }
+        
+        .btn-glow {
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 135, 0.8);
+            transform: translateY(-3px);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .feature-icon {
+            transition: all 0.5s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: rotateY(180deg) scale(1.2);
+        }
+        
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wave-shape {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        
+        .wave-shape svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 150px;
+        }
+        
+        .wave-shape .shape-fill {
+            fill: #000428;
+        }
+        
+        /* Globe Animation Container */
+        .globe-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* Dropdown styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .contact-info {
+            color: #fff;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .contact-info i {
+            color: #60efff;
+            width: 20px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- 3D Globe Animation -->
+    <div class="globe-container" id="globe"></div>
+    
+    <div class="content-wrapper">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto animate-float">
+                    <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                </a>
+                <ul class="hidden md:flex space-x-8">
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
+                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                    <li class="dropdown">
+                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a>
+                        <div class="dropdown-content">
+                            <div class="contact-info">
+                                <p class="mb-3"><i class="fas fa-envelope"></i> Email: support@kasikash.co.za</p>
+                                <p class="mb-3"><i class="fas fa-phone"></i> Phone: +27 11 123 4567</p>
+                                <p><i class="fas fa-map-marker-alt"></i> Address: Johannesburg, South Africa</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                </ul>
+                <button class="md:hidden text-white">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+            <div class="container mx-auto px-4 py-20 text-center relative z-10">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                    <span class="text-gradient">Digital Stokvels</span><br>
+                    <span class="text-white">for Modern Communities</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-200 mb-12 max-w-3xl mx-auto leading-relaxed">
+                    Transform your stokvel with secure digital management, smart investments, and community growth tools.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="/register" class="btn-glow bg-gradient-to-r from-ocean-3 to-ocean-2 text-black font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">
+                        Start Free Trial <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Wave Shape -->
+            <div class="wave-shape">
+                <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="shape-fill"></path>
+                    <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" class="shape-fill"></path>
+                    <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="shape-fill"></path>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Why Choose KasiKash Section -->
+        <section id="features" class="py-20 bg-black bg-opacity-50 relative overflow-hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">Why Choose KasiKash?</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                        Built specifically for South African communities with features that matter most to stokvel success.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">SARB Regulated</h3>
+                        <p class="text-gray-300">
+                            Licensed and regulated financial services provider with full compliance to South African Reserve Bank standards.
+                        </p>
+                    </div>
+                    
+                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800 transform transition-all duration-500 hover:scale-105">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Bank-Level Security</h3>
+                        <p class="text-gray-300">
+                            256-bit encryption and secure infrastructure that meets global banking security standards.
+                        </p>
+                    </div>
+                    
+                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Community Focused</h3>
+                        <p class="text-gray-300">
+                            Built by and for South African communities with features tailored to local needs and traditions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">Our Features</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                        Everything you need to run a successful digital stokvel
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Smart Savings -->
+                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-2 transition-all duration-300">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Smart Savings</h3>
+                        <p class="text-gray-300">
+                            Automated contributions, compound interest, and goal tracking to maximize your stokvel's growth potential.
+                        </p>
+                    </div>
+
+                    <!-- Community Management -->
+                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-3 transition-all duration-300">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Community Management</h3>
+                        <p class="text-gray-300">
+                            Easy member onboarding, contribution tracking, and transparent financial reporting for all members.
+                        </p>
+                    </div>
+
+                    <!-- Bank-Level Security -->
+                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-5 transition-all duration-300">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Bank-Level Security</h3>
+                        <p class="text-gray-300">
+                            Your money is protected with enterprise-grade security, encryption, and regulatory compliance.
+                        </p>
+                    </div>
+
+                    <!-- Community Success -->
+                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-4 transition-all duration-300">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-4 text-center">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Community Success</h3>
+                        <p class="text-gray-300">
+                            Real people achieving their financial dreams through our platform with proven results.
+                        </p>
+                    </div>
+
+                    <!-- Easy-to-Use Platform -->
+                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-2 transition-all duration-300">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Easy-to-Use Platform</h3>
+                        <p class="text-gray-300">
+                            Intuitive design that makes managing your stokvel simple and effective for all members.
+                        </p>
+                    </div>
+
+                    <!-- Events & Marketplace -->
+                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-3 transition-all duration-300">
+                        <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Events & Marketplace</h3>
+                        <p class="text-gray-300">
+                            Access to exclusive events and a marketplace for your stokvel's needs with special discounts.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="py-20 bg-black relative overflow-hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">What Our Community Says</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                        Hear from stokvels that are already building wealth with KasiKash
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Testimonial 1 -->
+                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-ocean-2 flex items-center justify-center text-2xl font-bold">T</div>
+                            <div class="ml-4">
+                                <h4 class="text-xl font-bold text-white">Thandi M.</h4>
+                                <p class="text-gray-400">Johannesburg Stokvel</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 italic">
+                            "KasiKash has transformed how our stokvel operates. We've grown our savings by 40% in just one year with their smart tools."
+                        </p>
+                        <div class="mt-4 text-ocean-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Testimonial 2 -->
+                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800 transform transition-all duration-500 hover:scale-105">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-ocean-3 flex items-center justify-center text-2xl font-bold">S</div>
+                            <div class="ml-4">
+                                <h4 class="text-xl font-bold text-white">Sipho K.</h4>
+                                <p class="text-gray-400">Cape Town Investment Club</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 italic">
+                            "The security features gave us peace of mind, and the interest rates are better than any bank. Our members love the transparency."
+                        </p>
+                        <div class="mt-4 text-ocean-3">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Testimonial 3 -->
+                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-ocean-5 flex items-center justify-center text-2xl font-bold">N</div>
+                            <div class="ml-4">
+                                <h4 class="text-xl font-bold text-white">Nomvula P.</h4>
+                                <p class="text-gray-400">Durban Savings Group</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 italic">
+                            "From burial society to property investors - KasiKash helped us level up our stokvel game. The platinum coaching is worth every cent!"
+                        </p>
+                        <div class="mt-4 text-ocean-5">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 rainbow-gradient relative overflow-hidden">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to Transform Your Stokvel?</h2>
+                <p class="text-xl text-black mb-8 max-w-3xl mx-auto">
+                    Join thousands of South Africans building wealth together through trusted community savings.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="/register" class="bg-black text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90">
+                        Start Your Free Trial
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-black text-white py-12">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
+                        <p class="text-gray-400 mb-4">
+                            Your digital stokvel platform for community wealth building.
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-3 transition duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-5 transition duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-ocean-4 transition duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
+                        <ul class="space-y-2">
+                            <li><a href="/get_started" class="text-gray-400 hover:text-white">Get Started</a></li>
+                            <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
+                            <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
+                            <li><a href="#about" class="text-gray-400 hover:text-white">About</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Licenses</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
+                        <ul class="space-y-2">
+                            <li class="text-gray-400">Email: support@kasikash.co.za</li>
+                            <li class="text-gray-400">Phone: +27 11 123 4567</li>
+                            <li class="text-gray-400">Address: Johannesburg, South Africa</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                    <p>&copy; 2024 KasiKash. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize 3D Globe
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create a simple 3D globe using Three.js
+            const container = document.getElementById('globe');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // Create a sphere (globe)
+            const geometry = new THREE.SphereGeometry(5, 32, 32);
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x45caff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.3
+            });
+            const sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+
+            // Position camera
+            camera.position.z = 8;
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                sphere.rotation.x += 0.001;
+                sphere.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animate();
+
+            // GSAP animations
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Animate elements on scroll
+            gsap.utils.toArray('.card-hover').forEach(card => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 80%",
+                        toggleActions: "play none none none"
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    ease: "power3.out"
+                });
+            });
+
+            // Animate feature icons
+            gsap.utils.toArray('.feature-icon').forEach(icon => {
+                gsap.from(icon, {
+                    scrollTrigger: {
+                        trigger: icon,
+                        start: "top 80%",
+                        toggleActions: "play none none none"
+                    },
+                    rotationY: 180,
+                    opacity: 0,
+                    duration: 1,
+                    ease: "back.out(1.7)"
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

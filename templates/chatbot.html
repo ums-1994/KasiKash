@@ -1,0 +1,55 @@
+<div id="chatbot-container" class="minimized">
+    <div id="chatbot-main">
+        <div id="chatbot-header">
+            <div class="assistant-info">
+                <div class="avatar">💬</div>
+                <div>
+                    <h3>KasiKash Assistant</h3>
+                    <div class="status">Online • Financial Expert</div>
+                    <div class="ai-mode-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="ai-mode-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="mode-label">App Mode</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-controls">
+                <button id="chatbot-history" title="History"><i class="fas fa-history"></i></button>
+                <button id="chatbot-toggle" title="Minimize">−</button>
+            </div>
+        </div>
+        
+        <div id="chatbot-messages">
+            <div class="welcome-message">
+                <p>Hi there! I'm your KasiKash financial assistant. I can help you with:</p>
+                <ul>
+                    <li>Stokvel management</li>
+                    <li>Savings goals</li>
+                    <li>Payment questions</li>
+                    <li>Financial calculations</li>
+                </ul>
+                <p>Try: "How do I add members to my stokvel?"</p>
+                <div class="mode-indicator">
+                    <span id="current-mode">🤖 AI Mode</span> - Powered by Google Gemma 3n 4B
+                </div>
+            </div>
+        </div>
+        
+        <div id="chatbot-input">
+            <button id="quick-tips" title="Quick Tips"><i class="fas fa-lightbulb"></i></button>
+            <input type="text" id="user-message" placeholder="Ask about stokvels, payments, or savings...">
+            <button id="send-message">Send</button>
+        </div>
+        
+        <div id="quick-tips-menu" class="hidden">
+            <div class="tip-header">Common Questions</div>
+            <div class="tip" data-question="How do I create a new stokvel?">Create a stokvel</div>
+            <div class="tip" data-question="How to add payment method?">Add payment method</div>
+            <div class="tip" data-question="Calculate savings goal: R500/month to R5000">Savings calculator</div>
+            <div class="tip" data-question="Explain stokvel payout rules">Payout rules</div>
+        </div>
+    </div>
+    <div id="chatbot-fab" title="Open Chat">💬</div>
+</div> 
