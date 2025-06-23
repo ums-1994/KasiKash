@@ -24,6 +24,12 @@ SENDGRID_API_KEY=your-sendgrid-api-key-here
 # OpenRouter Configuration (for chatbot using Google Gemma 3n 4B)
 OPENROUTER_API_KEY=your-openrouter-api-key-here
 
+# Backblaze B2 Configuration
+B2_ACCESS_KEY_ID=your-b2-access-key-id
+B2_SECRET_ACCESS_KEY=your-b2-secret-access-key
+B2_BUCKET_NAME=your-b2-bucket-name
+B2_ENDPOINT_URL=https://s3.us-west-002.backblazeb2.com
+
 # Flask Configuration
 SECRET_KEY=your-super-secret-key-change-this-in-production
 FLASK_ENV=development 

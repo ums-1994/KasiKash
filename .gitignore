@@ -144,3 +144,27 @@ config.py
 *.env
 
 # Database Configuration
+*.db
+*.sqlite
+*.sqlite3
+
+# Session files
+flask_session_data/
+
+# Virtual environment
+stokvel/
+
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp

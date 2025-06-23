@@ -16,6 +16,15 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div class="flex-1">
+                    <label for="period-select" class="block text-sm font-medium text-gray-700 mb-2">Select Period</label>
+                    <select id="period-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="all" selected>All Time</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="3m">Last 3 Months</option>
+                        <option value="6m">Last 6 Months</option>
+                    </select>
+                </div>
                 <button onclick="downloadStatement()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -25,17 +34,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ message }}</span>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
 
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800">Contributions</h1>
@@ -162,13 +160,14 @@ window.onclick = function(event) {
 
 function downloadStatement() {
     const stokvelId = document.getElementById('stokvel-select').value;
+    const period = document.getElementById('period-select').value;
     if (!stokvelId) {
         alert('Please select a stokvel first');
         return;
     }
     
-    // Redirect to the statement page
-    window.location.href = `/stokvel/${stokvelId}/statement`;
+    // Redirect to the statement download page with the period as a query parameter
+    window.location.href = `/stokvel/${stokvelId}/statement/download?period=${period}`;
 }
 </script>
 {% endblock %} 
