@@ -38,3 +38,46 @@ Plotly.newPlot('myDiv', data, layout, config );
 $(document).ready(function(){
     $(".multi_select").selectpicker();
 })
+
+// === Real-time Notification Badge Update ===
+function updateNotificationBadge() {
+    const notificationIcon = document.getElementById('notification-icon');
+    if (!notificationIcon) return;
+
+    // Get the current displayed count
+    const badge = document.getElementById('notification-badge');
+    const currentCount = badge ? parseInt(badge.textContent, 10) || 0 : 0;
+
+    fetch('/notifications/count')
+        .then(response => response.json())
+        .then(data => {
+            const newCount = data.count;
+
+            if (badge) {
+                if (newCount > 0) {
+                    badge.textContent = newCount;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+
+            // If new notifications have arrived, shake the bell
+            if (newCount > 0 && newCount > currentCount) {
+                notificationIcon.classList.add('shake');
+                // Remove the class after the animation finishes
+                setTimeout(() => {
+                    notificationIcon.classList.remove('shake');
+                }, 820); // Corresponds to animation duration
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching notification count:', err);
+        });
+}
+
+// Poll every 30 seconds
+setInterval(updateNotificationBadge, 30000);
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', updateNotificationBadge);
