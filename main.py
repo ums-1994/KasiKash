@@ -37,6 +37,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from werkzeug.utils import secure_filename
 import re
+from decimal import Decimal, InvalidOperation
 
 # Load environment variables
 load_dotenv()
@@ -805,7 +806,7 @@ def stokvels():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Fetch stokvels where the current user is a member
+                # Fetch stokvels where the current user is a member, including their role
                 cur.execute("""
                     SELECT 
                         s.id, 
@@ -817,7 +818,8 @@ def stokvels():
                         s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
-                        s.target_date
+                        s.target_date,
+                        sm.role
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
                     WHERE sm.user_id = %s
@@ -836,10 +838,12 @@ def stokvels():
                         s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
-                        s.target_date
+                        s.target_date,
+                        sm.role
                     FROM stokvels s
-                    WHERE s.created_by = %s
-                """, (firebase_uid,))
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE s.created_by = %s AND sm.user_id = %s
+                """, (firebase_uid, firebase_uid))
                 created_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
         return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels)
@@ -1082,7 +1086,6 @@ def payouts():
 
 @app.route('/request_payout', methods=['POST'])
 @login_required
-# @csrf.protect
 def request_payout():
     firebase_uid = session.get('user_id')
     if not firebase_uid:
@@ -1112,6 +1115,14 @@ def request_payout():
                     flash("You are not a member of this stokvel.")
                     return redirect('/payouts')
 
+                # For simplicity, directly record as 'pending'.
+                # In a real app, this would be a 'pending' status requiring approval.
+                cur.execute("""
+                    INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
+                    VALUES (%s, %s, %s, 'payout', %s, CURRENT_TIMESTAMP, 'pending')
+                """, (firebase_uid, stokvel_id, amount, description))
+                conn.commit()
+                
                 # Get stokvel name and admin user for notification
                 cur.execute("""
                     SELECT s.name, sm.user_id 
@@ -1120,7 +1131,7 @@ def request_payout():
                     WHERE s.id = %s AND sm.role = 'admin'
                 """, (stokvel_id,))
                 stokvel_info = cur.fetchone()
-                
+
                 if stokvel_info:
                     stokvel_name, admin_user_id = stokvel_info
                     
@@ -1129,21 +1140,12 @@ def request_payout():
                     user_info = cur.fetchone()
                     user_name = user_info[0] if user_info else "A member"
 
-                # For simplicity, directly record as completed.
-                # In a real app, this would be a 'pending' status requiring approval.
-                cur.execute("""
-                    INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
-                    VALUES (%s, %s, %s, 'payout', %s, CURRENT_DATE, 'completed')
-                """, (firebase_uid, stokvel_id, amount, description))
-                conn.commit()
-
-                # Create notification for stokvel admin
-                if stokvel_info and admin_user_id:
+                    # Create notification for stokvel admin
                     message = f"{user_name} requested a payout of R{amount:.2f} from '{stokvel_name}' stokvel."
-                    link = url_for('payouts')
+                    link = url_for('payouts') # Changed from 'payouts' to the specific admin approval page if one exists
                     create_notification(admin_user_id, message, link_url=link, notification_type='payout_requested')
 
-        flash("Payout request recorded successfully!")
+        flash("Payout request submitted successfully!")
         return redirect('/payouts')
     except ValueError:
         flash("Amount must be a number.")
@@ -1213,6 +1215,70 @@ def create_savings_goal():
     except Exception as e:
         print(f"Error creating savings goal: {e}")
         flash("An error occurred while creating the savings goal. Please try again.")
+        return redirect('/savings_goals')
+
+@app.route('/contribute_to_goal', methods=['POST'])
+@login_required
+def contribute_to_goal():
+    firebase_uid = session['user_id']
+    goal_id = request.form.get('goal_id')
+    amount = request.form.get('amount')
+
+    if not all([goal_id, amount]):
+        flash("Goal ID and amount are required.")
+        return redirect('/savings_goals')
+
+    try:
+        amount = Decimal(amount)
+        if amount <= 0:
+            flash("Contribution amount must be greater than zero.")
+            return redirect('/savings_goals')
+
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Verify the goal belongs to the user
+                cur.execute("""
+                    SELECT target_amount, current_amount
+                    FROM savings_goals
+                    WHERE id = %s AND user_id = %s
+                """, (goal_id, firebase_uid))
+                goal = cur.fetchone()
+
+                if not goal:
+                    flash("Invalid savings goal.")
+                    return redirect('/savings_goals')
+
+                target_amount, current_amount = goal
+                new_amount = current_amount + amount
+
+                # Update the current amount
+                cur.execute("""
+                    UPDATE savings_goals
+                    SET current_amount = %s,
+                        status = CASE 
+                            WHEN %s >= target_amount THEN 'completed'
+                            ELSE status
+                        END
+                    WHERE id = %s
+                """, (new_amount, new_amount, goal_id))
+
+                # Record the transaction
+                cur.execute("""
+                    INSERT INTO transactions (user_id, amount, type, description, savings_goal_id)
+                    VALUES (%s, %s, 'savings_contribution', 'Contribution to savings goal', %s)
+                """, (firebase_uid, amount, goal_id))
+
+                conn.commit()
+
+        flash(f"Successfully contributed R{amount:.2f} to your savings goal!")
+        return redirect('/savings_goals')
+
+    except InvalidOperation:
+        flash("Invalid amount specified.")
+        return redirect('/savings_goals')
+    except Exception as e:
+        print(f"Error contributing to savings goal: {e}")
+        flash("An error occurred while processing your contribution. Please try again.")
         return redirect('/savings_goals')
 
 @app.route('/stokvel/<int:stokvel_id>/members')
@@ -1473,25 +1539,29 @@ def delete_payment_method():
         return redirect('/payment_methods')
 
 
-@app.route('/settings')
+@app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     user_id = session['user_id']
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Fetch general user settings from users table
                 cur.execute("""
-                    SELECT 
-                        two_factor_enabled, 
-                        language_preference,
-                        email_notifications,
-                        sms_notifications,
-                        weekly_summary,
-                        reminders_enabled
+                    SELECT language_preference, two_factor_enabled 
                     FROM users 
                     WHERE firebase_uid = %s
                 """, (user_id,))
                 user_settings = cur.fetchone() or {}
+
+                # Fetch notification/app preferences from user_settings table
+                cur.execute("""
+                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (user_id,))
+                app_settings = cur.fetchone() or {}
+                user_settings.update(app_settings)
         
         # Fallback for language preference if not in DB
         if 'language_preference' not in user_settings:
@@ -1523,13 +1593,13 @@ def update_settings():
         email_notifications = 'email_notifications' in request.form
         sms_notifications = 'sms_notifications' in request.form
         weekly_summary = 'weekly_summary' in request.form
-        reminders_enabled = 'reminders_enabled' in request.form
+        receive_promotions = 'receive_promotions' in request.form
         query = """
-            UPDATE users
-            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, reminders_enabled = %s
-            WHERE firebase_uid = %s
+            UPDATE user_settings
+            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s
+            WHERE user_id = %s
         """
-        params = (email_notifications, sms_notifications, weekly_summary, reminders_enabled, user_id)
+        params = (email_notifications, sms_notifications, weekly_summary, receive_promotions, user_id)
 
     elif form_section == 'security':
         two_factor_enabled = 'two_factor_enabled' in request.form
@@ -1548,39 +1618,6 @@ def update_settings():
         
     return redirect(url_for('settings'))
 
-
-def get_user_settings(user_id):
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT notification_preferences, two_factor_enabled FROM users WHERE firebase_uid = %s", (user_id,))
-                settings_data = cur.fetchone()
-                if settings_data:
-                    # Handle notification_preferences as JSON
-                    notification_prefs = settings_data[0]
-                    if isinstance(notification_prefs, dict):
-                        # If it's already a dict, use it directly
-                        notification_preferences = notification_prefs
-                    elif isinstance(notification_prefs, str):
-                        # If it's a string, try to parse as JSON
-                        try:
-                            import json
-                            notification_preferences = json.loads(notification_prefs)
-                        except json.JSONDecodeError:
-                            # If JSON parsing fails, use default
-                            notification_preferences = {'email': True, 'sms': False, 'push': True}
-                    else:
-                        # Default if None or other type
-                        notification_preferences = {'email': True, 'sms': False, 'push': True}
-                    
-                    return {
-                        'notification_preferences': notification_preferences,
-                        'two_factor_enabled': settings_data[1] or False
-                    }
-                return None
-    except Exception as e:
-        print(f"Error getting user settings: {str(e)}")
-        return None
 
 def update_user_setting(user_id, section, setting, value):
     try:

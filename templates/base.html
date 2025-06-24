@@ -108,8 +108,7 @@
                             </svg>
                             <!-- Notification Badge -->
                             <span id="notification-badge" 
-                                  class="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white" 
-                                  style="display: {% if notification_count and notification_count > 0 %}flex{% else %}none{% endif %};">
+                                  class="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white {% if not notification_count or notification_count == 0 %}hidden-badge{% endif %}">
                                 {% if notification_count and notification_count > 0 %}{{ notification_count }}{% endif %}
                             </span>
                         </a>
