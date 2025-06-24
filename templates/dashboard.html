@@ -1,263 +1,599 @@
-{% extends 'base.html' %} {% block title %}Dashboard - KasiKash{% endblock %} {% block extra_css %}
-<!-- Add any additional CSS for this page here -->
-{% endblock %} {% block content %}
+{% extends 'base.html' %}
+{% block title %}Dashboard - KasiKash{% endblock %}
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600|Montserrat:700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
+  font-family: 'Inter', 'Montserrat', sans-serif;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2rem;
+  position: relative;
+}
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    0 25px 50px rgba(123, 97, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.accent {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.progress-circle-bg {
+  stroke: rgba(255, 255, 255, 0.05);
+}
+.progress-circle {
+  stroke: url(#gradient);
+  transition: all 0.3s ease;
+}
+.progress-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  fill: #0072ff;
+}
+.progress-bar {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  box-shadow: 0 0 20px rgba(123, 97, 255, 0.3);
+}
+.day-bar {
+  width: 12px;
+  height: 40px;
+  border-radius: 6px;
+  margin: 0 2px;
+  background: linear-gradient(180deg, #00c6ff, #0072ff);
+  opacity: 0.7;
+  display: inline-block;
+}
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+.calendar-day {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0.5rem;
+  font-size: 1rem;
+  color: #fff;
+  position: relative;
+}
+.calendar-day:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.calendar-day.today {
+  border: 2px solid #7B61FF;
+  box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
+}
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.calendar-nav button {
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.calendar-nav button:hover {
+  background: linear-gradient(90deg, #0072ff, #00c6ff);
+}
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+.welcome-banner {
+  position: relative;
+  min-height: 240px;
+  border-radius: 2rem;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  background: 
+    /* Mesh gradient pattern */
+    radial-gradient(circle at 20% 20%, rgba(123, 97, 255, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(97, 218, 251, 0.3) 0%, transparent 40%),
+    /* Base gradient */
+    linear-gradient(135deg, 
+      #7B61FF 0%,
+      #61DAFB 100%
+    );
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.2),
+    inset 0 0 80px rgba(255, 255, 255, 0.1);
+  animation: pulseGlow 8s ease infinite;
+}
 
-<!-- Welcome Banner -->
-<div class="relative h-48 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 flex items-center p-8 rounded-lg shadow-lg text-white text-xl font-semibold overflow-hidden">
-    <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-    <div class="relative z-10">
-        <h2 class="text-3xl font-bold mb-2 text-white drop-shadow-lg">Sawubona, {{ user_name }}! 👋</h2>
-        <p class="text-white drop-shadow-md">You're doing great with your savings journey. Keep up the excellent work!</p>
-    </div>
-    <!-- Decorative elements -->
-    <div class="absolute top-4 right-4 text-white opacity-30">
-        <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-        </svg>
-    </div>
-</div>
+/* Animated mesh overlay */
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+  animation: meshMove 20s linear infinite;
+}
 
-<!-- Account Summary -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-    <!-- Current Balance -->
-    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
-        <p class="text-gray-600">Current Balance</p>
-        <h3 class="text-2xl font-bold text-gray-800">R {{ current_balance | default("0.00") }}</h3>
-    </div>
-    <!-- Total Contributions -->
-    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
-        <p class="text-gray-600">Total Contributions</p>
-        <h3 class="text-2xl font-bold text-gray-800">R {{ total_contributions | default("0.00") }}</h3>
-    </div>
-    <!-- Total Withdrawals -->
-    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
-        <p class="text-gray-600">Total Withdrawals</p>
-        <h3 class="text-2xl font-bold text-gray-800">R {{ total_withdrawals | default("0.00") }}</h3>
-    </div>
-    <!-- Pending Repayments -->
-    <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start">
-        <p class="text-gray-600">Pending Repayments</p>
-        <h3 class="text-2xl font-bold text-gray-800">R {{ pending_repayments | default("0.00") }}</h3>
-    </div>
-</div>
+/* Glowing orbs */
+.welcome-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 30%),
+    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 30%);
+  filter: blur(30px);
+  animation: orbFloat 10s ease-in-out infinite alternate;
+}
 
-<!-- Contribution Activity -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-    <!-- Recent Contributions List -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Contributions</h3>
-        <ul>
-            {% for contrib in recent_contributions %}
-            <li class="flex justify-between py-2 border-b border-gray-200">
-                <span>{{ contrib.date }} - {{ contrib.stokvel_name }}</span>
-                <span class="font-semibold text-sky-600">R {{ contrib.amount }}</span>
-            </li>
-            {% else %}
-            <li>No recent contributions.</li>
-            {% endfor %}
-        </ul>
-    </div>
-    <!-- Upcoming Contributions Timeline -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Contributions</h3>
-        <ul>
-            {% for up in upcoming_contributions %}
-            <li class="flex justify-between py-2 border-b border-gray-200">
-                <span>{{ up.due_date }} - {{ up.stokvel_name }}</span>
-                <span class="font-semibold text-sky-600">R {{ up.amount }}</span>
-            </li>
-            {% else %}
-            <li>No upcoming contributions.</li>
-            {% endfor %}
-        </ul>
-    </div>
-    <!-- Missed Contributions Alert -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-red-600 mb-4">Missed Contributions</h3>
-        <ul>
-            {% for missed in missed_contributions %}
-            <li class="flex justify-between py-2 border-b border-gray-200">
-                <span>{{ missed.due_date }} - {{ missed.stokvel_name }}</span>
-                <span class="font-semibold text-red-600">R {{ missed.amount }}</span>
-            </li>
-            {% else %}
-            <li>No missed contributions. 🎉</li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.2),
+      inset 0 0 80px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 20px 50px rgba(123, 97, 255, 0.3),
+      inset 0 0 100px rgba(255, 255, 255, 0.15);
+  }
+}
 
-<!-- Loan Overview -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-    <!-- Outstanding Loans List -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Outstanding Loans</h3>
-        <ul>
-            {% for loan in outstanding_loans %}
-            <li class="flex justify-between py-2 border-b border-gray-200">
-                <span>{{ loan.stokvel_name }}</span>
-                <span class="font-semibold text-sky-600">R {{ loan.amount }}</span>
-            </li>
-            {% else %}
-            <li>No outstanding loans.</li>
-            {% endfor %}
-        </ul>
-    </div>
-    <!-- Loan Requests Table -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Loan Requests</h3>
-        <table class="min-w-full">
-            <thead>
-                <tr>
-                    <th>Requester</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for req in loan_requests %}
-                <tr>
-                    <td>{{ req.requester }}</td>
-                    <td>R {{ req.amount }}</td>
-                    <td>{{ req.status }}</td>
-                </tr>
-                {% else %}
-                <tr><td colspan="3">No loan requests.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <!-- Repayment Progress -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Repayment Progress</h3>
-        <ul>
-            {% for repay in repayment_progress %}
-            <li>{{ repay.stokvel_name }}: {{ repay.progress }}%</li>
-            {% else %}
-            <li>No repayments in progress.</li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
+@keyframes meshMove {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-20px) translateY(-20px);
+    opacity: 0.5;
+  }
+}
 
-<!-- Group Summary -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <p class="text-gray-600">Member Count</p>
-        <h3 class="text-2xl font-bold text-gray-800">{{ member_count | default(0) }}</h3>
-    </div>
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <p class="text-gray-600">Monthly Target</p>
-        <h3 class="text-2xl font-bold text-gray-800">R {{ monthly_target | default("0.00") }}</h3>
-    </div>
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <p class="text-gray-600">Total Group Balance</p>
-        <h3 class="text-2xl font-bold text-gray-800">R {{ total_group_balance | default("0.00") }}</h3>
-    </div>
-</div>
+@keyframes orbFloat {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-10px) scale(1.1);
+    opacity: 0.8;
+  }
+}
 
-<!-- Charts Section -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Savings Growth</h3>
-        <canvas id="savingsGrowthChart"></canvas>
-    </div>
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Contribution Breakdown</h3>
-        <canvas id="contributionBreakdownChart"></canvas>
-    </div>
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Loan Trends</h3>
-        <canvas id="loanTrendsChart"></canvas>
-    </div>
-</div>
+.welcome-content {
+  position: relative;
+  z-index: 10;
+  padding: 3rem;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 30, 46, 0.3),
+    rgba(45, 45, 68, 0.2)
+  );
+  backdrop-filter: blur(8px);
+}
 
-<!-- Quick Actions -->
-<div class="mt-8">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">🛠️ Quick Actions</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button onclick="location.href='/request_loan'" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
-            💰 Request Loan
-        </button>
-        <button onclick="location.href='/make_contribution'" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
-            💳 Make Contribution
-        </button>
-        <button onclick="location.href='/withdraw_funds'" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
-            💸 Withdraw Funds
-        </button>
-        <button onclick="location.href='/invite_members'" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-200 text-sm">
-            👥 Invite Members
-        </button>
-    </div>
-</div>
+.welcome-title {
+  font-size: 2.75rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+  position: relative;
+}
 
-<!-- Calendar Events -->
-<div class="bg-white rounded-lg shadow-md p-6 mt-8">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Events</h3>
-    <ul>
-        {% for event in calendar_events %}
-        <li>{{ event.date }}: {{ event.title }}</li>
+.welcome-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  border-radius: 2px;
+}
+
+.welcome-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+/* Add styles for the visualization card */
+.chart-container {
+  position: relative;
+  height: 180px;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1rem;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.trend-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  margin-top: 0.5rem;
+}
+
+.trend-up {
+  background: rgba(52, 211, 153, 0.1);
+  color: #34D399;
+}
+
+.trend-down {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+/* Activity Timeline styles */
+.activity-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    rgba(123, 97, 255, 0.3),
+    rgba(97, 218, 251, 0.1)
+  );
+}
+
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  left: -2.25rem;
+  top: 0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #7B61FF;
+  box-shadow: 0 0 10px rgba(123, 97, 255, 0.5);
+}
+
+.timeline-content {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.timeline-content:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(4px);
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-title {
+  font-weight: 600;
+  color: #fff;
+}
+
+.timeline-date {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.timeline-amount {
+  font-size: 1.125rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.timeline-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-contribution {
+  background: rgba(52, 211, 153, 0.1);
+  color: #34D399;
+}
+
+.badge-withdrawal {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+.badge-goal {
+  background: rgba(99, 102, 241, 0.1);
+  color: #818CF8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+{% endblock extra_css %}
+{% block content %}
+<!-- Top Welcome Banner -->
+<div class="welcome-banner">
+  <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <h2 class="welcome-title">Sawubona, {{ user_name }}!</h2>
+      <div class="welcome-subtitle">Welcome back to your financial dashboard.</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
+        {% if user.profile_picture %}
+          <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
         {% else %}
-        <li>No upcoming events.</li>
-        {% endfor %}
-    </ul>
+          <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #fff;"></i>
+        {% endif %}
+    </div>
+    </div>
+    </div>
 </div>
 
-<!-- Voting Polls -->
-<div class="bg-white rounded-lg shadow-md p-6 mt-8">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">Voting Polls</h3>
-    <ul>
-        {% for poll in active_polls %}
-        <li>
-            <strong>{{ poll.question }}</strong>
-            <ul>
-                {% for option in poll.options %}
-                <li>{{ option.text }} - {{ option.votes }} votes</li>
+<!-- Dashboard Grid -->
+<div class="dashboard-grid">
+  <!-- User Profile Card -->
+  <div class="glass-card" style="display: flex; flex-direction: column; align-items: center;">
+    <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem;">
+      {% if user.profile_picture %}
+        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
+            {% else %}
+        <i class="fas fa-user-circle" style="font-size: 3rem; color: #c7d2fe;"></i>
+      {% endif %}
+    </div>
+    <div class="accent text-xl mb-1">{{ user_name }}</div>
+    <div class="text-white text-sm mb-2">{{ user.email }}</div>
+    <div style="display: flex; gap: 0.5rem;">
+      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Member</span>
+      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Joined: {{ user.joined_date }}</span>
+    </div>
+  </div>
+  <!-- Savings Tracker Card -->
+  <div class="glass-card">
+    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+      <i class="fas fa-chart-line accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
+      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Savings Tracker</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+      {% for day in weekly_contributions %}
+        {% set bar_height = 20 + (day|int)*2 %}
+        <div class="day-bar" style="height: {{ bar_height }}px;"></div>
+            {% endfor %}
+    </div>
+    <div style="color: #fff; font-size: 1.125rem; font-weight: 600;">R {{ current_balance|default('0.00') }}</div>
+    <div style="color: #bfdbfe; font-size: 0.875rem;">Goal: R {{ savings_goal|default('0.00') }}</div>
+  </div>
+  <!-- Quick Actions Card -->
+  <div class="glass-card">
+    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+      <i class="fas fa-bolt accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
+      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Quick Actions</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+      <a href="{{ url_for('make_contribution') }}" 
+        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
+        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <i class="fas fa-plus-circle" style="color: #34d399; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>Make Contribution</span>
+      </a>
+      <a href="{{ url_for('savings_goals') }}" 
+        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
+        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <i class="fas fa-bullseye" style="color: #a78bfa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>Set Goals</span>
+      </a>
+      <a href="{{ url_for('stokvels') }}" 
+        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
+        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <i class="fas fa-user-plus" style="color: #60a5fa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>Manage Stokvels</span>
+      </a>
+      <a href="{{ url_for('payment_methods') }}" 
+        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
+        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <i class="fas fa-credit-card" style="color: #fbbf24; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>Payment Methods</span>
+      </a>
+    </div>
+</div>
+  <!-- Financial Insight Card -->
+  <a href="{{ url_for('financial_insight') }}" class="glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; text-decoration: none; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 32px rgba(123,97,255,0.2)';" onmouseout="this.style.boxShadow='none';">
+    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+      <i class="fas fa-chart-pie accent" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
+      <span class="accent" style="font-size: 1.25rem; font-weight: bold;">Financial Insight</span>
+    </div>
+    <div style="color: #fff; font-size: 0.875rem; text-align: center; margin-bottom: 0.25rem;">View your financial trends, progress, and key metrics in one place.</div>
+    <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd; margin-top: 0.5rem;">See Insights</span>
+  </a>
+  <!-- Recent Activity Card (now in grid, spans 2 columns on large screens) -->
+  <div class="glass-card activity-card" style="grid-column: span 2;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+      <div style="display: flex; align-items: center;">
+        <i class="fas fa-stream accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
+        <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Recent Activity</span>
+      </div>
+      <button style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">View All</button>
+    </div>
+    <div class="activity-timeline">
+      {% for activity in recent_activities|default([
+        {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': '2 hours ago', 'status': 'Processed'},
+        {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': 'Yesterday', 'status': 'Achieved'},
+        {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': '3 days ago', 'status': 'Completed'}
+      ]) %}
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <span class="timeline-title">{{ activity.title }}</span>
+            <span class="timeline-date">{{ activity.date }}</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+            <span class="timeline-badge {% if activity.type == 'contribution' %}badge-contribution{% elif activity.type == 'withdrawal' %}badge-withdrawal{% else %}badge-goal{% endif %}">
+              <i class="fas {% if activity.type == 'contribution' %}fa-arrow-up{% elif activity.type == 'withdrawal' %}fa-arrow-down{% else %}fa-flag{% endif %}" style="margin-right: 0.25rem;"></i>
+              {{ activity.status }}
+            </span>
+            <span class="timeline-amount">R {{ "%.2f"|format(activity.amount) }}</span>
+    </div>
+</div>
+    </div>
+      {% endfor %}
+    </div>
+</div>
+  <!-- Calendar Card (now in grid, spans 2 columns on large screens) -->
+  <div class="glass-card calendar-card" style="grid-column: span 2;">
+    <div class="calendar-nav">
+      <button onclick="prevMonth()" aria-label="Previous Month"><i class="fas fa-chevron-left"></i></button>
+      <div class="accent text-xl">{{ calendar_month }} {{ calendar_year }}</div>
+      <button onclick="nextMonth()" aria-label="Next Month"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="calendar">
+      {% for day in calendar_days %}
+        <div class="calendar-day {% if day.is_today %}today{% endif %}">
+          <div>{{ day.date }}</div>
+          {% if day.events %}
+            <ul style="margin-top: 0.25rem; font-size: 0.75rem;">
+              {% for event in day.events %}
+                <li><i class="fas fa-calendar-alt" style="color: #bfdbfe; margin-right: 0.25rem;"></i>{{ event }}</li>
                 {% endfor %}
             </ul>
-        </li>
-        {% else %}
-        <li>No active polls.</li>
-        {% endfor %}
-    </ul>
+          {% endif %}
 </div>
-
-<!-- Tips Section -->
-<div class="bg-white rounded-lg shadow-md p-6 mt-8">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">Weekly Tip</h3>
-    <div>
-        {% for tip in tips %}
-        <div class="mb-2">{{ tip.text }}</div>
-        {% else %}
-        <div>No tips available.</div>
         {% endfor %}
     </div>
 </div>
-
-{% endblock %} {% block extra_js %}
-<!-- Example: Chart.js scripts for the charts (you need to provide chart data from Flask) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</div>
+{% endblock %}
+{% block extra_js %}
 <script>
-    // Example chart setup, replace with your actual data
-    var ctx1 = document.getElementById('savingsGrowthChart').getContext('2d');
-    var savingsGrowthChart = new Chart(ctx1, {
-        type: 'line',
-        data: JSON.parse('{{ savings_growth_chart_data|tojson }}'),
-        options: {}
-    });
-
-    var ctx2 = document.getElementById('contributionBreakdownChart').getContext('2d');
-    var contributionBreakdownChart = new Chart(ctx2, {
-        type: 'pie',
-        data: JSON.parse('{{ contribution_breakdown_chart_data|tojson }}'),
-        options: {}
-    });
-
-    var ctx3 = document.getElementById('loanTrendsChart').getContext('2d');
-    var loanTrendsChart = new Chart(ctx3, {
-        type: 'bar',
-        data: JSON.parse('{{ loan_trends_chart_data|tojson }}'),
-        options: {}
-    });
+// Progress circle calculation (example)
+document.querySelectorAll('.progress-circle').forEach(function(circle) {
+  var percent = parseFloat(circle.getAttribute('data-percent')) || 0;
+  var offset = 283 - (percent / 100) * 283;
+  circle.style.strokeDashoffset = offset;
+});
+// Card hover animation is handled by CSS
+// Calendar navigation example
+function prevMonth() {
+  // Implement AJAX or page reload for previous month
+}
+function nextMonth() {
+  // Implement AJAX or page reload for next month
+}
 </script>
 {% endblock %}
