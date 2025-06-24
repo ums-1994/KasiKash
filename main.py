@@ -831,7 +831,6 @@ def stokvels():
                         s.monthly_contribution,
                         s.total_pool,
                         s.target_amount,
-                        s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date
@@ -850,7 +849,6 @@ def stokvels():
                         s.monthly_contribution,
                         s.total_pool,
                         s.target_amount,
-                        s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date
@@ -1177,25 +1175,33 @@ def savings_goals():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Use firebase_uid directly since the database now uses Firebase UIDs
+                # Fetch goals
+                cur.execute("SELECT id, name, target_amount, current_amount, target_date, status FROM savings_goals WHERE user_id = %s", (firebase_uid,))
+                goals = [dict(zip([col[0] for col in cur.description], row)) for row in cur.fetchall()]
+
+                # Fetch badges
                 cur.execute("""
-                    SELECT id, name, target_amount, current_amount, target_date, status, created_at
-                    FROM savings_goals
-                    WHERE user_id = %s
-                    ORDER BY target_date ASC
+                    SELECT b.name, b.icon FROM user_badges ub
+                    JOIN badges b ON ub.badge_id = b.id
+                    WHERE ub.user_id = %s
                 """, (firebase_uid,))
-                goals_tuples = cur.fetchall()
+                badges = [dict(name=row[0], icon=row[1]) for row in cur.fetchall()]
 
-                # Convert tuples to dictionaries for easier access in template
-                goals_list = []
-                goal_keys = ['id', 'name', 'target_amount', 'current_amount', 'target_date', 'status', 'created_at']
-                for g_tuple in goals_tuples:
-                    goals_list.append(dict(zip(goal_keys, g_tuple)))
+                # Fetch streak
+                cur.execute("SELECT current_streak FROM streaks WHERE user_id = %s", (firebase_uid,))
+                streak_row = cur.fetchone()
+                streak = streak_row[0] if streak_row else 0
 
-        return render_template('savings_goals.html', goals=goals_list)
+                # Fetch XP and level
+                cur.execute("SELECT level, experience FROM user_levels WHERE user_id = %s", (firebase_uid,))
+                level_row = cur.fetchone()
+                level = level_row[0] if level_row else 1
+                exp = level_row[1] if level_row else 0
+
+        return render_template('savings_goals.html', goals=goals, badges=badges, streak=streak, level=level, exp=exp)
     except Exception as e:
         print(f"Savings goals page error: {e}")
-        flash("An error occurred while loading your savings goals. Please try again.")
+        flash("An error occurred while loading your savings goals.")
         return redirect('/home')
 
 @app.route('/create_savings_goal', methods=['POST'])
@@ -1231,6 +1237,99 @@ def create_savings_goal():
         print(f"Error creating savings goal: {e}")
         flash("An error occurred while creating the savings goal. Please try again.")
         return redirect('/savings_goals')
+
+@app.route('/edit_savings_goal/<int:goal_id>', methods=['POST'])
+@login_required
+def edit_savings_goal(goal_id):
+    firebase_uid = session['user_id']
+    name = request.form.get('name')
+    target_amount = request.form.get('target_amount')
+    target_date = request.form.get('target_date')
+    if not all([name, target_amount, target_date]):
+        flash("All fields are required.")
+        return redirect('/savings_goals')
+    try:
+        target_amount = float(target_amount)
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT current_amount FROM savings_goals WHERE id = %s AND user_id = %s", (goal_id, firebase_uid))
+                goal = cur.fetchone()
+                if not goal:
+                    flash("Goal not found.")
+                    return redirect('/savings_goals')
+                current_amount = goal[0]
+                new_status = 'completed' if current_amount >= target_amount else 'active'
+                cur.execute("""
+                    UPDATE savings_goals
+                    SET name = %s, target_amount = %s, target_date = %s, status = %s
+                    WHERE id = %s AND user_id = %s
+                """, (name, target_amount, target_date, new_status, goal_id, firebase_uid))
+                conn.commit()
+        flash("Savings goal updated successfully!")
+    except ValueError:
+        flash("Target amount must be a number.")
+    except Exception as e:
+        print(f"Error updating savings goal: {e}")
+        flash("An error occurred. Please try again.")
+    return redirect('/savings_goals')
+
+@app.route('/delete_savings_goal/<int:goal_id>', methods=['POST'])
+@login_required
+def delete_savings_goal(goal_id):
+    firebase_uid = session['user_id']
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM savings_goals WHERE id = %s AND user_id = %s", (goal_id, firebase_uid))
+                conn.commit()
+        flash("Savings goal deleted.")
+    except Exception as e:
+        print(f"Error deleting savings goal: {e}")
+        flash("An error occurred while deleting the goal.")
+    return redirect('/savings_goals')
+
+@app.route('/add_contribution_to_goal/<int:goal_id>', methods=['POST'])
+@login_required
+def add_contribution_to_goal(goal_id):
+    firebase_uid = session['user_id']
+    amount = request.form.get('amount')
+    if not amount:
+        flash("Amount is required.")
+        return redirect('/savings_goals')
+    try:
+        amount = float(amount)
+        if amount <= 0:
+            flash("Amount must be positive.")
+            return redirect('/savings_goals')
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT current_amount, target_amount FROM savings_goals WHERE id = %s AND user_id = %s", (goal_id, firebase_uid))
+                goal = cur.fetchone()
+                if not goal:
+                    flash("Goal not found.")
+                    return redirect('/savings_goals')
+                current_amount, target_amount = goal
+                current_amount = float(current_amount)
+                target_amount = float(target_amount)
+                new_amount = current_amount + amount
+                new_status = 'completed' if new_amount >= target_amount else 'active'
+                cur.execute("UPDATE savings_goals SET current_amount = %s, status = %s WHERE id = %s AND user_id = %s", (new_amount, new_status, goal_id, firebase_uid))
+                cur.execute("INSERT INTO transactions (user_id, amount, type, description, transaction_date, savings_goal_id) VALUES (%s, %s, 'contribution', 'Savings goal deposit', NOW(), %s)", (firebase_uid, amount, goal_id))
+                conn.commit()
+        # Gamification logic
+        award_points(firebase_uid, 5)
+        if new_amount >= target_amount:
+            award_badge(firebase_uid, "Goal Getter")
+        elif new_amount >= target_amount * 0.5:
+            award_badge(firebase_uid, "Halfway There")
+        update_streak(firebase_uid)
+        flash(f"Successfully added R{amount} to your goal!")
+    except ValueError:
+        flash("Amount must be a number.")
+    except Exception as e:
+        print(f"Error adding contribution: {e}")
+        flash("An error occurred. Please try again.")
+    return redirect('/savings_goals')
 
 @app.route('/stokvel/<int:stokvel_id>/members')
 @login_required
@@ -2828,6 +2927,19 @@ def notifications_count():
     user_id = session.get('user_id')
     count = get_notification_count(user_id) if user_id else 0
     return jsonify({'count': count})
+
+from gamification import award_points, award_badge, update_streak
+
+@app.template_filter('number_format')
+def number_format(value, decimal_places=2):
+    try:
+        return "{:,.{}f}".format(float(value), decimal_places)
+    except (ValueError, TypeError):
+        return value
+
+@app.template_filter('pymin')
+def pymin(a, b):
+    return min(a, b)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
