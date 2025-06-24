@@ -442,9 +442,9 @@ body {
         {% else %}
           <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #fff;"></i>
         {% endif %}
-      </div>
     </div>
-  </div>
+    </div>
+    </div>
 </div>
 
 <!-- Dashboard Grid -->
@@ -454,7 +454,7 @@ body {
     <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem;">
       {% if user.profile_picture %}
         <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
-      {% else %}
+            {% else %}
         <i class="fas fa-user-circle" style="font-size: 3rem; color: #c7d2fe;"></i>
       {% endif %}
     </div>
@@ -475,7 +475,7 @@ body {
       {% for day in weekly_contributions %}
         {% set bar_height = 20 + (day|int)*2 %}
         <div class="day-bar" style="height: {{ bar_height }}px;"></div>
-      {% endfor %}
+            {% endfor %}
     </div>
     <div style="color: #fff; font-size: 1.125rem; font-weight: 600;">R {{ current_balance|default('0.00') }}</div>
     <div style="color: #bfdbfe; font-size: 0.875rem;">Goal: R {{ savings_goal|default('0.00') }}</div>
@@ -512,7 +512,7 @@ body {
         <span>Payment Methods</span>
       </a>
     </div>
-  </div>
+</div>
   <!-- Financial Insight Card -->
   <a href="{{ url_for('analysis') }}" class="glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; text-decoration: none; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 32px rgba(123,97,255,0.2)';" onmouseout="this.style.boxShadow='none';">
     <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
@@ -549,12 +549,12 @@ body {
               {{ activity.status }}
             </span>
             <span class="timeline-amount">R {{ "%.2f"|format(activity.amount) }}</span>
-          </div>
-        </div>
-      </div>
+    </div>
+</div>
+    </div>
       {% endfor %}
     </div>
-  </div>
+</div>
   <!-- Calendar Card (now in grid, spans 2 columns on large screens) -->
   <div class="glass-card calendar-card" style="grid-column: span 2;">
     <div class="calendar-nav">
@@ -570,13 +570,13 @@ body {
             <ul style="margin-top: 0.25rem; font-size: 0.75rem;">
               {% for event in day.events %}
                 <li><i class="fas fa-calendar-alt" style="color: #bfdbfe; margin-right: 0.25rem;"></i>{{ event }}</li>
-              {% endfor %}
+                {% endfor %}
             </ul>
           {% endif %}
-        </div>
-      {% endfor %}
+</div>
+        {% endfor %}
     </div>
-  </div>
+</div>
 </div>
 {% endblock %}
 {% block extra_js %}
