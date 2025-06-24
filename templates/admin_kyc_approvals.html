@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-4">
+  <h2>KYC Approvals</h2>
+  <!-- Search/filter bar -->
+  <div class="mb-4 flex items-center gap-4">
+    <input type="text" class="border rounded px-3 py-2" placeholder="Search by username or email" disabled title="Coming soon">
+    <button class="bg-blue-600 text-white px-4 py-2 rounded" disabled title="Coming soon">Search</button>
+  </div>
+  <table class="table-auto w-full mt-2 text-sm">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>ID Document</th>
+        <th>Proof of Address</th>
+        <th>ID Document Status</th>
+        <th>Proof of Address Status</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in kyc_users %}
+      <tr>
+        <td>{{ user[1] }}</td>
+        <td>{% if user[2] %}<a href="#" class="text-blue-600 underline" title="Preview only">View</a>{% else %}—{% endif %}</td>
+        <td>{% if user[3] %}<a href="#" class="text-blue-600 underline" title="Preview only">View</a>{% else %}—{% endif %}</td>
+        <td>{{ user[4] }}</td>
+        <td>{{ user[5] }}</td>
+        <td>{{ user[6] }}</td>
+        <td class="flex gap-2">
+          <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewKYCModal('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}', '{{ user[5] }}', '{{ user[6] }}')">View</button>
+          <button class="bg-green-600 text-white px-2 py-1 rounded" onclick="openKYCDecisionModal('approve', '{{ user[0] }}')">Approve</button>
+          <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="openKYCDecisionModal('reject', '{{ user[0] }}')">Reject</button>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No users with pending KYC found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- KYC Decision Modal -->
+  <div id="kycDecisionModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+      <button onclick="closeKYCDecisionModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+      <h3 id="kycDecisionTitle" class="text-lg font-bold mb-2">KYC Decision</h3>
+      <form>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Comment</label>
+          <textarea class="border rounded px-3 py-2 w-full" rows="3" required disabled title="Coming soon"></textarea>
+        </div>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Submit</button>
+      </form>
+    </div>
+  </div>
+  <!-- View KYC Modal -->
+  <div id="viewKYCModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+      <button onclick="closeViewKYCModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+      <h3 class="text-lg font-bold mb-2">KYC Details</h3>
+      <table id="viewKYCDetails" class="mb-2 w-full border">
+        <!-- Content will be injected by JS -->
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function openKYCDecisionModal(action, username) {
+  document.getElementById('kycDecisionTitle').textContent = action === 'approve' ? 'Approve KYC' : 'Reject KYC';
+  document.getElementById('kycDecisionModal').classList.remove('hidden');
+}
+function closeKYCDecisionModal() {
+  document.getElementById('kycDecisionModal').classList.add('hidden');
+}
+function openViewKYCModal(username, email, idDoc, address, idDocStatus, addressStatus, createdAt) {
+  var html = '';
+  html += `<li><strong>Email:</strong> ${email}</li>`;
+  html += `<li><strong>ID Document:</strong> <a href='#' class='text-blue-600 underline' title='Preview only'>View</a></li>`;
+  html += `<li><strong>Proof of Address:</strong> <a href='#' class='text-blue-600 underline' title='Preview only'>View</a></li>`;
+  html += `<li><strong>ID Document Status:</strong> ${idDocStatus}</li>`;
+  html += `<li><strong>Proof of Address Status:</strong> ${addressStatus}</li>`;
+  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+  document.getElementById('viewKYCDetails').innerHTML = html;
+  document.getElementById('viewKYCModal').classList.remove('hidden');
+}
+function closeViewKYCModal() {
+  document.getElementById('viewKYCModal').classList.add('hidden');
+}
+</script>
+{% endblock %} 
