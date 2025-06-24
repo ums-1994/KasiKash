@@ -241,64 +241,77 @@ def feedback():
 def home():
     if 'user_id' not in session:
         return redirect('/login')
-        
     try:
-        # Initialize default values
-        username = str(session.get('username', 'User'))
-        current_balance = float(0.00)
-        total_contributions = float(0.00)
-        total_withdrawals = float(0.00)
-        pending_repayments = float(0.00)
-        recent_contributions = []
-        upcoming_contributions = []
-        missed_contributions = []
-        outstanding_loans = []
-        loan_requests = []
-        repayment_progress = []
-        member_count = int(0)
-        monthly_target = float(0.00)
-        total_group_balance = float(0.00)
-        calendar_events = []
-        
-        # Initialize chart data with empty structures to prevent JSON serialization errors
-        savings_growth_chart_data = {}
-        contribution_breakdown_chart_data = {}
-        loan_trends_chart_data = {}
+        # Get user info from database (similar to profile route)
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT u.*, 
+                           COUNT(DISTINCT s.id) as active_stokvels_count,
+                           COALESCE(SUM(CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END), 0) as total_contributions,
+                           COALESCE(SUM(CASE WHEN t.type = 'withdrawal' THEN t.amount ELSE 0 END), 0) as total_withdrawals
+                    FROM users u
+                    LEFT JOIN stokvel_members sm ON u.firebase_uid = sm.user_id
+                    LEFT JOIN stokvels s ON sm.stokvel_id = s.id
+                    LEFT JOIN transactions t ON u.firebase_uid = t.user_id
+                    WHERE u.firebase_uid = %s
+                    GROUP BY u.id
+                """, (session['user_id'],))
+                user = cur.fetchone()
+                if not user:
+                    flash('User profile not found')
+                    return redirect(url_for('login'))
 
-        # Try to get user info from database
+        # Fetch email verification status from Firebase
+        from firebase_admin import auth
         try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (session['user_id'],))
-                    user = cur.fetchone()
-                    if user and user[0]:
-                        username = str(user[0])
+            firebase_user = auth.get_user(session['user_id'])
+            is_verified = firebase_user.email_verified
         except Exception as e:
-            print(f"Database error: {str(e)}")
-            # Continue with default values if database query fails
+            print(f"Error fetching Firebase user for verification status: {e}")
+            is_verified = False
+        user['is_verified'] = is_verified
 
-        notification_count = get_notification_count(session.get('user_id')) # Get notification count
+        # Dashboard-specific variables (use real or sample data)
+        user_name = user.get('full_name') or user.get('username') or 'User'
+        weekly_contributions = [2, 3, 1, 4, 2, 5, 3]  # Example: contributions per day of week
+        savings_goal = 10000.00  # Example goal
+        current_balance = float(user.get('total_contributions', 0)) - float(user.get('total_withdrawals', 0))
+        recent_activities = [
+            {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': '2 hours ago', 'status': 'Processed'},
+            {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': 'Yesterday', 'status': 'Achieved'},
+            {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': '3 days ago', 'status': 'Completed'}
+        ]
+        # Calendar data (sample)
+        from datetime import datetime
+        now = datetime.now()
+        calendar_month = now.strftime('%B')
+        calendar_year = now.year
+        # Generate a simple calendar_days list for the current month
+        import calendar
+        month_days = calendar.monthrange(now.year, now.month)[1]
+        calendar_days = []
+        for i in range(1, month_days + 1):
+            calendar_days.append({
+                'date': i,
+                'is_today': (i == now.day),
+                'events': []  # Add real events if available
+            })
+
+        notification_count = get_notification_count(session.get('user_id'))
 
         return render_template('dashboard.html',
-                            username=username,
-                            current_balance=current_balance,
-                            total_contributions=total_contributions,
-                            total_withdrawals=total_withdrawals,
-                            pending_repayments=pending_repayments,
-                            recent_contributions=recent_contributions,
-                            upcoming_contributions=upcoming_contributions,
-                            missed_contributions=missed_contributions,
-                            outstanding_loans=outstanding_loans,
-                            loan_requests=loan_requests,
-                            repayment_progress=repayment_progress,
-                            member_count=member_count,
-                            monthly_target=monthly_target,
-                            total_group_balance=total_group_balance,
-                            calendar_events=calendar_events,
-                            savings_growth_chart_data=savings_growth_chart_data,
-                            contribution_breakdown_chart_data=contribution_breakdown_chart_data,
-                            loan_trends_chart_data=loan_trends_chart_data,
-                            notification_count=notification_count) # Pass notification count
+            user=user,
+            user_name=user_name,
+            weekly_contributions=weekly_contributions,
+            savings_goal=savings_goal,
+            current_balance=current_balance,
+            recent_activities=recent_activities,
+            calendar_month=calendar_month,
+            calendar_year=calendar_year,
+            calendar_days=calendar_days,
+            notification_count=notification_count
+        )
     except Exception as e:
         print(f"Dashboard error: {str(e)}")
         flash("Error loading dashboard. Please try again.")
@@ -355,6 +368,10 @@ def analysis():
     else:
         return redirect('/')
 
+@app.route('/financial_insight')
+@login_required
+def financial_insight():
+    return redirect(url_for('analysis'))
 
 @app.route('/login')
 def login():
