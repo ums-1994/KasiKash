@@ -74,6 +74,10 @@ body {
     font-size: 12px;
 }
 
+.notification-badge.hidden-badge {
+    display: none;
+}
+
 /* Profile section */
 .profile-section {
     display: flex;
