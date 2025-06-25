@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Payout Requests{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-4">Your Payout Requests</h1>
+    {% if payout_requests %}
+    <table class="min-w-full bg-white rounded shadow">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 border-b">Stokvel</th>
+                <th class="py-2 px-4 border-b">Amount</th>
+                <th class="py-2 px-4 border-b">Reason</th>
+                <th class="py-2 px-4 border-b">Status</th>
+                <th class="py-2 px-4 border-b">Requested At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in payout_requests %}
+            <tr>
+                <td class="py-2 px-4 border-b">{{ req.stokvel_name }}</td>
+                <td class="py-2 px-4 border-b">R {{ req.amount }}</td>
+                <td class="py-2 px-4 border-b">{{ req.description }}</td>
+                <td class="py-2 px-4 border-b">{{ req.status|capitalize }}</td>
+                <td class="py-2 px-4 border-b">{{ req.transaction_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>You have not submitted any payout requests yet.</p>
+    {% endif %}
+</div>
+{% endblock %} 

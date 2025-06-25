@@ -1,0 +1,47 @@
+from support import db_connection
+import psycopg2
+
+def test_database():
+    print("Testing database connection and queries...")
+    try:
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                # Test users table
+                print("\nChecking users table...")
+                cur.execute("SELECT id, firebase_uid FROM users LIMIT 5")
+                users = cur.fetchall()
+                print(f"Found {len(users)} users:")
+                for user in users:
+                    print(f"User ID: {user[0]}, Firebase UID: {user[1]}")
+
+                # Test stokvels table
+                print("\nChecking stokvels table...")
+                cur.execute("SELECT id, name, monthly_contribution FROM stokvels LIMIT 5")
+                stokvels = cur.fetchall()
+                print(f"Found {len(stokvels)} stokvels:")
+                for stokvel in stokvels:
+                    print(f"Stokvel ID: {stokvel[0]}, Name: {stokvel[1]}, Monthly Contribution: {stokvel[2]}")
+
+                # Test stokvel_members table
+                print("\nChecking stokvel_members table...")
+                cur.execute("SELECT id, stokvel_id, user_id, role FROM stokvel_members LIMIT 5")
+                members = cur.fetchall()
+                print(f"Found {len(members)} stokvel members:")
+                for member in members:
+                    print(f"Member ID: {member[0]}, Stokvel ID: {member[1]}, User ID: {member[2]}, Role: {member[3]}")
+
+                # Test payouts table
+                print("\nChecking payouts table...")
+                cur.execute("SELECT id, user_id, stokvel_id, amount, status FROM payouts LIMIT 5")
+                payouts = cur.fetchall()
+                print(f"Found {len(payouts)} payouts:")
+                for payout in payouts:
+                    print(f"Payout ID: {payout[0]}, User ID: {payout[1]}, Stokvel ID: {payout[2]}, Amount: {payout[3]}, Status: {payout[4]}")
+
+    except Exception as e:
+        print(f"Error testing database: {str(e)}")
+        import traceback
+        print(f"Full error details:\n{traceback.format_exc()}")
+
+if __name__ == "__main__":
+    test_database() 

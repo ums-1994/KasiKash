@@ -10,6 +10,7 @@ import json
 import warnings
 import plotly.graph_objects as go
 from plotly.offline import plot
+from support_postgres import generate_df
 
 warnings.filterwarnings("ignore")
 

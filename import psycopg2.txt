@@ -1,0 +1,53 @@
+import psycopg2
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env if present
+load_dotenv()
+
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '5432')
+
+STOKVEL_ID = 1  # <-- Change this to your stokvel_id
+
+def print_table(title, rows):
+    print(f"\n--- {title} ---")
+    if not rows:
+        print("No results.")
+    else:
+        for row in rows:
+            print(row)
+
+def main():
+    conn = psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+    cur = conn.cursor()
+
+    # Print stokvel_members for this stokvel
+    cur.execute("SELECT * FROM stokvel_members WHERE stokvel_id = %s", (STOKVEL_ID,))
+    members = cur.fetchall()
+    print_table(f"stokvel_members for stokvel_id={STOKVEL_ID}", members)
+
+    # Print users for this stokvel
+    cur.execute("SELECT user_id FROM stokvel_members WHERE stokvel_id = %s AND user_id IS NOT NULL", (STOKVEL_ID,))
+    user_ids = [row[0] for row in cur.fetchall()]
+    if user_ids:
+        cur.execute("SELECT * FROM users WHERE id = ANY(%s)", (user_ids,))
+        users = cur.fetchall()
+        print_table(f"users for stokvel_id={STOKVEL_ID}", users)
+    else:
+        print("\nNo user_ids found in stokvel_members for this stokvel.")
+
+    cur.close()
+    conn.close()
+
+if __name__ == \"__main__\":
+    main()

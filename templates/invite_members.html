@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Invite Members{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-4">Invite Members</h1>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-4">
+            <label for="stokvel_id" class="block text-gray-700 text-sm font-bold mb-2">Stokvel</label>
+            <select name="stokvel_id" id="stokvel_id" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                {% for stokvel in stokvels %}
+                    <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="emails" class="block text-gray-700 text-sm font-bold mb-2">Email(s) to invite</label>
+            <textarea name="emails" id="emails" required rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter one or more email addresses, separated by commas"></textarea>
+        </div>
+        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Invite Members</button>
+    </form>
+</div>
+{% endblock %} 

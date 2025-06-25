@@ -1,0 +1,1 @@
+ALTER TABLE stokvels ADD COLUMN IF NOT EXISTS goal_amount DECIMAL(10,2); 

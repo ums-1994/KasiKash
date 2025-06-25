@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Pay Back Loan{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-4">Pay Back Loan</h1>
+    <div class="bg-white rounded shadow p-6 mb-6">
+        <p><strong>Stokvel:</strong> {{ loan.stokvel_name }}</p>
+        <p><strong>Loan Amount:</strong> R {{ '%.2f'|format(loan.amount) }}</p>
+        <p><strong>Status:</strong> {{ loan.status|capitalize }}</p>
+    </div>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="mb-4">
+            <label for="amount" class="block text-gray-700 text-sm font-bold mb-2">Repayment Amount (R)</label>
+            <input type="number" name="amount" id="amount" required step="0.01" min="0.01" max="{{ loan.amount }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Submit Repayment</button>
+        <a href="{{ url_for('loan_requests') }}" class="ml-4 text-blue-600 hover:underline">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

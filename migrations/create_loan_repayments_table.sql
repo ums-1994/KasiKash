@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS loan_repayments (
+    id SERIAL PRIMARY KEY,
+    loan_id INTEGER REFERENCES loan_requests(id) ON DELETE CASCADE,
+    user_id VARCHAR(128) REFERENCES users(firebase_uid) ON DELETE CASCADE,
+    amount DECIMAL(10,2) NOT NULL,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+); 

@@ -5,24 +5,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
-  font-family: 'Inter', 'Montserrat', sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 0;
-}
-.page-container {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  box-sizing: border-box;
-}
+/* Remove body and .page-container custom styles to fit into main app */
 .glass-card {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(16px);
@@ -97,127 +80,462 @@ body {
   width: 100%;
   margin-top: 1rem;
 }
+.loader {
+  border-top-color: #3498db;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
 {% endblock %}
 {% block content %}
-<div class="page-container">
-  <div class="glass-card">
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center">
-        <i class="fas fa-chart-pie accent text-2xl mr-3"></i>
-        <span class="accent text-lg font-bold">Financial Insights</span>
-      </div>
-      <select class="bg-white bg-opacity-5 text-white text-sm rounded-lg px-3 py-2 border border-white border-opacity-10">
-        <option value="month">This Month</option>
-        <option value="quarter">This Quarter</option>
-        <option value="year">This Year</option>
+<div class="container mx-auto px-4 py-8">
+  <!-- Filters -->
+  <form method="get" class="mb-6 flex flex-wrap gap-4 items-end">
+    <div>
+      <label class="block text-xs font-semibold mb-1">Date From</label>
+      <input type="date" name="date_from" value="{{ date_from or '' }}" class="form-input rounded-lg border px-2 py-1">
+    </div>
+    <div>
+      <label class="block text-xs font-semibold mb-1">Date To</label>
+      <input type="date" name="date_to" value="{{ date_to or '' }}" class="form-input rounded-lg border px-2 py-1">
+    </div>
+    <div>
+      <label class="block text-xs font-semibold mb-1">Type</label>
+      <select name="type" class="form-select rounded-lg border px-2 py-1">
+        <option value="">All</option>
+        <option value="contribution" {% if contrib_type=='contribution' %}selected{% endif %}>Contribution</option>
+        <option value="withdrawal" {% if contrib_type=='withdrawal' %}selected{% endif %}>Withdrawal</option>
+        <option value="payout" {% if contrib_type=='payout' %}selected{% endif %}>Payout</option>
       </select>
     </div>
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-value">R {{ total_contributions|default('0.00') }}</div>
-        <div class="metric-label">Total Contributions</div>
-        <div class="trend-indicator trend-up">
-          <i class="fas fa-arrow-up mr-1"></i> 12%
+    <button type="submit" class="btn bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">Apply Filters</button>
+    <button type="button" class="btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold ml-2" onclick="exportInsights()">Export CSV</button>
+  </form>
+  <!-- Toggle Tabs -->
+  <div class="mb-6 flex space-x-4">
+    <button id="yourInsightsTab" class="tab-btn px-4 py-2 rounded-lg font-semibold focus:outline-none bg-blue-600 text-white" onclick="showInsights('personal')">Your Insights</button>
+    <button id="communityInsightsTab" class="tab-btn px-4 py-2 rounded-lg font-semibold focus:outline-none bg-gray-200 text-gray-700" onclick="showInsights('community')">Community Insights</button>
+  </div>
+  <!-- Personal Insights -->
+  <div id="personalInsights" class="insights-section">
+    <div class="glass-card mb-6">
+      <h2 class="text-lg font-bold mb-4 flex items-center">Your Insights <span class="ml-2" title="These stats are based on your activity."><i class="fas fa-info-circle text-gray-400"></i></span></h2>
+      <!-- Health Score & Forecast -->
+      <div class="mb-4 flex flex-col md:flex-row gap-4">
+        <div class="flex-1 bg-gradient-to-r from-blue-100 to-blue-50 rounded-lg p-4 flex items-center">
+          <div class="text-3xl font-bold text-blue-600 mr-4">{{ health_score }}/100</div>
+          <div>
+            <div class="font-semibold text-blue-700">Financial Health Score</div>
+            <div class="text-xs text-gray-500">Based on your savings rate, consistency, and goal progress.</div>
+          </div>
+        </div>
+        {% if goal_forecast %}
+        <div class="flex-1 bg-gradient-to-r from-green-100 to-green-50 rounded-lg p-4 flex items-center">
+          <i class="fas fa-bullseye text-green-500 text-2xl mr-3"></i>
+          <div>
+            <div class="font-semibold text-green-700">Goal Forecast</div>
+            <div class="text-xs text-gray-500">{{ goal_forecast }}</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card" title="Total amount you have contributed.">
+          <div class="metric-value">R {{ total_contributions|default('0.00') }}</div>
+          <div class="metric-label">Total Contributions</div>
+        </div>
+        <div class="metric-card" title="Your progress towards all savings goals.">
+          <div class="metric-value">{{ (savings_progress|default(0) * 100)|round|int }}%</div>
+          <div class="metric-label">Goal Progress</div>
+        </div>
+        <div class="metric-card" title="Your average monthly contribution.">
+          <div class="metric-value">R {{ monthly_average|default('0.00') }}</div>
+          <div class="metric-label">Monthly Average</div>
         </div>
       </div>
-      <div class="metric-card">
-        <div class="metric-value">{{ (savings_progress|default(0) * 100)|round|int }}%</div>
-        <div class="metric-label">Goal Progress</div>
-        <div class="trend-indicator trend-up">
-          <i class="fas fa-arrow-up mr-1"></i> 8%
-        </div>
+      <!-- Milestones & Suggestions -->
+      <div class="flex flex-wrap gap-4 mt-4">
+        {% for milestone in milestones %}
+        <span class="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">{{ milestone }}</span>
+        {% endfor %}
+        {% for suggestion in suggestions %}
+        <span class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">{{ suggestion }}</span>
+        {% endfor %}
       </div>
-      <div class="metric-card">
-        <div class="metric-value">R {{ monthly_average|default('0.00') }}</div>
-        <div class="metric-label">Monthly Average</div>
-        <div class="trend-indicator trend-down">
-          <i class="fas fa-arrow-down mr-1"></i> 3%
+      <!-- Loan Stats -->
+      <div class="glass-card mb-6">
+        <h3 class="font-semibold mb-2">Your Loans & Repayments</h3>
+        <div class="metric-grid">
+          <div class="metric-card" title="Total loans you have taken.">
+            <div class="metric-value">R {{ total_loans_taken|default('0.00') }}</div>
+            <div class="metric-label">Total Loans Taken</div>
+          </div>
+          <div class="metric-card" title="Total repayments you have made.">
+            <div class="metric-value">R {{ total_loans_repaid|default('0.00') }}</div>
+            <div class="metric-label">Total Repaid</div>
+          </div>
+          <div class="metric-card" title="Outstanding loan balance.">
+            <div class="metric-value">R {{ outstanding_loans|default('0.00') }}</div>
+            <div class="metric-label">Outstanding</div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <canvas id="loanMonthlyChart"></canvas>
         </div>
       </div>
     </div>
-    <div class="chart-container">
-      <canvas id="contributionsChart"></canvas>
+    <!-- Contribution Trend Chart -->
+    <div class="glass-card mb-6">
+      <h3 class="font-semibold mb-2">Contribution Trend</h3>
+      <canvas id="personalTrendChart"></canvas>
+    </div>
+    <!-- Stacked Bar Chart -->
+    <div class="glass-card mb-6">
+      <h3 class="font-semibold mb-2">Monthly Breakdown</h3>
+      <canvas id="personalBarChart"></canvas>
+    </div>
+    <!-- Savings Goal Breakdown -->
+    <div class="glass-card mb-6">
+      <h3 class="font-semibold mb-2">Savings Goal Breakdown</h3>
+      <div class="space-y-2">
+        {% for goal in savings_goals %}
+        <div>
+          <div class="flex justify-between text-xs font-semibold">
+            <span>{{ goal[0] }}</span>
+            {% set percent = 0 %}
+            {% if goal[2] and goal[2]|float > 0 %}
+              {% set percent = ((goal[1]|float / goal[2]|float) * 100) | round(0, 'floor') | int %}
+            {% endif %}
+            {% if percent > 100 %}{% set percent = 100 %}{% endif %}
+            <span>{{ percent }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2.5">
+            {# Progress bar: this is HTML, not CSS #}
+            <div class="bg-blue-500 h-2.5 rounded-full" style="width: {{ percent }}%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <!-- Recent Activity -->
+    <div class="glass-card">
+      <h3 class="font-semibold mb-2">Recent Activity</h3>
+      <ul class="divide-y divide-gray-200">
+        {% for act in recent_activity %}
+        <li class="py-2 flex justify-between text-sm">
+          <span>{{ act[0]|capitalize }}: R{{ act[1] }} <span class="text-gray-400">({{ act[2].strftime('%Y-%m-%d') }})</span></span>
+          <span class="text-gray-500">{{ act[3] }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <!-- Community Insights -->
+  <div id="communityInsights" class="insights-section" style="display:none;">
+    <div class="glass-card mb-6">
+      <h2 class="text-lg font-bold mb-4 flex items-center">Community Insights <span class="ml-2" title="These stats are based on all users."><i class="fas fa-info-circle text-gray-400"></i></span></h2>
+      <!-- Community Badges -->
+      {% if community_badges %}
+      <div class="mb-4 flex flex-wrap gap-2">
+        {% for badge in community_badges %}
+        <span class="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold"><i class="fas fa-award mr-1"></i>{{ badge }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <!-- Community Milestones -->
+      {% if community_milestones %}
+      <div class="mb-4 flex flex-wrap gap-2">
+        {% for milestone in community_milestones %}
+        <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold"><i class="fas fa-flag-checkered mr-1"></i>{{ milestone }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="metric-grid">
+        <div class="metric-card" title="Total contributions by all users.">
+          <div class="metric-value">R {{ community_total_contributions|default('0.00') }}</div>
+          <div class="metric-label">Total Contributions</div>
+        </div>
+        <div class="metric-card" title="Average goal progress across all users.">
+          <div class="metric-value">{{ (community_savings_progress|default(0) * 100)|round|int }}%</div>
+          <div class="metric-label">Goal Progress</div>
+        </div>
+        <div class="metric-card" title="Average monthly contribution by all users.">
+          <div class="metric-value">R {{ community_monthly_average|default('0.00') }}</div>
+          <div class="metric-label">Monthly Average</div>
+        </div>
+        <div class="metric-card" title="Number of active contributors this month.">
+          <div class="metric-value">{{ active_members }}</div>
+          <div class="metric-label">Active Members</div>
+        </div>
+      </div>
+      <!-- Top Contributors -->
+      <div class="mt-4">
+        <h3 class="font-semibold mb-2">Top Contributors</h3>
+        <ol class="list-decimal ml-6">
+          {% for user, total in top_contributors %}
+          <li>{{ user }}: R{{ total }}</li>
+          {% endfor %}
+        </ol>
+      </div>
+      <!-- Stokvel Comparisons -->
+      {% if stokvel_comparisons %}
+      <div class="glass-card mb-6">
+        <h3 class="font-semibold mb-2">Your Stokvels vs. Community Average</h3>
+        <ul class="divide-y divide-gray-200">
+          {% for stokvel in stokvel_comparisons %}
+          <li class="py-2 flex justify-between text-sm">
+            <span>{{ stokvel.name }}: R{{ stokvel.total_pool|int }}</span>
+            <span class="{% if stokvel.above_avg %}text-green-600{% else %}text-gray-500{% endif %}">
+              {% if stokvel.above_avg %}Above{% else %}Below{% endif %} Avg (R{{ stokvel.avg_pool|int }})
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+    <!-- Community Growth Rate Chart -->
+    <div class="glass-card mb-6">
+      <h3 class="font-semibold mb-2">Community Growth Rate</h3>
+      <canvas id="communityGrowthChart"></canvas>
+    </div>
+    <!-- Community Stacked Bar Chart -->
+    <div class="glass-card mb-6">
+      <h3 class="font-semibold mb-2">Community Monthly Breakdown</h3>
+      <canvas id="communityBarChart"></canvas>
+    </div>
+    <!-- Goal Diversity -->
+    <div class="glass-card mb-6">
+      <h3 class="font-semibold mb-2">Goal Diversity</h3>
+      <canvas id="goalDiversityChart"></canvas>
+    </div>
+    <!-- Comparison to Community -->
+    <div class="glass-card">
+      <h3 class="font-semibold mb-2">Your Contributions vs. Community Average</h3>
+      <div class="flex items-center space-x-4">
+        <div class="font-bold">You: R{{ total_contributions|default('0.00') }}</div>
+        <div class="font-bold">Community Avg: R{{ (total_contributions - comparison)|default('0.00') }}</div>
+        <span class="text-xs text-gray-500">({% if comparison > 0 %}Above{% elif comparison < 0 %}Below{% else %}At{% endif %} average)</span>
+      </div>
     </div>
   </div>
 </div>
 {% endblock %}
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const contributionsCtx = document.getElementById('contributionsChart').getContext('2d');
-  const gradient = contributionsCtx.createLinearGradient(0, 0, 0, 180);
-  gradient.addColorStop(0, 'rgba(123, 97, 255, 0.2)');
-  gradient.addColorStop(1, 'rgba(123, 97, 255, 0)');
-
-  const chartLabels = {{ contribution_dates|default([])|tojson }};
-  const chartData = {{ monthly_contributions|default([])|tojson }};
-
-  new Chart(contributionsCtx, {
-    type: 'line',
-    data: {
-      labels: chartLabels,
-      datasets: [{
-        label: 'Contributions',
-        data: chartData,
-        borderColor: '#7B61FF',
-        backgroundColor: gradient,
-        borderWidth: 2,
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: '#7B61FF',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          titleColor: '#1a1a1a',
-          bodyColor: '#1a1a1a',
-          padding: 12,
-          borderColor: 'rgba(123, 97, 255, 0.1)',
-          borderWidth: 1,
-          displayColors: false,
-          callbacks: {
-            label: function(context) {
-              return 'R ' + context.parsed.y;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: 'rgba(255, 255, 255, 0.05)'
+let personalTrendChart, personalBarChart, communityGrowthChart, communityBarChart, goalDiversityChart, loanMonthlyChart;
+function showInsights(type) {
+  const personal = document.getElementById('personalInsights');
+  const community = document.getElementById('communityInsights');
+  const yourTab = document.getElementById('yourInsightsTab');
+  const communityTab = document.getElementById('communityInsightsTab');
+  if (type === 'personal') {
+    personal.style.display = '';
+    community.style.display = 'none';
+    yourTab.classList.add('bg-blue-600', 'text-white');
+    yourTab.classList.remove('bg-gray-200', 'text-gray-700');
+    communityTab.classList.remove('bg-blue-600', 'text-white');
+    communityTab.classList.add('bg-gray-200', 'text-gray-700');
+  } else {
+    personal.style.display = 'none';
+    community.style.display = '';
+    communityTab.classList.add('bg-blue-600', 'text-white');
+    communityTab.classList.remove('bg-gray-200', 'text-gray-700');
+    yourTab.classList.remove('bg-blue-600', 'text-white');
+    yourTab.classList.add('bg-gray-200', 'text-gray-700');
+  }
+}
+function exportInsights() {
+  // Export all visible data as CSV
+  let csv = 'Type,Amount,Date,Description\n';
+  document.querySelectorAll('#personalInsights .glass-card ul li').forEach(li => {
+    csv += li.innerText.replace(/\s+/g, ' ').replace(/: R/, ',').replace('(', ',').replace(')', '').replace(/\s+/, ',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'insights.csv';
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+function showLoading(show) {
+  let spinner = document.getElementById('insights-loading');
+  if (!spinner) {
+    spinner = document.createElement('div');
+    spinner.id = 'insights-loading';
+    spinner.innerHTML = '<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50"><div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16"></div></div>';
+    document.body.appendChild(spinner);
+  }
+  spinner.style.display = show ? '' : 'none';
+}
+function updateInsights() {
+  showLoading(true);
+  const form = document.querySelector('form');
+  const params = new URLSearchParams(new FormData(form)).toString();
+  fetch(`/financial_insight/data?${params}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log('AJAX data:', data); // Debugging output
+      // Update personal trend chart
+      if (personalTrendChart) personalTrendChart.destroy();
+      const trendCtx = document.getElementById('personalTrendChart').getContext('2d');
+      if (data.personal_trend && data.personal_trend.length > 0) {
+        personalTrendChart = new Chart(trendCtx, {
+          type: 'line',
+          data: {
+            labels: data.personal_trend.map(x => x[0]),
+            datasets: [{
+              label: 'Your Contributions',
+              data: data.personal_trend.map(x => x[1]),
+              borderColor: '#7B61FF',
+              backgroundColor: 'rgba(123, 97, 255, 0.1)',
+              fill: true,
+              tension: 0.4
+            }]
           },
-          ticks: {
-            color: 'rgba(255, 255, 255, 0.7)',
-            callback: function(value) {
-              return 'R ' + value;
-            }
-          }
-        },
-        x: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            color: 'rgba(255, 255, 255, 0.7)',
-            maxRotation: 0
-          }
-        }
+          options: {responsive: true, plugins: {legend: {display: false}}}
+        });
+      } else {
+        trendCtx.clearRect(0, 0, trendCtx.canvas.width, trendCtx.canvas.height);
+        trendCtx.font = '16px sans-serif';
+        trendCtx.fillStyle = '#888';
+        trendCtx.fillText('No data available', 20, 40);
       }
-    }
+      // Update personal stacked bar chart
+      if (personalBarChart) personalBarChart.destroy();
+      const barCtx = document.getElementById('personalBarChart').getContext('2d');
+      if (data.personal_bar_data && data.personal_bar_data.length > 0) {
+        personalBarChart = new Chart(barCtx, {
+          type: 'bar',
+          data: {
+            labels: data.personal_bar_data.map(x => x.month),
+            datasets: [
+              {
+                label: 'Contributions',
+                data: data.personal_bar_data.map(x => x.contributions),
+                backgroundColor: '#7B61FF',
+              },
+              {
+                label: 'Withdrawals',
+                data: data.personal_bar_data.map(x => x.withdrawals),
+                backgroundColor: '#FBBF24',
+              },
+              {
+                label: 'Payouts',
+                data: data.personal_bar_data.map(x => x.payouts),
+                backgroundColor: '#34D399',
+              }
+            ]
+          },
+          options: {responsive: true, plugins: {legend: {position: 'bottom'}}, scales: {x: {stacked: true}, y: {stacked: true}}}
+        });
+      } else {
+        barCtx.clearRect(0, 0, barCtx.canvas.width, barCtx.canvas.height);
+        barCtx.font = '16px sans-serif';
+        barCtx.fillStyle = '#888';
+        barCtx.fillText('No data available', 20, 40);
+      }
+      // Update community growth chart
+      if (communityGrowthChart) communityGrowthChart.destroy();
+      const growthCtx = document.getElementById('communityGrowthChart').getContext('2d');
+      if (data.community_trend && data.community_trend.length > 0) {
+        communityGrowthChart = new Chart(growthCtx, {
+          type: 'line',
+          data: {
+            labels: data.community_trend.map(x => x[0]),
+            datasets: [{
+              label: 'Community Contributions',
+              data: data.community_trend.map(x => x[1]),
+              borderColor: '#34D399',
+              backgroundColor: 'rgba(52, 211, 153, 0.1)',
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {responsive: true, plugins: {legend: {display: false}}}
+        });
+      } else {
+        growthCtx.clearRect(0, 0, growthCtx.canvas.width, growthCtx.canvas.height);
+        growthCtx.font = '16px sans-serif';
+        growthCtx.fillStyle = '#888';
+        growthCtx.fillText('No data available', 20, 40);
+      }
+      // Update community stacked bar chart
+      if (communityBarChart) communityBarChart.destroy();
+      const commBarCtx = document.getElementById('communityBarChart').getContext('2d');
+      if (data.community_bar_data && data.community_bar_data.length > 0) {
+        communityBarChart = new Chart(commBarCtx, {
+          type: 'bar',
+          data: {
+            labels: data.community_bar_data.map(x => x.month),
+            datasets: [
+              {
+                label: 'Contributions',
+                data: data.community_bar_data.map(x => x.contributions),
+                backgroundColor: '#7B61FF',
+              },
+              {
+                label: 'Withdrawals',
+                data: data.community_bar_data.map(x => x.withdrawals),
+                backgroundColor: '#FBBF24',
+              },
+              {
+                label: 'Payouts',
+                data: data.community_bar_data.map(x => x.payouts),
+                backgroundColor: '#34D399',
+              }
+            ]
+          },
+          options: {responsive: true, plugins: {legend: {position: 'bottom'}}, scales: {x: {stacked: true}, y: {stacked: true}}}
+        });
+      } else {
+        commBarCtx.clearRect(0, 0, commBarCtx.canvas.width, commBarCtx.canvas.height);
+        commBarCtx.font = '16px sans-serif';
+        commBarCtx.fillStyle = '#888';
+        commBarCtx.fillText('No data available', 20, 40);
+      }
+      // Loan monthly chart
+      if (loanMonthlyChart) loanMonthlyChart.destroy();
+      const loanChartCtx = document.getElementById('loanMonthlyChart').getContext('2d');
+      if (data.loan_monthly_data && data.loan_monthly_data.length > 0) {
+        loanMonthlyChart = new Chart(loanChartCtx, {
+          type: 'bar',
+          data: {
+            labels: data.loan_monthly_data.map(x => x.month),
+            datasets: [
+              {
+                label: 'Loans Taken',
+                data: data.loan_monthly_data.map(x => x.loaned),
+                backgroundColor: '#7B61FF',
+              },
+              {
+                label: 'Repaid',
+                data: data.loan_monthly_data.map(x => x.repaid),
+                backgroundColor: '#34D399',
+              }
+            ]
+          },
+          options: {responsive: true, plugins: {legend: {position: 'bottom'}}, scales: {x: {stacked: false}, y: {stacked: false}}}
+        });
+      } else {
+        loanChartCtx.clearRect(0, 0, loanChartCtx.canvas.width, loanChartCtx.canvas.height);
+        loanChartCtx.font = '16px sans-serif';
+        loanChartCtx.fillStyle = '#888';
+        loanChartCtx.fillText('No data available', 20, 40);
+      }
+      showLoading(false);
+    })
+    .catch(() => showLoading(false));
+}
+document.addEventListener('DOMContentLoaded', function() {
+  // ... existing chart code ...
+  // Attach filter change event
+  document.querySelectorAll('form input, form select').forEach(el => {
+    el.addEventListener('change', updateInsights);
   });
 });
 </script>

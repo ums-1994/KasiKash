@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Requests{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Your Loan Requests</h1>
+        <a href="{{ url_for('request_loan') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Apply for Loan</a>
+    </div>
+    {% if loan_requests %}
+    <table class="min-w-full bg-white rounded shadow">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 border-b">Stokvel</th>
+                <th class="py-2 px-4 border-b">Amount</th>
+                <th class="py-2 px-4 border-b">Repaid</th>
+                <th class="py-2 px-4 border-b">Remaining</th>
+                <th class="py-2 px-4 border-b">Progress</th>
+                <th class="py-2 px-4 border-b">Reason</th>
+                <th class="py-2 px-4 border-b">Status</th>
+                <th class="py-2 px-4 border-b">Requested At</th>
+                <th class="py-2 px-4 border-b">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in loan_requests %}
+            <tr>
+                <td class="py-2 px-4 border-b">{{ req.stokvel_name }}</td>
+                <td class="py-2 px-4 border-b">R {{ req.amount }}</td>
+                <td class="py-2 px-4 border-b">R {{ '%.2f'|format(req.repaid_total) }}</td>
+                <td class="py-2 px-4 border-b">R {{ '%.2f'|format(req.remaining) }}</td>
+                <td class="py-2 px-4 border-b">
+                    <div class="w-32 bg-gray-200 rounded-full h-3">
+                        <div class="bg-green-500 h-3 rounded-full" style="width: {{ (req.repaid_total / req.amount * 100) if req.amount else 0 }}%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">{{ (req.repaid_total / req.amount * 100)|round(1) if req.amount else 0 }}%</div>
+                </td>
+                <td class="py-2 px-4 border-b">{{ req.reason }}</td>
+                <td class="py-2 px-4 border-b">{{ req.status|capitalize }}</td>
+                <td class="py-2 px-4 border-b">{{ req.created_at }}</td>
+                <td class="py-2 px-4 border-b">
+                    {% if req.status == 'approved' and req.remaining > 0 %}
+                        <button onclick="openPayModal({{ req.id }})" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded">Pay Back Loan</button>
+                    {% else %}
+                        <span class="text-gray-400">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="9" class="bg-gray-50 px-4 py-2">
+                    <div>
+                        <strong>Repayment History:</strong>
+                        {% if repayment_histories[req.id] and repayment_histories[req.id]|length > 0 %}
+                        <ul class="list-disc ml-6 mt-1">
+                            {% for rep in repayment_histories[req.id] %}
+                                <li>R {{ '%.2f'|format(rep.amount) }} on {{ rep.date }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <span class="text-gray-500">No repayments yet.</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>You have not submitted any loan requests yet.</p>
+    {% endif %}
+</div>
+
+<!-- Pay Loan Modal -->
+<div id="payLoanModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Pay Back Loan</h3>
+            <p id="payLoanModalText" class="mb-4"></p>
+            <div class="flex justify-end space-x-2">
+                <a id="payLoanModalConfirm" href="#" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Continue to Payment</a>
+                <button type="button" onclick="closePayModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openPayModal(loanId) {
+    var modal = document.getElementById('payLoanModal');
+    var confirmBtn = document.getElementById('payLoanModalConfirm');
+    var text = document.getElementById('payLoanModalText');
+    text.textContent = 'Are you sure you want to pay back this loan?';
+    confirmBtn.href = '/pay_back_loan/' + loanId;
+    modal.classList.remove('hidden');
+}
+function closePayModal() {
+    document.getElementById('payLoanModal').classList.add('hidden');
+}
+// Close modal when clicking outside
+window.onclick = function(event) {
+    var modal = document.getElementById('payLoanModal');
+    if (event.target == modal) {
+        closePayModal();
+    }
+}
+</script>
+{% endblock %} 
