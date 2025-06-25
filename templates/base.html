@@ -163,7 +163,7 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- Sidebar -->
     <div class="fixed inset-y-0 left-0 w-64 sidebar">
         <!-- Logo -->
@@ -211,9 +211,8 @@
             </div>
         </div>
     </div>
-    <!-- Main Content -->
     <div class="ml-64">
-        <!-- Top Bar -->
+        <!-- Top Bar with Profile and Notifications -->
         <div class="top-bar">
             <div class="flex items-center justify-between w-full px-6 py-4">
                 <h2 class="text-xl page-title">{% block page_title %}{% endblock %}</h2>
@@ -231,7 +230,6 @@
                 </div>
             </div>
         </div>
-        <!-- Main Content Area -->
         <main class="p-6">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}

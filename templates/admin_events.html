@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="w-full p-4 mt-2">
+  <h2>Events</h2>
+  <!-- Event creation form -->
+  <form id="createEventForm" method="POST" action="{{ url_for('admin_events') }}" class="mb-4 bg-white rounded-lg shadow-md p-4 max-w-xl" style="margin-bottom:1rem;">
+    {{ csrf_token() }}
+    <div class="mb-2">
+      <label class="block text-gray-700 font-semibold mb-1">Stokvel</label>
+      <select name="stokvel" id="stokvelSelect" class="w-full border rounded px-3 py-2" required>
+        <option value="Stokvel A">Stokvel A</option>
+        <option value="Stokvel B">Stokvel B</option>
+        <option value="Stokvel C">Stokvel C</option>
+      </select>
+    </div>
+    <div class="mb-2">
+      <label class="block text-gray-700 font-semibold mb-1">Name</label>
+      <input type="text" name="name" class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div class="mb-2">
+      <label class="block text-gray-700 font-semibold mb-1">Description</label>
+      <textarea name="description" class="w-full border rounded px-3 py-2" rows="2" required></textarea>
+    </div>
+    <div class="mb-2">
+      <label class="block text-gray-700 font-semibold mb-1">Target Date</label>
+      <input type="date" name="target_date" class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div class="mb-2 flex items-center">
+      <input type="checkbox" id="sendNotification" name="send_notification" class="mr-2">
+      <label for="sendNotification" class="text-gray-700">Send notification to all members of this stokvel</label>
+    </div>
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded">Create Event</button>
+  </form>
+  <!-- Events table -->
+  <table class="table-auto w-full mt-2 text-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Target Date</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+      <tr>
+        <td>{{ event[0] }}</td>
+        <td>{{ event[1] }}</td>
+        <td>{{ event[2] }}</td>
+        <td>{{ event[3] }}</td>
+        <td>{{ event[4] }}</td>
+        <td class="flex gap-2">
+          <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewEventModal('{{ event[0] }}', '{{ event[1] }}', '{{ event[2] }}', '{{ event[3] }}', '{{ event[4] }}')">View</button>
+          <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditEventModal('{{ event[0] }}', '{{ event[1] }}', '{{ event[2] }}', '{{ event[3] }}')">Edit</button>
+          <button class="bg-red-600 text-white px-2 py-1 rounded" disabled title="Coming soon">Delete</button>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">No events found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Edit Event Modal -->
+  <div id="editEventModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+      <button onclick="closeEditEventModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+      <h3 class="text-lg font-bold mb-2">Edit Event</h3>
+      <form>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Name</label>
+          <input id="editEventName" type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Description</label>
+          <textarea id="editEventDescription" class="border rounded px-3 py-2 w-full" rows="2" required disabled title="Coming soon"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Target Date</label>
+          <input id="editEventDate" type="date" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <!-- View Event Modal -->
+  <div id="viewEventModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+      <button onclick="closeViewEventModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+      <h3 class="text-lg font-bold mb-2">Event Details</h3>
+      <ul id="viewEventDetails" class="mb-2"></ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Notification preview for event creation
+const createEventForm = document.getElementById('createEventForm');
+if (createEventForm) {
+  createEventForm.addEventListener('submit', function(e) {
+    const notify = document.getElementById('sendNotification').checked;
+    const stokvel = document.getElementById('stokvelSelect').value;
+    if (notify) {
+      alert(`(Preview) Notification would be sent to all members of ${stokvel}.`);
+    }
+    // Allow form to submit as normal
+  });
+}
+function openEditEventModal(id, name, description, date) {
+  document.getElementById('editEventName').value = name;
+  document.getElementById('editEventDescription').value = description;
+  document.getElementById('editEventDate').value = date;
+  document.getElementById('editEventModal').classList.remove('hidden');
+}
+function closeEditEventModal() {
+  document.getElementById('editEventModal').classList.add('hidden');
+}
+function openViewEventModal(id, name, description, date, createdAt) {
+  var html = '';
+  html += `<li><strong>ID:</strong> ${id}</li>`;
+  html += `<li><strong>Name:</strong> ${name}</li>`;
+  html += `<li><strong>Description:</strong> ${description}</li>`;
+  html += `<li><strong>Target Date:</strong> ${date}</li>`;
+  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+  document.getElementById('viewEventDetails').innerHTML = html;
+  document.getElementById('viewEventModal').classList.remove('hidden');
+}
+function closeViewEventModal() {
+  document.getElementById('viewEventModal').classList.add('hidden');
+}
+</script>
+{% endblock %} 

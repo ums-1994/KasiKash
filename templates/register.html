@@ -1,136 +1,314 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - KasiKash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ocean-1': '#0061ff',
+                        'ocean-2': '#60efff',
+                        'ocean-3': '#00ff87',
+                    },
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000428, #004e92);
+            color: white;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+        .globe-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+        .content-wrapper { position: relative; z-index: 1; }
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+        .text-gradient {
+            background: linear-gradient(90deg, #60efff, #00ff87);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .glow { text-shadow: 0 0 10px rgba(96, 239, 255, 0.7); }
+        .btn-glow {
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.5);
+            transition: all 0.3s ease;
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 135, 0.8);
+            transform: translateY(-3px);
+        }
+        .register-card {
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding-right: 2.5rem; /* Space for icon */
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(96, 239, 255, 0.5);
+            box-shadow: 0 0 10px rgba(96, 239, 255, 0.3);
+        }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .contact-info {
+            color: #fff;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .contact-info i {
+            color: #60efff;
+            width: 20px;
+            margin-right: 10px;
+        }
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+    <!-- 3D Globe Animation -->
+    <div class="globe-container" id="globe"></div>
+    
+    <div class="content-wrapper">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto animate-float">
+                    <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                </a>
+                <ul class="hidden md:flex space-x-8">
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
+                    <li><a href="/welcome#features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                    <li class="dropdown">
+                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a>
+                        <div class="dropdown-content">
+                            <div class="contact-info">
+                                <p class="mb-3"><i class="fas fa-envelope"></i> Email: support@kasikash.co.za</p>
+                                <p class="mb-3"><i class="fas fa-phone"></i> Phone: +27 11 123 4567</p>
+                                <p><i class="fas fa-map-marker-alt"></i> Address: Johannesburg, South Africa</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="/welcome#about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                </ul>
+                <button id="mobile-menu-button" class="md:hidden text-white text-2xl"><i class="fas fa-bars"></i></button>
+            </div>
+        </nav>
 
-{% block content %}
-<div class="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-        </h2>
-    </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden fixed inset-0 bg-gray-900 bg-opacity-95 z-50 flex flex-col items-center justify-center space-y-6">
+            <button id="mobile-menu-close" class="absolute top-6 right-6 text-white text-3xl">&times;</button>
+            <a href="/login" class="text-2xl text-white hover:text-ocean-2">Login</a>
+            <a href="/pricing" class="text-2xl text-white hover:text-ocean-2">Pricing</a>
+            <a href="/welcome#features" class="text-2xl text-white hover:text-ocean-2">Features</a>
+            <a href="/contact" class="text-2xl text-white hover:text-ocean-2">Contact</a>
+            <a href="/welcome#about" class="text-2xl text-white hover:text-ocean-2">About</a>
+        </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form class="space-y-6" action="{{ url_for('registration') }}" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700">
-                        Username
-                    </label>
-                    <div class="mt-1">
-                        <input id="username" name="username" type="text" required 
-                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+        <!-- Registration Section -->
+        <main class="pt-32 pb-16">
+            <div class="container mx-auto px-4 flex justify-center items-center min-h-[calc(100vh-128px)]">
+                <div class="w-full max-w-lg">
+                    <div class="register-card rounded-2xl p-8 sm:p-10 shadow-2xl">
+                        <div class="text-center mb-8">
+                            <h2 class="text-4xl font-extrabold text-gradient glow">Join KasiKash Today</h2>
+                            <p class="text-gray-300 mt-3 text-lg">Create your account to start your journey.</p>
+                        </div>
+
+                        <form id="register-form" action="{{ url_for('registration') }}" method="POST" class="space-y-6">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div>
+                                <label for="username" class="sr-only">Username</label>
+                                <div class="relative">
+                                    <input id="username" name="username" type="text" required class="input-field w-full py-3 px-4 rounded-lg text-white placeholder-gray-400" placeholder="Choose a Username">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-user text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="email" class="sr-only">Email</label>
+                                <div class="relative">
+                                    <input id="email" name="email" type="email" required class="input-field w-full py-3 px-4 rounded-lg text-white placeholder-gray-400" placeholder="Your Email Address">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-envelope text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="password" class="sr-only">Password</label>
+                                <div class="relative">
+                                    <input id="password" name="password" type="password" required class="input-field w-full py-3 px-4 rounded-lg text-white placeholder-gray-400" placeholder="Create a Password">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-lock text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="confirm_password" class="sr-only">Confirm Password</label>
+                                <div class="relative">
+                                    <input id="confirm_password" name="confirm_password" type="password" required class="input-field w-full py-3 px-4 rounded-lg text-white placeholder-gray-400" placeholder="Confirm Your Password">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-lock text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="submit" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-black bg-gradient-to-r from-ocean-2 to-ocean-3 hover:from-ocean-3 hover:to-ocean-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-3 btn-glow transition-all duration-300">
+                                    Create My Account
+                                </button>
+                            </div>
+                        </form>
+                        <div class="mt-8 text-center">
+                            <p class="text-sm text-gray-400">
+                                Already have an account?
+                                <a href="{{ url_for('login') }}" class="font-medium text-ocean-2 hover:text-ocean-3 glow">Log In</a>
+                            </p>
+                        </div>
                     </div>
-                </div>
-
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">
-                        Email address
-                    </label>
-                    <div class="mt-1">
-                        <input id="email" name="email" type="email" autocomplete="email" required 
-                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">
-                        Password
-                    </label>
-                    <div class="mt-1">
-                        <input id="password" name="password" type="password" required 
-                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="full_name" class="block text-sm font-medium text-gray-700">
-                        Full Name
-                    </label>
-                    <div class="mt-1">
-                        <input id="full_name" name="full_name" type="text" required 
-                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">
-                        Phone Number
-                    </label>
-                    <div class="mt-1">
-                        <input id="phone" name="phone" type="tel" required 
-                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="id_number" class="block text-sm font-medium text-gray-700">
-                        ID Number
-                    </label>
-                    <div class="mt-1">
-                        <input id="id_number" name="id_number" type="text" required 
-                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="address" class="block text-sm font-medium text-gray-700">
-                        Address
-                    </label>
-                    <div class="mt-1">
-                        <textarea id="address" name="address" rows="3" required 
-                                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="date_of_birth" class="block text-sm font-medium text-gray-700">
-                        Date of Birth
-                    </label>
-                    <div class="mt-1">
-                        <input id="date_of_birth" name="date_of_birth" type="date" required 
-                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="bio" class="block text-sm font-medium text-gray-700">
-                        Bio
-                    </label>
-                    <div class="mt-1">
-                        <textarea id="bio" name="bio" rows="3" 
-                                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
-                    </div>
-                </div>
-
-                <div>
-                    <button type="submit" 
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Register
-                    </button>
-                </div>
-            </form>
-
-            <div class="mt-6">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">
-                            Already have an account?
-                        </span>
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <a href="{{ url_for('login') }}" 
-                       class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Sign in
-                    </a>
                 </div>
             </div>
-        </div>
+        </main>
+
     </div>
-</div>
-{% endblock %}
+
+    <script>
+        // Initialize particles
+        particlesJS.load('particles-js', "{{ url_for('static', filename='particles.json') }}", function() {
+            console.log('particles.js loaded - callback');
+        });
+
+        const container = document.getElementById('globe');
+        if (container) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const geometry = new THREE.SphereGeometry(18, 64, 64);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x60efff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.2
+            });
+            const sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+            
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+
+            camera.position.z = 25;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                sphere.rotation.y += 0.0005;
+                renderer.render(scene, camera);
+            }
+            animate();
+            
+            window.addEventListener('resize', () => {
+                camera.aspect = container.offsetWidth / container.offsetHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.offsetWidth, container.offsetHeight);
+            });
+        }
+
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        
+        if (mobileMenuButton && mobileMenu && mobileMenuClose) {
+            mobileMenuButton.addEventListener('click', () => { mobileMenu.classList.remove('hidden'); });
+            mobileMenuClose.addEventListener('click', () => { mobileMenu.classList.add('hidden'); });
+        }
+    </script>
+</body>
+</html>
