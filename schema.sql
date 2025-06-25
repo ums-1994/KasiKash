@@ -208,4 +208,86 @@ DO $$ BEGIN
     ALTER TABLE users ADD COLUMN firebase_uid VARCHAR(128) UNIQUE;
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column firebase_uid already exists in users.';
-END $$; 
+END $$;
+
+-- Gamification tables
+CREATE TABLE IF NOT EXISTS user_points (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    points INT DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS badges (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    icon VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS user_badges (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    badge_id INT REFERENCES badges(id),
+    earned_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS streaks (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    current_streak INT DEFAULT 0,
+    last_contribution_date DATE
+);
+
+CREATE TABLE IF NOT EXISTS user_achievements (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    achievement_type VARCHAR(50) NOT NULL,
+    achieved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_levels (
+    user_id INT PRIMARY KEY REFERENCES users(id),
+    level INT DEFAULT 1,
+    experience INT DEFAULT 0,
+    last_level_up TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS challenges (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    reward_type VARCHAR(20) NOT NULL,
+    reward_value VARCHAR(50) NOT NULL,
+    criteria_type VARCHAR(20) NOT NULL,
+    criteria_value DECIMAL(12,2) NOT NULL,
+    is_active BOOLEAN DEFAULT true
+);
+
+CREATE TABLE IF NOT EXISTS user_challenges (
+    user_id INT REFERENCES users(id),
+    challenge_id INT REFERENCES challenges(id),
+    progress DECIMAL(12,2) DEFAULT 0,
+    completed BOOLEAN DEFAULT false,
+    completed_at TIMESTAMP,
+    PRIMARY KEY (user_id, challenge_id)
+);
+
+-- Add savings_goal_id to transactions if not already present
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS savings_goal_id INT REFERENCES savings_goals(id);
+
+-- Seed badges (run separately in psql or admin tool)
+-- INSERT INTO badges (name, description, icon) VALUES
+-- ('Goal Getter', 'Completed a savings goal', 'icons/goal-getter.svg'),
+-- ('Halfway There', 'Reached 50% of a goal', 'icons/halfway-there.svg'),
+-- ('First Goal', 'Created your first savings goal', 'icons/first-goal.svg'),
+-- ('Streak Starter', '3-day contribution streak', 'icons/streak-starter.svg'),
+-- ('Consistent Saver', '7-day contribution streak', 'icons/consistent-saver.svg'),
+-- ('Savings Champion', '30-day contribution streak', 'icons/savings-champion.svg');
+
+-- Seed challenges (run separately)
+-- INSERT INTO challenges (name, description, reward_type, reward_value, criteria_type, criteria_value) VALUES
+-- ('First R100', 'Save your first R100 towards any goal', 'badge', 'Starter Saver', 'savings', 100),
+-- ('Weekly Saver', 'Make contributions for 7 consecutive days', 'points', '500', 'consistency', 7),
+-- ('Goal Getter', 'Complete your first savings goal', 'badge', 'Goal Champion', 'savings', 1),
+-- ('R500 Club', 'Save R500 towards a single goal', 'points', '250', 'savings', 500),
+-- ('Early Bird', 'Complete a goal 30 days ahead of schedule', 'bonus', '5% bonus', 'speed', 1); 

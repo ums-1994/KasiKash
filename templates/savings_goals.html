@@ -4,122 +4,230 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Savings Goals</h1>
-        <button onclick="openModal()" 
-                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-            Create Goal
-        </button>
+    <!-- Card container -->
+    <div class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 rounded-xl shadow-lg p-6 mb-8 text-gray-100">
+        <!-- Gamification Header Bar -->
+        <div class="bg-gradient-to-r from-indigo-900 via-purple-900 to-gray-900 rounded-xl shadow-lg p-6 mb-8 text-gray-100">
+            <div class="flex flex-wrap items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="bg-white bg-opacity-20 p-3 rounded-full mr-4">
+                        <i class="fas fa-medal text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm opacity-80">Savings Level</div>
+                        <div class="text-3xl font-bold">Level {{ level|default(1) }}</div>
     </div>
-
-    <!-- Savings Goals Table -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Amount</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Amount</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for goal in goals %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ goal.name }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        R{{ goal.target_amount }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        R{{ goal.current_amount }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            {% set progress = (goal.current_amount / goal.target_amount * 100) if goal.target_amount > 0 else 0 %}
-                            <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ progress|round|int }}%"></div>
                         </div>
-                        <span class="text-xs text-gray-500 mt-1">{{ progress|round|int }}%</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {% if goal.target_date %}
-                            {{ goal.target_date.strftime('%Y-%m-%d') }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ goal.status }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="bg-white bg-opacity-20 p-3 rounded-full mr-4">
+                        <i class="fas fa-fire text-2xl"></i>
     </div>
-
-    <!-- Create Savings Goal Modal -->
-    <div id="createGoalModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Create Savings Goal</h3>
-                <form action="/create_savings_goal" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
-                            Goal Name
-                        </label>
-                        <input type="text" name="name" id="name" required
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                               placeholder="e.g., New Car Fund">
+                    <div>
+                        <div class="text-sm opacity-80">Saving Streak</div>
+                        <div class="text-3xl font-bold">{{ streak|default(0) }} days</div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="target_amount">
-                            Target Amount (R)
-                        </label>
-                        <input type="number" name="target_amount" id="target_amount" required step="0.01" min="0"
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="flex items-center">
+                    <div class="bg-white bg-opacity-20 p-3 rounded-full mr-4">
+                        <i class="fas fa-star text-2xl"></i>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="target_date">
-                            Target Date
-                        </label>
-                        <input type="date" name="target_date" id="target_date" required
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <div>
+                        <div class="text-sm opacity-80">Total XP</div>
+                        <div class="text-3xl font-bold">{{ exp|number_format|default('0') }}</div>
                     </div>
-                    <div class="flex justify-end space-x-2">
-                        <button type="button" onclick="closeModal()"
-                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                            Cancel
+                </div>
+            </div>
+            <!-- Level Progress -->
+            <div class="mt-4">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Level {{ level|default(1) }}</span>
+                    <span>Level {{ (level|default(1)) + 1 }}</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-4">
+                    <div class="bg-indigo-400 h-4 rounded-full" style="width: {{ level_progress|default(0) }}%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Goals -->
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-100">My Savings Goals</h1>
+                    <button id="create-goal-btn" class="bg-indigo-700 hover:bg-indigo-800 text-white px-6 py-3 rounded-lg flex items-center">
+                        <i class="fas fa-plus mr-2"></i> New Goal
+                    </button>
+                </div>
+                <!-- Goals Grid -->
+                <div class="grid grid-cols-1 gap-6">
+                    {% for goal in goals %}
+                    <div class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-md overflow-hidden goal-card transform transition hover:scale-[1.02]">
+                        <!-- Goal Header -->
+                        <div class="bg-gradient-to-r from-indigo-800 to-purple-800 p-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xl font-bold text-gray-100">{{ goal.name }}</h3>
+                            </div>
+                            <div class="mt-2 text-indigo-100">
+                                Target: R{{ goal.target_amount|number_format }} by {{ goal.target_date }}
+                            </div>
+                        </div>
+                        <!-- Progress Section -->
+                        <div class="p-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-300">
+                                    R{{ goal.current_amount|number_format }} saved
+                                </span>
+                                <span class="text-sm font-medium text-gray-300">
+                                    {{ (goal.current_amount / goal.target_amount * 100)|round(1) }}%
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-4">
+                                <div class="bg-indigo-400 h-4 rounded-full progress-animate" style="width: {{ (goal.current_amount / goal.target_amount * 100)|pymin(100) }}%"></div>
+                            </div>
+                            <!-- Contribution Form -->
+                            <form class="mt-4 flex" action="/add_contribution_to_goal/{{ goal.id }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="relative flex-grow mr-2">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">R</span>
+                                    <input type="number" step="0.01" min="0.01" name="amount" class="pl-8 w-full py-2 px-4 border rounded-lg bg-gray-800 text-gray-100" placeholder="Add amount" required>
+                                </div>
+                                <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg flex items-center">
+                                    <i class="fas fa-plus mr-2"></i> Add
+                                </button>
+                            </form>
+                            <!-- Goal Actions -->
+                            <div class="mt-4 flex justify-end space-x-2">
+                                <button onclick='openEditModal({{ goal.id }}, {{ goal.name|tojson }}, {{ goal.target_amount }}, {{ goal.target_date|tojson }})' class="text-blue-400 hover:text-blue-600">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form action="/delete_savings_goal/{{ goal.id }}" method="POST" onsubmit="return confirm('Delete this goal? This cannot be undone.');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="text-red-400 hover:text-red-600">
+                                        <i class="fas fa-trash mr-1"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12 border-2 border-dashed border-gray-600 rounded-xl bg-gray-900">
+                        <img src="{{ url_for('static', filename='images/no-goals.svg') }}" alt="No goals" class="w-48 mx-auto mb-6">
+                        <h3 class="text-xl font-medium text-gray-200 mb-2">No savings goals yet</h3>
+                        <p class="text-gray-400 mb-6">Start by creating your first savings goal</p>
+                        <button id="first-goal-btn" class="bg-indigo-700 hover:bg-indigo-800 text-white px-6 py-3 rounded-lg">
+                            Create First Goal
                         </button>
-                        <button type="submit"
-                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                            Create Goal
-                        </button>
                     </div>
-                </form>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Right Column: Gamification -->
+            <div class="space-y-6">
+                <!-- Achievements -->
+                <div class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-100 mb-4 flex items-center">
+                        <i class="fas fa-trophy text-yellow-400 mr-2"></i> Achievements
+                    </h2>
+                    {% if badges %}
+                    <div class="grid grid-cols-3 gap-3">
+                        {% for badge in badges %}
+                        <div class="text-center p-3 bg-indigo-900 rounded-lg">
+                            <div class="mx-auto bg-indigo-800 w-12 h-12 rounded-full flex items-center justify-center mb-2">
+                                <img src="{{ url_for('static', filename=badge.icon) }}" alt="{{ badge.name }}" class="w-8 h-8">
+                            </div>
+                            <div class="text-sm font-semibold text-gray-100">{{ badge.name }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400 text-center py-4">No achievements yet. Start saving to earn badges!</p>
+                    {% endif %}
+                </div>
+                <!-- Streaks -->
+                <div class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-100 mb-4 flex items-center">
+                        <i class="fas fa-fire text-red-400 mr-2"></i> Streak
+                    </h2>
+                    <div class="text-2xl font-bold text-indigo-300">{{ streak|default(0) }} days</div>
+                    <p class="text-gray-400 mt-2">Keep saving daily to increase your streak!</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
+<!-- Create/Edit Modals -->
+<div id="editGoalModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4">Edit Savings Goal</h3>
+        <form id="editGoalForm" action="" method="POST">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_name">Goal Name</label>
+                <input id="edit_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" name="name" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_target_amount">Target Amount (R)</label>
+                <input id="edit_target_amount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="number" step="0.01" name="target_amount" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_target_date">Target Date</label>
+                <input id="edit_target_date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="date" name="target_date" required>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" onclick="closeEditModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">Cancel</button>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="createGoalModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4">Create New Savings Goal</h3>
+        <form action="/create_savings_goal" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="create_name">Goal Name</label>
+                <input id="create_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" name="name" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="create_target_amount">Target Amount (R)</label>
+                <input id="create_target_amount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="number" step="0.01" name="target_amount" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="create_target_date">Target Date</label>
+                <input id="create_target_date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="date" name="target_date" required>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" onclick="closeCreateModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">Cancel</button>
+                <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
 <script>
-function openModal() {
-    document.getElementById('createGoalModal').classList.remove('hidden');
+function openEditModal(goalId, name, targetAmount, targetDate) {
+    document.getElementById('editGoalForm').action = `/edit_savings_goal/${goalId}`;
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_target_amount').value = targetAmount;
+    document.getElementById('edit_target_date').value = targetDate;
+    document.getElementById('editGoalModal').classList.remove('hidden');
 }
-
-function closeModal() {
-    document.getElementById('createGoalModal').classList.add('hidden');
+function closeEditModal() {
+    document.getElementById('editGoalModal').classList.add('hidden');
 }
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    var modal = document.getElementById('createGoalModal');
-    if (event.target == modal) {
-        closeModal();
-    }
+// Create Goal Modal logic
+const createGoalBtn = document.getElementById('create-goal-btn');
+const createGoalModal = document.getElementById('createGoalModal');
+function openCreateModal() {
+    createGoalModal.classList.remove('hidden');
 }
+function closeCreateModal() {
+    createGoalModal.classList.add('hidden');
+}
+if (createGoalBtn) {
+    createGoalBtn.addEventListener('click', openCreateModal);
+}
+// Optionally, close modal on background click
+createGoalModal && createGoalModal.addEventListener('click', function(e) {
+    if (e.target === createGoalModal) closeCreateModal();
+});
 </script>
 {% endblock %} 

@@ -241,64 +241,77 @@ def feedback():
 def home():
     if 'user_id' not in session:
         return redirect('/login')
-        
     try:
-        # Initialize default values
-        username = str(session.get('username', 'User'))
-        current_balance = float(0.00)
-        total_contributions = float(0.00)
-        total_withdrawals = float(0.00)
-        pending_repayments = float(0.00)
-        recent_contributions = []
-        upcoming_contributions = []
-        missed_contributions = []
-        outstanding_loans = []
-        loan_requests = []
-        repayment_progress = []
-        member_count = int(0)
-        monthly_target = float(0.00)
-        total_group_balance = float(0.00)
-        calendar_events = []
-        
-        # Initialize chart data with empty structures to prevent JSON serialization errors
-        savings_growth_chart_data = {}
-        contribution_breakdown_chart_data = {}
-        loan_trends_chart_data = {}
+        # Get user info from database (similar to profile route)
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT u.*, 
+                           COUNT(DISTINCT s.id) as active_stokvels_count,
+                           COALESCE(SUM(CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END), 0) as total_contributions,
+                           COALESCE(SUM(CASE WHEN t.type = 'withdrawal' THEN t.amount ELSE 0 END), 0) as total_withdrawals
+                    FROM users u
+                    LEFT JOIN stokvel_members sm ON u.firebase_uid = sm.user_id
+                    LEFT JOIN stokvels s ON sm.stokvel_id = s.id
+                    LEFT JOIN transactions t ON u.firebase_uid = t.user_id
+                    WHERE u.firebase_uid = %s
+                    GROUP BY u.id
+                """, (session['user_id'],))
+                user = cur.fetchone()
+                if not user:
+                    flash('User profile not found')
+                    return redirect(url_for('login'))
 
-        # Try to get user info from database
+        # Fetch email verification status from Firebase
+        from firebase_admin import auth
         try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (session['user_id'],))
-                    user = cur.fetchone()
-                    if user and user[0]:
-                        username = str(user[0])
+            firebase_user = auth.get_user(session['user_id'])
+            is_verified = firebase_user.email_verified
         except Exception as e:
-            print(f"Database error: {str(e)}")
-            # Continue with default values if database query fails
+            print(f"Error fetching Firebase user for verification status: {e}")
+            is_verified = False
+        user['is_verified'] = is_verified
 
-        notification_count = get_notification_count(session.get('user_id')) # Get notification count
+        # Dashboard-specific variables (use real or sample data)
+        user_name = user.get('full_name') or user.get('username') or 'User'
+        weekly_contributions = [2, 3, 1, 4, 2, 5, 3]  # Example: contributions per day of week
+        savings_goal = 10000.00  # Example goal
+        current_balance = float(user.get('total_contributions', 0)) - float(user.get('total_withdrawals', 0))
+        recent_activities = [
+            {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': '2 hours ago', 'status': 'Processed'},
+            {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': 'Yesterday', 'status': 'Achieved'},
+            {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': '3 days ago', 'status': 'Completed'}
+        ]
+        # Calendar data (sample)
+        from datetime import datetime
+        now = datetime.now()
+        calendar_month = now.strftime('%B')
+        calendar_year = now.year
+        # Generate a simple calendar_days list for the current month
+        import calendar
+        month_days = calendar.monthrange(now.year, now.month)[1]
+        calendar_days = []
+        for i in range(1, month_days + 1):
+            calendar_days.append({
+                'date': i,
+                'is_today': (i == now.day),
+                'events': []  # Add real events if available
+            })
+
+        notification_count = get_notification_count(session.get('user_id'))
 
         return render_template('dashboard.html',
-                            username=username,
-                            current_balance=current_balance,
-                            total_contributions=total_contributions,
-                            total_withdrawals=total_withdrawals,
-                            pending_repayments=pending_repayments,
-                            recent_contributions=recent_contributions,
-                            upcoming_contributions=upcoming_contributions,
-                            missed_contributions=missed_contributions,
-                            outstanding_loans=outstanding_loans,
-                            loan_requests=loan_requests,
-                            repayment_progress=repayment_progress,
-                            member_count=member_count,
-                            monthly_target=monthly_target,
-                            total_group_balance=total_group_balance,
-                            calendar_events=calendar_events,
-                            savings_growth_chart_data=savings_growth_chart_data,
-                            contribution_breakdown_chart_data=contribution_breakdown_chart_data,
-                            loan_trends_chart_data=loan_trends_chart_data,
-                            notification_count=notification_count) # Pass notification count
+            user=user,
+            user_name=user_name,
+            weekly_contributions=weekly_contributions,
+            savings_goal=savings_goal,
+            current_balance=current_balance,
+            recent_activities=recent_activities,
+            calendar_month=calendar_month,
+            calendar_year=calendar_year,
+            calendar_days=calendar_days,
+            notification_count=notification_count
+        )
     except Exception as e:
         print(f"Dashboard error: {str(e)}")
         flash("Error loading dashboard. Please try again.")
@@ -355,6 +368,10 @@ def analysis():
     else:
         return redirect('/')
 
+@app.route('/financial_insight')
+@login_required
+def financial_insight():
+    return redirect(url_for('analysis'))
 
 @app.route('/login')
 def login():
@@ -814,7 +831,6 @@ def stokvels():
                         s.monthly_contribution,
                         s.total_pool,
                         s.target_amount,
-                        s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date
@@ -833,7 +849,6 @@ def stokvels():
                         s.monthly_contribution,
                         s.total_pool,
                         s.target_amount,
-                        s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date
@@ -1160,25 +1175,33 @@ def savings_goals():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Use firebase_uid directly since the database now uses Firebase UIDs
+                # Fetch goals
+                cur.execute("SELECT id, name, target_amount, current_amount, target_date, status FROM savings_goals WHERE user_id = %s", (firebase_uid,))
+                goals = [dict(zip([col[0] for col in cur.description], row)) for row in cur.fetchall()]
+
+                # Fetch badges
                 cur.execute("""
-                    SELECT id, name, target_amount, current_amount, target_date, status, created_at
-                    FROM savings_goals
-                    WHERE user_id = %s
-                    ORDER BY target_date ASC
+                    SELECT b.name, b.icon FROM user_badges ub
+                    JOIN badges b ON ub.badge_id = b.id
+                    WHERE ub.user_id = %s
                 """, (firebase_uid,))
-                goals_tuples = cur.fetchall()
+                badges = [dict(name=row[0], icon=row[1]) for row in cur.fetchall()]
 
-                # Convert tuples to dictionaries for easier access in template
-                goals_list = []
-                goal_keys = ['id', 'name', 'target_amount', 'current_amount', 'target_date', 'status', 'created_at']
-                for g_tuple in goals_tuples:
-                    goals_list.append(dict(zip(goal_keys, g_tuple)))
+                # Fetch streak
+                cur.execute("SELECT current_streak FROM streaks WHERE user_id = %s", (firebase_uid,))
+                streak_row = cur.fetchone()
+                streak = streak_row[0] if streak_row else 0
 
-        return render_template('savings_goals.html', goals=goals_list)
+                # Fetch XP and level
+                cur.execute("SELECT level, experience FROM user_levels WHERE user_id = %s", (firebase_uid,))
+                level_row = cur.fetchone()
+                level = level_row[0] if level_row else 1
+                exp = level_row[1] if level_row else 0
+
+        return render_template('savings_goals.html', goals=goals, badges=badges, streak=streak, level=level, exp=exp)
     except Exception as e:
         print(f"Savings goals page error: {e}")
-        flash("An error occurred while loading your savings goals. Please try again.")
+        flash("An error occurred while loading your savings goals.")
         return redirect('/home')
 
 @app.route('/create_savings_goal', methods=['POST'])
@@ -1214,6 +1237,99 @@ def create_savings_goal():
         print(f"Error creating savings goal: {e}")
         flash("An error occurred while creating the savings goal. Please try again.")
         return redirect('/savings_goals')
+
+@app.route('/edit_savings_goal/<int:goal_id>', methods=['POST'])
+@login_required
+def edit_savings_goal(goal_id):
+    firebase_uid = session['user_id']
+    name = request.form.get('name')
+    target_amount = request.form.get('target_amount')
+    target_date = request.form.get('target_date')
+    if not all([name, target_amount, target_date]):
+        flash("All fields are required.")
+        return redirect('/savings_goals')
+    try:
+        target_amount = float(target_amount)
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT current_amount FROM savings_goals WHERE id = %s AND user_id = %s", (goal_id, firebase_uid))
+                goal = cur.fetchone()
+                if not goal:
+                    flash("Goal not found.")
+                    return redirect('/savings_goals')
+                current_amount = goal[0]
+                new_status = 'completed' if current_amount >= target_amount else 'active'
+                cur.execute("""
+                    UPDATE savings_goals
+                    SET name = %s, target_amount = %s, target_date = %s, status = %s
+                    WHERE id = %s AND user_id = %s
+                """, (name, target_amount, target_date, new_status, goal_id, firebase_uid))
+                conn.commit()
+        flash("Savings goal updated successfully!")
+    except ValueError:
+        flash("Target amount must be a number.")
+    except Exception as e:
+        print(f"Error updating savings goal: {e}")
+        flash("An error occurred. Please try again.")
+    return redirect('/savings_goals')
+
+@app.route('/delete_savings_goal/<int:goal_id>', methods=['POST'])
+@login_required
+def delete_savings_goal(goal_id):
+    firebase_uid = session['user_id']
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM savings_goals WHERE id = %s AND user_id = %s", (goal_id, firebase_uid))
+                conn.commit()
+        flash("Savings goal deleted.")
+    except Exception as e:
+        print(f"Error deleting savings goal: {e}")
+        flash("An error occurred while deleting the goal.")
+    return redirect('/savings_goals')
+
+@app.route('/add_contribution_to_goal/<int:goal_id>', methods=['POST'])
+@login_required
+def add_contribution_to_goal(goal_id):
+    firebase_uid = session['user_id']
+    amount = request.form.get('amount')
+    if not amount:
+        flash("Amount is required.")
+        return redirect('/savings_goals')
+    try:
+        amount = float(amount)
+        if amount <= 0:
+            flash("Amount must be positive.")
+            return redirect('/savings_goals')
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT current_amount, target_amount FROM savings_goals WHERE id = %s AND user_id = %s", (goal_id, firebase_uid))
+                goal = cur.fetchone()
+                if not goal:
+                    flash("Goal not found.")
+                    return redirect('/savings_goals')
+                current_amount, target_amount = goal
+                current_amount = float(current_amount)
+                target_amount = float(target_amount)
+                new_amount = current_amount + amount
+                new_status = 'completed' if new_amount >= target_amount else 'active'
+                cur.execute("UPDATE savings_goals SET current_amount = %s, status = %s WHERE id = %s AND user_id = %s", (new_amount, new_status, goal_id, firebase_uid))
+                cur.execute("INSERT INTO transactions (user_id, amount, type, description, transaction_date, savings_goal_id) VALUES (%s, %s, 'contribution', 'Savings goal deposit', NOW(), %s)", (firebase_uid, amount, goal_id))
+                conn.commit()
+        # Gamification logic
+        award_points(firebase_uid, 5)
+        if new_amount >= target_amount:
+            award_badge(firebase_uid, "Goal Getter")
+        elif new_amount >= target_amount * 0.5:
+            award_badge(firebase_uid, "Halfway There")
+        update_streak(firebase_uid)
+        flash(f"Successfully added R{amount} to your goal!")
+    except ValueError:
+        flash("Amount must be a number.")
+    except Exception as e:
+        print(f"Error adding contribution: {e}")
+        flash("An error occurred. Please try again.")
+    return redirect('/savings_goals')
 
 @app.route('/stokvel/<int:stokvel_id>/members')
 @login_required
@@ -2811,6 +2927,19 @@ def notifications_count():
     user_id = session.get('user_id')
     count = get_notification_count(user_id) if user_id else 0
     return jsonify({'count': count})
+
+from gamification import award_points, award_badge, update_streak
+
+@app.template_filter('number_format')
+def number_format(value, decimal_places=2):
+    try:
+        return "{:,.{}f}".format(float(value), decimal_places)
+    except (ValueError, TypeError):
+        return value
+
+@app.template_filter('pymin')
+def pymin(a, b):
+    return min(a, b)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
