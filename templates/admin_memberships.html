@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="w-full p-4 mt-2">
+  <h2>Membership Plans</h2>
+  <!-- Search/filter bar -->
+  <div class="mb-4 flex items-center gap-4">
+    <input type="text" class="border rounded px-3 py-2" placeholder="Search by plan name" disabled title="Coming soon">
+    <button class="bg-blue-600 text-white px-4 py-2 rounded" disabled title="Coming soon">Search</button>
+    <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddPlanModal()">Add Plan</button>
+  </div>
+  <table class="table-auto w-full mt-2 text-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Monthly Contribution</th>
+        <th>Target Amount</th>
+        <th>Total Pool</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for plan in memberships %}
+      <tr>
+        <td>{{ plan[0] }}</td>
+        <td>{{ plan[1] }}</td>
+        <td>{{ plan[2] }}</td>
+        <td>{{ plan[3] }}</td>
+        <td>{{ plan[4] }}</td>
+        <td>{{ plan[5] }}</td>
+        <td class="flex gap-2">
+          <select class="border rounded px-2 py-1 plan-dropdown" title="Preview only: No changes will be saved." data-current="{{ plan[1] }}">
+            <option {% if plan[1] == 'Silver' %}selected{% endif %}>Silver</option>
+            <option {% if plan[1] == 'Gold' %}selected{% endif %}>Gold</option>
+            <option {% if plan[1] == 'Platinum' %}selected{% endif %}>Platinum</option>
+          </select>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No membership plans found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Add Plan Modal -->
+  <div id="addPlanModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+      <button onclick="closeAddPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+      <h3 class="text-lg font-bold mb-2">Add Membership Plan</h3>
+      <form>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Name</label>
+          <input type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Monthly Contribution</label>
+          <input type="number" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Target Amount</label>
+          <input type="number" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Add Plan</button>
+      </form>
+    </div>
+  </div>
+  <!-- Edit Plan Modal -->
+  <div id="editPlanModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+      <button onclick="closeEditPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+      <h3 class="text-lg font-bold mb-2">Edit Membership Plan</h3>
+      <form>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Name</label>
+          <input id="editPlanName" type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Monthly Contribution</label>
+          <input id="editPlanMonthly" type="number" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <div class="mb-2">
+          <label class="block font-semibold mb-1">Target Amount</label>
+          <input id="editPlanTarget" type="number" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <!-- View Plan Modal -->
+  <div id="viewPlanModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+      <button onclick="closeViewPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+      <h3 class="text-lg font-bold mb-2">Plan Details</h3>
+      <ul id="viewPlanDetails" class="mb-2"></ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function openAddPlanModal() {
+  document.getElementById('addPlanModal').classList.remove('hidden');
+}
+function closeAddPlanModal() {
+  document.getElementById('addPlanModal').classList.add('hidden');
+}
+function openEditPlanModal(id, name, monthly, target, pool, createdAt) {
+  document.getElementById('editPlanName').value = name;
+  document.getElementById('editPlanMonthly').value = monthly;
+  document.getElementById('editPlanTarget').value = target;
+  document.getElementById('editPlanModal').classList.remove('hidden');
+}
+function closeEditPlanModal() {
+  document.getElementById('editPlanModal').classList.add('hidden');
+}
+function openViewPlanModal(id, name, monthly, target, pool, createdAt) {
+  var html = '';
+  html += `<li><strong>ID:</strong> ${id}</li>`;
+  html += `<li><strong>Name:</strong> ${name}</li>`;
+  html += `<li><strong>Monthly Contribution:</strong> ${monthly}</li>`;
+  html += `<li><strong>Target Amount:</strong> ${target}</li>`;
+  html += `<li><strong>Total Pool:</strong> ${pool}</li>`;
+  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+  document.getElementById('viewPlanDetails').innerHTML = html;
+  document.getElementById('viewPlanModal').classList.remove('hidden');
+}
+function closeViewPlanModal() {
+  document.getElementById('viewPlanModal').classList.add('hidden');
+}
+document.querySelectorAll('.plan-dropdown').forEach(function(drop) {
+  drop.addEventListener('change', function() {
+    alert('Preview only: No changes will be saved.');
+    this.value = this.getAttribute('data-current') || this.value;
+  });
+});
+</script>
+{% endblock %} 

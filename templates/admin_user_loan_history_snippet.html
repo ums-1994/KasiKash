@@ -1,0 +1,29 @@
+<div>
+  <h3 class="text-lg font-bold mb-2">Loan History for {{ email }}</h3>
+  <table class="table-auto w-full mb-2">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Transaction Date</th>
+        <th>Comment</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for loan in loans %}
+      <tr>
+        <td>{{ loan[0] }}</td>
+        <td>{{ loan[1] }}</td>
+        <td>{{ loan[2] }}</td>
+        <td>{{ loan[3] }}</td>
+        <td>{{ loan[4] or '—' }}</td>
+        <td>{{ loan[5] or '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">No loan history found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div> 

@@ -339,6 +339,16 @@
     </div>
 </div>
 
+{% if session['role'] == 'admin' %}
+  <div class="mt-4 text-center">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning">Switch to Admin Dashboard</a>
+  </div>
+{% elif session['role'] == 'user' %}
+  <div class="mt-4 text-center">
+    <a href="{{ url_for('home') }}" class="btn btn-primary">Switch to User Dashboard</a>
+  </div>
+{% endif %}
+
 <script>
 function resendVerification() {
         fetch('/resend-verification', {
