@@ -1,80 +1,79 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="w-full p-4 mt-2">
-  <h2>Loan Approvals</h2>
-  <!-- Filter by status -->
-  <form method="get" class="mb-4">
-    <label for="status" class="font-semibold mr-2">Filter by status:</label>
-    <select name="status" id="status" class="border rounded px-2 py-1" onchange="this.form.submit()">
-      <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
-      <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
-      <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
-    </select>
-  </form>
-  <table class="table-auto w-full mt-2 text-sm">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Amount</th>
-        <th>Status</th>
-        <th>Transaction Date</th>
-        <th>Comment</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for loan in loans %}
-      <tr>
-        <td>{{ loan[0] }}</td>
-        <td>{{ loan[1] }}</td>
-        <td>{{ loan[2] }}</td>
-        <td>{{ loan[3] }}</td>
-        <td>{{ loan[4] }}</td>
-        <td>{{ loan[5] }}</td>
-        <td>{{ loan[6] or '' }}</td>
-        <td class="flex gap-2">
-          {% if current_status == 'pending' %}
-          <form method="POST" action="{{ url_for('admin_approve_loan') }}" style="display:inline;">
-            {{ csrf_token() }}
-            <input type="hidden" name="loan_id" value="{{ loan[0] }}">
-            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Approve</button>
-          </form>
-          <form method="POST" action="{{ url_for('admin_reject_loan') }}" style="display:inline;">
-            {{ csrf_token() }}
-            <input type="hidden" name="loan_id" value="{{ loan[0] }}">
-            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded">Reject</button>
-          </form>
-          {% elif current_status in ['approved', 'rejected'] %}
-          <form method="POST" action="{{ url_for('admin_undo_loan') }}" style="display:inline;">
-            {{ csrf_token() }}
-            <input type="hidden" name="loan_id" value="{{ loan[0] }}">
-            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded">Undo</button>
-          </form>
-          {% endif %}
-          <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded" onclick="showLoanDetails({{ loan[0] }})">View</button>
-          <button type="button" class="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded" onclick="showUserHistory('{{ loan[2] }}')">History</button>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="8">No loans found for this status.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <!-- Loan details modal (hidden by default) -->
-  <div id="loanDetailsModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full relative">
-      <button onclick="closeLoanDetails()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-      <div id="loanDetailsContent">Loading...</div>
-    </div>
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1>Loan Approvals</h1>
+<p>Here you can approve or reject loan applications.</p>
+<!-- Filter by status -->
+<form method="get" class="mb-4">
+  <label for="status" class="font-semibold mr-2">Filter by status:</label>
+  <select name="status" id="status" class="border rounded px-2 py-1" onchange="this.form.submit()">
+    <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+    <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
+    <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+  </select>
+</form>
+<table class="table-auto w-full mt-2 text-sm">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Transaction Date</th>
+      <th>Comment</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for loan in loans %}
+    <tr>
+      <td>{{ loan[0] }}</td>
+      <td>{{ loan[1] }}</td>
+      <td>{{ loan[2] }}</td>
+      <td>{{ loan[3] }}</td>
+      <td>{{ loan[4] }}</td>
+      <td>{{ loan[5] }}</td>
+      <td>{{ loan[6] or '' }}</td>
+      <td class="flex gap-2">
+        {% if current_status == 'pending' %}
+        <form method="POST" action="{{ url_for('admin_approve_loan') }}" style="display:inline;">
+          {{ csrf_token() }}
+          <input type="hidden" name="loan_id" value="{{ loan[0] }}">
+          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Approve</button>
+        </form>
+        <form method="POST" action="{{ url_for('admin_reject_loan') }}" style="display:inline;">
+          {{ csrf_token() }}
+          <input type="hidden" name="loan_id" value="{{ loan[0] }}">
+          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded">Reject</button>
+        </form>
+        {% elif current_status in ['approved', 'rejected'] %}
+        <form method="POST" action="{{ url_for('admin_undo_loan') }}" style="display:inline;">
+          {{ csrf_token() }}
+          <input type="hidden" name="loan_id" value="{{ loan[0] }}">
+          <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded">Undo</button>
+        </form>
+        {% endif %}
+        <button type="button" class="js-view-loan-details-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded" data-loan-id="{{ loan[0] }}">View</button>
+        <button type="button" class="js-user-history-btn bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded" data-user-email="{{ loan[2] }}">History</button>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8">No loans found for this status.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<!-- Loan details modal (hidden by default) -->
+<div id="loanDetailsModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full relative">
+    <button onclick="closeLoanDetails()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <div id="loanDetailsContent">Loading...</div>
   </div>
-  <!-- User history modal (hidden by default) -->
-  <div id="userHistoryModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full relative">
-      <button onclick="closeUserHistory()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-      <div id="userHistoryContent">Loading...</div>
-    </div>
+</div>
+<!-- User history modal (hidden by default) -->
+<div id="userHistoryModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full relative">
+    <button onclick="closeUserHistory()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <div id="userHistoryContent">Loading...</div>
   </div>
 </div>
 {% endblock %}
@@ -121,6 +120,20 @@ window.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       var action = form.action.includes('approve') ? 'approve' : 'reject';
       addCommentAndSubmit(form, action);
+    });
+  });
+  // View Loan Details buttons
+  document.querySelectorAll('.js-view-loan-details-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var loanId = this.dataset.loanId;
+      showLoanDetails(loanId);
+    });
+  });
+  // User History buttons
+  document.querySelectorAll('.js-user-history-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var userEmail = this.dataset.userEmail;
+      showUserHistory(userEmail);
     });
   });
 });

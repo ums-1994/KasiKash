@@ -1,100 +1,104 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="w-full p-4 mt-2">
-  <h2>Manage Users</h2>
-  <!-- Search/filter bar -->
-  <div class="mb-4 flex items-center gap-4">
-    <input type="text" class="border rounded px-3 py-2" placeholder="Search by username or email" disabled title="Coming soon">
-    <button class="bg-blue-600 text-white px-4 py-2 rounded" disabled title="Coming soon">Search</button>
-    <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddUserModal()">Add User</button>
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1>Manage Users</h1>
+<p>Here you can manage all users.</p>
+<!-- Search/filter bar -->
+<form method="GET" action="{{ url_for('admin.manage_users') }}" class="mb-4 flex items-center gap-4">
+  <input type="text" name="search" class="border rounded px-3 py-2 text-black" placeholder="Search by username or email" value="{{ search_query or '' }}">
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+  <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddUserModal()">Add User</button>
+</form>
+<table class="table-auto w-full mt-2 text-sm">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Created At</th>
+      <th>ID Document Status</th>
+      <th>Proof of Address Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <td>{{ user.email }}</td>
+      <td>{{ user.role }}</td>
+      <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
+      <td>{{ user.id_document_status or 'Not Submitted' }}</td>
+      <td>{{ user.proof_of_address_status or 'Not Submitted' }}</td>
+      <td class="flex gap-2">
+        <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewUserModal('{{ user.username }}', '{{ user.email }}', '{{ user.role }}', '{{ user.created_at }}', '{{ user.id_document_status }}', '{{ user.proof_of_address_status }}')">View</button>
+        <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditUserModal('{{ user.username }}', '{{ user.email }}', '{{ user.role }}')">Edit</button>
+        <button class="bg-red-600 text-white px-2 py-1 rounded" disabled title="Coming soon">Delete</button>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">No users found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<!-- Add User Modal -->
+<div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
+    <button onclick="closeAddUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">Add User</h3>
+    <form action="{{ url_for('admin.add_user') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Username</label>
+        <input type="text" name="username" class="border rounded px-3 py-2 w-full text-black" required>
+      </div>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Email</label>
+        <input type="email" name="email" class="border rounded px-3 py-2 w-full text-black" required>
+      </div>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Password</label>
+        <input type="password" name="password" class="border rounded px-3 py-2 w-full text-black" required>
+      </div>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Role</label>
+        <select name="role" class="border rounded px-3 py-2 w-full text-black">
+          <option value="user" selected>User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2">Add User</button>
+    </form>
   </div>
-  <table class="table-auto w-full mt-2 text-sm">
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Created At</th>
-        <th>ID Document Status</th>
-        <th>Proof of Address Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in users %}
-      <tr>
-        <td>{{ user[1] }}</td>
-        <td>{{ user[2] }}</td>
-        <td>{{ user[3] }}</td>
-        <td>{{ user[4] }}</td>
-        <td>{{ user[5] }}</td>
-        <td class="flex gap-2">
-          <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewUserModal('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}', '{{ user[5] }}')">View</button>
-          <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditUserModal('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}')">Edit</button>
-          <button class="bg-red-600 text-white px-2 py-1 rounded" disabled title="Coming soon">Delete</button>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="6">No users found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <!-- Add User Modal -->
-  <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
-      <button onclick="closeAddUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-      <h3 class="text-lg font-bold mb-2">Add User</h3>
-      <form>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Username</label>
-          <input type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
-        </div>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Email</label>
-          <input type="email" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
-        </div>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Role</label>
-          <select class="border rounded px-3 py-2 w-full" disabled title="Coming soon">
-            <option>User</option>
-            <option>Admin</option>
-          </select>
-        </div>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Add User</button>
-      </form>
-    </div>
+</div>
+<!-- Edit User Modal -->
+<div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
+    <button onclick="closeEditUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">Edit User</h3>
+    <form>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Username</label>
+        <input id="editUsername" type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+      </div>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Email</label>
+        <input id="editEmail" type="email" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+      </div>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Role</label>
+        <select id="editRole" class="border rounded px-3 py-2 w-full" disabled title="Coming soon">
+          <option>User</option>
+          <option>Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Save Changes</button>
+    </form>
   </div>
-  <!-- Edit User Modal -->
-  <div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
-      <button onclick="closeEditUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-      <h3 class="text-lg font-bold mb-2">Edit User</h3>
-      <form>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Username</label>
-          <input id="editUsername" type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
-        </div>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Email</label>
-          <input id="editEmail" type="email" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
-        </div>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Role</label>
-          <select id="editRole" class="border rounded px-3 py-2 w-full" disabled title="Coming soon">
-            <option>User</option>
-            <option>Admin</option>
-          </select>
-        </div>
-        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Save Changes</button>
-      </form>
-    </div>
-  </div>
-  <!-- View User Modal -->
-  <div id="viewUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
-      <button onclick="closeViewUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-      <h3 class="text-lg font-bold mb-2">User Details</h3>
-      <ul id="viewUserDetails" class="mb-2"></ul>
-    </div>
+</div>
+<!-- View User Modal -->
+<div id="viewUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
+    <button onclick="closeViewUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">User Details</h3>
+    <ul id="viewUserDetails" class="mb-2"></ul>
   </div>
 </div>
 {% endblock %}

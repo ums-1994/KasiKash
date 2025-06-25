@@ -1,85 +1,86 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="w-full p-4 mt-2">
-  <h2>Admin Notifications</h2>
-  <!-- Search/filter bar -->
-  <div class="mb-4 flex items-center gap-4">
-    <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="openSendNotificationModal()">Create Notification</button>
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1>Admin Notifications</h1>
+<p>Here you can send notifications to users.</p>
+<!-- Search/filter bar -->
+<div class="mb-4 flex items-center gap-4">
+  <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="openSendNotificationModal()">Create Notification</button>
+</div>
+<table class="table-auto w-full mt-2 text-sm">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>User ID</th>
+      <th>Stokvel</th>
+      <th>Urgent</th>
+      <th>Message</th>
+      <th>Type</th>
+      <th>Created At</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for n in notifications %}
+    <tr>
+      <td>{{ n[0] }}</td>
+      <td>{{ n[1] }}</td>
+      <td>Stokvel A</td>
+      <td>No</td>
+      <td>{{ n[2] }}</td>
+      <td>{{ n[3] }}</td>
+      <td>{{ n[4] }}</td>
+      <td class="flex gap-2">
+        <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewNotificationModal('{{ n[0] }}', '{{ n[1] }}', 'Stokvel A', 'No', '{{ n[2] }}', '{{ n[3] }}', '{{ n[4] }}')">View</button>
+        <button class="bg-red-600 text-white px-2 py-1 rounded" disabled title="Coming soon">Delete</button>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8">No notifications found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<!-- Send Notification Modal -->
+<div id="sendNotificationModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+    <button onclick="closeSendNotificationModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">Send Notification</h3>
+    <form id="sendNotificationForm" method="POST" action="{{ url_for('admin.send_notification') }}">
+      {{ csrf_token() }}
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Stokvel</label>
+        <select name="stokvel" class="border rounded px-3 py-2 w-full text-black" required>
+          <option value="">Select a stokvel</option>
+          <option>Stokvel A</option>
+          <option>Stokvel B</option>
+          <option>Stokvel C</option>
+        </select>
+      </div>
+      <div class="mb-2 flex items-center">
+        <input type="checkbox" id="urgentCheckbox" name="urgent" class="mr-2">
+        <label for="urgentCheckbox" class="font-semibold">Urgent</label>
+      </div>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Message</label>
+        <textarea name="message" class="border rounded px-3 py-2 w-full text-black" rows="3" required placeholder="Enter your notification message..."></textarea>
+      </div>
+      <div class="mb-2">
+        <label class="block font-semibold mb-1">Type</label>
+        <select name="type" class="border rounded px-3 py-2 w-full text-black" required>
+          <option value="General">General</option>
+          <option value="Alert">Alert</option>
+          <option value="Update">Update</option>
+        </select>
+      </div>
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2">Send</button>
+    </form>
   </div>
-  <table class="table-auto w-full mt-2 text-sm">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>User ID</th>
-        <th>Stokvel</th>
-        <th>Urgent</th>
-        <th>Message</th>
-        <th>Type</th>
-        <th>Created At</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for n in notifications %}
-      <tr>
-        <td>{{ n[0] }}</td>
-        <td>{{ n[1] }}</td>
-        <td>Stokvel A</td>
-        <td>No</td>
-        <td>{{ n[2] }}</td>
-        <td>{{ n[3] }}</td>
-        <td>{{ n[4] }}</td>
-        <td class="flex gap-2">
-          <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewNotificationModal('{{ n[0] }}', '{{ n[1] }}', 'Stokvel A', 'No', '{{ n[2] }}', '{{ n[3] }}', '{{ n[4] }}')">View</button>
-          <button class="bg-red-600 text-white px-2 py-1 rounded" disabled title="Coming soon">Delete</button>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="8">No notifications found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <!-- Send Notification Modal -->
-  <div id="sendNotificationModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
-      <button onclick="closeSendNotificationModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-      <h3 class="text-lg font-bold mb-2">Send Notification</h3>
-      <form id="sendNotificationForm">
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Stokvel</label>
-          <select class="border rounded px-3 py-2 w-full">
-            <option>Stokvel A</option>
-            <option>Stokvel B</option>
-            <option>Stokvel C</option>
-          </select>
-        </div>
-        <div class="mb-2 flex items-center">
-          <input type="checkbox" id="urgentCheckbox" class="mr-2">
-          <label for="urgentCheckbox" class="font-semibold">Urgent</label>
-        </div>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Message</label>
-          <textarea class="border rounded px-3 py-2 w-full" rows="3" required></textarea>
-        </div>
-        <div class="mb-2">
-          <label class="block font-semibold mb-1">Type</label>
-          <select class="border rounded px-3 py-2 w-full">
-            <option>General</option>
-            <option>Alert</option>
-            <option>Update</option>
-          </select>
-        </div>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2">Send</button>
-      </form>
-    </div>
-  </div>
-  <!-- View Notification Modal -->
-  <div id="viewNotificationModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
-      <button onclick="closeViewNotificationModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-      <h3 class="text-lg font-bold mb-2">Notification Details</h3>
-      <ul id="viewNotificationDetails" class="mb-2"></ul>
-    </div>
+</div>
+<!-- View Notification Modal -->
+<div id="viewNotificationModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+    <button onclick="closeViewNotificationModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">Notification Details</h3>
+    <ul id="viewNotificationDetails" class="mb-2"></ul>
   </div>
 </div>
 {% endblock %}
@@ -106,9 +107,5 @@ function openViewNotificationModal(id, userId, stokvel, urgent, message, type, c
 function closeViewNotificationModal() {
   document.getElementById('viewNotificationModal').classList.add('hidden');
 }
-document.getElementById('sendNotificationForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  alert('Preview only: No notification will be sent.');
-});
 </script>
 {% endblock %} 

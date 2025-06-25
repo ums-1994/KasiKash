@@ -1,29 +1,14 @@
-<div>
-  <h3 class="text-lg font-bold mb-2">Loan History for {{ email }}</h3>
-  <table class="table-auto w-full mb-2">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Amount</th>
-        <th>Status</th>
-        <th>Transaction Date</th>
-        <th>Comment</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for loan in loans %}
-      <tr>
-        <td>{{ loan[0] }}</td>
-        <td>{{ loan[1] }}</td>
-        <td>{{ loan[2] }}</td>
-        <td>{{ loan[3] }}</td>
-        <td>{{ loan[4] or '—' }}</td>
-        <td>{{ loan[5] or '—' }}</td>
-      </tr>
-      {% else %}
-      <tr><td colspan="6">No loan history found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div> 
+<h3 class="text-lg font-bold mb-2">Loan History for {{ username }}</h3>
+{% if history %}
+    <div class="space-y-3">
+        {% for item in history %}
+            <div class="p-2 border rounded {{ 'bg-green-50' if item.status == 'approved' else 'bg-red-50' if item.status == 'rejected' else 'bg-yellow-50' }}">
+                <p><strong>Amount:</strong> R{{ "%.2f"|format(item.amount) }} on {{ item.transaction_date.strftime('%Y-%m-%d') if item.transaction_date }}</p>
+                <p><strong>Status:</strong> <span class="font-semibold capitalize">{{ item.status }}</span></p>
+                <p class="text-xs text-gray-600">{{ item.description }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No previous loan history found for this user.</p>
+{% endif %} 

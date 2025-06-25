@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="{{ user_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>KasiKash Admin - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
+    <style>
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 240px;
+            background: #232946;
+            color: #fff;
+            transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s;
+            box-shadow: 2px 0 8px rgba(35,41,70,0.08);
+            z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            transform: translateX(0);
+        }
+        .sidebar.closed {
+            transform: translateX(-100%);
+            box-shadow: none;
+        }
+        .sidebar .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem 1rem 1rem 1rem;
+            border-bottom: 1px solid #2d3250;
+        }
+        .sidebar .sidebar-header img {
+            height: 36px;
+            margin-right: 0.75rem;
+        }
+        .sidebar .nav {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .sidebar .nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .sidebar .nav a:hover, .sidebar .nav a.active {
+            background: #eebbc3;
+            color: #232946;
+        }
+        .sidebar .nav i {
+            font-size: 1.2rem;
+            width: 22px;
+            text-align: center;
+        }
+        .admin-main {
+            flex: 1;
+            margin-left: 240px;
+            padding: 2rem;
+            transition: margin-left 0.3s cubic-bezier(.4,2,.6,1);
+            background: #1b1f27;
+            color: #fff;
+        }
+        .sidebar.closed ~ .admin-main {
+            margin-left: 0;
+        }
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .admin-main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="admin-wrapper">
+        <nav class="sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="Logo">
+                <span style="font-weight: bold; font-size: 1.2rem;">Admin</span>
+            </div>
+            <div class="nav flex-column">
+                <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{{ url_for('admin.manage_users') }}" class="{% if request.endpoint == 'admin.manage_users' %}active{% endif %}"><i class="fas fa-users"></i> Manage Users</a>
+                <a href="{{ url_for('admin.loan_approvals') }}" class="{% if request.endpoint == 'admin.loan_approvals' %}active{% endif %}"><i class="fas fa-hand-holding-usd"></i> Loan Approvals</a>
+                <a href="{{ url_for('admin.events') }}" class="{% if request.endpoint == 'admin.events' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Events</a>
+                <a href="{{ url_for('admin.memberships') }}" class="{% if request.endpoint == 'admin.memberships' %}active{% endif %}"><i class="fas fa-medal"></i> Membership Plans</a>
+                <a href="{{ url_for('admin.notifications') }}" class="{% if request.endpoint == 'admin.notifications' %}active{% endif %}"><i class="fas fa-bell"></i> Notifications</a>
+                <a href="{{ url_for('admin.kyc_approvals') }}" class="{% if request.endpoint == 'admin.kyc_approvals' %}active{% endif %}"><i class="fas fa-id-card"></i> KYC Approvals</a>
+                <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </nav>
+        <main class="admin-main" id="adminMain">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 
