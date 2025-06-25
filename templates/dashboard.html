@@ -37,6 +37,7 @@ body {
 .accent {
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 700;
 }
@@ -233,6 +234,7 @@ body {
   margin-bottom: 1rem;
   background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -1px;
   position: relative;
@@ -288,6 +290,7 @@ body {
   font-weight: 700;
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.25rem;
 }
@@ -388,6 +391,7 @@ body {
   font-weight: 600;
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -432,13 +436,13 @@ body {
 <div class="welcome-banner">
   <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
     <div>
-      <h2 class="welcome-title">Sawubona, {{ user_name }}!</h2>
+      <h2 class="welcome-title">Sawubona, {{ user.username }}!</h2>
       <div class="welcome-subtitle">Welcome back to your financial dashboard.</div>
     </div>
     <div style="display: flex; align-items: center; gap: 1rem;">
       <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
         {% if user.profile_picture %}
-          <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
+          <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" class="w-full h-full object-cover">
         {% else %}
           <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #fff;"></i>
         {% endif %}
@@ -453,12 +457,12 @@ body {
   <div class="glass-card" style="display: flex; flex-direction: column; align-items: center;">
     <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem;">
       {% if user.profile_picture %}
-        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
+        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" class="w-full h-full object-cover">
             {% else %}
         <i class="fas fa-user-circle" style="font-size: 3rem; color: #c7d2fe;"></i>
       {% endif %}
     </div>
-    <div class="accent text-xl mb-1">{{ user_name }}</div>
+    <div class="accent text-xl mb-1">{{ user.username }}</div>
     <div class="text-white text-sm mb-2">{{ user.email }}</div>
     <div style="display: flex; gap: 0.5rem;">
       <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Member</span>
@@ -474,8 +478,8 @@ body {
     <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
       {% for day in weekly_contributions %}
         {% set bar_height = 20 + (day|int)*2 %}
-        <div class="day-bar" style="height: {{ bar_height }}px;"></div>
-            {% endfor %}
+        <div class="day-bar" data-bar-height="{{ bar_height }}"></div>
+      {% endfor %}
     </div>
     <div style="color: #fff; font-size: 1.125rem; font-weight: 600;">R {{ current_balance|default('0.00') }}</div>
     <div style="color: #bfdbfe; font-size: 0.875rem;">Goal: R {{ savings_goal|default('0.00') }}</div>
@@ -595,5 +599,9 @@ function prevMonth() {
 function nextMonth() {
   // Implement AJAX or page reload for next month
 }
+document.querySelectorAll('.day-bar').forEach(function(bar) {
+  var h = bar.getAttribute('data-bar-height');
+  if (h) bar.style.height = h + 'px';
+});
 </script>
 {% endblock %}

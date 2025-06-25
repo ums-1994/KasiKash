@@ -1,13 +1,15 @@
-{% extends 'base.html' %}
-{% block content %}
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1>Membership Plans</h1>
+<p>Here you can manage membership plans.</p>
 <div class="w-full p-4 mt-2">
   <h2>Membership Plans</h2>
   <!-- Search/filter bar -->
-  <div class="mb-4 flex items-center gap-4">
-    <input type="text" class="border rounded px-3 py-2" placeholder="Search by plan name" disabled title="Coming soon">
-    <button class="bg-blue-600 text-white px-4 py-2 rounded" disabled title="Coming soon">Search</button>
-    <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddPlanModal()">Add Plan</button>
-  </div>
+  <form method="GET" action="{{ url_for('admin.memberships') }}" class="mb-4 flex items-center gap-4">
+    <input type="text" name="q" class="border rounded px-3 py-2 text-black" placeholder="Search by plan name" value="{{ search_query or '' }}">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+    <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddPlanModal()">Add Plan</button>
+  </form>
   <table class="table-auto w-full mt-2 text-sm">
     <thead>
       <tr>
@@ -47,20 +49,20 @@
     <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
       <button onclick="closeAddPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
       <h3 class="text-lg font-bold mb-2">Add Membership Plan</h3>
-      <form>
+      <form method="POST" action="{{ url_for('admin.add_membership_plan') }}">
         <div class="mb-2">
           <label class="block font-semibold mb-1">Name</label>
-          <input type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+          <input type="text" name="name" class="border rounded px-3 py-2 w-full text-black" required placeholder="e.g. Gold, Silver, Platinum">
         </div>
         <div class="mb-2">
           <label class="block font-semibold mb-1">Monthly Contribution</label>
-          <input type="number" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+          <input type="number" name="monthly_contribution" class="border rounded px-3 py-2 w-full text-black" required placeholder="e.g. 100">
         </div>
         <div class="mb-2">
           <label class="block font-semibold mb-1">Target Amount</label>
-          <input type="number" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
+          <input type="number" name="target_amount" class="border rounded px-3 py-2 w-full text-black" required placeholder="e.g. 1000">
         </div>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Add Plan</button>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2">Add Plan</button>
       </form>
     </div>
   </div>
