@@ -1,13 +1,10 @@
-<div>
-  <h3 class="text-lg font-bold mb-2">Loan Details</h3>
-  <ul class="mb-2">
-    <li><strong>ID:</strong> {{ loan[0] }}</li>
-    <li><strong>Username:</strong> {{ loan[1] }}</li>
-    <li><strong>Email:</strong> {{ loan[2] }}</li>
-    <li><strong>Amount:</strong> {{ loan[3] }}</li>
-    <li><strong>Status:</strong> {{ loan[4] }}</li>
-    <li><strong>Transaction Date:</strong> {{ loan[5] }}</li>
-    <li><strong>Comment:</strong> {{ loan[6] or '—' }}</li>
-    <li><strong>Description:</strong> {{ loan[7] or '—' }}</li>
-  </ul>
+<h3 class="text-lg font-bold mb-2">Loan Details (ID: {{ loan.id }})</h3>
+<div class="space-y-2 text-sm">
+    <p><strong>User:</strong> {{ loan.username }} ({{ loan.email }})</p>
+    <p><strong>Stokvel:</strong> {{ loan.stokvel_name or 'N/A' }}</p>
+    <p><strong>Amount:</strong> R{{ "%.2f"|format(loan.amount) }}</p>
+    <p><strong>Status:</strong> <span class="font-semibold capitalize">{{ loan.status }}</span></p>
+    <p><strong>Date Requested:</strong> {{ loan.transaction_date.strftime('%Y-%m-%d %H:%M') if loan.transaction_date else 'N/A' }}</p>
+    <p><strong>Description/Comment:</strong></p>
+    <p class="bg-gray-100 p-2 rounded">{{ loan.description or 'No comment provided.' }}</p>
 </div> 

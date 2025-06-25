@@ -55,6 +55,7 @@
         .logo-text {
             background: linear-gradient(90deg, #7B61FF, #61DAFB);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
             letter-spacing: -0.5px;
@@ -192,6 +193,20 @@
                     {{ item.text }}
                 </a>
                 {% endfor %}
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-xl nav-link">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    Admin
+                </a>
+                {% endif %}
+                <a href="{{ url_for('settings') }}" class="flex items-center px-4 py-3 rounded-xl nav-link">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Settings
+                </a>
             </div>
         </nav>
         <!-- User Section -->
