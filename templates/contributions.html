@@ -1,173 +1,173 @@
 {% extends "base.html" %}
 
+{% block title %}Contributions - KasiKash{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/contributions.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <!-- Statement Download Section -->
-    <div class="bg-white rounded-lg shadow mb-8">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Download Statement</h2>
-            <div class="flex items-end space-x-4">
-                <div class="flex-1">
-                    <label for="stokvel-select" class="block text-sm font-medium text-gray-700 mb-2">Select Stokvel</label>
-                    <select id="stokvel-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Select a stokvel...</option>
-                        {% for stokvel in stokvels %}
-                        <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="flex-1">
-                    <label for="period-select" class="block text-sm font-medium text-gray-700 mb-2">Select Period</label>
-                    <select id="period-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all" selected>All Time</option>
-                        <option value="30d">Last 30 Days</option>
-                        <option value="3m">Last 3 Months</option>
-                        <option value="6m">Last 6 Months</option>
-                    </select>
-                </div>
-                <button onclick="downloadStatement()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download Statement
-                </button>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Contributions</h1>
+            <p class="mt-3 text-lg text-gray-400">Track your contributions and download stokvel statements.</p>
+        </div>
+        <button onclick="openModal('makeContributionModal')" class="btn-primary inline-flex items-center mt-4 sm:mt-0">
+            <i class="fas fa-plus-circle mr-2"></i>Make Contribution
+        </button>
+    </header>
+
+    <!-- Statement Download Card -->
+    <div class="glass-card p-6 mb-10">
+        <h2 class="text-2xl font-semibold text-white mb-4">Download Statement</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+                <label for="stokvel-select" class="block text-sm font-medium text-gray-400 mb-2">Stokvel</label>
+                <select id="stokvel-select" class="form-select">
+                    <option value="">Select a stokvel...</option>
+                    {% for stokvel in stokvels %}
+                    <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
+            <div>
+                <label for="period-select" class="block text-sm font-medium text-gray-400 mb-2">Period</label>
+                <select id="period-select" class="form-select">
+                    <option value="all" selected>All Time</option>
+                    <option value="30d">Last 30 Days</option>
+                    <option value="3m">Last 3 Months</option>
+                    <option value="6m">Last 6 Months</option>
+                </select>
+            </div>
+            <button onclick="downloadStatement()" class="btn-primary flex items-center justify-center h-12">
+                <i class="fas fa-download mr-2"></i>
+                Download
+            </button>
         </div>
     </div>
 
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Contributions</h1>
-        <button onclick="openModal()" 
-                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-            Make Contribution
-        </button>
-    </div>
-
-    <!-- Contributions Table -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">My Contributions</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stokvel</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for contribution in contributions %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ contribution.created_at }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ contribution.stokvel_name }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                R{{ "%.2f"|format(contribution.amount) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if contribution.status == 'completed' %}
-                                        bg-green-100 text-green-800
-                                    {% elif contribution.status == 'pending' %}
-                                        bg-yellow-100 text-yellow-800
-                                    {% else %}
-                                        bg-red-100 text-red-800
-                                    {% endif %}">
-                                    {{ contribution.status }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ contribution.description }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <!-- Contributions Table Card -->
+    <div class="glass-card p-6">
+        <div class="overflow-x-auto">
+            <table class="contributions-table min-w-full">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Stokvel</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contribution in contributions %}
+                    <tr>
+                        <td>{{ contribution.created_at }}</td>
+                        <td class="text-white font-medium">{{ contribution.stokvel_name }}</td>
+                        <td class="text-white font-medium">R{{ "%.2f"|format(contribution.amount) }}</td>
+                        <td>
+                            <span class="status-badge status-{{ contribution.status|lower }}">
+                                {{ contribution.status }}
+                            </span>
+                        </td>
+                        <td class="text-gray-400">{{ contribution.description }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-10 text-gray-500">
+                            <i class="fas fa-file-invoice-dollar text-4xl mb-3"></i>
+                            <p>No contributions found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- Make Contribution Modal -->
-    <div id="makeContributionModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Make Contribution</h3>
-                <form action="{{ url_for('make_contribution') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stokvel_id">
-                            Select Stokvel
-                        </label>
-                        <select name="stokvel_id" id="stokvel_id" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+    <div id="makeContributionModal" class="hidden modal-backdrop" style="background-color: rgba(10, 10, 20, 0.8); backdrop-filter: blur(8px);">
+        <div class="glass-card w-full max-w-md m-4">
+            <form action="{{ url_for('make_contribution') }}" method="POST" class="flex flex-col">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <h3 class="text-2xl font-semibold text-white mb-6">Make a Contribution</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-400 text-sm font-bold mb-2" for="stokvel_id">Stokvel</label>
+                        <select name="stokvel_id" id="stokvel_id" required class="form-select">
                             {% for stokvel in stokvels %}
                             <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">
-                            Amount (R)
-                        </label>
-                        <input type="number" name="amount" id="amount" required step="0.01" min="0"
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <div>
+                        <label class="block text-gray-400 text-sm font-bold mb-2" for="amount">Amount (R)</label>
+                        <input type="number" name="amount" id="amount" required step="0.01" min="0" class="form-input" placeholder="e.g., 500.00">
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                            Description
-                        </label>
-                        <textarea name="description" id="description" required
-                                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                    <div>
+                        <label class="block text-gray-400 text-sm font-bold mb-2" for="description">Description</label>
+                        <textarea name="description" id="description" required rows="3" class="form-input" placeholder="e.g., Monthly contribution for July"></textarea>
                     </div>
-                    <div class="flex justify-end space-x-2">
-                        <button type="button" onclick="closeModal()"
-                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                            Make Contribution
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button type="button" onclick="closeModal('makeContributionModal')" class="btn-secondary py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit" class="btn-primary py-2 px-4 rounded-lg">Submit Contribution</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-function openModal() {
-    document.getElementById('makeContributionModal').classList.remove('hidden');
-}
-
-function closeModal() {
-    document.getElementById('makeContributionModal').classList.add('hidden');
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    var modal = document.getElementById('makeContributionModal');
-    if (event.target == modal) {
-        closeModal();
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
     }
-}
 
-function downloadStatement() {
-    const stokvelId = document.getElementById('stokvel-select').value;
-    const period = document.getElementById('period-select').value;
-    if (!stokvelId) {
-        alert('Please select a stokvel first');
-        return;
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     }
-    
-    // Redirect to the statement download page with the period as a query parameter
-    window.location.href = `/stokvel/${stokvelId}/statement/download?period=${period}`;
-}
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === "Escape") {
+                document.querySelectorAll('.modal-backdrop').forEach(modal => {
+                    if (!modal.classList.contains('hidden')) {
+                        closeModal(modal.id);
+                    }
+                });
+            }
+        });
+    });
+
+    function downloadStatement() {
+        const stokvelId = document.getElementById('stokvel-select').value;
+        const period = document.getElementById('period-select').value;
+        if (!stokvelId) {
+            alert('Please select a stokvel first');
+            return;
+        }
+        window.location.href = `/stokvel/${stokvelId}/statement/download?period=${period}`;
+    }
 </script>
 {% endblock %} 

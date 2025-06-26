@@ -1,49 +1,55 @@
 {% extends "base.html" %}
 
+{% block title %}Payment Methods - KasiKash{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/payment_methods.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Payment Methods</h1>
-        <button onclick="document.getElementById('addPaymentMethodModal').classList.remove('hidden')" 
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Add Payment Method
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Payment Methods</h1>
+            <p class="mt-3 text-lg text-gray-400">Manage your saved payment methods for easy contributions and payouts.</p>
+        </div>
+        <button onclick="openModal('addPaymentMethodModal')" class="btn-primary inline-flex items-center mt-4 sm:mt-0">
+            <i class="fas fa-plus mr-2"></i>Add Payment Method
         </button>
-    </div>
+    </header>
 
     <!-- Payment Methods Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for method in payment_methods %}
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-start">
-                <h2 class="text-xl font-semibold mb-2">{{ method.type }}</h2>
+        <div class="payment-method-card">
+            <div class="flex justify-between items-start mb-2">
+                <span class="method-type">{{ method.type|replace('_', ' ')|title }}</span>
                 {% if method.is_default %}
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                    Default
-                </span>
+                <span class="default-badge">Default</span>
                 {% endif %}
             </div>
-            <div class="space-y-2">
-                <p class="text-gray-600">{{ method.details }}</p>
-                <p class="text-sm text-gray-500">Added on {{ method.created_at.strftime('%Y-%m-%d') }}</p>
+            <div class="method-details mb-2">
+                {{ method.details }}
             </div>
-            <div class="mt-4 flex space-x-2">
+            <div class="method-date mb-4">
+                Added on {{ method.created_at.strftime('%Y-%m-%d') }}
+            </div>
+            <div class="flex space-x-2">
                 {% if not method.is_default %}
                 <form action="/set_default_payment_method" method="POST" class="inline">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <input type="hidden" name="method_id" value="{{ method.id }}">
-                    <button type="submit" 
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                        Set as Default
-                    </button>
+                    <button type="submit" class="action-btn">Set as Default</button>
                 </form>
                 {% endif %}
                 <form action="/delete_payment_method" method="POST" class="inline">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <input type="hidden" name="method_id" value="{{ method.id }}">
-                    <button type="submit" 
-                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                        Delete
-                    </button>
+                    <button type="submit" class="action-btn" style="background: linear-gradient(90deg, #F56565, #FFB6B6);">Delete</button>
                 </form>
             </div>
         </div>
@@ -51,52 +57,76 @@
     </div>
 
     <!-- Add Payment Method Modal -->
-    <div id="addPaymentMethodModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Add Payment Method</h3>
-                <form action="/add_payment_method" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="type">
-                            Payment Type
-                        </label>
-                        <select name="type" id="type" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+    <div id="addPaymentMethodModal" class="hidden modal-backdrop" style="background-color: rgba(10, 10, 20, 0.8); backdrop-filter: blur(8px);">
+        <div class="payment-method-card w-full max-w-md m-4">
+            <form action="/add_payment_method" method="POST" class="flex flex-col">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <h3 class="text-2xl font-semibold text-white mb-6">Add Payment Method</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-400 text-sm font-bold mb-2" for="type">Payment Type</label>
+                        <select name="type" id="type" required class="form-select">
                             <option value="bank_account">Bank Account</option>
                             <option value="credit_card">Credit Card</option>
                             <option value="debit_card">Debit Card</option>
                             <option value="mobile_money">Mobile Money</option>
                         </select>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="details">
-                            Payment Details (JSON)
-                        </label>
-                        <textarea name="details" id="details" required
-                                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                  placeholder='{"account_number": "1234567890", "bank_name": "Example Bank"}'></textarea>
+                    <div>
+                        <label class="block text-gray-400 text-sm font-bold mb-2" for="details">Payment Details (JSON)</label>
+                        <textarea name="details" id="details" required class="form-textarea" placeholder='{"account_number": "1234567890", "bank_name": "Example Bank"}'></textarea>
                     </div>
-                    <div class="mb-4">
+                    <div>
                         <label class="flex items-center">
-                            <input type="checkbox" name="is_default" value="true"
-                                   class="form-checkbox h-4 w-4 text-blue-600">
-                            <span class="ml-2 text-gray-700">Set as default payment method</span>
+                            <input type="checkbox" name="is_default" value="true" class="form-checkbox h-4 w-4 text-blue-600">
+                            <span class="ml-2 text-gray-400">Set as default payment method</span>
                         </label>
                     </div>
-                    <div class="flex justify-end space-x-2">
-                        <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')"
-                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            Add Method
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button type="button" onclick="closeModal('addPaymentMethodModal')" class="btn-secondary py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit" class="btn-primary py-2 px-4 rounded-lg">Add Method</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<script>
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === "Escape") {
+                document.querySelectorAll('.modal-backdrop').forEach(modal => {
+                    if (!modal.classList.contains('hidden')) {
+                        closeModal(modal.id);
+                    }
+                });
+            }
+        });
+    });
+</script>
 {% endblock %} 

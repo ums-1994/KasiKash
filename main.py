@@ -373,7 +373,7 @@ def home():
         return render_template('dashboard.html',
                             username=username,
                             user_name=username,  # for template compatibility
-                            user=user,
+            user=user,
                             outstanding_loan_id=outstanding_loan_id,
                             current_balance=current_balance,
                             total_contributions=total_contributions,
@@ -393,8 +393,8 @@ def home():
                             contribution_breakdown_chart_data=contribution_breakdown_chart_data,
                             loan_trends_chart_data=loan_trends_chart_data,
                             notification_count=notification_count,
-                            calendar_month=calendar_month,
-                            calendar_year=calendar_year,
+            calendar_month=calendar_month,
+            calendar_year=calendar_year,
                             calendar_month_num=month_start.month,
                             prev_month_url=prev_month_url,
                             next_month_url=next_month_url,
@@ -1260,7 +1260,7 @@ def savings_goals():
     firebase_uid = session['user_id']
     try:
         with support.db_connection() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 # Use firebase_uid directly since the database now uses Firebase UIDs
                 cur.execute("""
                     SELECT id, name, target_amount, current_amount, target_date, status, created_at
@@ -1268,15 +1268,23 @@ def savings_goals():
                     WHERE user_id = %s
                     ORDER BY target_date ASC
                 """, (firebase_uid,))
-                goals_tuples = cur.fetchall()
+                goals = cur.fetchall()
 
-                # Convert tuples to dictionaries for easier access in template
-                goals_list = []
-                goal_keys = ['id', 'name', 'target_amount', 'current_amount', 'target_date', 'status', 'created_at']
-                for g_tuple in goals_tuples:
-                    goals_list.append(dict(zip(goal_keys, g_tuple)))
+        # Calculate banner stats
+        total_goals = len(goals)
+        completed_goals = sum(1 for goal in goals if goal['status'] == 'completed')
+        total_saved_in_goals = sum(goal['current_amount'] for goal in goals)
+        total_target_of_goals = sum(goal['target_amount'] for goal in goals)
+        overall_progress = (total_saved_in_goals / total_target_of_goals * 100) if total_target_of_goals > 0 else 0
 
-        return render_template('savings_goals.html', goals=goals_list)
+        banner_stats = {
+            'total_goals': total_goals,
+            'completed_goals': completed_goals,
+            'total_saved': total_saved_in_goals,
+            'overall_progress': overall_progress
+        }
+
+        return render_template('savings_goals.html', goals=goals, banner_stats=banner_stats)
     except Exception as e:
         print(f"Savings goals page error: {e}")
         flash("An error occurred while loading your savings goals. Please try again.")
@@ -1286,18 +1294,20 @@ def savings_goals():
 @login_required
 def create_savings_goal():
     firebase_uid = session['user_id']
-    name = request.form.get('name')
-    target_amount = request.form.get('target_amount')
-    target_date = request.form.get('target_date') # Format 'YYYY-MM-DD'
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'Invalid JSON request.'}), 400
+
+    name = data.get('name')
+    target_amount = data.get('target_amount')
+    target_date = data.get('target_date')
 
     if not all([name, target_amount, target_date]):
-        flash("All fields are required to create a savings goal.")
-        return redirect('/savings_goals')
+        return jsonify({'success': False, 'message': 'All fields are required.'}), 400
 
     try:
         target_amount = float(target_amount)
-        # current_amount starts at 0
-
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
@@ -1306,15 +1316,14 @@ def create_savings_goal():
                 """, (firebase_uid, name, target_amount, 0.0, target_date))
                 conn.commit()
 
-        flash(f"Savings goal '{name}' created successfully!")
-        return redirect('/savings_goals')
+        return jsonify({'success': True, 'message': f"Savings goal '{name}' created successfully!"})
+            
     except ValueError:
-        flash("Target amount must be a number.")
-        return redirect('/savings_goals')
+        return jsonify({'success': False, 'message': 'Target amount must be a number.'}), 400
+            
     except Exception as e:
         print(f"Error creating savings goal: {e}")
-        flash("An error occurred while creating the savings goal. Please try again.")
-        return redirect('/savings_goals')
+        return jsonify({'success': False, 'message': 'An error occurred while creating the savings goal. Please try again.'}), 500
 
 @app.route('/stokvel/<int:stokvel_id>/members')
 @login_required
@@ -1626,9 +1635,9 @@ def update_settings():
         weekly_summary = 'weekly_summary' in request.form
         reminders_enabled = 'reminders_enabled' in request.form
         query = """
-            UPDATE users
+                    UPDATE users
             SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, reminders_enabled = %s
-            WHERE firebase_uid = %s
+                    WHERE firebase_uid = %s
         """
         params = (email_notifications, sms_notifications, weekly_summary, reminders_enabled, user_id)
 
@@ -1646,7 +1655,6 @@ def update_settings():
             flash("An error occurred while updating settings.", "danger")
     else:
         flash("Invalid settings update request.", "warning")
-        
     return redirect(url_for('settings'))
 
 
@@ -3502,6 +3510,10 @@ def transactions():
     except Exception as e:
         print(f"Error fetching transactions: {e}")
     return render_template('transactions.html', transactions=transactions)
+
+@app.context_processor
+def inject_csrf_token():
+    return dict(csrf_token=generate_csrf())
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)

@@ -2,14 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatbotContainer = document.getElementById('chatbot-container');
     const chatbotMain = document.getElementById('chatbot-main'); // The main chatbot content wrapper
     const chatbotFab = document.getElementById('chatbot-fab'); // The floating action button
-    const chatbotToggle = document.getElementById('chatbot-toggle'); // The minimize button inside the chat
+    const chatbotClose = document.getElementById('chatbot-close'); // The close (X) button
     const chatMessages = document.getElementById('chatbot-messages');
     const userInput = document.getElementById('user-message');
     const sendButton = document.getElementById('send-message');
     const quickTipsBtn = document.getElementById('quick-tips');
     const quickTipsMenu = document.getElementById('quick-tips-menu');
     const aiModeToggle = document.getElementById('ai-mode-toggle');
-    const currentMode = document.getElementById('current-mode');
+    const appModeLabel = document.getElementById('app-mode-label');
+    const aiModeLabel = document.getElementById('ai-mode-label');
+    const modeSegmentBg = document.querySelector('.mode-segment-bg');
     
     let isProcessing = false;
     let isAIMode = false; // Default to App Mode
@@ -31,31 +33,50 @@ document.addEventListener('DOMContentLoaded', () => {
         updateModeDisplay();
     }
     
-    // AI Mode Toggle Handler
+    // Update mode display for segmented control
+    function updateModeDisplay() {
+        if (isAIMode) {
+            chatbotContainer.classList.remove('app-mode');
+            aiModeLabel.classList.add('active-ai');
+            appModeLabel.classList.remove('active-app');
+            modeSegmentBg.style.left = '50%';
+        } else {
+            chatbotContainer.classList.add('app-mode');
+            appModeLabel.classList.add('active-app');
+            aiModeLabel.classList.remove('active-ai');
+            modeSegmentBg.style.left = '0';
+        }
+    }
+    
+    // Click handlers for segmented control
+    appModeLabel.addEventListener('click', () => {
+        if (isAIMode) {
+            isAIMode = false;
+            aiModeToggle.checked = false;
+            localStorage.setItem('kasiAIMode', 'false');
+            updateModeDisplay();
+            addMessage('📱 Switched to App Mode - Quick responses', 'bot');
+        }
+    });
+    aiModeLabel.addEventListener('click', () => {
+        if (!isAIMode) {
+            isAIMode = true;
+            aiModeToggle.checked = true;
+            localStorage.setItem('kasiAIMode', 'true');
+            updateModeDisplay();
+            addMessage('🤖 Switched to AI Mode - Powered by Google Gemma 3n 4B', 'bot');
+        }
+    });
     aiModeToggle.addEventListener('change', () => {
         isAIMode = aiModeToggle.checked;
         localStorage.setItem('kasiAIMode', isAIMode.toString());
         updateModeDisplay();
-        
-        // Add a mode change message
-        const modeMessage = isAIMode ? 
-            '🤖 Switched to AI Mode - Powered by Google Gemma 3n 4B' : 
+        const modeMessage = isAIMode ?
+            '🤖 Switched to AI Mode - Powered by Google Gemma 3n 4B' :
             '📱 Switched to App Mode - Quick responses';
         addMessage(modeMessage, 'bot');
     });
     
-    function updateModeDisplay() {
-        if (isAIMode) {
-            currentMode.textContent = '🤖 AI Mode';
-            document.querySelector('.mode-label').textContent = 'AI Mode';
-            chatbotContainer.classList.remove('app-mode');
-        } else {
-            currentMode.textContent = '📱 App Mode';
-            document.querySelector('.mode-label').textContent = 'App Mode';
-            chatbotContainer.classList.add('app-mode');
-        }
-    }
-
     // Initial state: chatbot starts minimized (class already on container)
     // No need for isMinimized flag here, controlled by classList
 
@@ -63,20 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function setChatbotState(minimized) {
         if (minimized) {
             chatbotContainer.classList.add('minimized');
-            chatbotToggle.title = 'Open Chat';
-            chatbotToggle.textContent = '+';
         } else {
             chatbotContainer.classList.remove('minimized');
-            chatbotToggle.title = 'Minimize';
-            chatbotToggle.textContent = '−';
             chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom when opened
         }
     }
 
-    // Toggle chat window from header button
-    chatbotToggle.addEventListener('click', () => {
-        const currentlyMinimized = chatbotContainer.classList.contains('minimized');
-        setChatbotState(!currentlyMinimized);
+    // Close/minimize chat window from close (X) button
+    chatbotClose.addEventListener('click', () => {
+        setChatbotState(true);
     });
 
     // Open chat window from FAB
@@ -86,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Allow clicking the header to minimize/maximize (excluding controls)
     document.getElementById('chatbot-header').addEventListener('click', (e) => {
-        if (e.target !== chatbotToggle && e.target !== quickTipsBtn && !e.target.closest('.chat-controls')) {
+        if (e.target !== chatbotClose && e.target !== quickTipsBtn && !e.target.closest('.chat-controls')) {
             const currentlyMinimized = chatbotContainer.classList.contains('minimized');
             setChatbotState(!currentlyMinimized);
         }
@@ -114,15 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Send message on button click
-    sendButton.addEventListener('click', sendMessage);
-    
-    // Send message on Enter key
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
+    // Send message on button click or form submit
+    const chatbotInputForm = document.getElementById('chatbot-input');
+    chatbotInputForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        sendMessage();
+    });
+    sendButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        sendMessage();
     });
     
     // Get CSRF token from meta tag
@@ -263,4 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial state check for FAB display (since it's minimized by default in HTML)
     setChatbotState(true); 
+
+    // On load, set mode display
+    updateModeDisplay();
 }); 

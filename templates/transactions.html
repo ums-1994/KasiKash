@@ -2,50 +2,170 @@
 
 {% block title %}All Transactions - KasiKash{% endblock %}
 
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600|Montserrat:700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
+  font-family: 'Inter', 'Montserrat', sans-serif;
+}
+.transactions-banner {
+  position: relative;
+  min-height: 180px;
+  border-radius: 2rem;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(123, 97, 255, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(97, 218, 251, 0.3) 0%, transparent 40%),
+    linear-gradient(135deg, #7B61FF 0%, #61DAFB 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 80px rgba(255, 255, 255, 0.1);
+}
+.transactions-banner .banner-content {
+  position: relative;
+  z-index: 10;
+  padding: 2.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(30, 30, 46, 0.3), rgba(45, 45, 68, 0.2));
+  backdrop-filter: blur(8px);
+}
+.transactions-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2rem 2.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(123, 97, 255, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.table-container {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: rgba(255,255,255,0.02);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+thead {
+  background: rgba(123, 97, 255, 0.08);
+}
+th, td {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  color: #fff;
+}
+th {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #a5b4fc;
+  border-bottom: 2px solid rgba(123, 97, 255, 0.15);
+}
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+tbody tr:hover {
+  background: rgba(123, 97, 255, 0.07);
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.status-completed {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+}
+.status-pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+.status-failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+@media (max-width: 900px) {
+  .glass-card { padding: 1rem; }
+  th, td { padding: 0.75rem 0.5rem; }
+}
+@media (max-width: 600px) {
+  .glass-card { padding: 0.5rem; }
+  th, td { padding: 0.5rem 0.25rem; font-size: 0.95rem; }
+  .transactions-title { font-size: 1.3rem; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6">All Transactions</h1>
-    <div class="bg-white rounded-lg shadow">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Transaction History</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stokvel ID</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for tx in transactions %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ tx.date }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ tx.type|capitalize }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ '%.2f'|format(tx.amount) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if tx.status == 'completed' %}bg-green-100 text-green-800
-                                    {% elif tx.status == 'pending' %}bg-yellow-100 text-yellow-800
-                                    {% else %}bg-red-100 text-red-800{% endif %}">
-                                    {{ tx.status|capitalize }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ tx.description }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ tx.stokvel_id }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-400">No transactions found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="transactions-banner">
+  <div class="banner-content">
+    <div>
+      <h2 class="transactions-title">All Transactions</h2>
+      <div style="color: rgba(255,255,255,0.9); font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem;">View your complete transaction history below.</div>
+    </div>
+    <i class="fas fa-receipt" style="font-size: 2.5rem; color: #fff; opacity: 0.7;"></i>
+  </div>
+</div>
+<div class="glass-card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                    <th>Stokvel ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr>
+                    <td>{{ tx.date }}</td>
+                    <td>{{ tx.type|capitalize }}</td>
+                    <td>R{{ '%.2f'|format(tx.amount) }}</td>
+                    <td>
+                        <span class="status-badge {% if tx.status == 'completed' %}status-completed{% elif tx.status == 'pending' %}status-pending{% else %}status-failed{% endif %}">
+                            {{ tx.status|capitalize }}
+                        </span>
+                    </td>
+                    <td>{{ tx.description }}</td>
+                    <td>{{ tx.stokvel_id }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center; color:#a5b4fc;">No transactions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %} 

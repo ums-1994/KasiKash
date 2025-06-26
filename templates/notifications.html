@@ -21,7 +21,7 @@
             <h1 class="text-3xl font-bold text-gray-800">Notifications</h1>
             {% if notifications %}
             <form action="{{ url_for('clear_notifications') }}" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button type="submit" class="text-sm text-blue-600 hover:underline focus:outline-none">Mark all as read</button>
             </form>
             {% endif %}

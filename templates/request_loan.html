@@ -3,27 +3,30 @@
 {% block title %}Request Loan{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-4">Request Loan</h1>
+<div class="glass-card" style="max-width: 500px; margin: 2.5rem auto; padding: 2.5rem 2rem; box-shadow: 0 8px 32px 0 rgba(60, 60, 90, 0.10), 0 2px 8px rgba(60, 60, 90, 0.08); border-radius: 2rem; background: rgba(255,255,255,0.10); backdrop-filter: blur(16px);">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+        <i class="fas fa-hand-holding-usd" style="font-size: 2rem; color: #7B61FF;"></i>
+        <h1 style="font-size: 2rem; font-weight: 700; margin: 0; color: #222;">Request Loan</h1>
+    </div>
     <form method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="mb-4">
-            <label for="stokvel_id" class="block text-gray-700 text-sm font-bold mb-2">Stokvel</label>
-            <select name="stokvel_id" id="stokvel_id" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div style="margin-bottom: 1.2rem;">
+            <label for="stokvel_id" style="display: block; color: #7B61FF; font-weight: 600; margin-bottom: 0.5rem;">Stokvel</label>
+            <select name="stokvel_id" id="stokvel_id" required style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 1.2rem; border: 1.5px solid #e3e6ee; background: rgba(255,255,255,0.7); color: #222; font-size: 1.05rem; font-weight: 500; outline: none; box-shadow: 0 2px 8px rgba(123,97,255,0.04);">
                 {% for stokvel in stokvels %}
                     <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="mb-4">
-            <label for="amount" class="block text-gray-700 text-sm font-bold mb-2">Amount (R)</label>
-            <input type="number" name="amount" id="amount" required step="0.01" min="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        <div style="margin-bottom: 1.2rem;">
+            <label for="amount" style="display: block; color: #7B61FF; font-weight: 600; margin-bottom: 0.5rem;">Amount (R)</label>
+            <input type="number" name="amount" id="amount" required step="0.01" min="0" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 1.2rem; border: 1.5px solid #e3e6ee; background: rgba(255,255,255,0.7); color: #222; font-size: 1.05rem; font-weight: 500; outline: none; box-shadow: 0 2px 8px rgba(123,97,255,0.04);">
         </div>
-        <div class="mb-4">
-            <label for="reason" class="block text-gray-700 text-sm font-bold mb-2">Reason</label>
-            <textarea name="reason" id="reason" required rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., School fees, medical emergency"></textarea>
+        <div style="margin-bottom: 1.2rem;">
+            <label for="reason" style="display: block; color: #7B61FF; font-weight: 600; margin-bottom: 0.5rem;">Reason</label>
+            <textarea name="reason" id="reason" required rows="3" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 1.2rem; border: 1.5px solid #e3e6ee; background: rgba(255,255,255,0.7); color: #222; font-size: 1.05rem; font-weight: 500; outline: none; box-shadow: 0 2px 8px rgba(123,97,255,0.04);" placeholder="e.g., School fees, medical emergency"></textarea>
         </div>
-        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Request Loan</button>
+        <button type="submit" style="background: linear-gradient(90deg, #7B61FF, #34d399); color: #fff; font-weight: 700; padding: 0.95rem 2.2rem; border: none; border-radius: 1.2rem; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(123,97,255,0.10); transition: background 0.2s, transform 0.18s; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; cursor: pointer;"><i class="fas fa-paper-plane"></i> Request Loan</button>
     </form>
 </div>
 {% endblock %} 

@@ -1,55 +1,93 @@
-<div id="chatbot-container" class="minimized">
-    <div id="chatbot-main">
-        <div id="chatbot-header">
+<div id="chatbot-container" role="dialog" aria-label="KasiKash Assistant Chatbot">
+    <section id="chatbot-main">
+        <header id="chatbot-header">
             <div class="assistant-info">
-                <div class="avatar">💬</div>
-                <div>
-                    <h3>KasiKash Assistant</h3>
-                    <div class="status">Online • Financial Expert</div>
-                    <div class="ai-mode-toggle">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="ai-mode-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <span class="mode-label">App Mode</span>
-                    </div>
+                <div class="avatar" aria-hidden="true">💬</div>
+                <div class="assistant-meta">
+                    <span class="assistant-name">KasiKash Assistant</span>
+                    <span class="status">Online • Financial Expert</span>
                 </div>
             </div>
-            <div class="chat-controls">
-                <button id="chatbot-history" title="History"><i class="fas fa-history"></i></button>
-                <button id="chatbot-toggle" title="Minimize">−</button>
+            <nav class="chat-controls" aria-label="Chatbot controls">
+                <button id="chatbot-history" title="History" aria-label="Chat History"><i class="fas fa-history"></i></button>
+                <button id="chatbot-close" title="Close" aria-label="Close Chatbot"><i class="fas fa-times"></i></button>
+            </nav>
+        </header>
+        <div class="chatbot-mode-switch">
+            <div class="mode-segment">
+                <span class="mode-segment-label active-app" id="app-mode-label">App Mode</span>
+                <span class="mode-segment-label active-ai" id="ai-mode-label">AI Mode</span>
+                <div class="mode-segment-bg"></div>
+                <input type="checkbox" id="ai-mode-toggle" class="mode-segment-switch" aria-label="Toggle AI Mode">
             </div>
         </div>
-        
-        <div id="chatbot-messages">
-            <div class="welcome-message">
-                <p>Hi there! I'm your KasiKash financial assistant. I can help you with:</p>
-                <ul>
-                    <li>Stokvel management</li>
-                    <li>Savings goals</li>
-                    <li>Payment questions</li>
-                    <li>Financial calculations</li>
-                </ul>
-                <p>Try: "How do I add members to my stokvel?"</p>
-                <div class="mode-indicator">
-                    <span id="current-mode">🤖 AI Mode</span> - Powered by Google Gemma 3n 4B
+        <div class="chatbot-divider" aria-hidden="true"></div>
+        <main id="chatbot-messages" aria-live="polite" tabindex="0">
+            <!-- Example message bubbles for layout preview. Remove these in production. -->
+            <div class="message bot-message">
+                <div class="message-content">
+                    Hi there! I'm your KasiKash financial assistant. How can I help you today?
                 </div>
             </div>
-        </div>
-        
-        <div id="chatbot-input">
-            <button id="quick-tips" title="Quick Tips"><i class="fas fa-lightbulb"></i></button>
-            <input type="text" id="user-message" placeholder="Ask about stokvels, payments, or savings...">
-            <button id="send-message">Send</button>
-        </div>
-        
-        <div id="quick-tips-menu" class="hidden">
-            <div class="tip-header">Common Questions</div>
-            <div class="tip" data-question="How do I create a new stokvel?">Create a stokvel</div>
-            <div class="tip" data-question="How to add payment method?">Add payment method</div>
-            <div class="tip" data-question="Calculate savings goal: R500/month to R5000">Savings calculator</div>
-            <div class="tip" data-question="Explain stokvel payout rules">Payout rules</div>
-        </div>
-    </div>
-    <div id="chatbot-fab" title="Open Chat">💬</div>
-</div> 
+            <div class="message user-message">
+                <div class="message-content">
+                    How do I add members to my stokvel?
+                </div>
+            </div>
+            <div class="message bot-message">
+                <div class="message-content">
+                    To add members, go to your stokvel page and click "Invite Members". You can send invites via email or share a join link.
+                </div>
+            </div>
+            <!-- End example bubbles -->
+        </main>
+        <footer id="chatbot-input-area">
+            <form id="chatbot-input" autocomplete="off" onsubmit="return false;">
+                <button id="quick-tips" title="Quick Tips" aria-label="Show Quick Tips" type="button"><i class="fas fa-lightbulb"></i></button>
+                <div class="input-send-wrapper" style="position: relative; display: flex; align-items: center; flex: 1;">
+                    <input type="text" id="user-message" placeholder="Type your message..." aria-label="Type your message" autocomplete="off" style="flex: 1; border-radius: 2.2rem; padding-right: 3.5rem;">
+                    <button id="send-message" aria-label="Send Message" type="submit" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; min-width: 44px; min-height: 44px; font-size: 1.3rem; background: #4a90e2; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <aside id="quick-tips-menu" class="hidden" aria-label="Quick Tips">
+                    <div class="tip-header">Common Questions</div>
+                    <div class="tip" data-question="How do I create a new stokvel?">Create a stokvel</div>
+                    <div class="tip" data-question="How to add payment method?">Add payment method</div>
+                    <div class="tip" data-question="Calculate savings goal: R500/month to R5000">Savings calculator</div>
+                    <div class="tip" data-question="Explain stokvel payout rules">Payout rules</div>
+                </aside>
+            </form>
+        </footer>
+    </section>
+    <button id="chatbot-fab" title="Open Chat" aria-label="Open Chatbot" style="display:none;">💬</button>
+</div>
+<script>
+// Responsive FAB visibility (show on mobile/minimized)
+(function() {
+    function updateFabVisibility() {
+        var fab = document.getElementById('chatbot-fab');
+        if (window.innerWidth <= 600) {
+            fab.style.display = 'flex';
+        } else {
+            fab.style.display = 'none';
+        }
+    }
+    window.addEventListener('resize', updateFabVisibility);
+    document.addEventListener('DOMContentLoaded', updateFabVisibility);
+})();
+</script>
+<style>
+#chatbot-input-area {
+    position: sticky;
+    bottom: 0;
+    background: #f5f7fa;
+    z-index: 2;
+    box-shadow: 0 -2px 8px rgba(60, 60, 90, 0.04);
+}
+
+.chatbot-divider {
+    height: 1px;
+    background: #e3e6ee;
+    margin: 0 0 0 0;
+    width: 100%;
+}
+</style> 

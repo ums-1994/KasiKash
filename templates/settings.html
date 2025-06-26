@@ -2,165 +2,247 @@
 
 {% block title %}{{ t('settings', user_language) }} - KasiKash{% endblock %}
 
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body {
+        background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
+        font-family: 'Inter', sans-serif;
+        color: #E2E2F0;
+    }
+    .glass-card {
+        background: rgba(45, 45, 68, 0.4);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1.5rem;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 2.5rem;
+    }
+    .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+    .form-input, .form-select {
+        background: rgba(30, 30, 46, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #E2E2F0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease-in-out;
+        width: 100%;
+    }
+    .form-input:focus, .form-select:focus {
+        background: rgba(30, 30, 46, 0.9);
+        border-color: #7B61FF;
+        box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
+        outline: none;
+    }
+    .btn-primary {
+        background: linear-gradient(90deg, #7B61FF, #61DAFB);
+        color: #FFF;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(123, 97, 255, 0.2);
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(123, 97, 255, 0.3);
+    }
+    .toggle-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .toggle-label:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 28px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background: linear-gradient(90deg, #7B61FF, #61DAFB);
+    }
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ t('settings', user_language) }}</h1>
-        
-        <!-- Account Security -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('account_security', user_language) }}</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="security">
-                <div class="mb-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="two_factor_enabled" value="on" 
-                               class="form-checkbox h-4 w-4 text-blue-600"
-                               {% if user.two_factor_enabled %}checked{% endif %}>
-                        <span class="ml-2 text-gray-700">Enable Two-Factor Authentication</span>
-                    </label>
-                    <p class="text-sm text-gray-500 mt-1">Add an extra layer of security to your account</p>
-                </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    {{ t('save', user_language) }} Security Settings
-                </button>
-            </form>
-        </div>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                {{ t('settings', user_language) }}
+            </h1>
+            <p class="mt-4 text-lg text-gray-400">
+                Manage your account, notifications, and application preferences.
+            </p>
+        </header>
 
-        <!-- Notifications -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('notifications', user_language) }}</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="notifications">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="notification_preferences">
-                        Notification Preferences
-                    </label>
-                    <select name="notification_preferences" id="notification_preferences"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="email" {% if user.notification_preferences == 'email' %}selected{% endif %}>Email Only</option>
-                        <option value="sms" {% if user.notification_preferences == 'sms' %}selected{% endif %}>SMS Only</option>
-                        <option value="both" {% if user.notification_preferences == 'both' %}selected{% endif %}>Email and SMS</option>
-                        <option value="none" {% if user.notification_preferences == 'none' %}selected{% endif %}>No Notifications</option>
-                    </select>
-                    <p class="text-sm text-gray-500 mt-1">Choose how you want to receive notifications</p>
-                </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    {{ t('save', user_language) }} Notification Settings
-                </button>
-            </form>
-        </div>
-
-        <!-- Language Preferences -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('language_preferences', user_language) }}</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="language_preference">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="language_preference">
-                        {{ t('preferred_language', user_language) }}
-                    </label>
-                    <select name="language_preference" id="language_preference"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
-                        <option value="af" {% if user.language_preference == 'af' %}selected{% endif %}>Afrikaans</option>
-                        <option value="zu" {% if user.language_preference == 'zu' %}selected{% endif %}>isiZulu</option>
-                        <option value="xh" {% if user.language_preference == 'xh' %}selected{% endif %}>isiXhosa</option>
-                        <option value="st" {% if user.language_preference == 'st' %}selected{% endif %}>Sesotho</option>
-                        <option value="tn" {% if user.language_preference == 'tn' %}selected{% endif %}>Setswana</option>
-                        <option value="ss" {% if user.language_preference == 'ss' %}selected{% endif %}>siSwati</option>
-                        <option value="ve" {% if user.language_preference == 've' %}selected{% endif %}>Tshivenda</option>
-                        <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>Xitsonga</option>
-                        <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>isiNdebele</option>
-                    </select>
-                    <p class="text-sm text-gray-500 mt-1">{{ t('choose_language', user_language) }}</p>
-                </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    {{ t('save_language_settings', user_language) }}
-                </button>
-            </form>
-        </div>
-
-        <!-- App Preferences -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">App Preferences</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="app_preferences">
-                <div class="space-y-4">
-                    <!-- Email Notifications Toggle -->
-                    <label for="email_notifications" class="flex items-center justify-between cursor-pointer">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Left Column -->
+            <div class="flex flex-col gap-8">
+                <!-- Account Security -->
+                <form action="/settings/update" method="POST" class="glass-card">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="form_section" value="security">
+                    <h2 class="text-2xl font-semibold text-white mb-6">
+                        <i class="fas fa-shield-alt mr-3 text-blue-400"></i>{{ t('account_security', user_language) }}
+                    </h2>
+                    <label class="toggle-label">
                         <div>
-                            <span class="text-gray-800 font-medium">Email Notifications</span>
-                            <p class="text-sm text-gray-500">Receive updates and alerts via email</p>
+                            <span class="font-medium text-white">Two-Factor Authentication</span>
+                            <p class="text-sm text-gray-400 mt-1">Add an extra layer of security to your account.</p>
                         </div>
-                        <div class="relative">
-                            <input type="checkbox" id="email_notifications" name="email_notifications" class="sr-only" {% if user.email_notifications %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="two_factor_enabled" {% if user.two_factor_enabled %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
                     </label>
+                    <div class="mt-6 text-right">
+                        <button type="submit" class="btn-primary">
+                            {{ t('save', user_language) }} Changes
+                        </button>
+                    </div>
+                </form>
 
-                    <!-- SMS Notifications Toggle -->
-                    <label for="sms_notifications" class="flex items-center justify-between cursor-pointer">
-                        <div>
-                            <span class="text-gray-800 font-medium">SMS Notifications</span>
-                            <p class="text-sm text-gray-500">Get important updates via SMS</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="sms_notifications" name="sms_notifications" class="sr-only" {% if user.sms_notifications %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
-                    </label>
+                <!-- Language Preferences -->
+                <form action="/settings/update" method="POST" class="glass-card">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="form_section" value="language_preference">
+                    <h2 class="text-2xl font-semibold text-white mb-6">
+                        <i class="fas fa-language mr-3 text-green-400"></i>{{ t('language_preferences', user_language) }}
+                    </h2>
+                    <div class="mb-4">
+                        <label class="block text-gray-400 text-sm font-bold mb-2" for="language_preference">
+                            {{ t('preferred_language', user_language) }}
+                        </label>
+                        <select name="language_preference" id="language_preference" class="form-select">
+                            <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
+                            <option value="af" {% if user.language_preference == 'af' %}selected{% endif %}>Afrikaans</option>
+                            <option value="zu" {% if user.language_preference == 'zu' %}selected{% endif %}>isiZulu</option>
+                            <option value="xh" {% if user.language_preference == 'xh' %}selected{% endif %}>isiXhosa</option>
+                            <option value="st" {% if user.language_preference == 'st' %}selected{% endif %}>Sesotho</option>
+                            <option value="tn" {% if user.language_preference == 'tn' %}selected{% endif %}>Setswana</option>
+                            <option value="ss" {% if user.language_preference == 'ss' %}selected{% endif %}>siSwati</option>
+                            <option value="ve" {% if user.language_preference == 've' %}selected{% endif %}>Tshivenda</option>
+                            <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>Xitsonga</option>
+                            <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>isiNdebele</option>
+                        </select>
+                        <p class="text-sm text-gray-500 mt-2">{{ t('choose_language', user_language) }}</p>
+                    </div>
+                    <div class="mt-6 text-right">
+                        <button type="submit" class="btn-primary">
+                            {{ t('save_language_settings', user_language) }}
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-                    <!-- Weekly Summary Toggle -->
-                    <label for="weekly_summary" class="flex items-center justify-between cursor-pointer">
-                        <div>
-                            <span class="text-gray-800 font-medium">Weekly Summary</span>
-                            <p class="text-sm text-gray-500">Get a weekly overview of your stokvel activities</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="weekly_summary" name="weekly_summary" class="sr-only" {% if user.weekly_summary %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
-                    </label>
-
-                    <!-- Contribution Reminders Toggle -->
-                    <label for="reminders_enabled" class="flex items-center justify-between cursor-pointer">
-                        <div>
-                            <span class="text-gray-800 font-medium">Contribution Reminders</span>
-                            <p class="text-sm text-gray-500">Get notified before your contribution is due</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="reminders_enabled" name="reminders_enabled" class="sr-only" {% if user.reminders_enabled %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
-                    </label>
-                </div>
-                <div class="mt-6">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Save App Preferences
-                    </button>
-                </div>
-            </form>
+            <!-- Right Column -->
+            <div class="flex flex-col gap-8">
+                <!-- App Preferences & Notifications -->
+                <form action="/settings/update" method="POST" class="glass-card">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="form_section" value="app_preferences">
+                    <h2 class="text-2xl font-semibold text-white mb-6">
+                        <i class="fas fa-bell mr-3 text-purple-400"></i>App & Notification Preferences
+                    </h2>
+                    <div class="space-y-4">
+                        <label class="toggle-label">
+                            <div>
+                                <span class="font-medium text-white">Email Notifications</span>
+                                <p class="text-sm text-gray-400 mt-1">Receive updates and alerts via email.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="email_notifications" {% if user.email_notifications %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                        <label class="toggle-label">
+                            <div>
+                                <span class="font-medium text-white">SMS Notifications</span>
+                                <p class="text-sm text-gray-400 mt-1">Get important updates via SMS.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="sms_notifications" {% if user.sms_notifications %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                        <label class="toggle-label">
+                            <div>
+                                <span class="font-medium text-white">Weekly Summary</span>
+                                <p class="text-sm text-gray-400 mt-1">Get a weekly overview of your activities.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="weekly_summary" {% if user.weekly_summary %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                        <label class="toggle-label">
+                            <div>
+                                <span class="font-medium text-white">Contribution Reminders</span>
+                                <p class="text-sm text-gray-400 mt-1">Get notified before a contribution is due.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="reminders_enabled" {% if user.reminders_enabled %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                    <div class="mt-6 text-right">
+                        <button type="submit" class="btn-primary">
+                            Save App Preferences
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-    /* Tailwind CSS for the toggle */
-    input:checked ~ .dot {
-        transform: translateX(100%);
-        background-color: #48bb78; /* equivalent to green-500 */
-    }
-    input:checked ~ .block {
-        background-color: #a0aec0; /* equivalent to gray-400 */
-    }
-</style>
 {% endblock %} 

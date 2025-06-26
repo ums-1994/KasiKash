@@ -3,33 +3,41 @@
 {% block title %}Payout Requests{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-4">Your Payout Requests</h1>
+<div class="glass-card" style="max-width: 800px; margin: 2.5rem auto; padding: 2.5rem 2rem; box-shadow: 0 8px 32px 0 rgba(60, 60, 90, 0.10), 0 2px 8px rgba(60, 60, 90, 0.08); border-radius: 2rem; background: rgba(255,255,255,0.08); backdrop-filter: blur(16px);">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+        <i class="fas fa-money-bill-wave accent" style="font-size: 2rem;"></i>
+        <h1 class="welcome-title" style="font-size: 2rem; margin: 0;">Your Payout Requests</h1>
+    </div>
     {% if payout_requests %}
-    <table class="min-w-full bg-white rounded shadow">
+    <div style="overflow-x: auto;">
+    <table style="width: 100%; background: rgba(255,255,255,0.10); border-radius: 1.2rem; box-shadow: 0 2px 8px rgba(60,60,90,0.04);">
         <thead>
-            <tr>
-                <th class="py-2 px-4 border-b">Stokvel</th>
-                <th class="py-2 px-4 border-b">Amount</th>
-                <th class="py-2 px-4 border-b">Reason</th>
-                <th class="py-2 px-4 border-b">Status</th>
-                <th class="py-2 px-4 border-b">Requested At</th>
+            <tr style="background: linear-gradient(90deg, #7B61FF 60%, #61DAFB 100%); color: #fff;">
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Stokvel</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Amount</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Reason</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Status</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Requested At</th>
             </tr>
         </thead>
         <tbody>
             {% for req in payout_requests %}
-            <tr>
-                <td class="py-2 px-4 border-b">{{ req.stokvel_name }}</td>
-                <td class="py-2 px-4 border-b">R {{ req.amount }}</td>
-                <td class="py-2 px-4 border-b">{{ req.description }}</td>
-                <td class="py-2 px-4 border-b">{{ req.status|capitalize }}</td>
-                <td class="py-2 px-4 border-b">{{ req.transaction_date }}</td>
+            <tr style="background: rgba(255,255,255,0.07); border-radius: 0.8rem;">
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #7B61FF; font-weight: 600;">{{ req.stokvel_name }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #34d399; font-weight: 600;">R {{ req.amount }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #222;">{{ req.description }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #fbbf24; font-weight: 600;">{{ req.status|capitalize }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #60a5fa;">{{ req.transaction_date }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
-    <p>You have not submitted any payout requests yet.</p>
+    <div style="text-align: center; padding: 2.5rem 1rem; color: #7B61FF; font-size: 1.15rem; font-weight: 600; background: rgba(255,255,255,0.10); border-radius: 1.2rem; box-shadow: 0 2px 8px rgba(60,60,90,0.04);">
+        <i class="fas fa-info-circle" style="font-size: 2.2rem; margin-bottom: 0.5rem;"></i><br>
+        You have not submitted any payout requests yet.
+    </div>
     {% endif %}
 </div>
 {% endblock %} 

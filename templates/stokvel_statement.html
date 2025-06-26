@@ -1,135 +1,268 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600|Montserrat:700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
+  font-family: 'Inter', 'Montserrat', sans-serif;
+}
+.stokvel-statement-banner {
+  position: relative;
+  min-height: 180px;
+  border-radius: 2rem;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(123, 97, 255, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(97, 218, 251, 0.3) 0%, transparent 40%),
+    linear-gradient(135deg, #7B61FF 0%, #61DAFB 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 80px rgba(255, 255, 255, 0.1);
+}
+.stokvel-statement-banner .banner-content {
+  position: relative;
+  z-index: 10;
+  padding: 2.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(30, 30, 46, 0.3), rgba(45, 45, 68, 0.2));
+  backdrop-filter: blur(8px);
+}
+.stokvel-statement-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+}
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.summary-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 24px rgba(123, 97, 255, 0.10);
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+.summary-card h3 {
+  color: #a5b4fc;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.summary-card .summary-value {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+}
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(123, 97, 255, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+label, th {
+  color: #c7d2fe;
+  font-weight: 600;
+}
+select, input, textarea {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+select:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: #7B61FF;
+  box-shadow: 0 0 0 2px #7B61FF33;
+}
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: rgba(255,255,255,0.02);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+thead {
+  background: rgba(123, 97, 255, 0.08);
+}
+th, td {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  color: #fff;
+}
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+tbody tr:hover {
+  background: rgba(123, 97, 255, 0.07);
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.status-contribution {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+}
+.status-payout {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+.status-expense {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+@media (max-width: 900px) {
+  .glass-card, .summary-card { padding: 1rem; }
+  th, td { padding: 0.75rem 0.5rem; }
+}
+@media (max-width: 600px) {
+  .glass-card, .summary-card { padding: 0.5rem; }
+  th, td { padding: 0.5rem 0.25rem; font-size: 0.95rem; }
+  .stokvel-statement-title { font-size: 1.3rem; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">
-                    {{ statement.stokvel.name }} - Statement
-                    {% if statement.period and statement.period != 'all' %}
-                        <span class="text-lg text-gray-600 font-normal">
-                            ({% if statement.period == '30d' %}Last 30 Days{% elif statement.period == '3m' %}Last 3 Months{% elif statement.period == '6m' %}Last 6 Months{% else %}All Time{% endif %})
-                        </span>
-                    {% endif %}
-                </h1>
-                <p class="text-gray-600">Created on {{ statement.stokvel.created_at }}</p>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div>
-                    <label for="period-select" class="block text-sm font-medium text-gray-700 mb-1">Filter Period</label>
-                    <select id="period-select" onchange="changePeriod()" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all" {% if statement.period == 'all' %}selected{% endif %}>All Time</option>
-                        <option value="30d" {% if statement.period == '30d' %}selected{% endif %}>Last 30 Days</option>
-                        <option value="3m" {% if statement.period == '3m' %}selected{% endif %}>Last 3 Months</option>
-                        <option value="6m" {% if statement.period == '6m' %}selected{% endif %}>Last 6 Months</option>
-                    </select>
-                </div>
-                <a href="{{ url_for('download_statement', stokvel_id=statement.stokvel.id, period=statement.period) }}" 
-                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    Download Statement
-                </a>
-            </div>
+<div class="stokvel-statement-banner">
+  <div class="banner-content">
+    <div>
+      <h2 class="stokvel-statement-title">{{ statement.stokvel.name }} - Statement</h2>
+      {% if statement.period and statement.period != 'all' %}
+        <div style="color: #a5b4fc; font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem;">
+          ( {% if statement.period == '30d' %}Last 30 Days{% elif statement.period == '3m' %}Last 3 Months{% elif statement.period == '6m' %}Last 6 Months{% else %}All Time{% endif %} )
         </div>
+      {% endif %}
+      <div style="color: #c7d2fe; font-size: 1rem; margin-top: 0.25rem;">Created on {{ statement.stokvel.created_at }}</div>
     </div>
-
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Contributions</h3>
-            <p class="text-2xl font-bold text-green-600">R{{ "%.2f"|format(statement.summary.total_contributions) }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Payouts</h3>
-            <p class="text-2xl font-bold text-blue-600">R{{ "%.2f"|format(statement.summary.total_payouts) }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Expenses</h3>
-            <p class="text-2xl font-bold text-red-600">R{{ "%.2f"|format(statement.summary.total_expenses) }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Current Balance</h3>
-            <p class="text-2xl font-bold text-purple-600">R{{ "%.2f"|format(statement.summary.current_balance) }}</p>
-        </div>
-    </div>
-
-    <!-- Member Contributions -->
-    <div class="bg-white rounded-lg shadow mb-8">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Member Contributions</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Contributed</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Contributions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for member in statement.member_contributions %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ member.email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ "%.2f"|format(member.total_contributed) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ member.contribution_count }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Transaction History -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Transaction History</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for transaction in statement.transactions %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ transaction['date'] }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if transaction['type'] == 'contribution' %}
-                                        bg-green-100 text-green-800
-                                    {% elif transaction['type'] == 'payout' %}
-                                        bg-blue-100 text-blue-800
-                                    {% else %}
-                                        bg-red-100 text-red-800
-                                    {% endif %}">
-                                    {{ transaction['type'] }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ transaction['description'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                R{{ '%.2f'|format(transaction['amount']) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ transaction['user_email'] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <i class="fas fa-file-invoice-dollar" style="font-size: 2.5rem; color: #fff; opacity: 0.7;"></i>
+  </div>
 </div>
-
+<div style="display: flex; justify-content: flex-end; margin-bottom: 2rem; gap: 1rem; align-items: flex-end;">
+  <div>
+    <label for="period-select">Filter Period</label>
+    <select id="period-select" onchange="changePeriod()">
+      <option value="all" {% if statement.period == 'all' %}selected{% endif %}>All Time</option>
+      <option value="30d" {% if statement.period == '30d' %}selected{% endif %}>Last 30 Days</option>
+      <option value="3m" {% if statement.period == '3m' %}selected{% endif %}>Last 3 Months</option>
+      <option value="6m" {% if statement.period == '6m' %}selected{% endif %}>Last 6 Months</option>
+    </select>
+  </div>
+  <a href="{{ url_for('download_statement', stokvel_id=statement.stokvel.id, period=statement.period) }}" 
+     style="background: linear-gradient(90deg, #EF4444, #7B61FF); color: #fff; font-weight: bold; padding: 0.75rem 2rem; border-radius: 1rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 16px rgba(123, 97, 255, 0.15);">
+    <i class="fas fa-file-download"></i> Download Statement
+  </a>
+</div>
+<!-- Summary Cards -->
+<div class="summary-cards">
+  <div class="summary-card">
+    <h3>Total Contributions</h3>
+    <div class="summary-value">R{{ "%.2f"|format(statement.summary.total_contributions) }}</div>
+  </div>
+  <div class="summary-card">
+    <h3>Total Payouts</h3>
+    <div class="summary-value">R{{ "%.2f"|format(statement.summary.total_payouts) }}</div>
+  </div>
+  <div class="summary-card">
+    <h3>Total Expenses</h3>
+    <div class="summary-value">R{{ "%.2f"|format(statement.summary.total_expenses) }}</div>
+  </div>
+  <div class="summary-card">
+    <h3>Current Balance</h3>
+    <div class="summary-value">R{{ "%.2f"|format(statement.summary.current_balance) }}</div>
+  </div>
+</div>
+<!-- Member Contributions -->
+<div class="glass-card">
+  <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Member Contributions</h2>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Total Contributed</th>
+          <th>Number of Contributions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in statement.member_contributions %}
+        <tr>
+          <td>{{ member.email }}</td>
+          <td>R{{ "%.2f"|format(member.total_contributed) }}</td>
+          <td>{{ member.contribution_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- Transaction History -->
+<div class="glass-card">
+  <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Transaction History</h2>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Member</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for transaction in statement.transactions %}
+        <tr>
+          <td>{{ transaction['date'] }}</td>
+          <td>
+            <span class="status-badge {% if transaction['type'] == 'contribution' %}status-contribution{% elif transaction['type'] == 'payout' %}status-payout{% else %}status-expense{% endif %}">
+              {{ transaction['type'] }}
+            </span>
+          </td>
+          <td>{{ transaction['description'] }}</td>
+          <td>R{{ '%.2f'|format(transaction['amount']) }}</td>
+          <td>{{ transaction['user_email'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 <script>
 function changePeriod() {
     const period = document.getElementById('period-select').value;

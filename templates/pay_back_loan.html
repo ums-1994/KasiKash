@@ -3,21 +3,33 @@
 {% block title %}Pay Back Loan{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-4">Pay Back Loan</h1>
-    <div class="bg-white rounded shadow p-6 mb-6">
-        <p><strong>Stokvel:</strong> {{ loan.stokvel_name }}</p>
-        <p><strong>Loan Amount:</strong> R {{ '%.2f'|format(loan.amount) }}</p>
-        <p><strong>Status:</strong> {{ loan.status|capitalize }}</p>
+<div class="glass-card" style="max-width: 480px; margin: 2.5rem auto; padding: 2.5rem 2rem; box-shadow: 0 8px 32px 0 rgba(60, 60, 90, 0.10), 0 2px 8px rgba(60, 60, 90, 0.08); border-radius: 2rem; background: rgba(255,255,255,0.08); backdrop-filter: blur(16px);">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+        <i class="fas fa-hand-holding-usd accent" style="font-size: 2rem;"></i>
+        <h1 class="welcome-title" style="font-size: 2rem; margin: 0;">Pay Back Loan</h1>
     </div>
-    <form method="POST">
+    <div style="background: rgba(255,255,255,0.10); border-radius: 1.2rem; padding: 1.2rem 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(60,60,90,0.04);">
+        <p style="margin-bottom: 0.5rem;"><span style="color: #7B61FF; font-weight: 600;">Stokvel:</span> {{ loan.stokvel_name }}</p>
+        <p style="margin-bottom: 0.5rem;"><span style="color: #34d399; font-weight: 600;">Loan Amount:</span> R {{ '%.2f'|format(loan.amount) }}</p>
+        <p><span style="color: #fbbf24; font-weight: 600;">Status:</span> {{ loan.status|capitalize }}</p>
+    </div>
+    <form method="POST" style="margin-bottom: 0;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <div class="mb-4">
-            <label for="amount" class="block text-gray-700 text-sm font-bold mb-2">Repayment Amount (R)</label>
-            <input type="number" name="amount" id="amount" required step="0.01" min="0.01" max="{{ loan.amount }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        <div class="mb-6">
+            <label for="amount" style="display: block; color: #7B61FF; font-weight: 600; margin-bottom: 0.5rem;">Repayment Amount (R)</label>
+            <input type="number" name="amount" id="amount" required step="0.01" min="0.01" max="{{ loan.amount }}" 
+                style="width: 100%; padding: 0.9rem 1.2rem; border-radius: 1.2rem; border: 1.5px solid #e3e6ee; background: rgba(255,255,255,0.7); color: #222; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(60,60,90,0.04); outline: none; transition: border 0.2s, box-shadow 0.2s;"
+                onfocus="this.style.borderColor='#7B61FF'; this.style.boxShadow='0 4px 16px rgba(123,97,255,0.10)';"
+                onblur="this.style.borderColor='#e3e6ee'; this.style.boxShadow='0 2px 8px rgba(60,60,90,0.04)';">
         </div>
-        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Submit Repayment</button>
-        <a href="{{ url_for('loan_requests') }}" class="ml-4 text-blue-600 hover:underline">Cancel</a>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button type="submit" style="background: linear-gradient(90deg, #7B61FF, #61DAFB); color: #fff; font-weight: 700; padding: 0.85rem 2.2rem; border: none; border-radius: 1.2rem; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(123,97,255,0.10); transition: background 0.2s, transform 0.18s; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-paper-plane"></i> Submit Repayment
+            </button>
+            <a href="{{ url_for('loan_requests') }}" style="color: #7B61FF; font-weight: 600; text-decoration: none; padding: 0.85rem 1.5rem; border-radius: 1.2rem; background: rgba(123,97,255,0.08); transition: background 0.2s;">
+                Cancel
+            </a>
+        </div>
     </form>
 </div>
 {% endblock %} 

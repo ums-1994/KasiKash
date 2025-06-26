@@ -144,8 +144,6 @@ body {
     inset 0 0 80px rgba(255, 255, 255, 0.1);
   animation: pulseGlow 8s ease infinite;
 }
-
-/* Animated mesh overlay */
 .welcome-banner::before {
   content: '';
   position: absolute;
@@ -160,8 +158,6 @@ body {
     );
   animation: meshMove 20s linear infinite;
 }
-
-/* Glowing orbs */
 .welcome-banner::after {
   content: '';
   position: absolute;
@@ -172,7 +168,6 @@ body {
   filter: blur(30px);
   animation: orbFloat 10s ease-in-out infinite alternate;
 }
-
 @keyframes pulseGlow {
   0%, 100% {
     box-shadow: 
@@ -185,7 +180,6 @@ body {
       inset 0 0 100px rgba(255, 255, 255, 0.15);
   }
 }
-
 @keyframes meshMove {
   0% {
     transform: translateX(0) translateY(0);
@@ -199,7 +193,6 @@ body {
     opacity: 0.5;
   }
 }
-
 @keyframes orbFloat {
   0% {
     transform: translateY(0) scale(1);
@@ -210,7 +203,6 @@ body {
     opacity: 0.8;
   }
 }
-
 .welcome-content {
   position: relative;
   z-index: 10;
@@ -226,7 +218,6 @@ body {
   );
   backdrop-filter: blur(8px);
 }
-
 .welcome-title {
   font-size: 2.75rem;
   font-weight: 800;
@@ -237,7 +228,6 @@ body {
   letter-spacing: -1px;
   position: relative;
 }
-
 .welcome-title::after {
   content: '';
   position: absolute;
@@ -248,41 +238,34 @@ body {
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   border-radius: 2px;
 }
-
 .welcome-subtitle {
   font-size: 1.25rem;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   margin-top: 1rem;
 }
-
-/* Add styles for the visualization card */
 .chart-container {
   position: relative;
   height: 180px;
   width: 100%;
   margin-top: 1rem;
 }
-
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
-
 .metric-card {
   background: rgba(255, 255, 255, 0.03);
   padding: 1rem;
   border-radius: 1rem;
   transition: all 0.3s ease;
 }
-
 .metric-card:hover {
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-2px);
 }
-
 .metric-value {
   font-size: 1.5rem;
   font-weight: 700;
@@ -291,13 +274,11 @@ body {
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.25rem;
 }
-
 .metric-label {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
 }
-
 .trend-indicator {
   display: inline-flex;
   align-items: center;
@@ -306,29 +287,23 @@ body {
   border-radius: 1rem;
   margin-top: 0.5rem;
 }
-
 .trend-up {
   background: rgba(52, 211, 153, 0.1);
   color: #34D399;
 }
-
 .trend-down {
   background: rgba(239, 68, 68, 0.1);
   color: #EF4444;
 }
-
-/* Activity Timeline styles */
 .activity-timeline {
   position: relative;
   padding-left: 2rem;
 }
-
 .timeline-item {
   position: relative;
   padding-bottom: 1.5rem;
   animation: fadeIn 0.5s ease-out;
 }
-
 .timeline-item::before {
   content: '';
   position: absolute;
@@ -341,7 +316,6 @@ body {
     rgba(97, 218, 251, 0.1)
   );
 }
-
 .timeline-item::after {
   content: '';
   position: absolute;
@@ -353,36 +327,30 @@ body {
   background: #7B61FF;
   box-shadow: 0 0 10px rgba(123, 97, 255, 0.5);
 }
-
 .timeline-content {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 1rem;
   padding: 1rem;
   transition: all 0.3s ease;
 }
-
 .timeline-content:hover {
   background: rgba(255, 255, 255, 0.05);
   transform: translateX(4px);
 }
-
 .timeline-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
 }
-
 .timeline-title {
   font-weight: 600;
   color: #fff;
 }
-
 .timeline-date {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.5);
 }
-
 .timeline-amount {
   font-size: 1.125rem;
   font-weight: 600;
@@ -390,7 +358,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
 .timeline-badge {
   display: inline-flex;
   align-items: center;
@@ -399,22 +366,18 @@ body {
   font-size: 0.75rem;
   font-weight: 500;
 }
-
 .badge-contribution {
   background: rgba(52, 211, 153, 0.1);
   color: #34D399;
 }
-
 .badge-withdrawal {
   background: rgba(239, 68, 68, 0.1);
   color: #EF4444;
 }
-
 .badge-goal {
   background: rgba(99, 102, 241, 0.1);
   color: #818CF8;
 }
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -442,9 +405,9 @@ body {
         {% else %}
           <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #fff;"></i>
         {% endif %}
+      </div>
     </div>
-    </div>
-    </div>
+  </div>
 </div>
 
 <!-- Dashboard Grid -->
@@ -454,7 +417,7 @@ body {
     <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem;">
       {% if user.profile_picture %}
         <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
-            {% else %}
+      {% else %}
         <i class="fas fa-user-circle" style="font-size: 3rem; color: #c7d2fe;"></i>
       {% endif %}
     </div>
@@ -465,25 +428,6 @@ body {
       <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Joined: {{ user.joined_date }}</span>
     </div>
   </div>
-  <!-- Savings Tracker Card -->
-  <div class="glass-card">
-    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-      <i class="fas fa-chart-line accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
-      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Savings Tracker</span>
-    </div>
-    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-      <div style="display: flex; align-items: flex-end; gap: 0.25rem; height: 60px; width: 100%;">
-        {% for day in weekly_contributions|default([]) %}
-          {% set bar_height = 20 + (day|int)*2 %}
-          <div class="day-bar" style="width: 14px; height: {{ bar_height }}px; background: #60a5fa; border-radius: 6px 6px 0 0; margin-right: 2px; display: inline-block;"></div>
-        {% endfor %}
-      </div>
-      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
-        <div style="color: #fff; font-size: 1.125rem; font-weight: 600;">R {{ current_balance|default('0.00') }}</div>
-        <div style="color: #bfdbfe; font-size: 0.875rem;">Goal: R {{ savings_goal|default('0.00') }}</div>
-      </div>
-    </div>
-  </div>
   <!-- Quick Actions Card -->
   <div class="glass-card">
     <div style="display: flex; align-items: center; margin-bottom: 1rem;">
@@ -491,51 +435,33 @@ body {
       <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Quick Actions</span>
     </div>
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-      <a href="{{ url_for('loan_requests') }}"
+      <a href="{{ url_for('pay_back_loan') }}" 
         style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
         onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
         <i class="fas fa-hand-holding-usd" style="color: #34d399; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>Loan Repayment</span>
+      </a>
+      <a href="{{ url_for('request_loan') }}" 
+        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
+        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <i class="fas fa-file-signature" style="color: #a78bfa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
         <span>Loan Application</span>
       </a>
-      {% if outstanding_loan_id %}
-      <a href="{{ url_for('pay_back_loan', loan_id=outstanding_loan_id) }}"
-        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
-        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-money-check-alt" style="color: #fbbf24; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Loan Repayment</span>
-      </a>
-      {% else %}
-      <a href="{{ url_for('loan_requests') }}"
-        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
-        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-money-check-alt" style="color: #fbbf24; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Loan Repayment</span>
-      </a>
-      {% endif %}
-      <a href="{{ url_for('financial_insight') }}"
-        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
-        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-chart-pie" style="color: #a78bfa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Financial Insights</span>
-      </a>
-      <a href="{{ url_for('savings_goals') }}"
+      <a href="{{ url_for('savings_goals') }}" 
         style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
         onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
         <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
         <span>Savings Tracker</span>
       </a>
+      <a href="{{ url_for('financial_insight') }}" 
+        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
+        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <i class="fas fa-lightbulb" style="color: #fbbf24; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>Financial Insight</span>
+      </a>
     </div>
-</div>
-  <!-- Financial Insight Card -->
-  <a href="{{ url_for('financial_insight') }}" class="glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; text-decoration: none; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 32px rgba(123,97,255,0.2)';" onmouseout="this.style.boxShadow='none';">
-    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-      <i class="fas fa-chart-pie accent" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
-      <span class="accent" style="font-size: 1.25rem; font-weight: bold;">Financial Insights</span>
-    </div>
-    <div style="color: #fff; font-size: 0.875rem; text-align: center; margin-bottom: 0.25rem;">View your financial trends, progress, and key metrics in one place.</div>
-    <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd; margin-top: 0.5rem;">See Insights</span>
-  </a>
-  <!-- Recent Activity Card (now in grid, spans 2 columns on large screens) -->
+  </div>
+  <!-- Recent Activity Card (spans 2 columns) -->
   <div class="glass-card activity-card" style="grid-column: span 2;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
       <div style="display: flex; align-items: center;">
@@ -568,7 +494,7 @@ body {
       {% endfor %}
     </div>
   </div>
-  <!-- Calendar Card (now in grid, spans 2 columns on large screens) -->
+  <!-- Calendar Card (spans 2 columns) -->
   <div class="glass-card calendar-card" style="grid-column: span 2; width: 100%; max-width: 900px; margin: 0 auto;">
     <div class="calendar-nav">
       <button id="calendarPrevBtn" aria-label="Previous Month"><i class="fas fa-chevron-left"></i></button>

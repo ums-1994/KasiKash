@@ -3,62 +3,70 @@
 {% block title %}Loan Requests{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold">Your Loan Requests</h1>
-        <a href="{{ url_for('request_loan') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Apply for Loan</a>
+<div class="glass-card" style="max-width: 1100px; margin: 2.5rem auto; padding: 2.5rem 2rem; box-shadow: 0 8px 32px 0 rgba(60, 60, 90, 0.10), 0 2px 8px rgba(60, 60, 90, 0.08); border-radius: 2rem; background: rgba(255,255,255,0.08); backdrop-filter: blur(16px);">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-file-signature accent" style="font-size: 2rem;"></i>
+            <h1 class="welcome-title" style="font-size: 2rem; margin: 0;">Your Loan Requests</h1>
+        </div>
+        <a href="{{ url_for('request_loan') }}" style="background: linear-gradient(90deg, #7B61FF, #61DAFB); color: #fff; font-weight: 700; padding: 0.85rem 2.2rem; border: none; border-radius: 1.2rem; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(123,97,255,0.10); transition: background 0.2s, transform 0.18s; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-plus"></i> Apply for Loan
+        </a>
     </div>
     {% if loan_requests %}
-    <table class="min-w-full bg-white rounded shadow">
+    <div style="overflow-x: auto;">
+    <table style="width: 100%; background: rgba(255,255,255,0.10); border-radius: 1.2rem; box-shadow: 0 2px 8px rgba(60,60,90,0.04);">
         <thead>
-            <tr>
-                <th class="py-2 px-4 border-b">Stokvel</th>
-                <th class="py-2 px-4 border-b">Amount</th>
-                <th class="py-2 px-4 border-b">Repaid</th>
-                <th class="py-2 px-4 border-b">Remaining</th>
-                <th class="py-2 px-4 border-b">Progress</th>
-                <th class="py-2 px-4 border-b">Reason</th>
-                <th class="py-2 px-4 border-b">Status</th>
-                <th class="py-2 px-4 border-b">Requested At</th>
-                <th class="py-2 px-4 border-b">Actions</th>
+            <tr style="background: linear-gradient(90deg, #7B61FF 60%, #61DAFB 100%); color: #fff;">
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Stokvel</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Amount</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Repaid</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Remaining</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Progress</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Reason</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Status</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Requested At</th>
+                <th style="padding: 0.85rem 1.2rem; font-weight: 700; border-bottom: 2px solid #e3e6ee;">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for req in loan_requests %}
-            <tr>
-                <td class="py-2 px-4 border-b">{{ req.stokvel_name }}</td>
-                <td class="py-2 px-4 border-b">R {{ req.amount }}</td>
-                <td class="py-2 px-4 border-b">R {{ '%.2f'|format(req.repaid_total) }}</td>
-                <td class="py-2 px-4 border-b">R {{ '%.2f'|format(req.remaining) }}</td>
-                <td class="py-2 px-4 border-b">
-                    <div class="w-32 bg-gray-200 rounded-full h-3">
-                        <div class="bg-green-500 h-3 rounded-full" style="width: {{ (req.repaid_total / req.amount * 100) if req.amount else 0 }}%"></div>
+            <tr style="background: rgba(255,255,255,0.07); border-radius: 0.8rem;">
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #7B61FF; font-weight: 600;">{{ req.stokvel_name }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #34d399; font-weight: 600;">R {{ req.amount }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #60a5fa; font-weight: 600;">R {{ '%.2f'|format(req.repaid_total) }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #fbbf24; font-weight: 600;">R {{ '%.2f'|format(req.remaining) }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee;">
+                    <div style="width: 120px; background: #e3e6ee; border-radius: 1rem; height: 12px; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, #34d399, #7B61FF); height: 12px; border-radius: 1rem; width: {{ (req.repaid_total / req.amount * 100) if req.amount else 0 }}%; transition: width 0.3s;"></div>
                     </div>
-                    <div class="text-xs text-gray-500 mt-1">{{ (req.repaid_total / req.amount * 100)|round(1) if req.amount else 0 }}%</div>
+                    <div style="font-size: 0.95em; color: #7B61FF; margin-top: 0.25rem; font-weight: 600;">{{ (req.repaid_total / req.amount * 100)|round(1) if req.amount else 0 }}%</div>
                 </td>
-                <td class="py-2 px-4 border-b">{{ req.reason }}</td>
-                <td class="py-2 px-4 border-b">{{ req.status|capitalize }}</td>
-                <td class="py-2 px-4 border-b">{{ req.created_at }}</td>
-                <td class="py-2 px-4 border-b">
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #222;">{{ req.reason }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #fbbf24; font-weight: 600;">{{ req.status|capitalize }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee; color: #60a5fa;">{{ req.created_at }}</td>
+                <td style="padding: 0.75rem 1.2rem; border-bottom: 1px solid #e3e6ee;">
                     {% if req.status == 'approved' and req.remaining > 0 %}
-                        <button onclick="openPayModal({{ req.id }})" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded">Pay Back Loan</button>
+                        <button onclick="openPayModal({{ req.id }})" style="background: linear-gradient(90deg, #34d399, #7B61FF); color: #fff; font-weight: 700; padding: 0.5rem 1.2rem; border: none; border-radius: 1rem; font-size: 1em; box-shadow: 0 2px 8px rgba(52,211,153,0.10); transition: background 0.2s, transform 0.18s; cursor: pointer;">
+                            <i class="fas fa-hand-holding-usd"></i> Pay Back Loan
+                        </button>
                     {% else %}
-                        <span class="text-gray-400">-</span>
+                        <span style="color: #bdbdbd;">-</span>
                     {% endif %}
                 </td>
             </tr>
             <tr>
-                <td colspan="9" class="bg-gray-50 px-4 py-2">
+                <td colspan="9" style="background: rgba(255,255,255,0.04); border-radius: 0.8rem; padding: 1rem 1.2rem;">
                     <div>
-                        <strong>Repayment History:</strong>
+                        <strong style="color: #7B61FF;">Repayment History:</strong>
                         {% if repayment_histories[req.id] and repayment_histories[req.id]|length > 0 %}
-                        <ul class="list-disc ml-6 mt-1">
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem; color: #222;">
                             {% for rep in repayment_histories[req.id] %}
                                 <li>R {{ '%.2f'|format(rep.amount) }} on {{ rep.date }}</li>
                             {% endfor %}
                         </ul>
                         {% else %}
-                        <span class="text-gray-500">No repayments yet.</span>
+                        <span style="color: #bdbdbd;">No repayments yet.</span>
                         {% endif %}
                     </div>
                 </td>
@@ -66,20 +74,24 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
-    <p>You have not submitted any loan requests yet.</p>
+    <div style="text-align: center; padding: 2.5rem 1rem; color: #7B61FF; font-size: 1.15rem; font-weight: 600; background: rgba(255,255,255,0.10); border-radius: 1.2rem; box-shadow: 0 2px 8px rgba(60,60,90,0.04);">
+        <i class="fas fa-info-circle" style="font-size: 2.2rem; margin-bottom: 0.5rem;"></i><br>
+        You have not submitted any loan requests yet.
+    </div>
     {% endif %}
 </div>
 
 <!-- Pay Loan Modal -->
-<div id="payLoanModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+<div id="payLoanModal" class="hidden fixed inset-0" style="background: rgba(123,97,255,0.18); backdrop-filter: blur(2px); overflow-y:auto; z-index: 50;">
+    <div class="relative top-20 mx-auto p-5 shadow-lg rounded-2xl" style="width: 380px; background: rgba(255,255,255,0.98); box-shadow: 0 8px 32px 0 rgba(60, 60, 90, 0.10); border-radius: 2rem;">
         <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Pay Back Loan</h3>
-            <p id="payLoanModalText" class="mb-4"></p>
-            <div class="flex justify-end space-x-2">
-                <a id="payLoanModalConfirm" href="#" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Continue to Payment</a>
-                <button type="button" onclick="closePayModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #7B61FF; margin-bottom: 1.2rem;">Pay Back Loan</h3>
+            <p id="payLoanModalText" style="margin-bottom: 1.2rem; color: #222;"></p>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <a id="payLoanModalConfirm" href="#" style="background: linear-gradient(90deg, #34d399, #7B61FF); color: #fff; font-weight: 700; padding: 0.7rem 1.5rem; border: none; border-radius: 1rem; font-size: 1em; box-shadow: 0 2px 8px rgba(52,211,153,0.10); text-decoration: none; transition: background 0.2s, transform 0.18s; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-paper-plane"></i> Continue to Payment</a>
+                <button type="button" onclick="closePayModal()" style="background: #e3e6ee; color: #7B61FF; font-weight: 700; padding: 0.7rem 1.5rem; border: none; border-radius: 1rem; font-size: 1em; box-shadow: 0 2px 8px rgba(123,97,255,0.06); transition: background 0.2s, color 0.2s; cursor: pointer;">Cancel</button>
             </div>
         </div>
     </div>

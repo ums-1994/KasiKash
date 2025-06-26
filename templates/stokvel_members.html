@@ -1,91 +1,217 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600|Montserrat:700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
+  font-family: 'Inter', 'Montserrat', sans-serif;
+}
+.stokvel-members-banner {
+  position: relative;
+  min-height: 150px;
+  border-radius: 2rem;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(123, 97, 255, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(97, 218, 251, 0.3) 0%, transparent 40%),
+    linear-gradient(135deg, #7B61FF 0%, #61DAFB 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 80px rgba(255, 255, 255, 0.1);
+}
+.stokvel-members-banner .banner-content {
+  position: relative;
+  z-index: 10;
+  padding: 2rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(30, 30, 46, 0.3), rgba(45, 45, 68, 0.2));
+  backdrop-filter: blur(8px);
+}
+.stokvel-members-title {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(123, 97, 255, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+label, th {
+  color: #c7d2fe;
+  font-weight: 600;
+}
+input, select, textarea {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #7B61FF;
+  box-shadow: 0 0 0 2px #7B61FF33;
+}
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: rgba(255,255,255,0.02);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+thead {
+  background: rgba(123, 97, 255, 0.08);
+}
+th, td {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  color: #fff;
+}
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+tbody tr:hover {
+  background: rgba(123, 97, 255, 0.07);
+}
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.role-admin {
+  background: rgba(168, 139, 250, 0.15);
+  color: #a78bfa;
+}
+.role-member {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+}
+.add-member-btn {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  color: #fff;
+  font-weight: bold;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 16px rgba(123, 97, 255, 0.15);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.add-member-btn:hover {
+  background: linear-gradient(90deg, #61DAFB, #7B61FF);
+  box-shadow: 0 8px 24px rgba(123, 97, 255, 0.25);
+}
+.remove-btn {
+  color: #EF4444;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.remove-btn:hover {
+  color: #b91c1c;
+}
+@media (max-width: 900px) {
+  .glass-card { padding: 1rem; }
+  th, td { padding: 0.75rem 0.5rem; }
+}
+@media (max-width: 600px) {
+  .glass-card { padding: 0.5rem; }
+  th, td { padding: 0.5rem 0.25rem; font-size: 0.95rem; }
+  .stokvel-members-title { font-size: 1.1rem; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="p-6">
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">{{ stokvel.name }} - Members</h1>
-        <p class="text-gray-600">{{ stokvel.description }}</p>
+<div class="stokvel-members-banner">
+  <div class="banner-content">
+    <div>
+      <h2 class="stokvel-members-title">{{ stokvel.name }} - Members</h2>
+      <div style="color: #a5b4fc; font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem;">{{ stokvel.description }}</div>
     </div>
-
-    <!-- Add Member Form -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Add New Member</h2>
-        <form action="{{ url_for('add_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" class="space-y-4">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Member Email</label>
-                <input type="email" name="email" id="email" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-            <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Add Member
-            </button>
-        </form>
+    <i class="fas fa-users" style="font-size: 2.2rem; color: #fff; opacity: 0.7;"></i>
+  </div>
+</div>
+<div class="glass-card">
+  <h2 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Add New Member</h2>
+  <form action="{{ url_for('add_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" style="margin-bottom: 2rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div style="margin-bottom: 1rem;">
+      <label for="email">Member Email</label>
+      <input type="email" name="email" id="email" required>
     </div>
-
-    <!-- Members List -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Current Members</h2>
-        {% if members %}
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Username
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Email
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Role
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for member in members %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ member.username }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ member.email }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {% if member.role == 'admin' %}
-                                    bg-purple-100 text-purple-800
-                                {% else %}
-                                    bg-green-100 text-green-800
-                                {% endif %}">
-                                {{ member.role|title }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% if member.role != 'admin' or (member.role == 'admin' and members|selectattr('role', 'equalto', 'admin')|list|length > 1) %}
-                            <form action="{{ url_for('remove_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" class="inline">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="member_id" value="{{ member.member_id }}">
-                                <button type="submit" onclick="return confirm('Are you sure you want to remove this member?')"
-                                    class="text-red-600 hover:text-red-900 focus:outline-none">
-                                    Remove
-                                </button>
-                            </form>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-gray-500 text-center py-4">No members found.</p>
-        {% endif %}
-    </div>
+    <button type="submit" class="add-member-btn"><i class="fas fa-user-plus" style="margin-right: 0.5rem;"></i>Add Member</button>
+  </form>
+</div>
+<div class="glass-card">
+  <h2 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Current Members</h2>
+  {% if members %}
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in members %}
+        <tr>
+          <td>{{ member.username }}</td>
+          <td>{{ member.email }}</td>
+          <td>
+            <span class="role-badge {% if member.role == 'admin' %}role-admin{% else %}role-member{% endif %}">{{ member.role|title }}</span>
+          </td>
+          <td>
+            {% if member.role != 'admin' or (member.role == 'admin' and members|selectattr('role', 'equalto', 'admin')|list|length > 1) %}
+            <form action="{{ url_for('remove_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="member_id" value="{{ member.member_id }}">
+              <button type="submit" onclick="return confirm('Are you sure you want to remove this member?')" class="remove-btn">Remove</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="color: #a5b4fc; text-align: center; padding: 1.5rem 0;">No members found.</p>
+  {% endif %}
 </div>
 {% endblock %} 
