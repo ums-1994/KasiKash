@@ -15,7 +15,7 @@ def create_missing_tables():
         print("Creating transactions table...")
         execute_query('insert', """
             CREATE TABLE IF NOT EXISTS transactions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 user_id TEXT NOT NULL,
                 stokvel_id INTEGER NOT NULL,
                 amount REAL NOT NULL,
@@ -32,7 +32,7 @@ def create_missing_tables():
         print("Creating savings_goals table...")
         execute_query('insert', """
             CREATE TABLE IF NOT EXISTS savings_goals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 user_id TEXT NOT NULL,
                 name TEXT NOT NULL,
                 target_amount REAL NOT NULL,
@@ -47,7 +47,7 @@ def create_missing_tables():
         print("Creating payment_methods table...")
         execute_query('insert', """
             CREATE TABLE IF NOT EXISTS payment_methods (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 user_id TEXT NOT NULL,
                 card_number_last_four TEXT NOT NULL,
                 card_type TEXT NOT NULL,
@@ -69,7 +69,7 @@ def create_missing_tables():
         # Create the new table with correct schema
         execute_query('insert', """
             CREATE TABLE stokvel_members (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 stokvel_id INTEGER NOT NULL,
                 user_id TEXT NOT NULL,
                 joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -1,0 +1,143 @@
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1 style="color:#60efff;">Loan Approvals</h1>
+<p style="color:#eaf6fb;">Here you can approve or reject loan applications.</p>
+<!-- Filter by status -->
+<div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
+  <form method="get" class="flex flex-wrap items-center gap-3 flex-1 min-w-[250px]">
+    <label for="status" class="font-semibold mr-2" style="color:#eaf6fb;">Filter by status:</label>
+    <select name="status" id="status" class="border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff] w-48" onchange="this.form.submit()">
+      <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+      <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
+      <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+  </form>
+</div>
+<table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb;">
+  <thead>
+    <tr style="color:#60efff;">
+      <th>ID</th>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Transaction Date</th>
+      <th>Comment</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for loan in loans %}
+    <tr>
+      <td>{{ loan[0] }}</td>
+      <td>{{ loan[1] }}</td>
+      <td>{{ loan[2] }}</td>
+      <td>{{ loan[3] }}</td>
+      <td>{{ loan[4] }}</td>
+      <td>{{ loan[5] }}</td>
+      <td>{{ loan[6] or '' }}</td>
+      <td class="flex gap-2 justify-center">
+        {% if current_status == 'pending' %}
+        <form method="POST" action="{{ url_for('admin_approve_loan') }}" style="display:inline;">
+          {{ csrf_token() }}
+          <input type="hidden" name="loan_id" value="{{ loan[0] }}">
+          <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;">Approve</button>
+        </form>
+        <form method="POST" action="{{ url_for('admin_reject_loan') }}" style="display:inline;">
+          {{ csrf_token() }}
+          <input type="hidden" name="loan_id" value="{{ loan[0] }}">
+          <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#ff4e50 0%,#f9d423 100%);color:#101c2c;">Reject</button>
+        </form>
+        {% elif current_status in ['approved', 'rejected'] %}
+        <form method="POST" action="{{ url_for('admin_undo_loan') }}" style="display:inline;">
+          {{ csrf_token() }}
+          <input type="hidden" name="loan_id" value="{{ loan[0] }}">
+          <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Undo</button>
+        </form>
+        {% endif %}
+        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" data-loan-id="{{ loan[0] }}">View</button>
+        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#22304a 0%,#60efff 100%);color:#eaf6fb;" data-user-email="{{ loan[2] }}">History</button>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8">No loans found for this status.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<!-- Loan details modal (hidden by default) -->
+<div id="loanDetailsModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="admin-card p-6 max-w-lg w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeLoanDetails()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <div id="loanDetailsContent">Loading...</div>
+  </div>
+</div>
+<!-- User history modal (hidden by default) -->
+<div id="userHistoryModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="admin-card p-6 max-w-lg w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeUserHistory()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <div id="userHistoryContent">Loading...</div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function showLoanDetails(loanId) {
+  fetch(`/admin/loans/details/${loanId}`)
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('loanDetailsContent').innerHTML = html;
+      document.getElementById('loanDetailsModal').classList.remove('hidden');
+    });
+}
+function closeLoanDetails() {
+  document.getElementById('loanDetailsModal').classList.add('hidden');
+}
+function showUserHistory(email) {
+  fetch(`/admin/loans/user_history/${email}`)
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('userHistoryContent').innerHTML = html;
+      document.getElementById('userHistoryModal').classList.remove('hidden');
+    });
+}
+function closeUserHistory() {
+  document.getElementById('userHistoryModal').classList.add('hidden');
+}
+// Add comment prompt for approve/reject
+function addCommentAndSubmit(form, action) {
+  var comment = prompt('Enter a comment for this decision (optional):');
+  if (comment !== null) {
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'comment';
+    input.value = comment;
+    form.appendChild(input);
+    form.submit();
+  }
+}
+// Attach to approve/reject forms
+window.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('form[action$="/admin/loans/approve"], form[action$="/admin/loans/reject"]').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var action = form.action.includes('approve') ? 'approve' : 'reject';
+      addCommentAndSubmit(form, action);
+    });
+  });
+  // View Loan Details buttons
+  document.querySelectorAll('.js-view-loan-details-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var loanId = this.dataset.loanId;
+      showLoanDetails(loanId);
+    });
+  });
+  // User History buttons
+  document.querySelectorAll('.js-user-history-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var userEmail = this.dataset.userEmail;
+      showUserHistory(userEmail);
+    });
+  });
+});
+</script>
+{% endblock %}
