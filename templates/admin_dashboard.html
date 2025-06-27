@@ -1,0 +1,197 @@
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+
+<style>
+  .admin-dashboard-banner {
+    background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+    color: #60efff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+    padding: 2rem 2.5rem 2rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 110px;
+    border: 2px solid #22304a;
+  }
+  .admin-dashboard-banner h1 {
+    color: #60efff;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .admin-dashboard-banner p {
+    color: #eaf6fb;
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+    margin-bottom: 0;
+  }
+  .admin-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2.5rem;
+    margin-top: 0.5rem;
+  }
+  .admin-card {
+    background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+    padding: 2.2rem 1.7rem 1.7rem 1.7rem;
+    text-align: center;
+    transition: transform 0.18s, box-shadow 0.18s, border 0.18s, background 0.18s;
+    cursor: pointer;
+    border: 2px solid #22304a;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .admin-card:hover {
+    transform: translateY(-8px) scale(1.04);
+    box-shadow: 0 8px 32px rgba(35,41,70,0.16);
+    border: 2px solid #60efff;
+    background: linear-gradient(120deg, #22304a 0%, #60efff 100%);
+  }
+  .admin-card i {
+    font-size: 2.7rem;
+    color: #60efff;
+    margin-bottom: 1.2rem;
+  }
+  .admin-card h5 {
+    color: #eaf6fb;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .admin-card p {
+    color: #b2f7ef;
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .admin-card > .btn {
+    margin-top: auto;
+    background: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
+    color: #101c2c;
+    border: none;
+    border-radius: 7px !important;
+    padding: 0.6rem 1.7rem !important;
+    transition: background 0.2s, color 0.2s;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: inline-block;
+    min-width: 110px;
+    vertical-align: middle;
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(96,239,255,0.10);
+  }
+  .admin-card > .btn:hover {
+    background: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
+    color: #101c2c;
+    box-shadow: 0 4px 16px rgba(0,255,135,0.18);
+  }
+</style>
+
+<!-- Gradient Welcome Banner -->
+<div class="admin-dashboard-banner">
+  <div style="flex:1;">
+    <h1>Sawubona, {{ admin_name or 'Admin' }}! <span style="font-size:1.8rem;">👋</span></h1>
+    <p>You're doing great with your admin journey. Keep up the excellent work!</p>
+  </div>
+  <div style="margin-left: 1.5rem;">
+    <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(96,239,255,0.10); border-radius: 50%; width: 54px; height: 54px;">
+      <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#60efff" fill-opacity="0.2"/><path d="M9 12.5l2 2 4-4" stroke="#60efff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </div>
+</div>
+<div class="admin-cards">
+    <div class="admin-card">
+    <i class="fas fa-users"></i>
+    <h5 class="text-gray-900">Manage Users</h5>
+    <p class="text-gray-800">View, add, or remove members</p>
+    <a href="{{ url_for('admin.manage_users') }}" class="btn">Manage</a>
+    </div>
+    <div class="admin-card">
+    <i class="fas fa-hand-holding-usd"></i>
+    <h5 class="text-gray-900">Loan Approvals</h5>
+    <p class="text-gray-800">Approve or reject loans</p>
+    <a href="{{ url_for('admin.loan_approvals') }}" class="btn">Manage</a>
+    </div>
+    <div class="admin-card">
+    <i class="fas fa-chart-bar"></i>
+    <h5 class="text-gray-900">Deposit & Loan Summary</h5>
+    <p class="text-gray-800">Track total funds</p>
+    <button class="btn" onclick="openSummaryModal()">View Summary</button>
+    </div>
+    <div class="admin-card">
+    <i class="fas fa-calendar-alt"></i>
+    <h5 class="text-gray-900">Create Events</h5>
+    <p class="text-gray-800">Set up meetings or sessions</p>
+    <button class="btn">Manage Events</button>
+    </div>
+    <div class="admin-card">
+    <i class="fas fa-medal"></i>
+    <h5 class="text-gray-900">Membership Plans</h5>
+    <p class="text-gray-800">Upgrade to Gold/etc</p>
+    <button class="btn">Adjust Plans</button>
+    </div>
+    <div class="admin-card">
+    <i class="fas fa-bell"></i>
+    <h5 class="text-gray-900">Admin Notifications</h5>
+    <p class="text-gray-800">Send alerts & updates</p>
+    <button class="btn">Send Message</button>
+    </div>
+    <div class="admin-card">
+    <i class="fas fa-id-card"></i>
+    <h5 class="text-gray-900">KYC Approvals</h5>
+    <p class="text-gray-800">Verify user identity<br>Approve/Reject KYC</p>
+    <button class="btn">Review KYC</button>
+    </div>
+</div>
+<h2>Your Admin Stokvels</h2>
+<ul>
+    {% for stokvel in stokvels %}
+    <li>
+        <strong>{{ stokvel[1] }}</strong> (Monthly: R{{ stokvel[2] }}, Target Date: {{ stokvel[3] }})
+    </li>
+    {% else %}
+    <li>You have not created any stokvels yet.</li>
+    {% endfor %}
+</ul>
+<footer class="mt-5 text-center">
+    <hr>
+    <a href="#" class="me-3">Privacy Policy</a>
+    <a href="#" class="me-3">Terms</a>
+    <a href="#">Support</a>
+</footer>
+
+<!-- Deposit & Loan Summary Modal -->
+<div id="summaryModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative">
+    <button onclick="closeSummaryModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-4 text-gray-900">Deposit & Loan Summary</h3>
+    <ul class="mb-4 text-gray-900">
+      <li><strong>Total Deposits:</strong> R 100,000 (placeholder)</li>
+      <li><strong>Total Loans:</strong> R 40,000 (placeholder)</li>
+      <li><strong>Outstanding Balance:</strong> R 60,000 (placeholder)</li>
+    </ul>
+    <div class="bg-gray-100 rounded p-4 text-center mb-2 text-gray-800">[Chart Placeholder]</div>
+    <div class="text-gray-600 text-sm">(Charts and real data coming soon)</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openSummaryModal() {
+  document.getElementById('summaryModal').classList.remove('hidden');
+}
+function closeSummaryModal() {
+  document.getElementById('summaryModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1 style="color:#60efff;">Membership Plans</h1>
+<p style="color:#eaf6fb;">Here you can manage membership plans.</p>
+<div class="w-full p-4 mt-2 admin-card" style="background:#1b1f27;color:#eaf6fb;">
+  <h2 style="color:#60efff;">Membership Plans</h2>
+  <!-- Search/filter bar -->
+  <div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
+    <form method="GET" action="{{ url_for('admin.memberships') }}" class="flex flex-wrap items-center gap-3 flex-1 min-w-[250px]">
+      <input type="text" name="q" class="border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff] w-64" placeholder="Search by plan name" value="{{ search_query or '' }}">
+      <button type="submit" class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Search</button>
+    </form>
+    <button type="button" class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;min-width:150px;" onclick="openAddPlanModal()">Add Plan</button>
+  </div>
+  <table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb;">
+    <thead>
+      <tr style="color:#60efff;">
+        <th>ID</th>
+        <th>Name</th>
+        <th>Monthly Contribution</th>
+        <th>Target Amount</th>
+        <th>Total Pool</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for plan in memberships %}
+      <tr>
+        <td>{{ plan[0] }}</td>
+        <td>{{ plan[1] }}</td>
+        <td>{{ plan[2] }}</td>
+        <td>{{ plan[3] }}</td>
+        <td>{{ plan[4] }}</td>
+        <td>{{ plan[5] }}</td>
+        <td class="flex gap-2 justify-center">
+          <select class="border border-[#22304a] rounded-lg px-2 py-1 plan-dropdown" title="Preview only: No changes will be saved." data-current="{{ plan[1] }}">
+            <option {% if plan[1] == 'Silver' %}selected{% endif %}>Silver</option>
+            <option {% if plan[1] == 'Gold' %}selected{% endif %}>Gold</option>
+            <option {% if plan[1] == 'Platinum' %}selected{% endif %}>Platinum</option>
+          </select>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No membership plans found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Add Plan Modal -->
+  <div id="addPlanModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+      <button onclick="closeAddPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+      <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Add Membership Plan</h3>
+      <form method="POST" action="{{ url_for('admin.add_membership_plan') }}" class="space-y-3">
+        <div>
+          <label class="block font-semibold mb-1">Name</label>
+          <input type="text" name="name" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required placeholder="e.g. Gold, Silver, Platinum">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Monthly Contribution</label>
+          <input type="number" name="monthly_contribution" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required placeholder="e.g. 100">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Target Amount</label>
+          <input type="number" name="target_amount" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required placeholder="e.g. 1000">
+        </div>
+        <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Add Plan</button>
+      </form>
+    </div>
+  </div>
+  <!-- Edit Plan Modal -->
+  <div id="editPlanModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+      <button onclick="closeEditPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+      <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Edit Membership Plan</h3>
+      <form class="space-y-3">
+        <div>
+          <label class="block font-semibold mb-1">Name</label>
+          <input id="editPlanName" type="text" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Monthly Contribution</label>
+          <input id="editPlanMonthly" type="number" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Target Amount</label>
+          <input id="editPlanTarget" type="number" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
+        </div>
+        <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" disabled title="Coming soon">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <!-- View Plan Modal -->
+  <div id="viewPlanModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+      <button onclick="closeViewPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+      <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Plan Details</h3>
+      <ul id="viewPlanDetails" class="mb-2"></ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function openAddPlanModal() {
+  document.getElementById('addPlanModal').classList.remove('hidden');
+}
+function closeAddPlanModal() {
+  document.getElementById('addPlanModal').classList.add('hidden');
+}
+function openEditPlanModal(id, name, monthly, target, pool, createdAt) {
+  document.getElementById('editPlanName').value = name;
+  document.getElementById('editPlanMonthly').value = monthly;
+  document.getElementById('editPlanTarget').value = target;
+  document.getElementById('editPlanModal').classList.remove('hidden');
+}
+function closeEditPlanModal() {
+  document.getElementById('editPlanModal').classList.add('hidden');
+}
+function openViewPlanModal(id, name, monthly, target, pool, createdAt) {
+  var html = '';
+  html += `<li><strong>ID:</strong> ${id}</li>`;
+  html += `<li><strong>Name:</strong> ${name}</li>`;
+  html += `<li><strong>Monthly Contribution:</strong> ${monthly}</li>`;
+  html += `<li><strong>Target Amount:</strong> ${target}</li>`;
+  html += `<li><strong>Total Pool:</strong> ${pool}</li>`;
+  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+  document.getElementById('viewPlanDetails').innerHTML = html;
+  document.getElementById('viewPlanModal').classList.remove('hidden');
+}
+function closeViewPlanModal() {
+  document.getElementById('viewPlanModal').classList.add('hidden');
+}
+document.querySelectorAll('.plan-dropdown').forEach(function(drop) {
+  drop.addEventListener('change', function() {
+    alert('Preview only: No changes will be saved.');
+    this.value = this.getAttribute('data-current') || this.value;
+  });
+});
+</script>
+{% endblock %}

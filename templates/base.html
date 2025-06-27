@@ -18,7 +18,6 @@
             font-family: 'Inter', 'Montserrat', sans-serif;
             color: #E2E2F0;
         }
-
         .sidebar {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
@@ -27,14 +26,12 @@
                 0 20px 40px rgba(0, 0, 0, 0.2),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.05);
         }
-
         .nav-link {
             color: rgba(255, 255, 255, 0.8);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid transparent;
             background: rgba(255, 255, 255, 0);
         }
-
         .nav-link:hover {
             color: #fff;
             background: rgba(123, 97, 255, 0.1);
@@ -44,77 +41,64 @@
                 inset 0 0 0 1px rgba(255, 255, 255, 0.05);
             transform: translateY(-1px);
         }
-
         .nav-link svg {
             transition: all 0.3s ease;
         }
-
         .nav-link:hover svg {
             color: #7B61FF;
             filter: drop-shadow(0 0 8px rgba(123, 97, 255, 0.5));
         }
-
         .logo-section {
             background: linear-gradient(90deg, rgba(123, 97, 255, 0.1), rgba(97, 218, 251, 0.1));
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .logo-text {
             background: linear-gradient(90deg, #7B61FF, #61DAFB);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
             letter-spacing: -0.5px;
         }
-
         .top-bar {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .page-title {
             color: #fff;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
-
         .notification-icon, .profile-icon {
             color: rgba(255, 255, 255, 0.8);
             transition: all 0.3s ease;
         }
-
         .notification-icon:hover, .profile-icon:hover {
             color: #7B61FF;
             transform: translateY(-1px);
             filter: drop-shadow(0 0 8px rgba(123, 97, 255, 0.5));
         }
-
         .notification-badge {
             background: linear-gradient(135deg, #7B61FF, #61DAFB);
             box-shadow: 0 0 10px rgba(123, 97, 255, 0.5);
         }
-
         .user-section {
             background: rgba(255, 255, 255, 0.03);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .user-avatar {
             background: linear-gradient(135deg, #7B61FF, #61DAFB);
             box-shadow: 0 0 15px rgba(123, 97, 255, 0.3);
         }
-
         .logout-link {
             color: rgba(255, 255, 255, 0.8);
             transition: all 0.3s ease;
         }
-
         .logout-link:hover {
             color: #7B61FF;
             text-shadow: 0 0 10px rgba(123, 97, 255, 0.5);
         }
-
         .alert {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(16px);
@@ -125,133 +109,129 @@
                 0 8px 32px rgba(0, 0, 0, 0.2),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.05);
         }
-
         .alert-success {
             background: rgba(72, 187, 120, 0.1);
             border-color: rgba(72, 187, 120, 0.2);
         }
-
         .alert-danger {
             background: rgba(245, 101, 101, 0.1);
             border-color: rgba(245, 101, 101, 0.2);
         }
-
         .alert-info {
             background: rgba(123, 97, 255, 0.1);
             border-color: rgba(123, 97, 255, 0.2);
         }
-
         main {
             min-height: calc(100vh - 64px);
         }
-
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
-
         .animate-float {
             animation: float 3s ease-in-out infinite;
         }
-
         /* Progress elements */
         .progress-circle-bg {
             stroke: rgba(255, 255, 255, 0.05);
         }
-
         .progress-circle {
             stroke: url(#gradient);
             transition: all 0.3s ease;
         }
-
         .progress-bar {
             background: linear-gradient(90deg, #7B61FF, #61DAFB);
             box-shadow: 0 0 20px rgba(123, 97, 255, 0.3);
         }
-
         /* Add SVG gradient definitions */
         svg {
             --gradient-start: #7B61FF;
             --gradient-end: #61DAFB;
         }
-
         /* Calendar styling */
         .calendar-day {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.3s ease;
         }
-
         .calendar-day:hover {
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(255, 255, 255, 0.1);
         }
-
         .calendar-day.today {
             border: 2px solid #7B61FF;
             box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 sidebar">
-        <!-- Logo -->
-        <div class="flex items-center justify-center h-16 logo-section">
-            <a href="/" class="flex items-center space-x-3">
-                <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-10 w-auto animate-float">
-                <span class="text-2xl logo-text">KasiKash</span>
-            </a>
+    <div class="h-screen w-64 bg-gray-900 flex flex-col justify-between fixed inset-y-0 left-0">
+      <div>
+        <div class="p-6">
+          <span class="text-2xl font-bold text-white">KasiKash</span>
         </div>
-
-        <!-- Navigation -->
         <nav class="mt-8">
-            <div class="px-4 space-y-2">
-                {% for item in [
-                    {'url': '/home', 'icon': 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'text': t('home', user_language)},
-                    {'url': '/stokvels', 'icon': 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'text': t('stokvels', user_language)},
-                    {'url': '/contributions', 'icon': 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'text': t('contributions', user_language)},
-                    {'url': '/payouts', 'icon': 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'text': t('payouts', user_language)},
-                    {'url': '/savings_goals', 'icon': 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'text': t('savings_goals', user_language)},
-                    {'url': '/payment_methods', 'icon': 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'text': t('payment_methods', user_language)},
-                    {'url': '/settings', 'icon': 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'text': t('settings', user_language)}
-                ] %}
-                <a href="{{ item.url }}" class="flex items-center px-4 py-3 rounded-xl nav-link">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ item.icon }}"/>
-                    </svg>
-                    {{ item.text }}
-                </a>
-                {% endfor %}
-            </div>
+          <ul class="space-y-2">
+            <li>
+              <a href="/home" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-home mr-3"></i> Home
+              </a>
+            </li>
+            <li>
+              <a href="/stokvels" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-users mr-3"></i> Stokvels
+              </a>
+            </li>
+            <li>
+              <a href="/contributions" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-dollar-sign mr-3"></i> Contributions
+              </a>
+            </li>
+            <li>
+              <a href="/payouts" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-wallet mr-3"></i> Payouts
+              </a>
+            </li>
+            <li>
+              <a href="/savings_goals" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-chart-line mr-3"></i> Savings Goals
+              </a>
+            </li>
+            <li>
+              <a href="/payment_methods" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-credit-card mr-3"></i> Payment Methods
+              </a>
+            </li>
+            <li>
+              <a href="/settings" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-cog mr-3"></i> Settings
+              </a>
+            </li>
+            {% if session.role == 'admin' %}
+            <li>
+              <a href="/admin/dashboard" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-user-shield mr-3"></i> Admin
+              </a>
+            </li>
+            {% endif %}
+          </ul>
         </nav>
-
-        <!-- User Section -->
-        <div class="absolute bottom-0 w-full p-4 user-section">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-xl user-avatar flex items-center justify-center text-white font-bold text-base">
-                        {% set name = username if username else 'User' %}
-                        {% set name_parts = name.split() %}
-                        {% set initials = (name_parts[0][0] ~ (name_parts[1][0] if name_parts|length > 1 else '')) | upper %}
-                        {{ initials }}
-                    </div>
-                </div>
-                <div class="ml-3">
-                    <a href="/logout" class="text-sm logout-link">{{ t('logout', user_language) }}</a>
-                </div>
-            </div>
-        </div>
+      </div>
+      <div class="p-6 border-t border-gray-800">
+        <a href="/logout" class="flex items-center text-gray-200 hover:text-white">
+          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">BN</span>
+          Logout
+        </a>
+      </div>
     </div>
-
-    <!-- Main Content -->
     <div class="ml-64">
-        <!-- Top Bar -->
+        <!-- Top Bar with Profile and Notifications -->
         <div class="top-bar">
             <div class="flex items-center justify-between w-full px-6 py-4">
                 <h2 class="text-xl page-title">{% block page_title %}{% endblock %}</h2>
                 <div class="flex items-center space-x-6">
-                    <a href="{{ url_for('notifications') }}" id="notification-icon" class="notification-icon relative">
+                    <a href="/notifications" id="notification-icon" class="notification-icon relative">
                         <i class="fa-solid fa-bell w-6 h-6 text-xl"></i>
                         <span id="notification-badge"
                               class="notification-badge absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white{% if not (notification_count and notification_count > 0) %} hidden{% endif %}">
@@ -264,8 +244,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Main Content Area -->
         <main class="p-6">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -284,12 +262,10 @@
             {% block content %}{% endblock %}
         </main>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
     {% include 'chatbot.html' %}
-
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
     {% block extra_js %}{% endblock %}
