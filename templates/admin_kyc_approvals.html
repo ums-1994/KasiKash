@@ -2,13 +2,6 @@
 {% block admin_content %}
 <h1 style="color:#60efff;">KYC Approvals</h1>
 <p style="color:#eaf6fb;">Here you can approve or reject KYC submissions.</p>
-<!-- Debug block: show raw user data -->
-{% if debug_kyc_users %}
-  <div style="background:#222;color:#ffb86c;padding:8px 12px;margin-bottom:16px;border-radius:8px;max-width:100%;overflow-x:auto;">
-    <strong>DEBUG: Raw user data</strong>
-    <pre style="font-size:12px;white-space:pre-wrap;">{{ debug_kyc_users|safe }}</pre>
-  </div>
-{% endif %}
 <!-- Search/filter bar -->
 <div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
   <form method="GET" action="{{ url_for('admin.kyc_approvals') }}" class="flex flex-wrap items-center gap-3 flex-1 min-w-[250px]">
@@ -22,8 +15,7 @@
       <th class="px-2 py-2 whitespace-nowrap">Email</th>
       <th class="px-2 py-2 whitespace-nowrap">ID Document</th>
       <th class="px-2 py-2 whitespace-nowrap">Proof of Address</th>
-      <th class="px-2 py-2 whitespace-nowrap">ID Document Status</th>
-      <th class="px-2 py-2 whitespace-nowrap">Proof of Address Status</th>
+      <th class="px-2 py-2 whitespace-nowrap">KYC Status</th>
       <th class="px-2 py-2 whitespace-nowrap">Created At</th>
       <th class="px-2 py-2 whitespace-nowrap">Actions</th>
     </tr>
@@ -34,8 +26,13 @@
       <td class="px-2 py-2 break-all max-w-xs">{{ user[1] }}</td>
       <td class="px-2 py-2 text-center">{% if user[2] %}<a href="{{ url_for('static', filename='kyc_docs/' ~ user[2]) }}" target="_blank" style="color:#60efff;text-decoration:underline;">View</a>{% else %}—{% endif %}</td>
       <td class="px-2 py-2 text-center">{% if user[3] %}<a href="{{ url_for('static', filename='kyc_docs/' ~ user[3]) }}" target="_blank" style="color:#60efff;text-decoration:underline;">View</a>{% else %}—{% endif %}</td>
-      <td class="px-2 py-2 text-center">{{ user[5] }}</td>
-      <td class="px-2 py-2 text-center">{{ user[6] }}</td>
+      <td class="px-2 py-2 text-center">
+        {% if user[5] %}
+          <span style="color:#00ff87;font-weight:bold;">Approved</span><br><span style="font-size:11px;color:#b2f7ef;">{{ user[5] }}</span>
+        {% else %}
+          <span style="color:#ffb86c;font-weight:bold;">Pending</span>
+        {% endif %}
+      </td>
       <td class="px-2 py-2 text-center">{{ user[4] }}</td>
       <td class="px-2 py-2 flex flex-row gap-3 justify-center items-center">
         <form method="POST" action="{{ url_for('admin.approve_kyc', user_id=user[0]) }}" style="display:inline;">
@@ -49,7 +46,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="7" class="text-center py-4 text-gray-400">No users with pending KYC found.</td></tr>
+    <tr><td colspan="6" class="text-center py-4 text-gray-400">No users with pending KYC found.</td></tr>
     {% endfor %}
   </tbody>
 </table>

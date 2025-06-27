@@ -1,6 +1,34 @@
 {% extends 'admin_base.html' %}
 {% block admin_content %}
+
 <style>
+  .admin-dashboard-banner {
+    background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+    color: #60efff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+    padding: 2rem 2.5rem 2rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 110px;
+    border: 2px solid #22304a;
+  }
+  .admin-dashboard-banner h1 {
+    color: #60efff;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .admin-dashboard-banner p {
+    color: #eaf6fb;
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+    margin-bottom: 0;
+  }
   .admin-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -18,6 +46,10 @@
     border: 2px solid #22304a;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
   }
   .admin-card:hover {
     transform: translateY(-8px) scale(1.04);
@@ -30,11 +62,19 @@
     color: #60efff;
     margin-bottom: 1.2rem;
   }
-  .admin-card h5, .admin-card p {
+  .admin-card h5 {
     color: #eaf6fb;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .admin-card p {
+    color: #b2f7ef;
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
   }
   .admin-card > .btn {
-    margin-top: 1.2rem;
+    margin-top: auto;
     background: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
     color: #101c2c;
     border: none;
@@ -57,26 +97,10 @@
 </style>
 
 <!-- Gradient Welcome Banner -->
-<div style="
-  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-  border-radius: 18px;
-  color: #60efff;
-  padding: 2rem 2.5rem 2rem 2rem;
-  margin-bottom: 2rem;
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: 110px;
-  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
-  border: 2px solid #22304a;
-">
+<div class="admin-dashboard-banner">
   <div style="flex:1;">
-    <div style="font-size: 2rem; font-weight: 700; line-height: 1.2; color: #60efff;">
-      Sawubona, {{ admin_name or 'Admin' }}! <span style="font-size:1.8rem;">👋</span>
-    </div>
-    <div style="font-size: 1.2rem; margin-top: 0.5rem; font-weight: 500; color: #eaf6fb;">
-      You're doing great with your admin journey. Keep up the excellent work!
-    </div>
+    <h1>Sawubona, {{ admin_name or 'Admin' }}! <span style="font-size:1.8rem;">👋</span></h1>
+    <p>You're doing great with your admin journey. Keep up the excellent work!</p>
   </div>
   <div style="margin-left: 1.5rem;">
     <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(96,239,255,0.10); border-radius: 50%; width: 54px; height: 54px;">

@@ -360,7 +360,7 @@ def kyc_approvals():
             with conn.cursor() as cur:
                 if search_query:
                     cur.execute("""
-                        SELECT id, email, id_document, proof_of_address, created_at
+                        SELECT id, email, id_document, proof_of_address, created_at, kyc_approved_at
                         FROM users
                         WHERE (id_document IS NOT NULL AND id_document != '')
                           AND (proof_of_address IS NOT NULL AND proof_of_address != '')
@@ -369,7 +369,7 @@ def kyc_approvals():
                     """, (f'%{search_query}%',))
                 else:
                     cur.execute("""
-                        SELECT id, email, id_document, proof_of_address, created_at
+                        SELECT id, email, id_document, proof_of_address, created_at, kyc_approved_at
                         FROM users
                         WHERE (id_document IS NOT NULL AND id_document != '')
                           AND (proof_of_address IS NOT NULL AND proof_of_address != '')
@@ -415,7 +415,7 @@ def reject_kyc(user_id):
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE users
-                    SET id_document = NULL, proof_of_address = NULL
+                    SET id_document = NULL, proof_of_address = NULL, kyc_approved_at = NULL
                     WHERE id = %s
                 """, (user_id,))
                 conn.commit()
