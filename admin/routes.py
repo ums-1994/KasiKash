@@ -425,7 +425,7 @@ def reject_kyc(user_id):
         flash('Failed to reject KYC.', 'danger')
     return redirect(url_for('admin.kyc_approvals'))
 
-@admin_bp.route('/settings')
+@admin_bp.route('/admin/settings')
 @login_required
 def settings():
     if 'user_id' not in session or session.get('role') != 'admin':
