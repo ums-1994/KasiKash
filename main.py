@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, flash, jsonify, url_for, Response, send_file
 import os
 from datetime import timedelta, datetime
-from datetime import timedelta, datetime
 import pandas as pd
 import plotly
 import plotly.express as px
@@ -29,6 +28,8 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from dateutil import parser as date_parser
 from translations import get_text
+from admin import admin_bp  # Import the blueprint
+from utils import login_required
 
 # Email handling imports
 import smtplib
@@ -37,7 +38,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from werkzeug.utils import secure_filename
 import re
+<<<<<<< HEAD
 import calendar
+=======
+from decimal import Decimal, InvalidOperation
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
 
 # Load environment variables
 load_dotenv()
@@ -138,6 +143,9 @@ app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session_data')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 Session(app)  # Initialize Flask-Session
 
+# Register the admin blueprint
+app.register_blueprint(admin_bp, url_prefix='/admin')
+
 # Initialize OpenRouter client at application level
 try:
     # Use requests method for OpenRouter since openai client has compatibility issues
@@ -152,29 +160,6 @@ try:
 except Exception as e:
     print(f"Warning: OpenRouter client not initialized. Chat features will be disabled. Error: {e}")
     openrouter_available = False
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # Check if user is logged in via Firebase
-        if 'user_id' not in session:
-            flash('Please log in to access this page.')
-            return redirect('/login')
-        try:
-            # Verify Firebase ID token stored in session
-            # This is more robust for checking active login status with Firebase
-            user_id = session['user_id']
-            firebase_user = auth.get_user(user_id)
-            if not firebase_user:
-                raise Exception("Firebase user not found")
-            # You might want to update session with fresh user data here if needed
-        except Exception as e:
-            print(f"Firebase authentication error: {e}")
-            session.pop('user_id', None) # Clear invalid session
-            flash('Your session has expired or is invalid. Please log in again.')
-            return redirect('/login')
-        return f(*args, **kwargs)
-    return decorated_function
 
 def verification_required(f):
     @wraps(f)
@@ -280,6 +265,7 @@ def home():
         savings_growth_chart_data = {}
         contribution_breakdown_chart_data = {}
         loan_trends_chart_data = {}
+<<<<<<< HEAD
         user = None
         outstanding_loan_id = None
         try:
@@ -370,6 +356,110 @@ def home():
                 'full_date': d.strftime('%Y-%m-%d'),
                 'is_today': (d == today)
             })
+=======
+
+        # Try to get user info from database
+        user = {
+            "username": username,
+            "profile_picture": None,
+            "email": None,
+            # user["joined_date"] = None  # Remove or comment out this line
+        }
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT username, email, profile_picture FROM users WHERE firebase_uid = %s", (session['user_id'],))
+                    user_data = cur.fetchone()
+                    if user_data:
+                        user["username"] = user_data[0]
+                        user["email"] = user_data[1]
+                        user["profile_picture"] = user_data[2]
+                        # user["joined_date"] = user_data[3]  # Remove or comment out this line
+        except Exception as e:
+            print(f"User info fetch error: {e}")
+
+        notification_count = get_notification_count(session.get('user_id')) # Get notification count
+
+        # --- Calendar logic ---
+        import calendar
+        from datetime import date
+        today = date.today()
+        year = today.year
+        month = today.month
+        cal = calendar.Calendar()
+        month_days = cal.itermonthdays4(year, month)  # (year, month, day, weekday)
+        calendar_days = []
+        for y, m, d, wd in month_days:
+            if m == month:
+                calendar_days.append({
+                    'date': d,
+                    'is_today': (y, m, d) == (today.year, today.month, today.day),
+                    'events': []  # Add events here if needed
+                })
+        calendar_month = calendar.month_name[month]
+        calendar_year = year
+        # --- End calendar logic ---
+
+        # --- Recent Activities logic ---
+        recent_activities = []
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT t.type, t.amount, t.status, t.transaction_date, t.description, s.name as stokvel_name
+                        FROM transactions t
+                        JOIN stokvels s ON t.stokvel_id = s.id
+                        WHERE t.user_id = %s
+                        ORDER BY t.transaction_date DESC
+                        LIMIT 5
+                    """, (session['user_id'],))
+                    rows = cur.fetchall()
+                    for row in rows:
+                        t_type, amount, status, t_date, description, stokvel_name = row
+                        # Format date for display
+                        if t_date:
+                            try:
+                                from datetime import datetime, timedelta
+                                now = datetime.now()
+                                if isinstance(t_date, str):
+                                    t_date = datetime.fromisoformat(t_date)
+                                delta = now - t_date
+                                if delta.days == 0:
+                                    if delta.seconds < 3600:
+                                        date_str = f"{delta.seconds//60} minutes ago"
+                                    else:
+                                        date_str = f"{delta.seconds//3600} hours ago"
+                                elif delta.days == 1:
+                                    date_str = "Yesterday"
+                                else:
+                                    date_str = f"{delta.days} days ago"
+                            except Exception:
+                                date_str = str(t_date)
+                        else:
+                            date_str = 'N/A'
+                        # Title and badge
+                        if t_type == 'contribution':
+                            title = f"Contribution to {stokvel_name}"
+                        elif t_type == 'withdrawal':
+                            title = f"Withdrawal from {stokvel_name}"
+                        elif t_type == 'payout':
+                            title = f"Payout from {stokvel_name}"
+                        elif t_type == 'goal':
+                            title = f"Savings Goal: {description}"
+                        else:
+                            title = description or t_type.capitalize()
+                        recent_activities.append({
+                            'type': t_type,
+                            'title': title,
+                            'amount': float(amount) if amount is not None else 0.0,
+                            'date': date_str,
+                            'status': status.capitalize() if status else '',
+                        })
+        except Exception as e:
+            print(f"Error fetching recent activities: {e}")
+        # --- End Recent Activities logic ---
+
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
         return render_template('dashboard.html',
                             username=username,
                             user_name=username,  # for template compatibility
@@ -393,12 +483,21 @@ def home():
                             contribution_breakdown_chart_data=contribution_breakdown_chart_data,
                             loan_trends_chart_data=loan_trends_chart_data,
                             notification_count=notification_count,
+<<<<<<< HEAD
             calendar_month=calendar_month,
             calendar_year=calendar_year,
                             calendar_month_num=month_start.month,
                             prev_month_url=prev_month_url,
                             next_month_url=next_month_url,
                             calendar_days=calendar_days) # Pass notification count
+=======
+                            user=user,
+                            recent_activities=recent_activities,
+                            calendar_days=calendar_days,
+                            calendar_month=calendar_month,
+                            calendar_year=calendar_year
+                            ) # Pass user dictionary and calendar data
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
     except Exception as e:
         print(f"Dashboard error: {str(e)}")
         flash("Error loading dashboard. Please try again.")
@@ -494,6 +593,19 @@ def login_validation():
                 session['username'] = str(user_record.display_name or email)  # Ensure it's a string
                 session['is_verified'] = bool(user_record.email_verified)  # Ensure it's a boolean
                 session.permanent = bool(remember)  # Ensure it's a boolean
+                # Fetch and set user role in session
+                try:
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("SELECT role FROM users WHERE firebase_uid = %s", (user_record.uid,))
+                            role_data = cur.fetchone()
+                            if role_data and role_data[0]:
+                                session['role'] = role_data[0]
+                            else:
+                                session['role'] = 'user'  # Default role if not set
+                except Exception as role_e:
+                    print(f"Error fetching user role: {role_e}")
+                    session['role'] = 'user'
 
                 # Update local database with firebase_uid if not already present or different
                 try:
@@ -906,7 +1018,7 @@ def stokvels():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Fetch stokvels where the current user is a member
+                # Fetch stokvels where the current user is a member, including their role
                 cur.execute("""
                     SELECT 
                         s.id, 
@@ -918,7 +1030,8 @@ def stokvels():
                         s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
-                        s.target_date
+                        s.target_date,
+                        sm.role
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
                     WHERE sm.user_id = %s
@@ -937,10 +1050,12 @@ def stokvels():
                         s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
-                        s.target_date
+                        s.target_date,
+                        sm.role
                     FROM stokvels s
-                    WHERE s.created_by = %s
-                """, (firebase_uid,))
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE s.created_by = %s AND sm.user_id = %s
+                """, (firebase_uid, firebase_uid))
                 created_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
         return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels)
@@ -1183,7 +1298,6 @@ def payouts():
 
 @app.route('/request_payout', methods=['POST'])
 @login_required
-# @csrf.protect
 def request_payout():
     firebase_uid = session.get('user_id')
     if not firebase_uid:
@@ -1213,6 +1327,14 @@ def request_payout():
                     flash("You are not a member of this stokvel.")
                     return redirect('/payouts')
 
+                # For simplicity, directly record as 'pending'.
+                # In a real app, this would be a 'pending' status requiring approval.
+                cur.execute("""
+                    INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
+                    VALUES (%s, %s, %s, 'payout', %s, CURRENT_TIMESTAMP, 'pending')
+                """, (firebase_uid, stokvel_id, amount, description))
+                conn.commit()
+                
                 # Get stokvel name and admin user for notification
                 cur.execute("""
                     SELECT s.name, sm.user_id 
@@ -1221,7 +1343,7 @@ def request_payout():
                     WHERE s.id = %s AND sm.role = 'admin'
                 """, (stokvel_id,))
                 stokvel_info = cur.fetchone()
-                
+
                 if stokvel_info:
                     stokvel_name, admin_user_id = stokvel_info
                     
@@ -1230,6 +1352,7 @@ def request_payout():
                     user_info = cur.fetchone()
                     user_name = user_info[0] if user_info else "A member"
 
+<<<<<<< HEAD
                 # For simplicity, directly record as completed.
                 # In a real app, this would be a 'pending' status requiring approval.
                 cur.execute("""
@@ -1240,11 +1363,14 @@ def request_payout():
 
                 # Create notification for stokvel admin
                 if stokvel_info and admin_user_id:
+=======
+                    # Create notification for stokvel admin
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
                     message = f"{user_name} requested a payout of R{amount:.2f} from '{stokvel_name}' stokvel."
-                    link = url_for('payouts')
+                    link = url_for('payouts') # Changed from 'payouts' to the specific admin approval page if one exists
                     create_notification(admin_user_id, message, link_url=link, notification_type='payout_requested')
 
-        flash("Payout request recorded successfully!")
+        flash("Payout request submitted successfully!")
         return redirect('/payouts')
     except ValueError:
         flash("Amount must be a number.")
@@ -1325,6 +1451,70 @@ def create_savings_goal():
         print(f"Error creating savings goal: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while creating the savings goal. Please try again.'}), 500
 
+@app.route('/contribute_to_goal', methods=['POST'])
+@login_required
+def contribute_to_goal():
+    firebase_uid = session['user_id']
+    goal_id = request.form.get('goal_id')
+    amount = request.form.get('amount')
+
+    if not all([goal_id, amount]):
+        flash("Goal ID and amount are required.")
+        return redirect('/savings_goals')
+
+    try:
+        amount = Decimal(amount)
+        if amount <= 0:
+            flash("Contribution amount must be greater than zero.")
+            return redirect('/savings_goals')
+
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Verify the goal belongs to the user
+                cur.execute("""
+                    SELECT target_amount, current_amount
+                    FROM savings_goals
+                    WHERE id = %s AND user_id = %s
+                """, (goal_id, firebase_uid))
+                goal = cur.fetchone()
+
+                if not goal:
+                    flash("Invalid savings goal.")
+                    return redirect('/savings_goals')
+
+                target_amount, current_amount = goal
+                new_amount = current_amount + amount
+
+                # Update the current amount
+                cur.execute("""
+                    UPDATE savings_goals
+                    SET current_amount = %s,
+                        status = CASE 
+                            WHEN %s >= target_amount THEN 'completed'
+                            ELSE status
+                        END
+                    WHERE id = %s
+                """, (new_amount, new_amount, goal_id))
+
+                # Record the transaction
+                cur.execute("""
+                    INSERT INTO transactions (user_id, amount, type, description, savings_goal_id)
+                    VALUES (%s, %s, 'savings_contribution', 'Contribution to savings goal', %s)
+                """, (firebase_uid, amount, goal_id))
+
+                conn.commit()
+
+        flash(f"Successfully contributed R{amount:.2f} to your savings goal!")
+        return redirect('/savings_goals')
+
+    except InvalidOperation:
+        flash("Invalid amount specified.")
+        return redirect('/savings_goals')
+    except Exception as e:
+        print(f"Error contributing to savings goal: {e}")
+        flash("An error occurred while processing your contribution. Please try again.")
+        return redirect('/savings_goals')
+
 @app.route('/stokvel/<int:stokvel_id>/members')
 @login_required
 def view_stokvel_members(stokvel_id):
@@ -1364,9 +1554,9 @@ def view_stokvel_members(stokvel_id):
 
                 # Get pending members (no user_id, just email)
                 cur.execute("""
-                    SELECT NULL as username, sm.email, sm.role, sm.id as member_id
+                    SELECT NULL as username, NULL as email, sm.role, sm.id as member_id
                     FROM stokvel_members sm
-                    WHERE sm.stokvel_id = %s AND sm.user_id IS NULL AND sm.email IS NOT NULL
+                    WHERE sm.stokvel_id = %s AND sm.user_id IS NULL
                 """, (stokvel_id,))
                 pending_members_tuples = cur.fetchall()
                 print(f"DEBUG: Pending members query result: {pending_members_tuples}") # Debug log
@@ -1395,6 +1585,108 @@ def view_stokvel_members(stokvel_id):
         print(f"ERROR: view_stokvel_members failed: {e}") # Enhanced error logging
         flash("An error occurred while loading stokvel members. Please try again.")
         return redirect('/stokvels')
+
+@app.route('/stokvel/<int:stokvel_id>/add_member', methods=['POST'])
+@login_required
+def add_stokvel_member(stokvel_id):
+    current_user_id = session['user_id']
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Check if current user is an admin of this stokvel
+                cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, current_user_id))
+                role_result = cur.fetchone()
+                if not role_result or role_result[0] != 'admin':
+                    flash("You do not have permission to add members to this stokvel.", "danger")
+                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+
+                email_to_add = request.form.get('email')
+                if not email_to_add:
+                    flash("Email is required.", "warning")
+                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+
+                # Find user by email
+                cur.execute("SELECT firebase_uid FROM users WHERE email = %s", (email_to_add,))
+                user_to_add = cur.fetchone()
+
+                if not user_to_add:
+                    flash(f"No registered user found with email {email_to_add}.", "danger")
+                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+                
+                user_id_to_add = user_to_add[0]
+
+                # Check if user is already a member
+                cur.execute("SELECT 1 FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id_to_add))
+                if cur.fetchone():
+                    flash(f"{email_to_add} is already a member of this stokvel.", "info")
+                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+
+                # Add the new member
+                cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)", (stokvel_id, user_id_to_add, 'member'))
+                conn.commit()
+
+                # Send email notification to the new member
+                try:
+                    import sendgrid
+                    from sendgrid.helpers.mail import Mail
+                    import os
+                    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
+                    # Fetch stokvel name for the email
+                    cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
+                    stokvel_name = cur.fetchone()[0]
+                    message = Mail(
+                        from_email=os.environ.get('MAIL_SENDER_EMAIL', 'noreply@kasikash.com'),
+                        to_emails=email_to_add,
+                        subject='You have been added to a Stokvel!',
+                        html_content=f'You have been added to the stokvel "{stokvel_name}". Log in to KasiKash to view details.'
+                    )
+                    sg.send(message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+
+                flash(f"Successfully added {email_to_add} to the stokvel.", "success")
+    except Exception as e:
+        print(f"Error adding stokvel member: {e}")
+        flash("An error occurred while adding the member.", "danger")
+    
+    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+
+@app.route('/stokvel/<int:stokvel_id>/remove_member', methods=['POST'])
+@login_required
+def remove_stokvel_member(stokvel_id):
+    current_user_id = session['user_id']
+    member_id = request.form.get('member_id')
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Check if current user is an admin of this stokvel
+                cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, current_user_id))
+                role_result = cur.fetchone()
+                if not role_result or role_result[0] != 'admin':
+                    flash("You do not have permission to remove members from this stokvel.", "danger")
+                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+
+                # Prevent removing the last admin
+                cur.execute("SELECT COUNT(*) FROM stokvel_members WHERE stokvel_id = %s AND role = 'admin'", (stokvel_id,))
+                admin_count = cur.fetchone()[0]
+
+                cur.execute("SELECT role FROM stokvel_members WHERE id = %s", (member_id,))
+                member_to_remove_role = cur.fetchone()
+
+                if member_to_remove_role and member_to_remove_role[0] == 'admin' and admin_count <= 1:
+                    flash("You cannot remove the last admin from the stokvel.", "warning")
+                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+
+                # Remove the member
+                cur.execute("DELETE FROM stokvel_members WHERE id = %s", (member_id,))
+                conn.commit()
+
+                flash("Member removed successfully.", "success")
+    except Exception as e:
+        print(f"Error removing stokvel member: {e}")
+        flash("An error occurred while removing the member.", "danger")
+    
+    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
 @app.route('/stokvel/<int:stokvel_id>/join', methods=['POST'])
 @login_required
@@ -1458,6 +1750,47 @@ def delete_stokvel(stokvel_id):
         print(f"Error deleting stokvel: {e}")
         flash("An error occurred while deleting the stokvel. Please try again.")
         return redirect('/stokvels')
+
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    user_id = session['user_id']
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT * FROM notifications 
+                    WHERE user_id = %s 
+                    ORDER BY created_at DESC
+                """, (user_id,))
+                notifications = cur.fetchall()
+                # Mark notifications as read
+                cur.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s", (user_id,))
+                conn.commit()
+        return render_template('notifications.html', notifications=notifications)
+    except Exception as e:
+        print(f"Error fetching notifications: {e}")
+        flash("Could not load notifications.", "danger")
+        return redirect(url_for('home'))
+
+@app.route('/notifications/clear', methods=['POST'])
+@login_required
+def clear_notifications():
+    user_id = session['user_id']
+    try:
+        support.execute_query("delete", "DELETE FROM notifications WHERE user_id = %s", (user_id,))
+        flash("All notifications cleared.", "success")
+    except Exception as e:
+        print(f"Error clearing notifications: {e}")
+        flash("Failed to clear notifications.", "danger")
+    return redirect(url_for('notifications'))
+
+@app.route('/notifications/count')
+@login_required
+def notifications_count():
+    count = get_notification_count(session.get('user_id'))
+    return jsonify({'count': count})
 
 
 @app.route('/payment_methods')
@@ -1583,25 +1916,29 @@ def delete_payment_method():
         return redirect('/payment_methods')
 
 
-@app.route('/settings')
+@app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     user_id = session['user_id']
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Fetch general user settings from users table
                 cur.execute("""
-                    SELECT 
-                        two_factor_enabled, 
-                        language_preference,
-                        email_notifications,
-                        sms_notifications,
-                        weekly_summary,
-                        reminders_enabled
+                    SELECT language_preference, two_factor_enabled 
                     FROM users 
                     WHERE firebase_uid = %s
                 """, (user_id,))
                 user_settings = cur.fetchone() or {}
+
+                # Fetch notification/app preferences from user_settings table
+                cur.execute("""
+                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (user_id,))
+                app_settings = cur.fetchone() or {}
+                user_settings.update(app_settings)
         
         # Fallback for language preference if not in DB
         if 'language_preference' not in user_settings:
@@ -1633,13 +1970,19 @@ def update_settings():
         email_notifications = 'email_notifications' in request.form
         sms_notifications = 'sms_notifications' in request.form
         weekly_summary = 'weekly_summary' in request.form
-        reminders_enabled = 'reminders_enabled' in request.form
+        receive_promotions = 'receive_promotions' in request.form
         query = """
+<<<<<<< HEAD
                     UPDATE users
             SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, reminders_enabled = %s
                     WHERE firebase_uid = %s
+=======
+            UPDATE user_settings
+            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s
+            WHERE user_id = %s
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
         """
-        params = (email_notifications, sms_notifications, weekly_summary, reminders_enabled, user_id)
+        params = (email_notifications, sms_notifications, weekly_summary, receive_promotions, user_id)
 
     elif form_section == 'security':
         two_factor_enabled = 'two_factor_enabled' in request.form
@@ -1657,39 +2000,6 @@ def update_settings():
         flash("Invalid settings update request.", "warning")
     return redirect(url_for('settings'))
 
-
-def get_user_settings(user_id):
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT notification_preferences, two_factor_enabled FROM users WHERE firebase_uid = %s", (user_id,))
-                settings_data = cur.fetchone()
-                if settings_data:
-                    # Handle notification_preferences as JSON
-                    notification_prefs = settings_data[0]
-                    if isinstance(notification_prefs, dict):
-                        # If it's already a dict, use it directly
-                        notification_preferences = notification_prefs
-                    elif isinstance(notification_prefs, str):
-                        # If it's a string, try to parse as JSON
-                        try:
-                            import json
-                            notification_preferences = json.loads(notification_prefs)
-                        except json.JSONDecodeError:
-                            # If JSON parsing fails, use default
-                            notification_preferences = {'email': True, 'sms': False, 'push': True}
-                    else:
-                        # Default if None or other type
-                        notification_preferences = {'email': True, 'sms': False, 'push': True}
-                    
-                    return {
-                        'notification_preferences': notification_preferences,
-                        'two_factor_enabled': settings_data[1] or False
-                    }
-                return None
-    except Exception as e:
-        print(f"Error getting user settings: {str(e)}")
-        return None
 
 def update_user_setting(user_id, section, setting, value):
     try:
@@ -1796,6 +2106,69 @@ def update_profile():
     support.execute_query("update", query, (username, phone, date_of_birth, bio, full_name, id_number, address, user_id))
     return redirect(url_for('profile'))
 
+@app.route('/profile/upload_picture', methods=['POST'])
+@login_required
+def upload_profile_picture():
+    user_id = session['user_id']
+    if 'profile_picture' not in request.files:
+        flash('No file part', 'warning')
+        return redirect(url_for('profile'))
+    file = request.files['profile_picture']
+    if file.filename == '':
+        flash('No selected file', 'warning')
+        return redirect(url_for('profile'))
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"{user_id}_{file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        # Update user profile picture path in database
+        support.execute_query("update", "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s", (filename, user_id))
+        flash('Profile picture updated successfully!', 'success')
+    else:
+        flash('Invalid file type', 'danger')
+    return redirect(url_for('profile'))
+
+@app.route('/profile/upload_kyc', methods=['POST'])
+@login_required
+def upload_kyc():
+    user_id = session['user_id']
+    id_doc = request.files.get('id_document')
+    address_doc = request.files.get('address_document')
+
+    if not id_doc or not address_doc:
+        flash('Both ID document and proof of address are required.', 'warning')
+        return redirect(url_for('profile'))
+
+    # Validate file types
+    if not (allowed_kyc_file(id_doc.filename) and allowed_kyc_file(address_doc.filename)):
+        flash('Invalid file type. Only PDF, PNG, JPG, JPEG, and GIF are allowed.', 'danger')
+        return redirect(url_for('profile'))
+
+    # Ensure upload directory exists
+    os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
+
+    try:
+        id_filename = secure_filename(f"{user_id}_id_{id_doc.filename}")
+        address_filename = secure_filename(f"{user_id}_address_{address_doc.filename}")
+
+        id_filepath = os.path.join(app.config['KYC_UPLOAD_FOLDER'], id_filename)
+        address_filepath = os.path.join(app.config['KYC_UPLOAD_FOLDER'], address_filename)
+
+        id_doc.save(id_filepath)
+        address_doc.save(address_filepath)
+
+        # Update user's KYC info in the database (use correct columns)
+        query = "UPDATE users SET id_document = %s, proof_of_address = %s WHERE firebase_uid = %s"
+        support.execute_query("update", query, (id_filename, address_filename, user_id))
+
+        flash('KYC documents uploaded successfully. They are pending review.', 'success')
+    except Exception as e:
+        flash(f'An error occurred during KYC upload: {e}', 'danger')
+
+    return redirect(url_for('profile'))           
+
+# Register context processor for user info and translation function
 @app.context_processor
 def inject_user_name():
     username = None
@@ -1816,17 +2189,14 @@ def inject_user_name():
         if 'language_preference' in session:
             language_preference = session['language_preference']
         else:
-            # Try to get from database, but fall back to session if column doesn't exist
             try:
                 lang_query = "SELECT language_preference FROM users WHERE firebase_uid = %s"
                 lang_data = support.execute_query("search", lang_query, (session['user_id'],))
                 if lang_data and lang_data[0][0]:
                     language_preference = lang_data[0][0]
-                    # Store in session for future use
                     session['language_preference'] = language_preference
             except Exception as e:
                 print(f"Error getting language preference from database: {e}")
-                # Use session default or fallback to English
                 language_preference = session.get('language_preference', 'en')
     
     return dict(username=username, user_language=language_preference, notification_count=notification_count, t=get_text)
@@ -2119,808 +2489,136 @@ def handle_chat():
                 'payout': "A payout is money withdrawn from the stokvel pool. You can request a payout from your stokvel page.",
                 'payment method': "Payment methods are your saved cards or bank accounts. Add one in the Payment Methods section.",
                 'savings goal': "A savings goal helps you track your progress toward a target amount. Set one in the Savings Goals section.",
-                'profile': "Your profile contains your personal info. You can update your name, email, and upload a profile picture.",
-                'settings': "Settings let you manage notifications, security, and account preferences.",
-                'notification': "Notifications alert you about important activity in your stokvels.",
-                'dashboard': "The dashboard shows your balances, recent activity, and quick links to features.",
-                'register': "To register, click 'Register' and fill in your details. You'll receive a verification email.",
-                'login': "To log in, enter your email and password on the login page.",
-                'logout': "To log out, click the logout button in the menu.",
-                'profile picture': "Upload a profile picture from your profile page to personalize your account.",
-                'kyc': "KYC (Know Your Customer) documents can be uploaded in your profile for verification.",
-                'statement': "A statement is a summary of all transactions in your stokvel. Download it from the stokvel page.",
-                'member': "A member is a person in your stokvel. You can add members by email, even if they haven't registered yet.",
-                'invite': "To invite someone, add their email as a member. If they're not registered, they'll be added as pending and can join later.",
-                'kasikash': "KasiKash is a financial platform for managing stokvels, contributions, savings goals, and more."
+                'dashboard': "The dashboard shows a summary of your financial activity, including balance, contributions, and loans.",
+                'profile': "Your profile page shows your personal details and account statistics.",
+                'settings': "The settings page lets you customize your app experience, including notifications and language.",
+                'notification': "Notifications keep you updated on important events, like contributions or payout requests.",
             }
-            # Regex for 5W/How/Feature questions
-            tellme_re = re.compile(r"(tell me about|what is|who is|when is|where is|why is|how do i|how to|how can i|explain|describe|guide me through|show me|help me with) (.+)", re.I)
-            match = tellme_re.match(user_message_lower)
-            if match:
-                question_type, feature = match.groups()
-                feature = feature.strip()
-                # Try to match feature to known features
-                for key in feature_faq:
-                    if key in feature:
-                        response = feature_faq[key]
-                        break
-                else:
-                    response = (f"Here's how to use that feature: Go to the relevant section in the app, follow the on-screen instructions, or ask me for more details about a specific action. "
-                                f"If you need step-by-step help, try asking 'How do I [action]?' or 'Tell me about [feature]'.")
+
+            # Check for feature-related questions
+            for feature, explanation in feature_faq.items():
+                # What/who questions
+                if any(q in user_message_lower for q in [f"what is a {feature}", f"what are {feature}s", f"who is involved in a {feature}"]):
+                    response = explanation
+                    break
+                # Where questions
+                if any(q in user_message_lower for q in [f"where do i find my {feature}", f"where are my {feature}s", f"where can i manage {feature}s"]):
+                    response = f"You can manage your {feature}s in the '{feature.replace('_', ' ').title()}' section of the app."
+                    break
+                # When/how questions
+                if any(q in user_message_lower for q in [f"when can i get a {feature}", f"how do i get a {feature}", f"how do i make a {feature}"]):
+                    response = explanation + f" You can usually initiate this from the '{feature.replace('_', ' ').title()}' page."
+                    break
+
+            if response:
                 return jsonify({'response': response})
 
-            # New intent: tell me about my stokvels
-            elif any(kw in user_message_lower for kw in ["tell me about my stokvels", "my stokvels", "list my stokvels"]):
-                try:
-                    with support.db_connection() as conn:
-                        with conn.cursor() as cur:
-                            cur.execute("""
-                                SELECT name, description FROM stokvels s
-                                JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                                WHERE sm.user_id = %s
-                            """, (user_id,))
-                            stokvels = cur.fetchall()
-                            if stokvels:
-                                stokvel_list = "\n".join([f"- {s[0]}: {s[1]}" for s in stokvels])
-                                response = f"Your stokvels:\n{stokvel_list}"
-                            else:
-                                response = "You are not a member of any stokvels yet."
-                except Exception as e:
-                    print(f"Error fetching stokvels: {e}")
-                    response = "Sorry, I couldn't fetch your stokvels right now."
-            # New intent: tell me about KasiKash
-            elif any(kw in user_message_lower for kw in ["tell me about kasikash", "what is kasikash", "about kasikash"]):
-                response = (
-                    "KasiKash is a financial platform for managing stokvels (community savings groups), "
-                    "tracking contributions, setting savings goals, and more. It helps you and your group save, contribute, and manage money together easily."
-                )
-
-            elif any(kw in user_message_lower for kw in ["how much", "total saved", "my savings", "how much have i saved"]):
-                response = f"You have saved R{total_saved} in total across all your stokvels."
-
-            elif any(kw in user_message_lower for kw in ["create stokvel", "new stokvel", "start stokvel", "open stokvel"]):
-                response = (
-                    "To create a new stokvel: Go to the 'Stokvels' section, click 'Create New Stokvel', "
-                    "fill in the details (name, rules, etc.), and invite members."
-                )
-
-            elif any(kw in user_message_lower for kw in ["add member", "invite member", "add someone", "add user", "add person"]):
-                response = (
-                    "To add members to your stokvel: Go to your stokvel's page, click 'Add Member', "
-                    "enter their email address, and send the invitation."
-                )
-
-            elif any(kw in user_message_lower for kw in ["make contribution", "contribute", "add contribution", "pay contribution", "send money to stokvel"]):
-                response = (
-                    "To make a contribution: Go to your stokvel, select 'Make Contribution', "
-                    "choose the amount and payment method, and confirm."
-                )
-
-            elif any(kw in user_message_lower for kw in ["payment method", "add card", "add bank", "my cards", "my banks", "add payment method", "link card", "link bank"]):
-                try:
-                    cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s", (user_id,))
-                    methods = cur.fetchall()
-                    if methods:
-                        method_list = "\n".join([f"- {m[0]}: {m[1]}" for m in methods])
-                        response = f"Your payment methods:\n{method_list}"
-                    else:
-                        response = "You have no payment methods saved. Add one in the Payment Methods section."
-                except Exception as e:
-                    print(f"Error fetching payment methods: {e}")
-                    response = "You have no payment methods saved. Add one in the Payment Methods section."
-
-            elif any(kw in user_message_lower for kw in ["savings goal", "goal", "add goal", "set goal", "my goals", "track savings"]):
-                try:
-                    cur.execute("SELECT name, target_amount FROM savings_goals WHERE user_id = %s", (user_id,))
-                    goals = cur.fetchall()
-                    if goals:
-                        goal_list = "\n".join([f"- {g[0]}: R{g[1]}" for g in goals])
-                        response = f"Your savings goals:\n{goal_list}"
-                    else:
-                        response = "You have no savings goals set. Add one in the Savings Goals section."
-                except Exception as e:
-                    print(f"Error fetching savings goals: {e}")
-                    response = "You have no savings goals set. Add one in the Savings Goals section."
-
-            elif any(kw in user_message_lower for kw in ["payout", "withdraw", "request payout", "get money", "take money out", "withdrawal"]):
-                response = (
-                    "To request a payout: Go to your stokvel, select 'Request Payout', "
-                    "enter the amount and reason, and submit your request."
-                )
-
-            elif any(kw in user_message_lower for kw in ["profile", "my profile", "update profile", "edit profile", "change name", "change email"]):
-                response = (
-                    "To view or update your profile: Click your profile icon in the sidebar or go to the Profile page. "
-                    "You can change your name or email address there."
-                )
-
-            elif any(kw in user_message_lower for kw in ["change password", "reset password", "forgot password", "update password"]):
-                response = (
-                    "To change your password: Go to the Profile page and click 'Reset Password'. "
-                    "You will receive an email with instructions to reset your password."
-                )
-
-            elif any(kw in user_message_lower for kw in ["verify email", "not verified", "email verification", "resend verification"]):
-                response = (
-                    "If your profile says 'not verified', please check your email inbox for a verification link. "
-                    "If you didn't receive one, go to the Profile page and click 'Resend Verification Email'."
-                )
-
-            elif any(kw in user_message_lower for kw in ["dashboard", "home", "main page", "go to dashboard", "go home"]):
-                response = (
-                    "To return to the dashboard, click the 'Dashboard' link in the sidebar or the KasiKash logo."
-                )
-
-            elif any(kw in user_message_lower for kw in ["recent transaction", "transaction history", "my transactions", "show transactions", "latest transactions"]):
-                if transactions:
-                    transaction_list = "\n".join([f"- {t[1]}: R{t[0]} ({t[2]}) on {t[3]}" for t in transactions])
-                    response = f"Your recent transactions:\n{transaction_list}"
+            # --- Fallback Responses ---
+            if response is None:
+                if 'hello' in user_message_lower or 'hi' in user_message_lower:
+                    response = "Hello! How can I assist you with your finances today?"
+                elif 'balance' in user_message_lower:
+                    response = f"Your current balance is R{total_saved:.2f}. You can view details on the dashboard."
+                elif 'help' in user_message_lower:
+                    response = "I can help you create a stokvel, list your stokvels, or answer questions about features. What would you like to do?"
                 else:
-                    response = "You don't have any recent transactions."
-            
-            elif any(kw in user_message_lower for kw in ["help", "what can you do", "features", "how does it work", "how do i use", "explain"]):
-                response = (
-                    "I can help you with: Stokvel management, creating stokvels, adding members, making contributions, "
-                    "managing payment methods, setting savings goals, requesting payouts, updating your profile, changing your password, verifying your email, and navigating the app. "
-                    "Just ask me how to do anything!"
-                )
+                    response = "I'm not sure how to handle that in App Mode. Try asking me to 'create a stokvel', or switch to AI Mode for more general questions."
 
-            elif any(kw in user_message_lower for kw in ["hello", "hi", "hey", "good morning", "good afternoon", "good evening"]):
-                response = f"Hello {username}! How can I help you today? You can ask me about your savings, stokvels, or recent transactions."
-
-            else:
-                response = "I'm not sure how to help with that. You can ask me about your savings, stokvels, or any feature in the app."
-
-            # Add fallback for settings and general 'how do I ...' questions
-            if not response:
-                if "settings" in user_message_lower:
-                    response = (
-                        "The Settings feature lets you manage your notification preferences (email, SMS, push), "
-                        "enable or disable two-factor authentication, and control other account options. "
-                        "Go to the Settings page from the sidebar to make changes."
-                    )
-                elif re.match(r"how do i (do|use|access|change|update|set|enable|disable) it", user_message_lower):
-                    response = (
-                        "Please specify what you want to do, for example: 'How do I add a payment method?' or 'How do I change my password?'"
-                    )
-
-            # Special case for 'add payment method' to always give instructions
-            if any(kw in user_message_lower for kw in ["add payment method", "add a payment method", "link card", "link bank", "how do i add a payment method"]):
-                response = "To add a payment method: Go to the Payment Methods section, click 'Add Payment Method', enter your card or bank details, and save."
-
-            elif any(kw in user_message_lower for kw in ["payment method", "add card", "add bank", "my cards", "my banks"]):
-                try:
-                    cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s", (user_id,))
-                    methods = cur.fetchall()
-                    if methods:
-                        method_list = "\n".join([f"- {m[0]}: {m[1]}" for m in methods])
-                        response = f"Your payment methods:\n{method_list}"
-                    else:
-                        response = "You have no payment methods saved. To add one, go to the Payment Methods section and click 'Add Payment Method'."
-                except Exception as e:
-                    print(f"Error fetching payment methods: {e}")
-                    response = "You have no payment methods saved. To add one, go to the Payment Methods section and click 'Add Payment Method'."
-
-        return jsonify({'response': response})
-
-    except Exception as e:
-        print(f"Error in handle_chat: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
-
-@app.route('/stokvel/<int:stokvel_id>/members/add', methods=['POST'])
-@login_required
-def add_stokvel_member(stokvel_id):
-    user_id = session.get('user_id')
-    member_email = request.form.get('email')
-
-    if not user_id:
-        flash("Please log in to add members.")
-        return redirect('/login')
-
-    with support.db_connection() as conn:
-        with conn.cursor() as cur:
-            # Check if current user is an admin of the stokvel
-            cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id))
-            user_role = cur.fetchone()
-
-            if not user_role or user_role[0] != 'admin':
-                flash("You do not have permission to add members to this stokvel.")
-                return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-            # Get stokvel name for email notification
-            cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
-            stokvel_data = cur.fetchone()
-            stokvel_name = stokvel_data[0] if stokvel_data else "Unknown Stokvel"
-
-            # Find the user to add by email
-            cur.execute("SELECT firebase_uid, username FROM users WHERE email = %s", (member_email,))
-            user_to_add_data = cur.fetchone()
-
-            if not user_to_add_data:
-                # Add as pending member by email only
-                cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, email, role, status) VALUES (%s, NULL, %s, 'pending', 'pending')", (stokvel_id, member_email))
-                conn.commit()
-                
-                # Send email notification for pending member
-                subject = f"Invitation to join {stokvel_name}!"
-                body = f"""
-                <html>
-                    <body>
-                        <h2>You've been invited to join {stokvel_name}!</h2>
-                        <p>Hello {member_email},</p>
-                        <p>You have been invited to join the stokvel "{stokvel_name}" as a pending member.</p>
-                        <p>To accept this invitation, please <a href="{url_for('register', _external=True)}">register here</a> first if you don't have an account.</p>
-                        <p>Once registered, you can log in and view your stokvel invitation.</p>
-                        <p>Login page: <a href="{url_for('login', _external=True)}">Login</a></p>
-                        <p>Registration page: <a href="{url_for('register', _external=True)}">Register</a></p>
-                    </body>
-                </html>
-                """
-                email_sent = send_email(member_email, subject, body)
-                if email_sent:
-                    flash(f"{member_email} has been added as a pending member and invitation email sent!")
-                else:
-                    flash(f"{member_email} has been added as a pending member, but failed to send invitation email.")
-                return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-            
-            user_to_add_id = user_to_add_data[0]
-            username_to_add = user_to_add_data[1]
-
-            # Check if the user is already a member of this stokvel
-            cur.execute("SELECT 1 FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_to_add_id))
-            if cur.fetchone():
-                flash(f"User {member_email} is already a member of this stokvel.")
-                return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-            # Add the user as a new member
-            cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, email, role, status) VALUES (%s, %s, %s, 'member', 'active')", (stokvel_id, user_to_add_id, member_email))
-            conn.commit()
-
-    # Send email notification for existing user
-    subject = f"Welcome to {stokvel_name}!"
-    body = f"""
-    <html>
-        <body>
-            <h2>Welcome to {stokvel_name}!</h2>
-            <p>Hello {username_to_add if user_to_add_data else member_email},</p>
-            <p>You have been added as a member to the stokvel "{stokvel_name}".</p>
-            <p>If you don't have an account, please <a href="{url_for('register', _external=True)}">register here</a> first.</p>
-            <p>Click <a href="{url_for('view_stokvel_members', stokvel_id=stokvel_id, _external=True)}">here</a> to view your stokvel members page and get started!</p>
-            <p>If you are already registered, please log in: <a href="{url_for('login', _external=True)}">Login Page</a></p>
-        </body>
-    </html>
-    """
-    email_sent = send_email(member_email, subject, body)
-    if email_sent:
-        flash(f"User {member_email} added to stokvel successfully and notification email sent!")
-    else:
-        flash(f"User {member_email} added to stokvel successfully, but failed to send notification email.")
-
-    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-@app.route('/stokvel/<int:stokvel_id>/members/remove', methods=['POST'])
-@login_required
-def remove_stokvel_member(stokvel_id):
-    user_id = session.get('user_id')
-    member_to_remove_id = request.form.get('member_id')
-
-    if not user_id:
-        flash("Please log in to remove members.")
-        return redirect('/login')
-
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Check if current user is an admin of the stokvel
-                cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id))
-                user_role = cur.fetchone()
-
-                if not user_role or user_role[0] != 'admin':
-                    flash("You do not have permission to remove members from this stokvel.")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-                
-                # Get the role and user_id of the member to be removed
-                cur.execute("SELECT role, user_id FROM stokvel_members WHERE id = %s AND stokvel_id = %s", (member_to_remove_id, stokvel_id))
-                member_to_remove_data = cur.fetchone()
-                
-                if not member_to_remove_data:
-                    flash("Member not found in this stokvel.")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                member_role = member_to_remove_data[0]
-                member_firebase_uid = member_to_remove_data[1]
-
-                # If the member to be removed is an admin, check if they are the last admin
-                if member_role == 'admin':
-                    cur.execute("SELECT COUNT(*) FROM stokvel_members WHERE stokvel_id = %s AND role = 'admin'", (stokvel_id,))
-                    admin_count = cur.fetchone()[0]
-
-                    if admin_count == 1 and member_firebase_uid == user_id: # Current user is the last admin
-                        flash("You cannot remove yourself as the last admin of the stokvel.")
-                        return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-                    elif admin_count == 1: # Someone else is the last admin
-                         flash("Cannot remove the last admin of the stokvel.")
-                         return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Proceed with removal
-                cur.execute("DELETE FROM stokvel_members WHERE id = %s AND stokvel_id = %s", (member_to_remove_id, stokvel_id))
-                conn.commit()
-
-            flash("Member removed successfully!")
-    except Exception as e:
-        print(f"Error removing member: {e}")
-        flash("An error occurred while removing the member. Please try again.")
-
-    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-@app.route('/notifications')
-@login_required
-def notifications():
-    """Fetch and display user notifications, and mark them as read."""
-    user_id = session['user_id']
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                # Fetch all notifications for the user, newest first
-                cur.execute("""
-                    SELECT id, message, is_read, link_url, created_at
-                    FROM notifications
-                    WHERE user_id = %s
-                    ORDER BY created_at DESC
-                """, (user_id,))
-                user_notifications = cur.fetchall()
-                
-                # Mark all unread notifications as read for this user
-                cur.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE", (user_id,))
-                conn.commit()
-        
-        return render_template('notifications.html', notifications=user_notifications)
-        
-    except Exception as e:
-        print(f"Error fetching notifications: {e}")
-        flash("Could not load notifications.", "danger")
-        return redirect(url_for('home'))
-
-
-@app.route('/notifications/clear', methods=['POST'])
-@login_required
-def clear_notifications():
-    """Endpoint to mark all notifications as read via a POST request."""
-    user_id = session['user_id']
-    try:
-        update_query = "UPDATE notifications SET is_read = TRUE WHERE user_id = %s"
-        support.execute_query("update", update_query, (user_id,))
-        flash("All notifications marked as read.", "success")
-    except Exception as e:
-        print(f"Error clearing notifications: {e}")
-        flash("Could not mark notifications as read.", "danger")
-    return redirect(url_for('notifications'))
-
-
-@app.route('/resend-verification', methods=['POST'])
-@login_required
-def resend_verification():
-    print("Resend verification called. Session user_id:", session.get('user_id'))
-    try:
-        user_id = session['user_id']
-        # Get user from Firebase
-        user = auth.get_user(user_id)
-        
-        if user.email_verified:
-            return jsonify({
-                'success': False,
-                'message': 'Email is already verified'
-            }), 200  # Changed from 400 to 200
-
-        # Generate email verification link
-        verification_link = auth.generate_email_verification_link(user.email)
-        
-        # Send verification email
-        if send_email_verification(user.email, verification_link):
-            return jsonify({
-                'success': True,
-                'message': 'Verification email sent successfully'
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Failed to send verification email'
-            }), 500
-
-    except Exception as e:
-        print(f"Error in resend verification: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': 'An error occurred while sending verification email'
-        }), 500
-
-@app.route('/stokvel/<int:stokvel_id>/statement')
-@login_required
-def view_stokvel_statement(stokvel_id):
-    try:
-        user_id = session.get('user_id')
-        if not user_id:
-            flash('Please log in to view statements', 'error')
-            return redirect(url_for('login'))
-
-        # Get period parameter from query string
-        period = request.args.get('period', 'all')
-
-        # Get stokvel details
-        cur = get_db().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute("""
-            SELECT s.*, u.email as admin_email 
-            FROM stokvels s 
-            JOIN users u ON s.created_by = u.firebase_uid 
-            WHERE s.id = %s
-        """, (stokvel_id,))
-        stokvel = cur.fetchone()
-
-        if not stokvel:
-            flash('Stokvel not found', 'error')
-            return redirect(url_for('home'))
-
-        # Verify user is a member
-        cur.execute("""
-            SELECT * FROM stokvel_members 
-            WHERE stokvel_id = %s AND user_id = %s
-        """, (stokvel_id, user_id))
-        membership = cur.fetchone()
-
-        if not membership:
-            flash('You do not have access to this stokvel', 'error')
-            return redirect(url_for('home'))
-
-        # Build the query with period filtering
-        base_query = """
-            SELECT 
-                t.*,
-                u.email as user_email,
-                CASE 
-                    WHEN t.type = 'contribution' THEN t.amount
-                    ELSE 0
-                END as contribution_amount,
-                CASE 
-                    WHEN t.type = 'payout' THEN t.amount
-                    ELSE 0
-                END as payout_amount,
-                CASE 
-                    WHEN t.type = 'expense' THEN t.amount
-                    ELSE 0
-                END as expense_amount
-            FROM transactions t
-            LEFT JOIN users u ON t.user_id = u.firebase_uid
-            WHERE t.stokvel_id = %s
-        """
-        
-        # Add period filtering
-        if period == '30d':
-            base_query += " AND t.created_at >= CURRENT_DATE - 30"
-        elif period == '3m':
-            base_query += " AND t.created_at >= CURRENT_DATE - 90"
-        elif period == '6m':
-            base_query += " AND t.created_at >= CURRENT_DATE - 180"
-        # For 'all' or any other value, no additional filtering
-        
-        base_query += " ORDER BY t.created_at DESC"
-        
-        cur.execute(base_query, (stokvel_id,))
-        transactions = cur.fetchall()
-
-        # Calculate summary
-        total_contributions = sum(t['contribution_amount'] for t in transactions)
-        total_payouts = sum(t['payout_amount'] for t in transactions)
-        total_expenses = sum(t['expense_amount'] for t in transactions)
-        current_balance = total_contributions - total_payouts - total_expenses
-
-        # Get member contributions summary
-        member_contributions_query = """
-            SELECT 
-                u.email as member_email,
-                SUM(CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END) as total_contributed,
-                COUNT(CASE WHEN t.type = 'contribution' THEN 1 END) as contribution_count
-            FROM stokvel_members sm
-            JOIN users u ON sm.user_id = u.firebase_uid
-            LEFT JOIN transactions t ON t.user_id = u.firebase_uid AND t.stokvel_id = sm.stokvel_id
-            WHERE sm.stokvel_id = %s
-        """
-        
-        # Add period filtering to member contributions if needed
-        if period == '30d':
-            member_contributions_query += " AND (t.created_at >= CURRENT_DATE - 30 OR t.created_at IS NULL)"
-        elif period == '3m':
-            member_contributions_query += " AND (t.created_at >= CURRENT_DATE - 90 OR t.created_at IS NULL)"
-        elif period == '6m':
-            member_contributions_query += " AND (t.created_at >= CURRENT_DATE - 180 OR t.created_at IS NULL)"
-        
-        member_contributions_query += " GROUP BY u.email ORDER BY total_contributed DESC"
-        
-        cur.execute(member_contributions_query, (stokvel_id,))
-        member_contributions = cur.fetchall()
-
-        # Format the data for the template
-        statement_data = {
-            'stokvel': {
-                'id': stokvel['id'],
-                'name': stokvel['name'],
-                'created_at': stokvel['created_at'].strftime('%Y-%m-%d') if isinstance(stokvel['created_at'], datetime) else str(stokvel['created_at']),
-                'admin_email': stokvel['admin_email']
-            },
-            'summary': {
-                'total_contributions': total_contributions,
-                'total_payouts': total_payouts,
-                'total_expenses': total_expenses,
-                'current_balance': current_balance
-            },
-            'transactions': [{
-                'date': t['created_at'].strftime('%Y-%m-%d %H:%M:%S') if isinstance(t['created_at'], datetime) else str(t['created_at']),
-                'type': t['type'],
-                'amount': float(t['amount']),
-                'description': t['description'],
-                'user_email': t['user_email']
-            } for t in transactions],
-            'member_contributions': [{
-                'email': m['member_email'],
-                'total_contributed': float(m['total_contributed'] or 0),
-                'contribution_count': int(m['contribution_count'] or 0)
-            } for m in member_contributions],
-            'period': period
-        }
-
-        return render_template('stokvel_statement.html', statement=statement_data)
-
-    except Exception as e:
-        print(f"Error generating stokvel statement: {str(e)}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        flash('An error occurred while generating the statement', 'error')
-        return redirect(url_for('home'))
-
-@app.route('/stokvel/<int:stokvel_id>/statement/download')
-@login_required
-def download_statement(stokvel_id):
-    try:
-        user_id = session.get('user_id')
-        if not user_id:
-            flash('Please log in to download statements', 'error')
-            return redirect(url_for('login'))
-
-        # Get period parameter from query string
-        period = request.args.get('period', 'all')
-
-        # Use RealDictCursor for all queries
-        cur = get_db().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute("""
-            SELECT s.*, u.email as admin_email 
-            FROM stokvels s 
-            JOIN users u ON s.created_by = u.firebase_uid 
-            WHERE s.id = %s
-        """, (stokvel_id,))
-        stokvel = cur.fetchone()
-
-        if not stokvel:
-            flash('Stokvel not found', 'error')
-            return redirect(url_for('home'))
-
-        cur.execute("""
-            SELECT * FROM stokvel_members 
-            WHERE stokvel_id = %s AND user_id = %s
-        """, (stokvel_id, user_id))
-        membership = cur.fetchone()
-
-        if not membership:
-            flash('You do not have access to this stokvel', 'error')
-            return redirect(url_for('home'))
-
-        # Build the query with period filtering
-        base_query = """
-            SELECT 
-                t.*,
-                u.email as user_email,
-                CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END as contribution_amount,
-                CASE WHEN t.type = 'payout' THEN t.amount ELSE 0 END as payout_amount,
-                CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END as expense_amount
-            FROM transactions t
-            LEFT JOIN users u ON t.user_id = u.firebase_uid
-            WHERE t.stokvel_id = %s
-        """
-        
-        # Add period filtering
-        if period == '30d':
-            base_query += " AND t.created_at >= CURRENT_DATE - 30"
-        elif period == '3m':
-            base_query += " AND t.created_at >= CURRENT_DATE - 90"
-        elif period == '6m':
-            base_query += " AND t.created_at >= CURRENT_DATE - 180"
-        # For 'all' or any other value, no additional filtering
-        
-        base_query += " ORDER BY t.created_at DESC"
-        
-        cur.execute(base_query, (stokvel_id,))
-        transactions = cur.fetchall()
-
-        # Calculate summary
-        total_contributions = sum(float(t.get('contribution_amount', 0) or 0) for t in transactions)
-        total_payouts = sum(float(t.get('payout_amount', 0) or 0) for t in transactions)
-        total_expenses = sum(float(t.get('expense_amount', 0) or 0) for t in transactions)
-        current_balance = total_contributions - total_payouts - total_expenses
-
-        # Create PDF
-        output = BytesIO()
-        doc = SimpleDocTemplate(output, pagesize=letter)
-        styles = getSampleStyleSheet()
-        elements = []
-
-        # Add title with period information
-        period_text = {
-            'all': 'All Time',
-            '30d': 'Last 30 Days',
-            '3m': 'Last 3 Months',
-            '6m': 'Last 6 Months'
-        }.get(period, 'All Time')
-        
-        title = Paragraph(f"{stokvel['name']} - Statement ({period_text})", styles['Title'])
-        elements.append(title)
-        elements.append(Spacer(1, 20))
-
-        # Add summary
-        summary_data = [
-            ['Total Contributions', f'R {total_contributions:,.2f}'],
-            ['Total Payouts', f'R {total_payouts:,.2f}'],
-            ['Total Expenses', f'R {total_expenses:,.2f}'],
-            ['Current Balance', f'R {current_balance:,.2f}']
-        ]
-        summary_table = Table(summary_data, colWidths=[200, 100])
-        summary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        elements.append(summary_table)
-        elements.append(Spacer(1, 20))
-
-        # Add transactions
-        table_data = [['Date', 'Type', 'Amount', 'Description', 'User']]
-        for t in transactions:
-            created_at = t.get('created_at')
-            if isinstance(created_at, datetime):
-                date_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
-            else:
-                date_str = str(created_at) if created_at else ''
-            table_data.append([
-                date_str,
-                (t.get('type') or '').title(),
-                f'R {float(t.get("amount", 0) or 0):,.2f}',
-                t.get('description', '') or '',
-                t.get('user_email', '') or ''
-            ])
-
-        table = Table(table_data, colWidths=[100, 80, 80, 200, 150])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        elements.append(table)
-
-        doc.build(elements)
-        output.seek(0)
-        
-        # Include period in filename
-        filename = f'{stokvel["name"]}_statement_{period}_{datetime.now().strftime("%Y%m%d")}.pdf'
-        return send_file(
-            output,
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name=filename
-        )
-
-    except Exception as e:
-        print(f"Error generating statement: {str(e)}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        flash('An error occurred while generating the statement', 'error')
-        return redirect(url_for('view_stokvel_statement', stokvel_id=stokvel_id))
-
-@app.route('/profile/upload_picture', methods=['POST'])
-@login_required
-def upload_profile_picture():
-    if 'profile_picture' not in request.files:
-        flash('No file part')
-        return redirect(url_for('profile'))
-    
-    file = request.files['profile_picture']
-    if file.filename == '':
-        flash('No selected file')
-        return redirect(url_for('profile'))
-    
-    if file and allowed_file(file.filename):
+        # Save chat history (for both modes)
         try:
-            # Create upload folder if it doesn't exist
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            
-            # Generate secure filename
-            filename = secure_filename(f"{session['user_id']}_{file.filename}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
-            # Save the file
-            file.save(file_path)
-            
-            # Update user's profile_picture in DB
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        UPDATE users 
-                        SET profile_picture = %s 
-                        WHERE firebase_uid = %s
-                    """, (filename, session['user_id']))
+                        INSERT INTO chat_history (user_id, message, response, mode)
+                        VALUES (%s, %s, %s, %s)
+                    """, (user_id, user_message, response, mode))
                     conn.commit()
-            
-            flash('Profile picture updated successfully!')
         except Exception as e:
-            print(f"Error uploading profile picture: {e}")
-            flash('Error uploading profile picture. Please try again.')
-    else:
-        flash('Invalid file type. Please upload an image file (PNG, JPG, JPEG, or GIF).')
-    
-    return redirect(url_for('profile'))
+            print(f"Error saving chat history: {e}")
 
-@app.route('/profile/upload_kyc', methods=['POST'])
-@login_required
-def upload_kyc():
-    user_id = session['user_id']
-    id_document = request.files.get('id_document')
-    proof_of_address = request.files.get('proof_of_address')
-    updates = {}
-    
-    if id_document and allowed_kyc_file(id_document.filename):
-        filename = secure_filename(f"{user_id}_id_{id_document.filename}")
-        os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
-        id_document.save(os.path.join(app.config['KYC_UPLOAD_FOLDER'], filename))
-        updates['id_document'] = filename
-        updates['id_document_status'] = 'pending'  # Set status to pending for review
-    
-    if proof_of_address and allowed_kyc_file(proof_of_address.filename):
-        filename = secure_filename(f"{user_id}_address_{proof_of_address.filename}")
-        os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
-        proof_of_address.save(os.path.join(app.config['KYC_UPLOAD_FOLDER'], filename))
-        updates['proof_of_address'] = filename
-        updates['proof_of_address_status'] = 'pending'  # Set status to pending for review
-    
-    # Update user in DB
-    if updates:
-        set_clause = ', '.join([f"{k} = %s" for k in updates.keys()])
-        values = list(updates.values()) + [user_id]
-        query = f"UPDATE users SET {set_clause} WHERE firebase_uid = %s"
-        support.execute_query("update", query, tuple(values))
-        
-        flash('KYC documents uploaded successfully and are pending verification.')
-    else:
-        flash('No valid documents were uploaded.')
-    
-    return redirect(url_for('profile'))
+        return jsonify(response={'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
+    except Exception as e:
+        print(f"Chat handler error: {e}")
+        return jsonify({'error': 'An internal error occurred.'}), 500
 
-@app.route('/notifications/count')
+@app.route('/stokvel/<int:stokvel_id>/statement/download')
 @login_required
-def notifications_count():
+def download_stokvel_statement_pdf(stokvel_id):
+    period = request.args.get('period', 'all')
     user_id = session.get('user_id')
-    count = get_notification_count(user_id) if user_id else 0
-    return jsonify({'count': count})
+    # Fetch stokvel info and transactions
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
+                stokvel = cur.fetchone()
+                if not stokvel:
+                    flash('Stokvel not found.', 'danger')
+                    return redirect('/contributions')
+                stokvel_name = stokvel[0]
+                # Build period filter
+                date_filter = ''
+                params = [stokvel_id]
+                if period == '30d':
+                    date_filter = 'AND t.transaction_date >= CURRENT_DATE - INTERVAL \'30 days\''
+                elif period == '3m':
+                    date_filter = 'AND t.transaction_date >= CURRENT_DATE - INTERVAL \'3 months\''
+                elif period == '6m':
+                    date_filter = 'AND t.transaction_date >= CURRENT_DATE - INTERVAL \'6 months\''
+                query = f"""
+                    SELECT t.transaction_date, t.type, t.description, t.amount, u.email
+                    FROM transactions t
+                    LEFT JOIN users u ON t.user_id = u.firebase_uid
+                    WHERE t.stokvel_id = %s {date_filter}
+                    ORDER BY t.transaction_date
+                """
+                cur.execute(query, params)
+                transactions = cur.fetchall()
+    except Exception as e:
+        print(f"Error generating statement PDF: {e}")
+        flash('Could not generate statement.', 'danger')
+        return redirect('/contributions')
+    # Generate PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elements = []
+    # Add logo
+    from reportlab.platypus import Image
+    logo_path = os.path.join('static', 'kasikash-logo.png')
+    if os.path.exists(logo_path):
+        try:
+            elements.append(Image(logo_path, width=120, height=60))
+        except Exception as e:
+            print(f"Error adding logo: {e}")
+    # Add address
+    address = "KasiKash, 123 Main Street, Johannesburg, South Africa"
+    elements.append(Paragraph(address, styles['Normal']))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"{stokvel_name} - Statement", styles['Title']))
+    elements.append(Spacer(1, 12))
+    # Table header
+    data = [["Date", "Type", "Description", "Amount", "Member Email"]]
+    for row in transactions:
+        date_str = row[0].strftime('%Y-%m-%d') if row[0] else ''
+        data.append([date_str, row[1], row[2], f"R{row[3]:.2f}", row[4] or ''])
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2453c7')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 12),
+        ('BOTTOMPADDING', (0,0), (-1,0), 8),
+        ('BACKGROUND', (0,1), (-1,-1), colors.whitesmoke),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f"statement_{stokvel_id}_{period}.pdf", mimetype='application/pdf')
 
+<<<<<<< HEAD
 @app.route('/loan_requests')
 @login_required
 def loan_requests():
@@ -2988,10 +2686,17 @@ def request_loan():
 
     # Fetch user's stokvels for the dropdown
     stokvels = []
+=======
+@app.route('/activities')
+@login_required
+def activities():
+    activities = []
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
+<<<<<<< HEAD
                     SELECT s.id, s.name 
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
@@ -3517,3 +3222,60 @@ def inject_csrf_token():
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
+=======
+                    SELECT t.type, t.amount, t.status, t.transaction_date, t.description, s.name as stokvel_name
+                    FROM transactions t
+                    JOIN stokvels s ON t.stokvel_id = s.id
+                    WHERE t.user_id = %s
+                    ORDER BY t.transaction_date DESC
+                """, (session['user_id'],))
+                rows = cur.fetchall()
+                for row in rows:
+                    t_type, amount, status, t_date, description, stokvel_name = row
+                    # Format date for display
+                    if t_date:
+                        try:
+                            from datetime import datetime, timedelta
+                            now = datetime.now()
+                            if isinstance(t_date, str):
+                                t_date = datetime.fromisoformat(t_date)
+                            delta = now - t_date
+                            if delta.days == 0:
+                                if delta.seconds < 3600:
+                                    date_str = f"{delta.seconds//60} minutes ago"
+                                else:
+                                    date_str = f"{delta.seconds//3600} hours ago"
+                            elif delta.days == 1:
+                                date_str = "Yesterday"
+                            else:
+                                date_str = f"{delta.days} days ago"
+                        except Exception:
+                            date_str = str(t_date)
+                    else:
+                        date_str = 'N/A'
+                    # Title and badge
+                    if t_type == 'contribution':
+                        title = f"Contribution to {stokvel_name}"
+                    elif t_type == 'withdrawal':
+                        title = f"Withdrawal from {stokvel_name}"
+                    elif t_type == 'payout':
+                        title = f"Payout from {stokvel_name}"
+                    elif t_type == 'goal':
+                        title = f"Savings Goal: {description}"
+                    else:
+                        title = description or t_type.capitalize()
+                    activities.append({
+                        'type': t_type,
+                        'title': title,
+                        'amount': float(amount) if amount is not None else 0.0,
+                        'date': date_str,
+                        'status': status.capitalize() if status else '',
+                    })
+    except Exception as e:
+        print(f"Error fetching activities: {e}")
+    return render_template('activities.html', activities=activities)
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=True)
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d

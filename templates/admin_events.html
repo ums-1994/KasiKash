@@ -1,0 +1,141 @@
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1 style="color:#60efff;">Events</h1>
+<p style="color:#eaf6fb;">Here you can manage events.</p>
+<!-- Event creation form -->
+<div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
+  <form id="createEventForm" method="POST" action="{{ url_for('admin.events') }}" class="flex flex-col gap-3 flex-1 min-w-[250px]">
+    {{ csrf_token() }}
+    <div class="flex flex-wrap gap-3">
+      <div class="flex-1 min-w-[180px]">
+        <label class="block font-semibold mb-1" style="color:#60efff;">Stokvel</label>
+        <select name="stokvel" id="stokvelSelect" class="w-full border border-[#22304a] rounded-lg px-4 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
+            <option value="" disabled selected>Select a Stokvel</option>
+            {% for s in stokvels %}
+                <option value="{{ s['id'] }}">{{ s['name'] }}</option>
+            {% endfor %}
+        </select>
+      </div>
+      <div class="flex-1 min-w-[180px]">
+        <label class="block font-semibold mb-1" style="color:#60efff;">Name</label>
+        <input type="text" name="name" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
+      </div>
+      <div class="flex-1 min-w-[180px]">
+        <label class="block font-semibold mb-1" style="color:#60efff;">Target Date</label>
+        <input type="date" name="target_date" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
+      </div>
+    </div>
+    <div>
+      <label class="block font-semibold mb-1" style="color:#60efff;">Description</label>
+      <textarea name="description" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" rows="2" required></textarea>
+    </div>
+    <div class="mb-2 flex items-center">
+      <input type="checkbox" id="sendNotification" name="send_notification" class="mr-2">
+      <label for="sendNotification" style="color:#eaf6fb;">Send notification to all members of this stokvel</label>
+    </div>
+    <button type="submit" class="admin-card btn px-6 py-2 text-base font-semibold shadow-md w-full mt-2" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Create Event</button>
+  </form>
+</div>
+<!-- Events table -->
+<table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb;">
+  <thead>
+    <tr style="color:#60efff;">
+      <th>ID</th>
+      <th>Name</th>
+      <th>Stokvel</th>
+      <th>Description</th>
+      <th>Target Date</th>
+      <th>Created At</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for event in events %}
+    <tr>
+      <td>{{ event.id }}</td>
+      <td>{{ event.name }}</td>
+      <td>{{ event.stokvel_name or 'N/A' }}</td>
+      <td>{{ event.description }}</td>
+      <td>{{ event.target_date.strftime('%Y-%m-%d') if event.target_date else 'N/A' }}</td>
+      <td>{{ event.created_at.strftime('%Y-%m-%d %H:%M') if event.created_at else 'N/A' }}</td>
+      <td class="flex gap-2 justify-center">
+        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" onclick="openViewEventModal('{{ event.id }}', '{{ event.name | e }}', '{{ event.description | e }}', '{{ event.target_date }}', '{{ event.created_at }}', '{{ event.stokvel_name | e }}')">View</button>
+        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" onclick="openEditEventModal('{{ event.id }}', '{{ event.name | e }}', '{{ event.description | e }}', '{{ event.target_date }}')">Edit</button>
+        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#ff4e50 0%,#f9d423 100%);color:#101c2c;opacity:0.7;" disabled title="Coming soon">Delete</button>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7">No events found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<!-- Edit Event Modal -->
+<div id="editEventModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeEditEventModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Edit Event</h3>
+    <form class="space-y-3">
+      <div>
+        <label class="block font-semibold mb-1">Name</label>
+        <input id="editEventName" type="text" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Description</label>
+        <textarea id="editEventDescription" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" rows="2" required disabled title="Coming soon"></textarea>
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Target Date</label>
+        <input id="editEventDate" type="date" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
+      </div>
+      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" disabled title="Coming soon">Save Changes</button>
+    </form>
+  </div>
+</div>
+<!-- View Event Modal -->
+<div id="viewEventModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeViewEventModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Event Details</h3>
+    <ul id="viewEventDetails" class="mb-2"></ul>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Notification preview for event creation
+const createEventForm = document.getElementById('createEventForm');
+if (createEventForm) {
+  createEventForm.addEventListener('submit', function(e) {
+    const notify = document.getElementById('sendNotification').checked;
+    const stokvel = document.getElementById('stokvelSelect').value;
+    if (notify) {
+      alert(`(Preview) Notification would be sent to all members of ${stokvel}.`);
+    }
+    // Allow form to submit as normal
+  });
+}
+function openEditEventModal(id, name, description, date) {
+  document.getElementById('editEventName').value = name;
+  document.getElementById('editEventDescription').value = description;
+  document.getElementById('editEventDate').value = date;
+  document.getElementById('editEventModal').classList.remove('hidden');
+}
+function closeEditEventModal() {
+  document.getElementById('editEventModal').classList.add('hidden');
+}
+function openViewEventModal(id, name, description, date, createdAt, stokvelName) {
+  var html = '';
+  html += `<li><strong>ID:</strong> ${id}</li>`;
+  html += `<li><strong>Stokvel:</strong> ${stokvelName}</li>`;
+  html += `<li><strong>Name:</strong> ${name}</li>`;
+  html += `<li><strong>Description:</strong> ${description}</li>`;
+  html += `<li><strong>Target Date:</strong> ${date}</li>`;
+  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+  document.getElementById('viewEventDetails').innerHTML = html;
+  document.getElementById('viewEventModal').classList.remove('hidden');
+}
+function closeViewEventModal() {
+  document.getElementById('viewEventModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

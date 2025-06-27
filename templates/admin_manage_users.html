@@ -1,0 +1,144 @@
+{% extends 'admin_base.html' %}
+{% block admin_content %}
+<h1 style="color:#60efff;">Manage Users</h1>
+<p style="color:#eaf6fb;">Here you can manage all users.</p>
+<!-- Search/filter bar -->
+<div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
+  <form method="GET" action="{{ url_for('admin.manage_users') }}" class="flex flex-wrap items-center gap-3 flex-1 min-w-[250px]">
+    <input type="text" name="search" class="border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff] w-64" placeholder="Search by username or email" value="{{ search_query or '' }}">
+    <button type="submit" class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Search</button>
+  </form>
+  <button type="button" class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;min-width:150px;" onclick="openAddUserModal()">Add User</button>
+</div>
+<table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb; table-layout: auto; word-break: break-word;">
+  <thead>
+    <tr style="color:#60efff;">
+      <th class="px-2 py-2 whitespace-nowrap">Email</th>
+      <th class="px-2 py-2 whitespace-nowrap">Role</th>
+      <th class="px-2 py-2 whitespace-nowrap">Created At</th>
+      <th class="px-2 py-2 whitespace-nowrap">ID Document Status</th>
+      <th class="px-2 py-2 whitespace-nowrap">Proof of Address Status</th>
+      <th class="px-2 py-2 whitespace-nowrap">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <td class="px-2 py-2 break-all max-w-xs">{{ user.email }}</td>
+      <td class="px-2 py-2 text-center">{{ user.role }}</td>
+      <td class="px-2 py-2 text-center">{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
+      <td class="px-2 py-2 text-center">{{ user.id_document_status or 'Not Submitted' }}</td>
+      <td class="px-2 py-2 text-center">{{ user.proof_of_address_status or 'Not Submitted' }}</td>
+      <td class="px-2 py-2 flex flex-col md:flex-row gap-2 justify-center items-center">
+        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" onclick="openViewUserModal('{{ user.username }}', '{{ user.email }}', '{{ user.role }}', '{{ user.created_at }}', '{{ user.id_document_status }}', '{{ user.proof_of_address_status }}')">View</button>
+        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" onclick="openEditUserModal('{{ user.username }}', '{{ user.email }}', '{{ user.role }}')">Edit</button>
+        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#ff4e50 0%,#f9d423 100%);color:#101c2c;opacity:0.7;" disabled title="Coming soon">Delete</button>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">No users found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<!-- Add User Modal -->
+<div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="admin-card p-6 max-w-md w-full relative text-gray-800" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeAddUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Add User</h3>
+    <form action="{{ url_for('admin.add_user') }}" method="POST" class="space-y-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div>
+        <label class="block font-semibold mb-1">Username</label>
+        <input type="text" name="username" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Email</label>
+        <input type="email" name="email" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Role</label>
+        <select name="role" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black">
+          <option value="user" selected>User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Assign to Stokvel</label>
+        <select name="stokvel_id" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black">
+          <option value="">-- Select Stokvel --</option>
+          {% for stokvel in stokvels %}
+            <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Add User</button>
+    </form>
+  </div>
+</div>
+<!-- Edit User Modal -->
+<div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="admin-card p-6 max-w-md w-full relative text-gray-800" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeEditUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Edit User</h3>
+    <form class="space-y-3">
+      <div>
+        <label class="block font-semibold mb-1">Username</label>
+        <input id="editUsername" type="text" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Email</label>
+        <input id="editEmail" type="email" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Role</label>
+        <select id="editRole" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" disabled title="Coming soon">
+          <option>User</option>
+          <option>Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" disabled title="Coming soon">Save Changes</button>
+    </form>
+  </div>
+</div>
+<!-- View User Modal -->
+<div id="viewUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="admin-card p-6 max-w-md w-full relative text-gray-800" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeViewUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">User Details</h3>
+    <ul id="viewUserDetails" class="mb-2"></ul>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function openAddUserModal() {
+  document.getElementById('addUserModal').classList.remove('hidden');
+}
+function closeAddUserModal() {
+  document.getElementById('addUserModal').classList.add('hidden');
+}
+function openEditUserModal(username, email, role) {
+  document.getElementById('editUsername').value = username;
+  document.getElementById('editEmail').value = email;
+  document.getElementById('editRole').value = role;
+  document.getElementById('editUserModal').classList.remove('hidden');
+}
+function closeEditUserModal() {
+  document.getElementById('editUserModal').classList.add('hidden');
+}
+function openViewUserModal(username, email, role, createdAt, idDocStatus, addressStatus) {
+  var html = '';
+  html += `<li><strong>Username:</strong> ${username}</li>`;
+  html += `<li><strong>Email:</strong> ${email}</li>`;
+  html += `<li><strong>Role:</strong> ${role}</li>`;
+  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+  html += `<li><strong>ID Document Status:</strong> ${idDocStatus}</li>`;
+  html += `<li><strong>Proof of Address Status:</strong> ${addressStatus}</li>`;
+  document.getElementById('viewUserDetails').innerHTML = html;
+  document.getElementById('viewUserModal').classList.remove('hidden');
+}
+function closeViewUserModal() {
+  document.getElementById('viewUserModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

@@ -195,10 +195,22 @@ body {
 </div>
 <div class="stokvels-grid">
         {% for stokvel in stokvels %}
+<<<<<<< HEAD
   <div class="glass-card">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
       <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff;">{{ stokvel.name }}</h2>
       <span class="stokvel-role {% if stokvel.role == 'admin' %}role-admin{% else %}role-member{% endif %}">{{ stokvel.role|title }}</span>
+=======
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-start mb-4">
+                <div class="stokvel-name flex items-center justify-between">
+                    <span class="text-xl font-semibold text-gray-800">{{ stokvel.name }}</span>
+                    <span class="inline-block px-2 py-1 text-xs font-semibold rounded 
+                        {% if stokvel.role == 'admin' %}bg-green-200 text-green-800{% else %}bg-blue-200 text-blue-800{% endif %}">
+                        {{ 'Admin' if stokvel.role == 'admin' else 'Member' }}
+                    </span>
+                </div>
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
             </div>
     <p style="color: #a5b4fc; margin-bottom: 1rem;">{{ stokvel.description }}</p>
     <div style="margin-bottom: 1rem;">

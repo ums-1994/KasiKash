@@ -37,6 +37,7 @@ body {
 .accent {
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 700;
 }
@@ -224,6 +225,7 @@ body {
   margin-bottom: 1rem;
   background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -1px;
   position: relative;
@@ -271,6 +273,7 @@ body {
   font-weight: 700;
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.25rem;
 }
@@ -356,6 +359,7 @@ body {
   font-weight: 600;
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .timeline-badge {
@@ -395,13 +399,13 @@ body {
 <div class="welcome-banner">
   <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
     <div>
-      <h2 class="welcome-title">Sawubona, {{ user_name }}!</h2>
+      <h2 class="welcome-title">Sawubona, {{ user.username }}!</h2>
       <div class="welcome-subtitle">Welcome back to your financial dashboard.</div>
     </div>
     <div style="display: flex; align-items: center; gap: 1rem;">
       <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
         {% if user.profile_picture %}
-          <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
+          <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" class="w-full h-full object-cover">
         {% else %}
           <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #fff;"></i>
         {% endif %}
@@ -416,18 +420,41 @@ body {
   <div class="glass-card" style="display: flex; flex-direction: column; align-items: center;">
     <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem;">
       {% if user.profile_picture %}
+<<<<<<< HEAD
         <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
       {% else %}
+=======
+        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" class="w-full h-full object-cover">
+            {% else %}
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
         <i class="fas fa-user-circle" style="font-size: 3rem; color: #c7d2fe;"></i>
       {% endif %}
     </div>
-    <div class="accent text-xl mb-1">{{ user_name }}</div>
+    <div class="accent text-xl mb-1">{{ user.username }}</div>
     <div class="text-white text-sm mb-2">{{ user.email }}</div>
     <div style="display: flex; gap: 0.5rem;">
       <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Member</span>
       <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Joined: {{ user.joined_date }}</span>
     </div>
   </div>
+<<<<<<< HEAD
+=======
+  <!-- Savings Tracker Card -->
+  <div class="glass-card">
+    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+      <i class="fas fa-chart-line accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
+      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Savings Tracker</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+      {% for day in weekly_contributions %}
+        {% set bar_height = 20 + (day|int)*2 %}
+        <div class="day-bar" data-bar-height="{{ bar_height }}"></div>
+      {% endfor %}
+    </div>
+    <div style="color: #fff; font-size: 1.125rem; font-weight: 600;">R {{ current_balance|default('0.00') }}</div>
+    <div style="color: #bfdbfe; font-size: 0.875rem;">Goal: R {{ savings_goal|default('0.00') }}</div>
+  </div>
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
   <!-- Quick Actions Card -->
   <div class="glass-card">
     <div style="display: flex; align-items: center; margin-bottom: 1rem;">
@@ -460,15 +487,33 @@ body {
         <span>Financial Insight</span>
       </a>
     </div>
+<<<<<<< HEAD
   </div>
   <!-- Recent Activity Card (spans 2 columns) -->
+=======
+</div>
+  <!-- Financial Insight Card -->
+  <a href="{{ url_for('analysis') }}" class="glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; text-decoration: none; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 32px rgba(123,97,255,0.2)';" onmouseout="this.style.boxShadow='none';">
+    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+      <i class="fas fa-chart-pie accent" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
+      <span class="accent" style="font-size: 1.25rem; font-weight: bold;">Financial Insight</span>
+    </div>
+    <div style="color: #fff; font-size: 0.875rem; text-align: center; margin-bottom: 0.25rem;">View your financial trends, progress, and key metrics in one place.</div>
+    <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd; margin-top: 0.5rem;">See Insights</span>
+  </a>
+  <!-- Recent Activity Card (now in grid, spans 2 columns on large screens) -->
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
   <div class="glass-card activity-card" style="grid-column: span 2;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
       <div style="display: flex; align-items: center;">
         <i class="fas fa-stream accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
         <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Recent Activity</span>
       </div>
+<<<<<<< HEAD
       <button style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'" onclick="window.location.href='/transactions'">View All</button>
+=======
+      <a href="{{ url_for('activities') }}" style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s; text-decoration: none;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">View All</a>
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
     </div>
     <div class="activity-timeline">
       {% for activity in recent_activities|default([
@@ -533,3 +578,28 @@ body {
   </div>
 </div>
 {% endblock %}
+<<<<<<< HEAD
+=======
+{% block extra_js %}
+<script>
+// Progress circle calculation (example)
+document.querySelectorAll('.progress-circle').forEach(function(circle) {
+  var percent = parseFloat(circle.getAttribute('data-percent')) || 0;
+  var offset = 283 - (percent / 100) * 283;
+  circle.style.strokeDashoffset = offset;
+});
+// Card hover animation is handled by CSS
+// Calendar navigation example
+function prevMonth() {
+  // Implement AJAX or page reload for previous month
+}
+function nextMonth() {
+  // Implement AJAX or page reload for next month
+}
+document.querySelectorAll('.day-bar').forEach(function(bar) {
+  var h = bar.getAttribute('data-bar-height');
+  if (h) bar.style.height = h + 'px';
+});
+</script>
+{% endblock %}
+>>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
