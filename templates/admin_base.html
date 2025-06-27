@@ -17,10 +17,13 @@
         }
         .sidebar {
             width: 240px;
-            background: #232946;
-            color: #fff;
+            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+            color: #60efff;
             transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s;
-            box-shadow: 2px 0 8px rgba(35,41,70,0.08);
+            box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+            border-right: 2px solid #22304a;
+            border-top-right-radius: 18px;
+            border-bottom-right-radius: 18px;
             z-index: 1000;
             position: fixed;
             top: 0;
@@ -49,7 +52,7 @@
             gap: 0.5rem;
         }
         .sidebar .nav a {
-            color: #fff;
+            color: #60efff;
             text-decoration: none;
             padding: 0.75rem 1.5rem;
             border-radius: 6px;
@@ -60,8 +63,8 @@
             transition: background 0.2s, color 0.2s;
         }
         .sidebar .nav a:hover, .sidebar .nav a.active {
-            background: #eebbc3;
-            color: #232946;
+            background: #eaf6fb;
+            color: #101c2c;
         }
         .sidebar .nav i {
             font-size: 1.2rem;
@@ -113,7 +116,9 @@
             </div>
         </nav>
         <main class="admin-main" id="adminMain">
-            {% block admin_content %}{% endblock %}
+            <div class="admin-content-card">
+                {% block admin_content %}{% endblock %}
+            </div>
         </main>
     </div>
     {% block extra_js %}{% endblock %}
