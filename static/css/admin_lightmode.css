@@ -1,0 +1,50 @@
+/* Light mode overrides for admin */
+body.lightmode, .lightmode .admin-main {
+    background: #f7fafc !important;
+    color: #222 !important;
+}
+.lightmode .sidebar {
+    background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
+    color: #101c2c !important;
+    border-right: 2px solid #b2d6f7 !important;
+}
+.lightmode .sidebar .nav a {
+    color: #101c2c !important;
+}
+.lightmode .sidebar .nav a.active, .lightmode .sidebar .nav a:hover {
+    background: #60efff !important;
+    color: #101c2c !important;
+}
+.lightmode .admin-main {
+    background: #f7fafc !important;
+    color: #222 !important;
+}
+.lightmode .admin-card, .lightmode .admin-content-card, .lightmode table.admin-card {
+    background: #fff !important;
+    color: #222 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+.lightmode .admin-card *, .lightmode .admin-content-card *, .lightmode table.admin-card * {
+    color: #222 !important;
+}
+.lightmode th, .lightmode td {
+    color: #222 !important;
+}
+.lightmode .bg-gradient-to-r, .lightmode .bg-gradient-to-br {
+    background: #eaf6fb !important;
+}
+.lightmode .btn {
+    background: linear-gradient(90deg,#60efff 0%,#00ff87 100%) !important;
+    color: #101c2c !important;
+}
+
+/* Banner (h1, p at top) should keep their color in both modes */
+.lightmode h1[style], .lightmode p[style] {
+    color: inherit !important;
+}
+.lightmode h1[style*="#60efff"], .lightmode h1[style*='rgb(96,239,255)'] {
+    color: #60efff !important;
+}
+.lightmode p[style*="#eaf6fb"], .lightmode p[style*='rgb(234,246,251)'] {
+    color: #eaf6fb !important;
+}
