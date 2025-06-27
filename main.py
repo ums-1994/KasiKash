@@ -1785,8 +1785,7 @@ def upload_profile_picture():
         file.save(filepath)
         
         # Update user profile picture path in database
-        support.execute_query("update", "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s", (filepath, user_id))
-        
+        support.execute_query("update", "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s", (filename, user_id))
         flash('Profile picture updated successfully!', 'success')
     else:
         flash('Invalid file type', 'danger')
@@ -1803,6 +1802,14 @@ def upload_kyc():
         flash('Both ID document and proof of address are required.', 'warning')
         return redirect(url_for('profile'))
 
+    # Validate file types
+    if not (allowed_kyc_file(id_doc.filename) and allowed_kyc_file(address_doc.filename)):
+        flash('Invalid file type. Only PDF, PNG, JPG, JPEG, and GIF are allowed.', 'danger')
+        return redirect(url_for('profile'))
+
+    # Ensure upload directory exists
+    os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
+
     try:
         id_filename = secure_filename(f"{user_id}_id_{id_doc.filename}")
         address_filename = secure_filename(f"{user_id}_address_{address_doc.filename}")
@@ -1813,16 +1820,17 @@ def upload_kyc():
         id_doc.save(id_filepath)
         address_doc.save(address_filepath)
 
-        # Update user's KYC info in the database
-        query = "UPDATE users SET kyc_id_url = %s, kyc_address_url = %s, kyc_status = 'pending' WHERE firebase_uid = %s"
-        support.execute_query("update", query, (id_filepath, address_filepath, user_id))
+        # Update user's KYC info in the database (use correct columns)
+        query = "UPDATE users SET id_document = %s, proof_of_address = %s WHERE firebase_uid = %s"
+        support.execute_query("update", query, (id_filename, address_filename, user_id))
 
         flash('KYC documents uploaded successfully. They are pending review.', 'success')
     except Exception as e:
         flash(f'An error occurred during KYC upload: {e}', 'danger')
 
-    return redirect(url_for('profile'))
+    return redirect(url_for('profile'))           
 
+# Register context processor for user info and translation function
 @app.context_processor
 def inject_user_name():
     username = None
@@ -1843,17 +1851,14 @@ def inject_user_name():
         if 'language_preference' in session:
             language_preference = session['language_preference']
         else:
-            # Try to get from database, but fall back to session if column doesn't exist
             try:
                 lang_query = "SELECT language_preference FROM users WHERE firebase_uid = %s"
                 lang_data = support.execute_query("search", lang_query, (session['user_id'],))
                 if lang_data and lang_data[0][0]:
                     language_preference = lang_data[0][0]
-                    # Store in session for future use
                     session['language_preference'] = language_preference
             except Exception as e:
                 print(f"Error getting language preference from database: {e}")
-                # Use session default or fallback to English
                 language_preference = session.get('language_preference', 'en')
     
     return dict(username=username, user_language=language_preference, notification_count=notification_count, t=get_text)

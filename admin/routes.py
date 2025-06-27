@@ -352,7 +352,78 @@ def kyc_approvals():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
-    return render_template('admin_kyc_approvals.html')
+
+    search_query = request.args.get('q', '').strip()
+    kyc_users = []
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                if search_query:
+                    cur.execute("""
+                        SELECT id, email, id_document, proof_of_address, created_at
+                        FROM users
+                        WHERE (id_document IS NOT NULL AND id_document != '')
+                          AND (proof_of_address IS NOT NULL AND proof_of_address != '')
+                          AND (email ILIKE %s)
+                        ORDER BY created_at DESC
+                    """, (f'%{search_query}%',))
+                else:
+                    cur.execute("""
+                        SELECT id, email, id_document, proof_of_address, created_at
+                        FROM users
+                        WHERE (id_document IS NOT NULL AND id_document != '')
+                          AND (proof_of_address IS NOT NULL AND proof_of_address != '')
+                        ORDER BY created_at DESC
+                    """)
+                kyc_users = cur.fetchall()
+    except Exception as e:
+        import traceback
+        print(f"Error fetching KYC approvals: {e}")
+        traceback.print_exc()
+        flash('Could not load KYC approvals.', 'danger')
+    return render_template('admin_kyc_approvals.html', kyc_users=kyc_users, search_query=search_query, debug_kyc_users=kyc_users)
+
+@admin_bp.route('/kyc-approve/<int:user_id>', methods=['POST'])
+@login_required
+def approve_kyc(user_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('admin.kyc_approvals'))
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE users
+                    SET kyc_approved_at = NOW()
+                    WHERE id = %s
+                """, (user_id,))
+                conn.commit()
+        flash('KYC approved successfully.', 'success')
+    except Exception as e:
+        print(f"Error approving KYC: {e}")
+        flash('Failed to approve KYC.', 'danger')
+    return redirect(url_for('admin.kyc_approvals'))
+
+@admin_bp.route('/kyc-reject/<int:user_id>', methods=['POST'])
+@login_required
+def reject_kyc(user_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('admin.kyc_approvals'))
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE users
+                    SET id_document = NULL, proof_of_address = NULL
+                    WHERE id = %s
+                """, (user_id,))
+                conn.commit()
+        flash('KYC rejected and documents removed.', 'success')
+    except Exception as e:
+        print(f"Error rejecting KYC: {e}")
+        flash('Failed to reject KYC.', 'danger')
+    return redirect(url_for('admin.kyc_approvals'))
 
 @admin_bp.route('/settings')
 @login_required

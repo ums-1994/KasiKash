@@ -1,71 +1,83 @@
 {% extends 'admin_base.html' %}
 {% block admin_content %}
-<h1>KYC Approvals</h1>
-<p>Here you can approve or reject KYC submissions.</p>
+<h1 style="color:#60efff;">KYC Approvals</h1>
+<p style="color:#eaf6fb;">Here you can approve or reject KYC submissions.</p>
+<!-- Debug block: show raw user data -->
+{% if debug_kyc_users %}
+  <div style="background:#222;color:#ffb86c;padding:8px 12px;margin-bottom:16px;border-radius:8px;max-width:100%;overflow-x:auto;">
+    <strong>DEBUG: Raw user data</strong>
+    <pre style="font-size:12px;white-space:pre-wrap;">{{ debug_kyc_users|safe }}</pre>
+  </div>
+{% endif %}
 <!-- Search/filter bar -->
-<div class="mb-4 flex items-center gap-4">
-  <form method="GET" action="{{ url_for('admin.kyc_approvals') }}" class="flex items-center gap-4 w-full">
-    <input type="text" name="q" class="border rounded px-3 py-2 text-black w-80" placeholder="Search by username or email" value="{{ search_query or '' }}">
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+<div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
+  <form method="GET" action="{{ url_for('admin.kyc_approvals') }}" class="flex flex-wrap items-center gap-3 flex-1 min-w-[250px]">
+    <input type="text" name="q" class="border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff] w-64" placeholder="Search by username or email" value="{{ search_query or '' }}">
+    <button type="submit" class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Search</button>
   </form>
 </div>
-<table class="table-auto w-full mt-2 text-sm">
+<table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb; table-layout: auto; word-break: break-word;">
   <thead>
-    <tr>
-      <th>Email</th>
-      <th>ID Document</th>
-      <th>Proof of Address</th>
-      <th>ID Document Status</th>
-      <th>Proof of Address Status</th>
-      <th>Created At</th>
-      <th>Actions</th>
+    <tr style="color:#60efff;">
+      <th class="px-2 py-2 whitespace-nowrap">Email</th>
+      <th class="px-2 py-2 whitespace-nowrap">ID Document</th>
+      <th class="px-2 py-2 whitespace-nowrap">Proof of Address</th>
+      <th class="px-2 py-2 whitespace-nowrap">ID Document Status</th>
+      <th class="px-2 py-2 whitespace-nowrap">Proof of Address Status</th>
+      <th class="px-2 py-2 whitespace-nowrap">Created At</th>
+      <th class="px-2 py-2 whitespace-nowrap">Actions</th>
     </tr>
   </thead>
   <tbody>
     {% for user in kyc_users %}
     <tr>
-      <td>{{ user[1] }}</td>
-      <td>{% if user[2] %}<a href="#" class="text-blue-600 underline" title="Preview only">View</a>{% else %}—{% endif %}</td>
-      <td>{% if user[3] %}<a href="#" class="text-blue-600 underline" title="Preview only">View</a>{% else %}—{% endif %}</td>
-      <td>{{ user[4] }}</td>
-      <td>{{ user[5] }}</td>
-      <td>{{ user[6] }}</td>
-      <td class="flex gap-2">
-        <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewKYCModal('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}', '{{ user[5] }}', '{{ user[6] }}')">View</button>
-        <button class="bg-green-600 text-white px-2 py-1 rounded" onclick="openKYCDecisionModal('approve', '{{ user[0] }}')">Approve</button>
-        <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="openKYCDecisionModal('reject', '{{ user[0] }}')">Reject</button>
+      <td class="px-2 py-2 break-all max-w-xs">{{ user[1] }}</td>
+      <td class="px-2 py-2 text-center">{% if user[2] %}<a href="{{ url_for('static', filename='kyc_docs/' ~ user[2]) }}" target="_blank" style="color:#60efff;text-decoration:underline;">View</a>{% else %}—{% endif %}</td>
+      <td class="px-2 py-2 text-center">{% if user[3] %}<a href="{{ url_for('static', filename='kyc_docs/' ~ user[3]) }}" target="_blank" style="color:#60efff;text-decoration:underline;">View</a>{% else %}—{% endif %}</td>
+      <td class="px-2 py-2 text-center">{{ user[5] }}</td>
+      <td class="px-2 py-2 text-center">{{ user[6] }}</td>
+      <td class="px-2 py-2 text-center">{{ user[4] }}</td>
+      <td class="px-2 py-2 flex flex-row gap-3 justify-center items-center">
+        <form method="POST" action="{{ url_for('admin.approve_kyc', user_id=user[0]) }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button type="submit" class="transition-all duration-200 px-5 py-2 rounded-lg font-bold shadow-md text-base focus:outline-none focus:ring-2 focus:ring-green-300 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-[#101c2c] border-2 border-transparent hover:border-green-300 whitespace-nowrap">Approve</button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.reject_kyc', user_id=user[0]) }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button type="submit" class="transition-all duration-200 px-5 py-2 rounded-lg font-bold shadow-md text-base focus:outline-none focus:ring-2 focus:ring-red-300 bg-gradient-to-r from-red-400 to-yellow-300 hover:from-red-500 hover:to-yellow-400 text-[#101c2c] border-2 border-transparent hover:border-red-300 whitespace-nowrap">Reject</button>
+        </form>
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="7">No users with pending KYC found.</td></tr>
+    <tr><td colspan="7" class="text-center py-4 text-gray-400">No users with pending KYC found.</td></tr>
     {% endfor %}
   </tbody>
 </table>
-<!-- KYC Decision Modal -->
+
+<!-- KYC Decision Modal (future use, currently disabled) -->
 <div id="kycDecisionModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
-    <button onclick="closeKYCDecisionModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-    <h3 id="kycDecisionTitle" class="text-lg font-bold mb-2">KYC Decision</h3>
-    <form>
-      <div class="mb-2">
+  <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeKYCDecisionModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <h3 id="kycDecisionTitle" class="text-xl font-bold mb-4" style="color:#60efff;">KYC Decision</h3>
+    <form class="space-y-3">
+      <div>
         <label class="block font-semibold mb-1">Comment</label>
-        <textarea class="border rounded px-3 py-2 w-full" rows="3" required disabled title="Coming soon"></textarea>
+        <textarea class="border border-[#22304a] rounded-lg px-4 py-2 w-full" rows="3" required disabled title="Coming soon"></textarea>
       </div>
-      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Submit</button>
+      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" disabled title="Coming soon">Submit</button>
     </form>
   </div>
 </div>
-<!-- View KYC Modal -->
+<!-- View KYC Modal (future use, currently disabled) -->
 <div id="viewKYCModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
-    <button onclick="closeViewKYCModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-    <h3 class="text-lg font-bold mb-2">KYC Details</h3>
-    <table id="viewKYCDetails" class="mb-2 w-full border">
-      <!-- Content will be injected by JS -->
-    </table>
+  <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
+    <button onclick="closeViewKYCModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">KYC Details</h3>
+    <table id="viewKYCDetails" class="mb-2 w-full border"></table>
   </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
 function openKYCDecisionModal(action, username) {
@@ -90,4 +102,4 @@ function closeViewKYCModal() {
   document.getElementById('viewKYCModal').classList.add('hidden');
 }
 </script>
-{% endblock %} 
+{% endblock %}

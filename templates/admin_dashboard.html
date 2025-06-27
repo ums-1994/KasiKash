@@ -3,63 +3,84 @@
 <style>
   .admin-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2.5rem;
     margin-top: 0.5rem;
   }
   .admin-card {
-    background: #fff;
+    background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
     border-radius: 18px;
     box-shadow: 0 4px 24px rgba(35,41,70,0.10);
     padding: 2.2rem 1.7rem 1.7rem 1.7rem;
     text-align: center;
-    transition: transform 0.18s, box-shadow 0.18s, border 0.18s;
+    transition: transform 0.18s, box-shadow 0.18s, border 0.18s, background 0.18s;
     cursor: pointer;
-    border: 2px solid #f3f3f3;
+    border: 2px solid #22304a;
     position: relative;
     overflow: hidden;
   }
   .admin-card:hover {
     transform: translateY(-8px) scale(1.04);
     box-shadow: 0 8px 32px rgba(35,41,70,0.16);
-    border: 2px solid #eebbc3;
-    background: linear-gradient(120deg, #f6f8fc 0%, #e9eafc 100%);
+    border: 2px solid #60efff;
+    background: linear-gradient(120deg, #22304a 0%, #60efff 100%);
   }
   .admin-card i {
     font-size: 2.7rem;
-    color: #232946;
+    color: #60efff;
     margin-bottom: 1.2rem;
   }
-  .admin-card .btn {
-    margin-top: 1.2rem;
-    background: #232946;
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    padding: 0.6rem 1.7rem;
-    transition: background 0.2s;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+  .admin-card h5, .admin-card p {
+    color: #eaf6fb;
   }
-  .admin-card .btn:hover {
-    background: #eebbc3;
-    color: #232946;
+  .admin-card > .btn {
+    margin-top: 1.2rem;
+    background: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
+    color: #101c2c;
+    border: none;
+    border-radius: 7px !important;
+    padding: 0.6rem 1.7rem !important;
+    transition: background 0.2s, color 0.2s;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: inline-block;
+    min-width: 110px;
+    vertical-align: middle;
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(96,239,255,0.10);
+  }
+  .admin-card > .btn:hover {
+    background: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
+    color: #101c2c;
+    box-shadow: 0 4px 16px rgba(0,255,135,0.18);
   }
 </style>
 
 <!-- Gradient Welcome Banner -->
-<div style="background: linear-gradient(90deg, #2453c7 0%, #7b2ff2 100%); border-radius: 8px; color: #fff; padding: 2rem 2.5rem 2rem 2rem; margin-bottom: 2rem; position: relative; display: flex; align-items: center; min-height: 110px;">
+<div style="
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  border-radius: 18px;
+  color: #60efff;
+  padding: 2rem 2.5rem 2rem 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 110px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  border: 2px solid #22304a;
+">
   <div style="flex:1;">
-    <div style="font-size: 2rem; font-weight: 700; line-height: 1.2;">
+    <div style="font-size: 2rem; font-weight: 700; line-height: 1.2; color: #60efff;">
       Sawubona, {{ admin_name or 'Admin' }}! <span style="font-size:1.8rem;">👋</span>
     </div>
-    <div style="font-size: 1.2rem; margin-top: 0.5rem; font-weight: 500;">
+    <div style="font-size: 1.2rem; margin-top: 0.5rem; font-weight: 500; color: #eaf6fb;">
       You're doing great with your admin journey. Keep up the excellent work!
     </div>
   </div>
   <div style="margin-left: 1.5rem;">
-    <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.18); border-radius: 50%; width: 54px; height: 54px;">
-      <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#fff" fill-opacity="0.2"/><path d="M9 12.5l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(96,239,255,0.10); border-radius: 50%; width: 54px; height: 54px;">
+      <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#60efff" fill-opacity="0.2"/><path d="M9 12.5l2 2 4-4" stroke="#60efff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </span>
   </div>
 </div>
