@@ -22,8 +22,8 @@
         </div>
         
         <div id="chatbot-messages">
-            <div class="welcome-message">
-                <p>Hi there! I'm your KasiKash financial assistant. I can help you with:</p>
+            <div class="message bot-message welcome-message">
+                <p>Hi {{ username.split(' ')[0] if username else 'there' }}! I'm your KasiKash financial assistant. I can help you with:</p>
                 <ul>
                     <li>Stokvel management</li>
                     <li>Savings goals</li>

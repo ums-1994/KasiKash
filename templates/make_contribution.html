@@ -6,7 +6,7 @@
     <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
         <h2 class="text-2xl font-bold mb-6 text-gray-800">Make Contribution</h2>
         
-        <form action="{{ url_for('make_contribution') }}" method="POST">
+        <form id="contributionForm" action="{{ url_for('make_contribution') }}" method="POST">
             {{ csrf_token() }}
             <div class="mb-4">
                 <label for="stokvel_id" class="block text-gray-700 text-sm font-bold mb-2">Select Stokvel</label>
@@ -29,11 +29,59 @@
                 <button type="button" onclick="history.back()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Cancel
                 </button>
-                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <button type="button" id="showConfirmModalBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Make Contribution
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<!-- Payment Confirmation Modal -->
+<div id="paymentConfirmModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full relative">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Confirm Payment</h3>
+        <div class="mb-4">
+            <div class="mb-2"><span class="font-semibold">Stokvel:</span> <span id="confirmStokvel"></span></div>
+            <div class="mb-2"><span class="font-semibold">Amount:</span> R<span id="confirmAmount"></span></div>
+            <div class="mb-2"><span class="font-semibold">Description:</span> <span id="confirmDescription"></span></div>
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+            <button type="button" onclick="closeConfirmModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
+            <button type="button" onclick="submitContributionForm()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">Confirm Payment</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const stokvelSelect = document.getElementById('stokvel_id');
+const stokvelOptions = Array.from(stokvelSelect.options).reduce((acc, opt) => { acc[opt.value] = opt.text; return acc; }, {});
+const showConfirmModalBtn = document.getElementById('showConfirmModalBtn');
+const confirmModal = document.getElementById('paymentConfirmModal');
+const confirmStokvel = document.getElementById('confirmStokvel');
+const confirmAmount = document.getElementById('confirmAmount');
+const confirmDescription = document.getElementById('confirmDescription');
+const contributionForm = document.getElementById('contributionForm');
+
+showConfirmModalBtn.addEventListener('click', function() {
+    const stokvelId = stokvelSelect.value;
+    const amount = document.getElementById('amount').value;
+    const description = document.getElementById('description').value;
+    if (!stokvelId || !amount || !description) {
+        alert('Please fill in all fields.');
+        return;
+    }
+    confirmStokvel.textContent = stokvelOptions[stokvelId] || '';
+    confirmAmount.textContent = amount;
+    confirmDescription.textContent = description;
+    confirmModal.classList.remove('hidden');
+});
+
+function closeConfirmModal() {
+    confirmModal.classList.add('hidden');
+}
+function submitContributionForm() {
+    contributionForm.submit();
+}
+</script>
 {% endblock %} 

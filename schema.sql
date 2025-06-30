@@ -290,4 +290,40 @@ ALTER TABLE transactions ADD COLUMN IF NOT EXISTS savings_goal_id INT REFERENCES
 -- ('Weekly Saver', 'Make contributions for 7 consecutive days', 'points', '500', 'consistency', 7),
 -- ('Goal Getter', 'Complete your first savings goal', 'badge', 'Goal Champion', 'savings', 1),
 -- ('R500 Club', 'Save R500 towards a single goal', 'points', '250', 'savings', 500),
--- ('Early Bird', 'Complete a goal 30 days ahead of schedule', 'bonus', '5% bonus', 'speed', 1); 
+-- ('Early Bird', 'Complete a goal 30 days ahead of schedule', 'bonus', '5% bonus', 'speed', 1);
+
+-- Add missing tables found in the codebase
+
+CREATE TABLE IF NOT EXISTS events (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    event_type VARCHAR(50) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS membership_plans (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    features TEXT, -- Comma-separated list of features
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    link_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_settings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    -- Add any user-specific settings here, for example:
+    email_notifications BOOLEAN DEFAULT TRUE,
+    sms_notifications BOOLEAN DEFAULT FALSE,
+    theme VARCHAR(20) DEFAULT 'light'
+); 
