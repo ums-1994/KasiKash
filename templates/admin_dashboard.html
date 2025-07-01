@@ -99,107 +99,32 @@
 <div class="dashboard-welcome">
   <div>
     <h1>Welcome back, {{ admin_name or 'Admin' }} <span style="font-size:1.8rem;">👋</span></h1>
-    <p>Here's a quick overview of your platform’s activity.</p>
+    <p>Here's a quick overview of your platform's activity.</p>
   </div>
   <div>
     <i class="fas fa-cog" style="font-size:2rem;color:#60efff;"></i>
   </div>
 </div>
-<div class="admin-cards">
-    <div class="admin-card">
-    <i class="fas fa-users"></i>
-    <h5 class="text-gray-900">Manage Users</h5>
-    <p class="text-gray-800">View, add, or remove members</p>
-    <a href="{{ url_for('admin.manage_users') }}" class="btn">Manage</a>
-    </div>
-    <div class="admin-card">
-    <i class="fas fa-hand-holding-usd"></i>
-    <h5 class="text-gray-900">Loan Approvals</h5>
-    <p class="text-gray-800">Approve or reject loans</p>
-    <a href="{{ url_for('admin.loan_approvals') }}" class="btn">Manage</a>
-    </div>
-    <div class="admin-card">
-    <i class="fas fa-chart-bar"></i>
-    <h5 class="text-gray-900">Deposit & Loan Summary</h5>
-    <p class="text-gray-800">Track total funds</p>
-    <button class="btn" onclick="openSummaryModal()">View Summary</button>
-    </div>
-    <div class="admin-card">
-    <i class="fas fa-calendar-alt"></i>
-    <h5 class="text-gray-900">Create Events</h5>
-    <p class="text-gray-800">Set up meetings or sessions</p>
-    <button class="btn">Manage Events</button>
-    </div>
-    <div class="admin-card">
-    <i class="fas fa-medal"></i>
-    <h5 class="text-gray-900">Membership Plans</h5>
-    <p class="text-gray-800">Upgrade to Gold/etc</p>
-    <button class="btn">Adjust Plans</button>
-    </div>
-    <div class="admin-card">
-    <i class="fas fa-bell"></i>
-    <h5 class="text-gray-900">Admin Notifications</h5>
-    <p class="text-gray-800">Send alerts & updates</p>
-    <button class="btn">Send Message</button>
-    </div>
-    <div class="admin-card">
-    <i class="fas fa-id-card"></i>
-    <h5 class="text-gray-900">KYC Approvals</h5>
-    <p class="text-gray-800">Verify user identity<br>Approve/Reject KYC</p>
-    <button class="btn">Review KYC</button>
-    </div>
-</div>
-<!-- Admin-created Stokvels -->
-<div class="mt-8">
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Your Admin Stokvels</h2>
-    <div class="bg-white rounded-lg shadow-md">
-        <ul class="divide-y divide-gray-200">
-            {% if stokvels %}
-                {% for stokvel in stokvels %}
-                <li class="p-4 flex justify-between items-center">
-                    <div>
-                        <strong class="text-gray-900">{{ stokvel[1] }}</strong>
-                        <div class="text-sm text-gray-500">
-                            Monthly: R{{ stokvel[2] }} | Target Date: {{ stokvel[3].strftime('%Y-%m-%d') if stokvel[3] else 'N/A' }}
-                        </div>
-                    </div>
-                    <a href="{{ url_for('view_stokvel_members', stokvel_id=stokvel[0]) }}" class="text-blue-600 hover:text-blue-800">
-                        View
-                    </a>
-                </li>
-                {% endfor %}
-            {% else %}
-                <li class="p-4 text-center text-gray-500">You have not created any stokvels yet.</li>
-            {% endif %}
-        </ul>
-    </div>
-</div>
-<footer class="mt-5 text-center">
-    <hr>
-    <a href="#" class="me-3">Privacy Policy</a>
-    <a href="#" class="me-3">Terms</a>
-    <a href="#">Support</a>
-</footer>
 
 <div class="dashboard-cards">
   <div class="dashboard-card">
     <span class="icon"><i class="fas fa-users"></i></span>
-    <span class="value">{{ total_members or '1,245' }}</span>
+    <span class="value">{{ total_members }}</span>
     <span class="label">Total Members</span>
   </div>
   <div class="dashboard-card">
     <span class="icon"><i class="fas fa-hand-holding-usd"></i></span>
-    <span class="value">{{ pending_loans or '25' }}</span>
+    <span class="value">{{ pending_loans}}</span>
     <span class="label">Pending Loans</span>
   </div>
   <div class="dashboard-card">
     <span class="icon"><i class="fas fa-id-card"></i></span>
-    <span class="value">{{ kyc_pending or '14' }}</span>
+    <span class="value">{{ kyc_pending }}</span>
     <span class="label">KYC Pending</span>
   </div>
   <div class="dashboard-card">
     <span class="icon"><i class="fas fa-bell"></i></span>
-    <span class="value">{{ new_notifications or '3' }}</span>
+    <span class="value">{{ new_notifications }}</span>
     <span class="label">New Notifications</span>
   </div>
 </div>
@@ -213,8 +138,8 @@
 </div>
 
 <div class="dashboard-actions">
-  <button class="dashboard-action-btn">Add New User</button>
-  <button class="dashboard-action-btn">View Loan Requests</button>
-  <button class="dashboard-action-btn">Send Notification</button>
+  <a href="{{ url_for('admin.manage_users') }}" class="dashboard-action-btn">Add New User</a>
+  <a href="{{ url_for('admin.loan_approvals') }}" class="dashboard-action-btn">View Loan Requests</a>
+  <a href="{{ url_for('admin.notifications') }}" class="dashboard-action-btn">Send Notification</a>
 </div>
 {% endblock %}
