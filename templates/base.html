@@ -220,7 +220,7 @@
       </div>
       <div class="p-6 border-t border-gray-800">
         <a href="/logout" class="flex items-center text-gray-200 hover:text-white">
-          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">BN</span>
+          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">{{ session.user_initials if session.user_initials else 'BN' }}</span>
           Logout
         </a>
       </div>
