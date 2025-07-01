@@ -18,13 +18,17 @@ def dashboard():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT COUNT(*) FROM users")
-                user_count = cur.fetchone()[0]
-                cur.execute("SELECT COUNT(*) FROM stokvels")
-                stokvel_count = cur.fetchone()[0]
+                # Count all stokvel members with a user_id
+                cur.execute("SELECT COUNT(*) FROM stokvel_members WHERE user_id IS NOT NULL")
+                total_members = cur.fetchone()[0]
+                # Count all pending payouts
                 cur.execute("SELECT COUNT(*) FROM transactions WHERE type = 'payout' AND status = 'pending'")
                 pending_loans = cur.fetchone()[0]
-
+                # KYC and notifications as before
+                cur.execute("SELECT COUNT(*) FROM users WHERE (id_document IS NOT NULL AND id_document != '') AND (proof_of_address IS NOT NULL AND proof_of_address != '') AND kyc_approved_at IS NULL")
+                kyc_pending = cur.fetchone()[0]
+                cur.execute("SELECT COUNT(*) FROM notifications WHERE is_read = FALSE")
+                new_notifications = cur.fetchone()[0]
                 # Fetch stokvels created by the admin
                 cur.execute("""
                     SELECT id, name, monthly_contribution, target_date
@@ -32,16 +36,21 @@ def dashboard():
                     WHERE created_by = %s
                 """, (firebase_uid,))
                 stokvels = cur.fetchall()
+        print("Total members:", total_members)
+        print("Pending loans:", pending_loans)
+        print("KYC pending:", kyc_pending)
+        print("New notifications:", new_notifications)
     except Exception as e:
         print(f"Error fetching admin dashboard data: {e}")
-        user_count, stokvel_count, pending_loans = 0, 0, 0
+        total_members, pending_loans, kyc_pending, new_notifications = 0, 0, 0, 0
         stokvels = []
 
     return render_template(
         'admin_dashboard.html', 
-        user_count=user_count, 
-        stokvel_count=stokvel_count, 
-        pending_loans=pending_loans,
+        total_members=total_members, 
+        pending_loans=pending_loans, 
+        kyc_pending=kyc_pending, 
+        new_notifications=new_notifications,
         stokvels=stokvels
     )
 

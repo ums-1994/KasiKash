@@ -99,7 +99,7 @@
 <div class="dashboard-welcome">
   <div>
     <h1>Welcome back, {{ admin_name or 'Admin' }} <span style="font-size:1.8rem;">👋</span></h1>
-    <p>Here's a quick overview of your platform’s activity.</p>
+    <p>Here's a quick overview of your platform's activity.</p>
   </div>
   <div>
     <a href="{{ url_for('admin.settings') }}" title="Admin Settings">
@@ -161,8 +161,8 @@
 </div>
 
 <div class="dashboard-actions">
-  <button class="dashboard-action-btn">Add New User</button>
-  <button class="dashboard-action-btn">View Loan Requests</button>
-  <button class="dashboard-action-btn">Send Notification</button>
+  <a href="{{ url_for('admin.manage_users') }}" class="dashboard-action-btn">Add New User</a>
+  <a href="{{ url_for('admin.loan_approvals') }}" class="dashboard-action-btn">View Loan Requests</a>
+  <a href="{{ url_for('admin.notifications') }}" class="dashboard-action-btn">Send Notification</a>
 </div>
 {% endblock %}
