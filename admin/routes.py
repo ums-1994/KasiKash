@@ -461,10 +461,39 @@ def reject_kyc(user_id):
         flash('Failed to reject KYC.', 'danger')
     return redirect(url_for('admin.kyc_approvals'))
 
-@admin_bp.route('/admin/settings')
+@admin_bp.route('/settings')
 @login_required
 def settings():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
-    return render_template('admin_settings.html')
+
+    # --- Provide context variables for the settings page ---
+    # In production, fetch these from the database or config
+    default_settings = {
+        'contribution_amount': 200,
+        'late_penalty': 10,
+        'grace_period': 5,
+        'max_loan_percent': 80,
+        'interest_rate': 5,
+        'repayment_period': 12,
+        'withdrawal_threshold': 1000,
+        'enable_2fa': True,
+    }
+    audit_logs = [
+        {'action': 'Approved Loan', 'user': 'Admin1', 'target': 'User5', 'amount': 'R500', 'date': '2025-06-30'},
+        {'action': 'Rejected Withdrawal', 'user': 'Admin2', 'target': 'User3', 'amount': 'R2000', 'date': '2025-06-29'},
+    ]
+    attendance_data = [
+        {'meeting': 'June Meeting', 'date': '2025-06-01', 'present': 18, 'absent': 2},
+        {'meeting': 'May Meeting', 'date': '2025-05-01', 'present': 17, 'absent': 3},
+    ]
+    days_of_week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+    return render_template(
+        'admin_settings.html',
+        default_settings=default_settings,
+        audit_logs=audit_logs,
+        attendance_data=attendance_data,
+        days_of_week=days_of_week
+    )
