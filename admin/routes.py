@@ -386,19 +386,36 @@ def kyc_approvals():
 @admin_bp.route('/kyc-approve/<int:user_id>', methods=['POST'])
 @login_required
 def approve_kyc(user_id):
-    if 'user_id' not in session or session.get('role') != 'admin':
-        flash('You do not have permission to perform this action.', 'danger')
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
         return redirect(url_for('admin.kyc_approvals'))
     try:
         with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    UPDATE users
-                    SET kyc_approved_at = NOW()
-                    WHERE id = %s
-                """, (user_id,))
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Get email from the provided user_id to ensure we update the correct, active user
+                cur.execute("SELECT email, firebase_uid FROM users WHERE id = %s", (user_id,))
+                user_data = cur.fetchone()
+                if not user_data:
+                    flash(f"User with ID {user_id} not found.", "danger")
+                    return redirect(url_for('admin.kyc_approvals'))
+
+                email = user_data['email']
+                
+                # Update the user record using the email, targeting the active, firebase-linked account
+                cur.execute("UPDATE users SET kyc_status = 'approved', kyc_verified_at = NOW() WHERE email = %s AND firebase_uid IS NOT NULL", (email,))
+                
+                # Get the firebase_uid for notification
+                cur.execute("SELECT firebase_uid FROM users WHERE email = %s AND firebase_uid IS NOT NULL", (email,))
+                user_to_notify = cur.fetchone()
+
+                if user_to_notify and user_to_notify['firebase_uid']:
+                    firebase_uid = user_to_notify['firebase_uid']
+                    message = "Congratulations! Your KYC documents have been approved. You are now fully verified."
+                    link = url_for('profile')
+                    create_notification(firebase_uid, message, link_url=link, notification_type='kyc_approved')
+                
                 conn.commit()
-        flash('KYC approved successfully.', 'success')
+        flash(f'KYC for {email} approved successfully.', 'success')
     except Exception as e:
         print(f"Error approving KYC: {e}")
         flash('Failed to approve KYC.', 'danger')
@@ -407,19 +424,38 @@ def approve_kyc(user_id):
 @admin_bp.route('/kyc-reject/<int:user_id>', methods=['POST'])
 @login_required
 def reject_kyc(user_id):
-    if 'user_id' not in session or session.get('role') != 'admin':
-        flash('You do not have permission to perform this action.', 'danger')
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
         return redirect(url_for('admin.kyc_approvals'))
+
+    rejection_reason = request.form.get('reason', 'Your documents could not be verified. Please re-upload clear and valid documents.')
     try:
         with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    UPDATE users
-                    SET id_document = NULL, proof_of_address = NULL, kyc_approved_at = NULL
-                    WHERE id = %s
-                """, (user_id,))
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Get email from the provided user_id to ensure we update the correct, active user
+                cur.execute("SELECT email, firebase_uid FROM users WHERE id = %s", (user_id,))
+                user_data = cur.fetchone()
+                if not user_data:
+                    flash(f"User with ID {user_id} not found.", "danger")
+                    return redirect(url_for('admin.kyc_approvals'))
+
+                email = user_data['email']
+                
+                # Update the user record using the email, targeting the active, firebase-linked account
+                cur.execute("UPDATE users SET kyc_status = 'rejected', kyc_rejection_reason = %s WHERE email = %s AND firebase_uid IS NOT NULL", (rejection_reason, email,))
+                
+                # Get the firebase_uid for notification
+                cur.execute("SELECT firebase_uid FROM users WHERE email = %s AND firebase_uid IS NOT NULL", (email,))
+                user_to_notify = cur.fetchone()
+
+                if user_to_notify and user_to_notify['firebase_uid']:
+                    firebase_uid = user_to_notify['firebase_uid']
+                    message = f"Your KYC submission was rejected. Reason: {rejection_reason}"
+                    link = url_for('profile')
+                    create_notification(firebase_uid, message, link_url=link, notification_type='kyc_rejected')
+
                 conn.commit()
-        flash('KYC rejected and documents removed.', 'success')
+        flash(f'KYC for {email} rejected successfully.', 'success')
     except Exception as e:
         print(f"Error rejecting KYC: {e}")
         flash('Failed to reject KYC.', 'danger')

@@ -11,28 +11,67 @@
     </div>
 
     <!-- Payment Methods Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
         {% for method in payment_methods %}
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-start">
-                <h2 class="text-xl font-semibold mb-2">{{ method.type }}</h2>
-                {% if method.is_default %}
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                    Default
-                </span>
-                {% endif %}
+        <div class="relative flex flex-col min-h-[170px]">
+            <div class="card-glass flex-1 flex flex-col justify-between border border-blue-900/40">
+                <div class="border-glow"></div>
+                <div class="shine"></div>
+                <div class="flex justify-between items-center mb-2 relative z-10">
+                    <div class="card-label">
+                        <svg class="card-chip" viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="44" height="32" rx="8" fill="#44446a"/>
+                            <rect x="6" y="10" width="32" height="12" rx="4" fill="#232347"/>
+                            <rect x="14" y="14" width="16" height="4" rx="2" fill="#3a2e7b"/>
+                        </svg>
+                        {{ method.type|replace('_', ' ')|title }}
+                    </div>
+                    {% if method.is_default %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-900/80 text-white shadow">Default</span>
+                    {% endif %}
+                </div>
+                
+                <div class="relative z-10">
+                    {% if method.type in ['credit_card', 'debit_card', 'card'] %}
+                        {% set parts = method.masked_details.split('Exp:') %}
+                        <div class="card-details-row">
+                            <span class="card-number">{{ parts[0].strip().replace('*', '•') }}</span>
+                            <span class="card-expiry">Exp: {{ parts[1].strip() if parts|length > 1 else '' }}</span>
+                        </div>
+                        <div class="card-holder-name">{{ method.card_holder_name|default('Card Holder') }}</div>
+                    {% elif method.type == 'bank_account' %}
+                        <div class="bank-details-row">
+                             <span class="bank-info">{{ method.masked_details }}</span>
+                        </div>
+                        <div class="card-holder-name">{{ method.account_holder_name|default('Account Holder') }}</div>
+                    {% else %}
+                        <div class="card-details-row">
+                            <span>{{ method.masked_details }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-between items-end mt-auto relative z-10">
+                    <span class="card-added">Added on {{ method.created_at.strftime('%Y-%m-%d') }}</span>
+                    {% if method.type in ['credit_card', 'debit_card', 'card'] %}
+                    <span class="card-brand">
+                        {% set card_number_for_brand = method.details.card_number|string|replace(' ', '') %}
+                        {% if card_number_for_brand and card_number_for_brand.startswith('4') %}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="height:22px;filter:drop-shadow(0 0 4px #232347cc);">
+                        {% else %}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height:22px;filter:drop-shadow(0 0 4px #232347cc);">
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                </div>
             </div>
-            <div class="space-y-2">
-                <p class="text-gray-600">{{ method.details }}</p>
-                <p class="text-sm text-gray-500">Added on {{ method.created_at.strftime('%Y-%m-%d') }}</p>
-            </div>
-            <div class="mt-4 flex space-x-2">
+            <div class="card-actions">
                 {% if not method.is_default %}
                 <form action="/set_default_payment_method" method="POST" class="inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="method_id" value="{{ method.id }}">
                     <button type="submit" 
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            class="bg-gray-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded shadow">
                         Set as Default
                     </button>
                 </form>
@@ -41,7 +80,7 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="method_id" value="{{ method.id }}">
                     <button type="submit" 
-                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            class="bg-red-700 hover:bg-red-900 text-white font-bold py-2 px-4 rounded shadow">
                         Delete
                     </button>
                 </form>
@@ -51,46 +90,80 @@
     </div>
 
     <!-- Add Payment Method Modal -->
-    <div id="addPaymentMethodModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div id="addPaymentMethodModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 border w-full max-w-lg shadow-2xl rounded-2xl bg-white">
             <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Add Payment Method</h3>
-                <form action="/add_payment_method" method="POST">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-gray-800">Add New Payment Method</h3>
+                    <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form action="/add_payment_method" method="POST" id="paymentMethodForm">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-4">
+                    <div class="mb-5">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="type">
                             Payment Type
                         </label>
-                        <select name="type" id="type" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="bank_account">Bank Account</option>
-                            <option value="credit_card">Credit Card</option>
+                        <select name="type" id="type" onchange="togglePaymentFields()" required
+                                class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="credit_card" selected>Credit Card</option>
                             <option value="debit_card">Debit Card</option>
-                            <option value="mobile_money">Mobile Money</option>
+                            <option value="bank_account">Bank Account</option>
                         </select>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="details">
-                            Payment Details (JSON)
-                        </label>
-                        <textarea name="details" id="details" required
-                                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                  placeholder='{"account_number": "1234567890", "bank_name": "Example Bank"}'></textarea>
+
+                    <!-- Card Details Fields -->
+                    <div id="card_fields">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="card_holder_name">Cardholder Name</label>
+                            <input type="text" name="card_holder_name" id="card_holder_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="John Doe">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="card_number">Card Number</label>
+                            <input type="text" name="card_number" id="card_number" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="•••• •••• •••• ••••">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="expiry_date">Expiry Date</label>
+                                <input type="text" name="expiry_date" id="expiry_date" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="MM/YY">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="cvv">CVV</label>
+                                <input type="text" name="cvv" id="cvv" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="•••">
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-4">
+
+                    <!-- Bank Account Fields -->
+                    <div id="bank_fields" class="hidden">
+                        <div class="mb-4">
+                             <label class="block text-gray-700 text-sm font-bold mb-2" for="account_holder_name">Account Holder Name</label>
+                            <input type="text" name="account_holder_name" id="account_holder_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="John Doe">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="account_number">Account Number</label>
+                            <input type="text" name="account_number" id="account_number" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="1234567890">
+                        </div>
+                         <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="bank_name">Bank Name</label>
+                            <input type="text" name="bank_name" id="bank_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="Example Bank">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
                         <label class="flex items-center">
-                            <input type="checkbox" name="is_default" value="true"
-                                   class="form-checkbox h-4 w-4 text-blue-600">
-                            <span class="ml-2 text-gray-700">Set as default payment method</span>
+                            <input type="checkbox" name="is_default" value="true" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                            <span class="ml-3 text-gray-700">Set as default payment method</span>
                         </label>
                     </div>
-                    <div class="flex justify-end space-x-2">
+                    <div class="flex justify-end space-x-4">
                         <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')"
-                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">
                             Cancel
                         </button>
                         <button type="submit"
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
                             Add Method
                         </button>
                     </div>
@@ -99,4 +172,173 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePaymentFields() {
+    const type = document.getElementById('type').value;
+    const cardFields = document.getElementById('card_fields');
+    const bankFields = document.getElementById('bank_fields');
+    
+    const cardInputs = cardFields.querySelectorAll('input');
+    const bankInputs = bankFields.querySelectorAll('input');
+
+    if (type === 'bank_account') {
+        bankFields.classList.remove('hidden');
+        cardFields.classList.add('hidden');
+        // Make bank inputs required and card inputs not
+        bankInputs.forEach(input => input.required = true);
+        cardInputs.forEach(input => input.required = false);
+    } else { // credit_card or debit_card
+        cardFields.classList.remove('hidden');
+        bankFields.classList.add('hidden');
+        // Make card inputs required and bank inputs not
+        cardInputs.forEach(input => input.required = true);
+        bankInputs.forEach(input => input.required = false);
+    }
+}
+
+// Initial call to set the correct fields on page load
+document.addEventListener('DOMContentLoaded', function() {
+    togglePaymentFields();
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card-glass {
+  position: relative;
+  background: rgba(24, 26, 44, 0.92);
+  border-radius: 1.5rem;
+  box-shadow: 0 6px 24px 0 rgba(31,38,135,0.32), 0 1.5px 8px 0 #3a2e7b55;
+  border: 1.5px solid #232347;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: box-shadow 0.3s, border 0.3s;
+  min-height: 170px;
+  padding: 1.5rem 1.3rem 1.1rem 1.3rem !important;
+}
+.card-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  background: linear-gradient(120deg, rgba(44,34,84,0.45) 0%, rgba(34,37,68,0.32) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+.card-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 20px);
+  z-index: 2;
+  pointer-events: none;
+}
+.card-glass .shine {
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 60%);
+  transform: rotate(8deg);
+  filter: blur(1.5px);
+  animation: shine-move 3.5s linear infinite;
+  z-index: 3;
+  pointer-events: none;
+}
+@keyframes shine-move {
+  0% { transform: translateX(-60%) rotate(8deg); }
+  100% { transform: translateX(60%) rotate(8deg); }
+}
+.card-glass .border-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.5rem;
+  background: linear-gradient(120deg, #2d1e5a, #3a2e7b 60%, #232347 100%);
+  filter: blur(6px);
+  opacity: 0.22;
+  z-index: 0;
+  pointer-events: none;
+  animation: border-glow-anim 4s linear infinite;
+}
+@keyframes border-glow-anim {
+  0% { filter: blur(6px) brightness(1); }
+  50% { filter: blur(10px) brightness(1.08); }
+  100% { filter: blur(6px) brightness(1); }
+}
+.card-chip {
+  width: 38px;
+  height: 28px;
+  margin-bottom: 0.3rem;
+}
+.card-details-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+.bank-details-row {
+    margin-bottom: 0.4rem;
+}
+.bank-info {
+    font-family: 'Montserrat', 'Inter', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: #e6e6f7;
+    text-shadow: 0 1.5px 6px #181a2c99;
+}
+.card-holder-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #c3c3e1;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.7rem;
+}
+.card-number {
+  font-family: 'Montserrat', 'Inter', monospace;
+  font-size: 1.25rem;
+  letter-spacing: 0.22em;
+  color: #e6e6f7;
+  text-shadow: 0 1.5px 6px #181a2c99;
+  font-variant-numeric: tabular-nums;
+}
+.card-expiry {
+  font-size: 1rem;
+  color: #a3a3c2;
+  letter-spacing: 0.12em;
+  margin-left: 1.1rem;
+}
+.card-brand {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.card-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #b3b3d1;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.card-added {
+  font-size: 0.8rem;
+  color: #b3b3d1cc;
+  margin-top: 0.2rem;
+}
+.card-actions {
+  margin-top: 1.1rem;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+</style>
 {% endblock %} 

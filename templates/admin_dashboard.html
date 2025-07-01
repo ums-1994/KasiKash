@@ -88,11 +88,13 @@
     vertical-align: middle;
     line-height: 1.2;
     box-shadow: 0 2px 8px rgba(96,239,255,0.10);
+    text-decoration: none;
   }
   .admin-card > .btn:hover {
     background: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
     color: #101c2c;
     box-shadow: 0 4px 16px rgba(0,255,135,0.18);
+    text-decoration: none;
   }
 </style>
 
@@ -131,25 +133,25 @@
     <i class="fas fa-calendar-alt"></i>
     <h5 class="text-gray-900">Create Events</h5>
     <p class="text-gray-800">Set up meetings or sessions</p>
-    <button class="btn">Manage Events</button>
+    <a href="{{ url_for('admin.events') }}" class="btn">Manage Events</a>
     </div>
     <div class="admin-card">
     <i class="fas fa-medal"></i>
     <h5 class="text-gray-900">Membership Plans</h5>
     <p class="text-gray-800">Upgrade to Gold/etc</p>
-    <button class="btn">Adjust Plans</button>
+    <a href="{{ url_for('admin.memberships') }}" class="btn">Adjust Plans</a>
     </div>
     <div class="admin-card">
     <i class="fas fa-bell"></i>
     <h5 class="text-gray-900">Admin Notifications</h5>
     <p class="text-gray-800">Send alerts & updates</p>
-    <button class="btn">Send Message</button>
+    <a href="{{ url_for('admin.notifications') }}" class="btn">Send Message</a>
     </div>
     <div class="admin-card">
     <i class="fas fa-id-card"></i>
     <h5 class="text-gray-900">KYC Approvals</h5>
     <p class="text-gray-800">Verify user identity<br>Approve/Reject KYC</p>
-    <button class="btn">Review KYC</button>
+    <a href="{{ url_for('admin.kyc_approvals') }}" class="btn">Review KYC</a>
     </div>
 </div>
 <h2>Your Admin Stokvels</h2>
