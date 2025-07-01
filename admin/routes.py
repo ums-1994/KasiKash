@@ -13,6 +13,8 @@ def dashboard():
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
     
+    firebase_uid = session.get('user_id')
+    stokvels = []
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
@@ -22,11 +24,26 @@ def dashboard():
                 stokvel_count = cur.fetchone()[0]
                 cur.execute("SELECT COUNT(*) FROM transactions WHERE type = 'payout' AND status = 'pending'")
                 pending_loans = cur.fetchone()[0]
+
+                # Fetch stokvels created by the admin
+                cur.execute("""
+                    SELECT id, name, monthly_contribution, target_date
+                    FROM stokvels
+                    WHERE created_by = %s
+                """, (firebase_uid,))
+                stokvels = cur.fetchall()
     except Exception as e:
         print(f"Error fetching admin dashboard data: {e}")
         user_count, stokvel_count, pending_loans = 0, 0, 0
+        stokvels = []
 
-    return render_template('admin_dashboard.html', user_count=user_count, stokvel_count=stokvel_count, pending_loans=pending_loans)
+    return render_template(
+        'admin_dashboard.html', 
+        user_count=user_count, 
+        stokvel_count=stokvel_count, 
+        pending_loans=pending_loans,
+        stokvels=stokvels
+    )
 
 @admin_bp.route('/manage-users')
 @login_required
