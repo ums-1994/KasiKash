@@ -13,46 +13,20 @@ def dashboard():
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
     
-    firebase_uid = session.get('user_id')
-    stokvels = []
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Count all stokvel members with a user_id
-                cur.execute("SELECT COUNT(*) FROM stokvel_members WHERE user_id IS NOT NULL")
-                total_members = cur.fetchone()[0]
-                # Count all pending payouts
+                cur.execute("SELECT COUNT(*) FROM users")
+                user_count = cur.fetchone()[0]
+                cur.execute("SELECT COUNT(*) FROM stokvels")
+                stokvel_count = cur.fetchone()[0]
                 cur.execute("SELECT COUNT(*) FROM transactions WHERE type = 'payout' AND status = 'pending'")
                 pending_loans = cur.fetchone()[0]
-                # KYC and notifications as before
-                cur.execute("SELECT COUNT(*) FROM users WHERE (id_document IS NOT NULL AND id_document != '') AND (proof_of_address IS NOT NULL AND proof_of_address != '') AND kyc_approved_at IS NULL")
-                kyc_pending = cur.fetchone()[0]
-                cur.execute("SELECT COUNT(*) FROM notifications WHERE is_read = FALSE")
-                new_notifications = cur.fetchone()[0]
-                # Fetch stokvels created by the admin
-                cur.execute("""
-                    SELECT id, name, monthly_contribution, target_date
-                    FROM stokvels
-                    WHERE created_by = %s
-                """, (firebase_uid,))
-                stokvels = cur.fetchall()
-        print("Total members:", total_members)
-        print("Pending loans:", pending_loans)
-        print("KYC pending:", kyc_pending)
-        print("New notifications:", new_notifications)
     except Exception as e:
         print(f"Error fetching admin dashboard data: {e}")
-        total_members, pending_loans, kyc_pending, new_notifications = 0, 0, 0, 0
-        stokvels = []
+        user_count, stokvel_count, pending_loans = 0, 0, 0
 
-    return render_template(
-        'admin_dashboard.html', 
-        total_members=total_members, 
-        pending_loans=pending_loans, 
-        kyc_pending=kyc_pending, 
-        new_notifications=new_notifications,
-        stokvels=stokvels
-    )
+    return render_template('admin_dashboard.html', user_count=user_count, stokvel_count=stokvel_count, pending_loans=pending_loans)
 
 @admin_bp.route('/manage-users')
 @login_required
@@ -63,6 +37,7 @@ def manage_users():
 
     search_query = request.args.get('search', '')
     users = []
+    stokvels = []
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -71,11 +46,14 @@ def manage_users():
                 else:
                     cur.execute("SELECT id, username, email, role, created_at, last_login FROM users ORDER BY created_at DESC")
                 users = cur.fetchall()
+                # Fetch all stokvels for the Add User modal
+                cur.execute("SELECT id, name FROM stokvels ORDER BY name")
+                stokvels = cur.fetchall()
     except Exception as e:
-        print(f"Error fetching users for admin: {e}")
-        flash('Could not load users.', 'danger')
+        print(f"Error fetching users or stokvels for admin: {e}")
+        flash('Could not load users or stokvels.', 'danger')
 
-    return render_template('admin_manage_users.html', users=users, search_query=search_query)
+    return render_template('admin_manage_users.html', users=users, search_query=search_query, stokvels=stokvels)
 
 @admin_bp.route('/users/add', methods=['POST'])
 @login_required
@@ -88,21 +66,25 @@ def add_user():
     password = request.form.get('password')
     role = request.form.get('role', 'user')
 
-    if not all([username, email, password]):
-        return jsonify({'success': False, 'message': 'Username, email, and password are required.'}), 400
+    if not all([username, email]):
+        return jsonify({'success': False, 'message': 'Username and email are required.'}), 400
 
     try:
-        user_record = auth.create_user(
-            email=email,
-            password=password,
-            display_name=username,
-            email_verified=True
-        )
+        firebase_uid = None
+        # Only create Firebase user if password is provided
+        if password:
+            user_record = auth.create_user(
+                email=email,
+                password=password,
+                display_name=username,
+                email_verified=True
+            )
+            firebase_uid = user_record.uid
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "INSERT INTO users (firebase_uid, username, email, role, password) VALUES (%s, %s, %s, %s, %s)",
-                    (user_record.uid, username, email, role, password)
+                    "INSERT INTO users (firebase_uid, username, email, role) VALUES (%s, %s, %s, %s)",
+                    (firebase_uid, username, email, role)
                 )
                 conn.commit()
         flash(f'User {username} created successfully!', 'success')
@@ -112,7 +94,10 @@ def add_user():
     except Exception as e:
         print(f"Error adding user from admin: {e}")
         if 'user_record' in locals():
-            auth.delete_user(user_record.uid)
+            try:
+                auth.delete_user(user_record.uid)
+            except Exception:
+                pass
         return jsonify({'success': False, 'message': f'An error occurred: {e}'}), 500
 
 @admin_bp.route('/loan-approvals')
@@ -386,7 +371,7 @@ def kyc_approvals():
             with conn.cursor() as cur:
                 if search_query:
                     cur.execute("""
-                        SELECT id, email, id_document, proof_of_address, created_at, kyc_approved_at
+                        SELECT id, email, id_document, proof_of_address, created_at
                         FROM users
                         WHERE (id_document IS NOT NULL AND id_document != '')
                           AND (proof_of_address IS NOT NULL AND proof_of_address != '')
@@ -395,7 +380,7 @@ def kyc_approvals():
                     """, (f'%{search_query}%',))
                 else:
                     cur.execute("""
-                        SELECT id, email, id_document, proof_of_address, created_at, kyc_approved_at
+                        SELECT id, email, id_document, proof_of_address, created_at
                         FROM users
                         WHERE (id_document IS NOT NULL AND id_document != '')
                           AND (proof_of_address IS NOT NULL AND proof_of_address != '')
