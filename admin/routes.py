@@ -41,10 +41,24 @@ def manage_users():
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Fetch users with their stokvel name (if any)
                 if search_query:
-                    cur.execute("SELECT id, username, email, role, created_at, last_login FROM users WHERE username ILIKE %s OR email ILIKE %s ORDER BY created_at DESC", (f'%{search_query}%', f'%{search_query}%'))
+                    cur.execute("""
+                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, s.name AS stokvel_name
+                        FROM users u
+                        LEFT JOIN stokvel_members sm ON u.id = sm.user_id
+                        LEFT JOIN stokvels s ON sm.stokvel_id = s.id
+                        WHERE u.username ILIKE %s OR u.email ILIKE %s
+                        ORDER BY u.created_at DESC
+                    """, (f'%{search_query}%', f'%{search_query}%'))
                 else:
-                    cur.execute("SELECT id, username, email, role, created_at, last_login FROM users ORDER BY created_at DESC")
+                    cur.execute("""
+                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, s.name AS stokvel_name
+                        FROM users u
+                        LEFT JOIN stokvel_members sm ON u.id = sm.user_id
+                        LEFT JOIN stokvels s ON sm.stokvel_id = s.id
+                        ORDER BY u.created_at DESC
+                    """)
                 users = cur.fetchall()
                 # Fetch all stokvels for the Add User modal
                 cur.execute("SELECT id, name FROM stokvels ORDER BY name")
@@ -65,6 +79,7 @@ def add_user():
     email = request.form.get('email')
     password = request.form.get('password')
     role = request.form.get('role', 'user')
+    stokvel_id = request.form.get('stokvel_id')  # Get stokvel_id from form
 
     if not all([username, email]):
         return jsonify({'success': False, 'message': 'Username and email are required.'}), 400
@@ -82,10 +97,18 @@ def add_user():
             firebase_uid = user_record.uid
         with support.db_connection() as conn:
             with conn.cursor() as cur:
+                # Insert user and get user_id
                 cur.execute(
-                    "INSERT INTO users (firebase_uid, username, email, role) VALUES (%s, %s, %s, %s)",
+                    "INSERT INTO users (firebase_uid, username, email, role) VALUES (%s, %s, %s, %s) RETURNING id",
                     (firebase_uid, username, email, role)
                 )
+                user_id = cur.fetchone()[0]
+                # If stokvel_id is provided, insert into stokvel_members
+                if stokvel_id:
+                    cur.execute(
+                        "INSERT INTO stokvel_members (user_id, stokvel_id) VALUES (%s, %s)",
+                        (user_id, stokvel_id)
+                    )
                 conn.commit()
         flash(f'User {username} created successfully!', 'success')
         return jsonify({'success': True})
