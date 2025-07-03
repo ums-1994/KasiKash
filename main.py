@@ -140,7 +140,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 Session(app)  # Initialize Flask-Session
 
 # Register the admin blueprint
-app.register_blueprint(admin_bp)
+app.register_blueprint(admin_bp, url_prefix='/admin')
 
 # Initialize OpenRouter client at application level
 try:
@@ -1925,7 +1925,7 @@ def upload_profile_picture():
         file.save(filepath)
         
         # Update user profile picture path in database
-        support
+        support.execute_query("update", "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s", (filename, user_id))
         
         flash('Profile picture updated successfully!', 'success')
     else:
@@ -1942,37 +1942,6 @@ def upload_kyc():
     if not id_doc or not address_doc:
         flash('Both ID document and proof of address are required.', 'warning')
         return redirect(url_for('profile'))
-        @login_required
-def upload_kyc():
-    user_id = session['user_id']
-    id_doc = request.files.get('id_document')
-    address_doc = request.files.get('address_document')
-
-    if not id_doc or not address_doc:
-        flash('Both ID document and proof of address are required.', 'warning')
-        return redirect(url_for('profile'))
-
-                    # Update user's KYC info in the database (use correct columns)
-            query = "UPDATE users SET id_document = %s, proof_of_address = %s WHERE firebase_uid = %s"
-            support.execute_query("update", query, (id_filename, address_filename, user_id))
-    
-            flash('KYC documents uploaded successfully. They are pending review.', 'success')
-        except Exception as e:
-            flash(f'An error occurred during KYC upload: {e}', 'danger')
-    
-        return redirect(url_for('profile'))
-
-
-    try:
-        id_filename = secure_filename(f"{user_id}_id_{id_doc.filename}")
-        address_filename = secure_filename(f"{user_id}_address_{address_doc.filename}")
-
-        id_filepath = os.path.join(app.config['KYC_UPLOAD_FOLDER'], id_filename)
-        address_filepath = os.path.join(app.config['KYC_UPLOAD_FOLDER'], address_filename)
-
-        id_doc.save(id_filepath)
-        address_doc.save(address_filepath)
-        # ...rest of code...
 
     try:
         id_filename = secure_filename(f"{user_id}_id_{id_doc.filename}")
@@ -1994,7 +1963,7 @@ def upload_kyc():
         flash(f'An error occurred during KYC upload: {e}', 'danger')
 
     return redirect(url_for('profile'))           
-                
+    
 def inject_user_name():
     username = None
     language_preference = 'en'  # Default language
