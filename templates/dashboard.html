@@ -5,34 +5,179 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
-  font-family: 'Inter', 'Montserrat', sans-serif;
+.admin-dashboard-banner {
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  color: #60efff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  padding: 2rem 2.5rem 2rem 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 110px;
+  border: 2px solid #22304a;
+}
+.admin-dashboard-banner h1 {
+  color: #60efff;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+.admin-dashboard-banner p {
+  color: #eaf6fb;
+  font-size: 1.2rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  margin-bottom: 0;
 }
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 2rem;
 }
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1.5rem;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.glass-card, .dashboard-card {
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  border: 2px solid #22304a;
+  color: #eaf6fb;
   padding: 2rem;
   position: relative;
+  transition: transform 0.18s, box-shadow 0.18s, border 0.18s, background 0.18s;
 }
-.glass-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 
-    0 25px 50px rgba(123, 97, 255, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.1);
+.glass-card:hover, .dashboard-card:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 8px 32px rgba(35,41,70,0.16);
+  border: 2px solid #60efff;
+  background: linear-gradient(120deg, #22304a 0%, #60efff 100%);
+}
+.dashboard-card h3, .glass-card h3, .dashboard-card h2, .glass-card h2 {
+  color: #60efff;
+}
+.dashboard-card p, .glass-card p {
+  color: #b2f7ef;
+}
+.dashboard-btn, .btn {
+  background: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
+  color: #101c2c;
+  border: none;
+  border-radius: 7px !important;
+  padding: 0.6rem 1.7rem !important;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: inline-block;
+  min-width: 110px;
+  vertical-align: middle;
+  line-height: 1.2;
+  box-shadow: 0 2px 8px rgba(96,239,255,0.10);
+}
+.dashboard-btn:hover, .btn:hover {
+  background: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
+  color: #101c2c;
+  box-shadow: 0 4px 16px rgba(0,255,135,0.18);
+}
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+.quick-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.04);
+  border-radius: 1.2rem;
+  padding: 1.2rem 0.5rem 0.8rem 0.5rem;
+  box-shadow: 0 2px 8px rgba(96,239,255,0.08);
+  border: 1.5px solid #22304a;
+  transition: background 0.2s, border 0.2s, transform 0.2s;
+  cursor: pointer;
+  min-height: 120px;
+  position: relative;
+}
+.quick-action-card:hover {
+  background: rgba(96,239,255,0.08);
+  border: 1.5px solid #60efff;
+  transform: translateY(-4px) scale(1.03);
+}
+.quick-action-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  color: #60efff;
+  transition: color 0.2s;
+}
+.quick-action-card:hover .quick-action-icon {
+  color: #00ff87;
+}
+.quick-action-label {
+  font-weight: 700;
+  color: #eaf6fb;
+  margin-bottom: 0.2rem;
+  font-size: 1.1rem;
+}
+.quick-action-desc {
+  color: #b2f7ef;
+  font-size: 0.92rem;
+  text-align: center;
+}
+.quick-action-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22304a;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(35,41,70,0.18);
+}
+.quick-action-card:hover .quick-action-tooltip {
+  display: block;
+}
+.activity-visualizer {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto 1.5rem auto;
+  background: rgba(255,255,255,0.03);
+  border-radius: 1.2rem;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(96,239,255,0.08);
+  border: 1.5px solid #22304a;
+}
+.welcome-banner {
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  color: #60efff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  padding: 2rem 2.5rem 2rem 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 110px;
+  border: 2px solid #22304a;
+}
+.welcome-title {
+  color: #60efff;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+.welcome-subtitle {
+  color: #eaf6fb;
+  font-size: 1.2rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  margin-bottom: 0;
 }
 .accent {
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
@@ -117,92 +262,11 @@ body {
   background: linear-gradient(90deg, #0072ff, #00c6ff);
 }
 @media (max-width: 1024px) {
-  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 768px) {
   .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 500px) {
+@media (max-width: 768px) {
   .dashboard-grid { grid-template-columns: 1fr; }
-}
-.welcome-banner {
-  position: relative;
-  min-height: 240px;
-  border-radius: 2rem;
-  overflow: hidden;
-  margin-bottom: 2rem;
-  background: 
-    /* Mesh gradient pattern */
-    radial-gradient(circle at 20% 20%, rgba(123, 97, 255, 0.3) 0%, transparent 40%),
-    radial-gradient(circle at 80% 80%, rgba(97, 218, 251, 0.3) 0%, transparent 40%),
-    /* Base gradient */
-    linear-gradient(135deg, 
-      #7B61FF 0%,
-      #61DAFB 100%
-    );
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.2),
-    inset 0 0 80px rgba(255, 255, 255, 0.1);
-  animation: pulseGlow 8s ease infinite;
-}
-.welcome-banner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: 
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 2px,
-      rgba(255, 255, 255, 0.03) 2px,
-      rgba(255, 255, 255, 0.03) 4px
-    );
-  animation: meshMove 20s linear infinite;
-}
-.welcome-banner::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: 
-    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 30%),
-    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 30%);
-  filter: blur(30px);
-  animation: orbFloat 10s ease-in-out infinite alternate;
-}
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 
-      0 20px 40px rgba(0, 0, 0, 0.2),
-      inset 0 0 80px rgba(255, 255, 255, 0.1);
-  }
-  50% {
-    box-shadow: 
-      0 20px 50px rgba(123, 97, 255, 0.3),
-      inset 0 0 100px rgba(255, 255, 255, 0.15);
-  }
-}
-@keyframes meshMove {
-  0% {
-    transform: translateX(0) translateY(0);
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateX(-20px) translateY(-20px);
-    opacity: 0.5;
-  }
-}
-@keyframes orbFloat {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(-10px) scale(1.1);
-    opacity: 0.8;
-  }
+  .activity-visualizer { max-width: 100%; }
 }
 .welcome-content {
   position: relative;
@@ -219,17 +283,6 @@ body {
   );
   backdrop-filter: blur(8px);
 }
-.welcome-title {
-  font-size: 2.75rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
-  background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -1px;
-  position: relative;
-}
 .welcome-title::after {
   content: '';
   position: absolute;
@@ -239,12 +292,6 @@ body {
   height: 4px;
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   border-radius: 2px;
-}
-.welcome-subtitle {
-  font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-  margin-top: 1rem;
 }
 .chart-container {
   position: relative;
@@ -395,22 +442,22 @@ body {
 </style>
 {% endblock extra_css %}
 {% block content %}
-<!-- Top Welcome Banner -->
-<div class="welcome-banner">
-  <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
-    <div>
-      <h2 class="welcome-title">Sawubona, {{ user.username }}!</h2>
-      <div class="welcome-subtitle">Welcome back to your financial dashboard.</div>
+<!-- Gradient Welcome Banner (Admin Style) -->
+<div class="admin-dashboard-banner">
+  <div style="flex:1;">
+    <h1>Sawubona, {{ user.username }}! <span style="font-size:1.8rem;">👋</span></h1>
+    <p>Welcome back to your dashboard. You're doing great on your financial journey. Keep up the excellent work!</p>
     </div>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
+  <div style="margin-left: 1.5rem;">
         {% if user.profile_picture %}
-          <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" class="w-full h-full object-cover">
+      <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(96,239,255,0.10); border-radius: 50%; width: 54px; height: 54px; overflow: hidden;">
+        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+      </span>
         {% else %}
-          <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #fff;"></i>
+      <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(96,239,255,0.10); border-radius: 50%; width: 54px; height: 54px;">
+        <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#60efff" fill-opacity="0.2"/><path d="M9 12.5l2 2 4-4" stroke="#60efff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
         {% endif %}
-      </div>
-    </div>
   </div>
 </div>
 
@@ -418,109 +465,141 @@ body {
 <div class="dashboard-grid">
   <!-- User Profile Card -->
   <div class="glass-card" style="display: flex; flex-direction: column; align-items: center;">
-    <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem;">
+    <!-- Profile Picture Section -->
+    <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem; position: relative;">
       {% if user.profile_picture %}
-<<<<<<< HEAD
-        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user_name }}" class="w-full h-full object-cover">
-      {% else %}
-=======
         <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" class="w-full h-full object-cover">
-            {% else %}
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
+      {% else %}
         <i class="fas fa-user-circle" style="font-size: 3rem; color: #c7d2fe;"></i>
       {% endif %}
+      <!-- Online Status Indicator -->
+      <div style="position: absolute; bottom: 2px; right: 2px; width: 16px; height: 16px; background: #10B981; border-radius: 50%; border: 2px solid #101c2c;"></div>
     </div>
+    
+    <!-- User Info -->
     <div class="accent text-xl mb-1">{{ user.username }}</div>
-    <div class="text-white text-sm mb-2">{{ user.email }}</div>
-    <div style="display: flex; gap: 0.5rem;">
-      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Member</span>
-      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Joined: {{ user.joined_date }}</span>
+    <div class="text-white text-sm mb-3" style="opacity: 0.8;">{{ user.email }}</div>
+    
+    <!-- User Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; width: 100%; margin-bottom: 1rem;">
+      <div style="background: rgba(96,239,255,0.1); border-radius: 0.75rem; padding: 0.75rem; text-align: center; border: 1px solid rgba(96,239,255,0.2);">
+        <div style="font-size: 1.25rem; font-weight: 700; color: #60efff;">{{ active_stokvels_count|default(0) }}</div>
+        <div style="font-size: 0.75rem; color: #b2f7ef;">Stokvels</div>
+      </div>
+      <div style="background: rgba(0,255,135,0.1); border-radius: 0.75rem; padding: 0.75rem; text-align: center; border: 1px solid rgba(0,255,135,0.2);">
+        <div style="font-size: 1.25rem; font-weight: 700; color: #00ff87;">R{{ "%.0f"|format(total_contributions|default(0)) }}</div>
+        <div style="font-size: 0.75rem; color: #b2f7ef;">Contributed</div>
+      </div>
+    </div>
+    
+    <!-- Stokvel Memberships Visualizer -->
+    <div style="width: 100%; margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+        <i class="fas fa-users" style="color: #60efff; font-size: 1rem; margin-right: 0.5rem;"></i>
+        <span style="color: #eaf6fb; font-size: 0.9rem; font-weight: 600;">My Stokvels</span>
+      </div>
+      
+      {% if active_stokvels_count and active_stokvels_count > 0 %}
+        <!-- Stokvel Progress Bars -->
+        <div>
+          {% for stokvel in user_stokvels|default([]) %}
+          <div style="margin-bottom: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="color: #eaf6fb; font-size: 0.8rem; font-weight: 500;">{{ stokvel.name|default('Stokvel') }}</span>
+              <span style="color: #60efff; font-size: 0.75rem; font-weight: 600;">{{ stokvel.role|default('Member') }}</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; height: 6px; overflow: hidden; flex: 1; margin-right: 0.5rem;">
+                <div style="background: linear-gradient(90deg, #60efff, #00ff87); height: 100%; width: {{ (stokvel.progress|default(0)) }}%; border-radius: 0.5rem; transition: width 0.3s ease;"></div>
+              </div>
+              <span style="color: #b2f7ef; font-size: 0.75rem; margin-left: 0.5rem;">
+                <i class="fas fa-user-friends" style="margin-right: 0.2rem;"></i>{{ stokvel.member_count|default(1) }} members
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Empty State -->
+        <div style="background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1rem; text-align: center; border: 1px dashed rgba(96,239,255,0.3);">
+          <i class="fas fa-users" style="color: #60efff; font-size: 1.5rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+          <div style="color: #b2f7ef; font-size: 0.8rem; margin-bottom: 0.5rem;">No stokvels yet</div>
+          <a href="{{ url_for('stokvels') }}" style="color: #60efff; font-size: 0.75rem; text-decoration: none; font-weight: 600;">Join a stokvel →</a>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- User Badges -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+      <span style="background: rgba(96,239,255,0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #60efff; border: 1px solid rgba(96,239,255,0.3);">
+        <i class="fas fa-crown" style="margin-right: 0.25rem;"></i>Member
+      </span>
+      <span style="background: rgba(0,255,135,0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #00ff87; border: 1px solid rgba(0,255,135,0.3);">
+        <i class="fas fa-calendar" style="margin-right: 0.25rem;"></i>{{ user.joined_date|default('New') }}
+      </span>
+    </div>
+    
+    <!-- Quick Profile Actions -->
+    <div style="margin-top: 1rem; width: 100%;">
+      <a href="{{ url_for('profile') }}" style="display: block; background: rgba(96,239,255,0.1); color: #60efff; text-align: center; padding: 0.5rem; border-radius: 0.5rem; text-decoration: none; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(96,239,255,0.2); transition: all 0.2s;" onmouseover="this.style.background='rgba(96,239,255,0.2)'" onmouseout="this.style.background='rgba(96,239,255,0.1)'">
+        <i class="fas fa-user-edit" style="margin-right: 0.5rem;"></i>Edit Profile
+      </a>
     </div>
   </div>
-<<<<<<< HEAD
-=======
-  <!-- Savings Tracker Card -->
-  <div class="glass-card">
-    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-      <i class="fas fa-chart-line accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
-      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Savings Tracker</span>
-    </div>
-    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-      {% for day in weekly_contributions %}
-        {% set bar_height = 20 + (day|int)*2 %}
-        <div class="day-bar" data-bar-height="{{ bar_height }}"></div>
-      {% endfor %}
-    </div>
-    <div style="color: #fff; font-size: 1.125rem; font-weight: 600;">R {{ current_balance|default('0.00') }}</div>
-    <div style="color: #bfdbfe; font-size: 0.875rem;">Goal: R {{ savings_goal|default('0.00') }}</div>
-  </div>
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
-  <!-- Quick Actions Card -->
+  <!-- Quick Actions Card (Redesigned) -->
   <div class="glass-card">
     <div style="display: flex; align-items: center; margin-bottom: 1rem;">
       <i class="fas fa-bolt accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
       <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Quick Actions</span>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-      <a href="{{ url_for('pay_back_loan') }}" 
-        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
-        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-hand-holding-usd" style="color: #34d399; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Loan Repayment</span>
+    <div class="quick-actions-grid">
+      <a href="{{ url_for('pay_back_loan') }}" class="quick-action-card" tabindex="0">
+        <span class="quick-action-icon"><i class="fas fa-hand-holding-usd"></i></span>
+        <span class="quick-action-label">Loan Repayment</span>
+        <span class="quick-action-desc">Pay back your outstanding loans easily.</span>
+        <span class="quick-action-tooltip">Go to loan repayment page</span>
       </a>
-      <a href="{{ url_for('request_loan') }}" 
-        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
-        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-file-signature" style="color: #a78bfa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Loan Application</span>
+      <a href="{{ url_for('request_loan') }}" class="quick-action-card" tabindex="0">
+        <span class="quick-action-icon"><i class="fas fa-file-signature"></i></span>
+        <span class="quick-action-label">Loan Application</span>
+        <span class="quick-action-desc">Apply for a new loan in seconds.</span>
+        <span class="quick-action-tooltip">Start a new loan application</span>
       </a>
-      <a href="{{ url_for('savings_goals') }}" 
-        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
-        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Savings Tracker</span>
+      <a href="{{ url_for('savings_goals') }}" class="quick-action-card" tabindex="0">
+        <span class="quick-action-icon"><i class="fas fa-chart-line"></i></span>
+        <span class="quick-action-label">Savings Tracker</span>
+        <span class="quick-action-desc">Track and manage your savings goals.</span>
+        <span class="quick-action-tooltip">View your savings goals</span>
       </a>
-      <a href="{{ url_for('financial_insight') }}" 
-        style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
-        onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-lightbulb" style="color: #fbbf24; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Financial Insight</span>
+      <a href="{{ url_for('financial_insight') }}" class="quick-action-card" tabindex="0">
+        <span class="quick-action-icon"><i class="fas fa-lightbulb"></i></span>
+        <span class="quick-action-label">Financial Insight</span>
+        <span class="quick-action-desc">Get personalized financial insights.</span>
+        <span class="quick-action-tooltip">See your financial insights</span>
       </a>
     </div>
-<<<<<<< HEAD
   </div>
-  <!-- Recent Activity Card (spans 2 columns) -->
-=======
-</div>
-  <!-- Financial Insight Card -->
-  <a href="{{ url_for('analysis') }}" class="glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; text-decoration: none; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 32px rgba(123,97,255,0.2)';" onmouseout="this.style.boxShadow='none';">
-    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-      <i class="fas fa-chart-pie accent" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
-      <span class="accent" style="font-size: 1.25rem; font-weight: bold;">Financial Insight</span>
-    </div>
-    <div style="color: #fff; font-size: 0.875rem; text-align: center; margin-bottom: 0.25rem;">View your financial trends, progress, and key metrics in one place.</div>
-    <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd; margin-top: 0.5rem;">See Insights</span>
-  </a>
-  <!-- Recent Activity Card (now in grid, spans 2 columns on large screens) -->
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
+  <!-- Recent Activity Visualizer + Timeline (spans 2 columns) -->
   <div class="glass-card activity-card" style="grid-column: span 2;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
       <div style="display: flex; align-items: center;">
         <i class="fas fa-stream accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
         <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Recent Activity</span>
       </div>
-<<<<<<< HEAD
-      <button style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'" onclick="window.location.href='/transactions'">View All</button>
-=======
       <a href="{{ url_for('activities') }}" style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s; text-decoration: none;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">View All</a>
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
     </div>
+    <!-- Activity Visualizer Chart -->
+    <div class="activity-visualizer">
+      <canvas id="activityChart" height="120"></canvas>
+    </div>
+    <!-- Timeline -->
     <div class="activity-timeline">
-      {% for activity in recent_activities|default([
+      {% set default_activities = [
         {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': '2 hours ago', 'status': 'Processed'},
         {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': 'Yesterday', 'status': 'Achieved'},
         {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': '3 days ago', 'status': 'Completed'}
-      ]) %}
+      ] %}
+      {% for activity in recent_activities|default(default_activities) %}
       <div class="timeline-item">
         <div class="timeline-content">
           <div class="timeline-header">
@@ -578,28 +657,68 @@ body {
   </div>
 </div>
 {% endblock %}
-<<<<<<< HEAD
-=======
 {% block extra_js %}
 <script>
-// Progress circle calculation (example)
-document.querySelectorAll('.progress-circle').forEach(function(circle) {
-  var percent = parseFloat(circle.getAttribute('data-percent')) || 0;
-  var offset = 283 - (percent / 100) * 283;
-  circle.style.strokeDashoffset = offset;
+// Chart.js Activity Visualizer
+const activityData = [
+  {% for activity in recent_activities|default(default_activities) %}
+    {{ activity.amount }},
+  {% endfor %}
+];
+const activityLabels = [
+  {% for activity in recent_activities|default(default_activities) %}
+    '{{ activity.title }}',
+  {% endfor %}
+];
+const activityTypes = [
+  {% for activity in recent_activities|default(default_activities) %}
+    '{{ activity.type }}',
+  {% endfor %}
+];
+const activityColors = activityTypes.map(type => {
+  if (type === 'contribution') return '#34D399';
+  if (type === 'withdrawal') return '#EF4444';
+  if (type === 'goal') return '#7B61FF';
+  return '#60efff';
 });
-// Card hover animation is handled by CSS
-// Calendar navigation example
-function prevMonth() {
-  // Implement AJAX or page reload for previous month
-}
-function nextMonth() {
-  // Implement AJAX or page reload for next month
-}
-document.querySelectorAll('.day-bar').forEach(function(bar) {
-  var h = bar.getAttribute('data-bar-height');
-  if (h) bar.style.height = h + 'px';
+const ctx = document.getElementById('activityChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: activityLabels,
+    datasets: [{
+      label: 'Amount',
+      data: activityData,
+      backgroundColor: activityColors,
+      borderRadius: 8,
+      borderSkipped: false,
+      maxBarThickness: 38,
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return 'R ' + context.parsed.y.toLocaleString();
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: '#eaf6fb', font: { weight: 600 } }
+      },
+      y: {
+        grid: { color: 'rgba(96,239,255,0.08)' },
+        ticks: { color: '#b2f7ef', font: { weight: 600 }, beginAtZero: true }
+      }
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  }
 });
 </script>
 {% endblock %}
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d

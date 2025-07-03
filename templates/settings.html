@@ -109,6 +109,27 @@
     input:checked + .slider:before {
         transform: translateX(22px);
     }
+    .alert {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        border: 1px solid;
+    }
+    .alert-success {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: rgba(34, 197, 94, 0.3);
+        color: #22c55e;
+    }
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+    }
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #f59e0b;
+    }
 </style>
 {% endblock %}
 
@@ -123,6 +144,17 @@
                 Manage your account, notifications, and application preferences.
             </p>
         </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' if category == 'danger' else 'warning' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Left Column -->
@@ -226,6 +258,16 @@
                         </label>
                         <label class="toggle-label">
                             <div>
+                                <span class="font-medium text-white">Promotional Emails</span>
+                                <p class="text-sm text-gray-400 mt-1">Receive promotional offers and updates.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="receive_promotions" {% if user.receive_promotions %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                        <label class="toggle-label">
+                            <div>
                                 <span class="font-medium text-white">Contribution Reminders</span>
                                 <p class="text-sm text-gray-400 mt-1">Get notified before a contribution is due.</p>
                             </div>
@@ -234,10 +276,56 @@
                                 <span class="slider"></span>
                             </label>
                         </label>
+                        <label class="toggle-label">
+                            <div>
+                                <span class="font-medium text-white">Stokvel Updates</span>
+                                <p class="text-sm text-gray-400 mt-1">Get notified about stokvel activities.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="stokvel_updates" {% if user.stokvel_updates %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
                     </div>
                     <div class="mt-6 text-right">
                         <button type="submit" class="btn-primary">
                             Save App Preferences
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Privacy Settings -->
+                <form action="/settings/update" method="POST" class="glass-card">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="form_section" value="privacy">
+                    <h2 class="text-2xl font-semibold text-white mb-6">
+                        <i class="fas fa-user-shield mr-3 text-orange-400"></i>Privacy Settings
+                    </h2>
+                    <div class="space-y-4">
+                        <label class="toggle-label">
+                            <div>
+                                <span class="font-medium text-white">Profile Visibility</span>
+                                <p class="text-sm text-gray-400 mt-1">Allow other members to see your profile.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="profile_visible" {% if user.profile_visible %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                        <label class="toggle-label">
+                            <div>
+                                <span class="font-medium text-white">Activity Sharing</span>
+                                <p class="text-sm text-gray-400 mt-1">Share your activity with stokvel members.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="activity_sharing" {% if user.activity_sharing %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                    <div class="mt-6 text-right">
+                        <button type="submit" class="btn-primary">
+                            Save Privacy Settings
                         </button>
                     </div>
                 </form>

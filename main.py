@@ -16,7 +16,7 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf
 import firebase_admin
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email
+from wtforms.validators import DataRequired, Email, Length, ValidationError
 from firebase_admin import credentials, auth
 from io import BytesIO
 from reportlab.lib import colors
@@ -29,7 +29,7 @@ from sendgrid.helpers.mail import Mail
 from dateutil import parser as date_parser
 from translations import get_text
 from admin import admin_bp  # Import the blueprint
-from utils import login_required
+from utils import login_required, get_notification_count, create_notification
 
 # Email handling imports
 import smtplib
@@ -38,11 +38,13 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from werkzeug.utils import secure_filename
 import re
-<<<<<<< HEAD
 import calendar
-=======
 from decimal import Decimal, InvalidOperation
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -180,17 +182,7 @@ def verification_required(f):
     return decorated_function
 
 # Helper function to get notification count (simulate for now)
-def get_notification_count(user_id):
-    """Fetches the count of unread notifications for a user from the database."""
-    if not user_id:
-        return 0
-    try:
-        query = "SELECT COUNT(*) FROM notifications WHERE user_id = %s AND is_read = FALSE"
-        result = support.execute_query("search", query, (user_id,))
-        return result[0][0] if result else 0
-    except Exception as e:
-        print(f"Error getting notification count: {e}")
-        return 0
+# This function is now imported from utils.py
 
 def create_notification(user_id, message, link_url=None, notification_type='general'):
     """Creates and saves an in-app notification for a user."""
@@ -227,24 +219,29 @@ def feedback():
 def home():
     if 'user_id' not in session:
         return redirect('/login')
+    
     try:
         from datetime import date, datetime
-        # Parse month parameter
+        # Parse month parameter with validation
         month_param = request.args.get('month')
         if month_param:
             try:
                 month_start = datetime.strptime(month_param, '%Y-%m').date()
-            except Exception:
+            except ValueError:
+                logger.warning(f"Invalid month parameter: {month_param}")
                 month_start = date.today().replace(day=1)
         else:
             month_start = date.today().replace(day=1)
+        
         today = date.today()
         if month_start.month == 12:
             next_month = month_start.replace(year=month_start.year+1, month=1, day=1)
         else:
             next_month = month_start.replace(month=month_start.month+1, day=1)
+        
         calendar_month = month_start.strftime('%B')
         calendar_year = month_start.year
+        
         # Initialize default values
         username = str(session.get('username', 'User'))
         current_balance = float(0.00)
@@ -265,13 +262,21 @@ def home():
         savings_growth_chart_data = {}
         contribution_breakdown_chart_data = {}
         loan_trends_chart_data = {}
-<<<<<<< HEAD
         user = None
         outstanding_loan_id = None
+        # Initialize new variables for enhanced profile card
+        user_stokvels = []
+        active_stokvels_count = 0
+        
         try:
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute("SELECT username, email, profile_picture, joined_date FROM users WHERE firebase_uid = %s", (session['user_id'],))
+                    # Validate user_id before using in query
+                    user_id = session.get('user_id')
+                    if not user_id:
+                        raise ValueError("User ID not found in session")
+                    
+                    cur.execute("SELECT username, email, profile_picture, joined_date FROM users WHERE firebase_uid = %s", (user_id,))
                     user_row = cur.fetchone()
                     if user_row:
                         username = str(user_row[0])
@@ -281,6 +286,46 @@ def home():
                             'profile_picture': user_row[2],
                             'joined_date': user_row[3]
                         }
+                    
+                    # Fetch user's stokvel memberships for the profile card
+                    cur.execute("""
+                        SELECT s.id, s.name, sm.role, 
+                               COALESCE(SUM(t.amount), 0) as total_contributed,
+                               s.monthly_contribution as target_amount,
+                               (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count
+                        FROM stokvel_members sm
+                        JOIN stokvels s ON sm.stokvel_id = s.id
+                        LEFT JOIN transactions t ON t.stokvel_id = s.id AND t.user_id = %s AND t.type = 'contribution'
+                        WHERE sm.user_id = %s AND sm.status = 'active'
+                        GROUP BY s.id, s.name, sm.role, s.monthly_contribution
+                        ORDER BY s.created_at DESC
+                    """, (user_id, user_id))
+                    
+                    user_stokvels = []
+                    active_stokvels_count = 0
+                    total_contributions = 0
+                    
+                    for stokvel_row in cur.fetchall():
+                        stokvel_id, stokvel_name, role, contributed, target, member_count = stokvel_row
+                        active_stokvels_count += 1
+                        total_contributions += contributed
+                        
+                        # Calculate progress percentage
+                        progress = 0
+                        if target and target > 0:
+                            progress = min((contributed / target) * 100, 100)
+                        
+                        user_stokvels.append({
+                            'id': stokvel_id,
+                            'name': stokvel_name,
+                            'role': role,
+                            'contributed': contributed,
+                            'target': target,
+                            'progress': progress,
+                            'member_count': member_count
+                        })
+                    print('DEBUG user_stokvels:', user_stokvels)
+                    
                     # Fetch the user's first outstanding loan (approved and remaining > 0)
                     cur.execute("""
                         SELECT lr.id, lr.amount, COALESCE(SUM(r.amount), 0) as repaid
@@ -291,59 +336,70 @@ def home():
                         HAVING (lr.amount - COALESCE(SUM(r.amount), 0)) > 0
                         ORDER BY lr.id ASC
                         LIMIT 1
-                    """, (session['user_id'],))
+                    """, (user_id,))
                     loan_row = cur.fetchone()
                     if loan_row:
                         outstanding_loan_id = loan_row[0]
+                    
                     # --- Calendar Events Integration ---
                     # Contributions
                     cur.execute("""
                         SELECT transaction_date, amount FROM transactions
                         WHERE user_id = %s AND type = 'contribution' AND transaction_date >= %s AND transaction_date < %s
-                    """, (session['user_id'], month_start, next_month))
+                    """, (user_id, month_start, next_month))
                     for tdate, amount in cur.fetchall():
                         calendar_events.append({'date': tdate.strftime('%Y-%m-%d'), 'desc': f'Contribution: R{amount:.2f}', 'type': 'contribution'})
+                    
                     # Payouts
                     cur.execute("""
                         SELECT transaction_date, amount FROM transactions
                         WHERE user_id = %s AND type = 'payout' AND transaction_date >= %s AND transaction_date < %s
-                    """, (session['user_id'], month_start, next_month))
+                    """, (user_id, month_start, next_month))
                     for tdate, amount in cur.fetchall():
                         calendar_events.append({'date': tdate.strftime('%Y-%m-%d'), 'desc': f'Payout: R{amount:.2f}', 'type': 'payout'})
+                    
                     # Savings goal deadlines
                     cur.execute("""
                         SELECT target_date, name FROM savings_goals
                         WHERE user_id = %s AND target_date >= %s AND target_date < %s
-                    """, (session['user_id'], month_start, next_month))
+                    """, (user_id, month_start, next_month))
                     for tdate, name in cur.fetchall():
                         if tdate:
                             calendar_events.append({'date': tdate.strftime('%Y-%m-%d'), 'desc': f'Savings Goal: {name}', 'type': 'goal'})
+                    
                     # Loan repayments
                     cur.execute("""
                         SELECT date, amount FROM loan_repayments
                         WHERE user_id = %s AND date >= %s AND date < %s
-                    """, (session['user_id'], month_start, next_month))
+                    """, (user_id, month_start, next_month))
                     for tdate, amount in cur.fetchall():
                         calendar_events.append({'date': tdate.strftime('%Y-%m-%d'), 'desc': f'Loan Repayment: R{amount:.2f}', 'type': 'repayment'})
+                    
                     # Custom user events (future support)
                     try:
                         cur.execute("""
                             SELECT event_date, description FROM user_events
                             WHERE user_id = %s AND event_date >= %s AND event_date < %s
-                        """, (session['user_id'], month_start, next_month))
+                        """, (user_id, month_start, next_month))
                         for tdate, desc in cur.fetchall():
                             calendar_events.append({'date': tdate.strftime('%Y-%m-%d'), 'desc': desc, 'type': 'custom'})
-                    except Exception:
+                    except Exception as table_error:
+                        logger.debug(f"User events table may not exist: {table_error}")
                         pass  # Table may not exist yet
-        except Exception as e:
-            print(f"Database error: {str(e)}")
+                        
+        except Exception as db_error:
+            logger.error(f"Database error in home route: {str(db_error)}")
             # Continue with default values if database query fails
+            flash("Some data could not be loaded. Please refresh the page.")
+        
         notification_count = get_notification_count(session.get('user_id'))
+        
         # Compute prev/next month URLs
         prev_month = (month_start.replace(year=month_start.year-1, month=12) if month_start.month == 1 else month_start.replace(month=month_start.month-1))
         next_month = (month_start.replace(year=month_start.year+1, month=1) if month_start.month == 12 else month_start.replace(month=month_start.month+1))
         prev_month_url = url_for('home', month=prev_month.strftime('%Y-%m'))
         next_month_url = url_for('home', month=next_month.strftime('%Y-%m'))
+        
         # Generate calendar_days for the selected month
         first_weekday, num_days = calendar.monthrange(month_start.year, month_start.month)
         calendar_days = []
@@ -356,114 +412,11 @@ def home():
                 'full_date': d.strftime('%Y-%m-%d'),
                 'is_today': (d == today)
             })
-=======
-
-        # Try to get user info from database
-        user = {
-            "username": username,
-            "profile_picture": None,
-            "email": None,
-            # user["joined_date"] = None  # Remove or comment out this line
-        }
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT username, email, profile_picture FROM users WHERE firebase_uid = %s", (session['user_id'],))
-                    user_data = cur.fetchone()
-                    if user_data:
-                        user["username"] = user_data[0]
-                        user["email"] = user_data[1]
-                        user["profile_picture"] = user_data[2]
-                        # user["joined_date"] = user_data[3]  # Remove or comment out this line
-        except Exception as e:
-            print(f"User info fetch error: {e}")
-
-        notification_count = get_notification_count(session.get('user_id')) # Get notification count
-
-        # --- Calendar logic ---
-        import calendar
-        from datetime import date
-        today = date.today()
-        year = today.year
-        month = today.month
-        cal = calendar.Calendar()
-        month_days = cal.itermonthdays4(year, month)  # (year, month, day, weekday)
-        calendar_days = []
-        for y, m, d, wd in month_days:
-            if m == month:
-                calendar_days.append({
-                    'date': d,
-                    'is_today': (y, m, d) == (today.year, today.month, today.day),
-                    'events': []  # Add events here if needed
-                })
-        calendar_month = calendar.month_name[month]
-        calendar_year = year
-        # --- End calendar logic ---
-
-        # --- Recent Activities logic ---
-        recent_activities = []
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT t.type, t.amount, t.status, t.transaction_date, t.description, s.name as stokvel_name
-                        FROM transactions t
-                        JOIN stokvels s ON t.stokvel_id = s.id
-                        WHERE t.user_id = %s
-                        ORDER BY t.transaction_date DESC
-                        LIMIT 5
-                    """, (session['user_id'],))
-                    rows = cur.fetchall()
-                    for row in rows:
-                        t_type, amount, status, t_date, description, stokvel_name = row
-                        # Format date for display
-                        if t_date:
-                            try:
-                                from datetime import datetime, timedelta
-                                now = datetime.now()
-                                if isinstance(t_date, str):
-                                    t_date = datetime.fromisoformat(t_date)
-                                delta = now - t_date
-                                if delta.days == 0:
-                                    if delta.seconds < 3600:
-                                        date_str = f"{delta.seconds//60} minutes ago"
-                                    else:
-                                        date_str = f"{delta.seconds//3600} hours ago"
-                                elif delta.days == 1:
-                                    date_str = "Yesterday"
-                                else:
-                                    date_str = f"{delta.days} days ago"
-                            except Exception:
-                                date_str = str(t_date)
-                        else:
-                            date_str = 'N/A'
-                        # Title and badge
-                        if t_type == 'contribution':
-                            title = f"Contribution to {stokvel_name}"
-                        elif t_type == 'withdrawal':
-                            title = f"Withdrawal from {stokvel_name}"
-                        elif t_type == 'payout':
-                            title = f"Payout from {stokvel_name}"
-                        elif t_type == 'goal':
-                            title = f"Savings Goal: {description}"
-                        else:
-                            title = description or t_type.capitalize()
-                        recent_activities.append({
-                            'type': t_type,
-                            'title': title,
-                            'amount': float(amount) if amount is not None else 0.0,
-                            'date': date_str,
-                            'status': status.capitalize() if status else '',
-                        })
-        except Exception as e:
-            print(f"Error fetching recent activities: {e}")
-        # --- End Recent Activities logic ---
-
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
+        
         return render_template('dashboard.html',
                             username=username,
                             user_name=username,  # for template compatibility
-            user=user,
+                            user=user,
                             outstanding_loan_id=outstanding_loan_id,
                             current_balance=current_balance,
                             total_contributions=total_contributions,
@@ -483,77 +436,123 @@ def home():
                             contribution_breakdown_chart_data=contribution_breakdown_chart_data,
                             loan_trends_chart_data=loan_trends_chart_data,
                             notification_count=notification_count,
-<<<<<<< HEAD
-            calendar_month=calendar_month,
-            calendar_year=calendar_year,
+                            calendar_month=calendar_month,
+                            calendar_year=calendar_year,
                             calendar_month_num=month_start.month,
                             prev_month_url=prev_month_url,
                             next_month_url=next_month_url,
-                            calendar_days=calendar_days) # Pass notification count
-=======
-                            user=user,
-                            recent_activities=recent_activities,
                             calendar_days=calendar_days,
-                            calendar_month=calendar_month,
-                            calendar_year=calendar_year
-                            ) # Pass user dictionary and calendar data
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
+                            # New data for enhanced profile card
+                            user_stokvels=user_stokvels,
+                            active_stokvels_count=active_stokvels_count) # Pass notification count
+                            
     except Exception as e:
-        print(f"Dashboard error: {str(e)}")
+        logger.error(f"Dashboard error: {str(e)}")
         flash("Error loading dashboard. Please try again.")
         return redirect('/login')
 
 
 @app.route('/analysis')
+@login_required
 def analysis():
     if 'user_id' in session:
-        # Changed to users table
-        query = "select * from users where firebase_uid = %s "
-        userdata = support.execute_query('search', query, (session['user_id'],))
+        user_id = session.get('user_id')
+        
+        # Get user data
+        query = "SELECT username FROM users WHERE firebase_uid = %s"
+        userdata = support.execute_query('search', query, (user_id,))
         if not userdata or userdata[0] is None:
             flash('User data not found for analysis.')
             return redirect('/home')
-        # Changed to firebase_uid
-        query2 = "select pdate,expense, pdescription, amount from user_expenses where firebase_uid = %s"
-        data = support.execute_query('search', query2, (session['user_id'],))
-        df = pd.DataFrame(data, columns=['Date', 'Expense', 'Note', 'Amount(₹)'])
-        df = support.generate_df(df)
-        if df.shape[0] > 0:
-            pie = support.meraPie(df=df, names='Expense', values='Amount(₹)', hole=0.7, hole_text='Expense',
-                                  hole_font=20,
-                                  height=180, width=180, margin=dict(t=1, b=1, l=1, r=1))
-            df2 = df.groupby(['Note', "Expense"]).sum().reset_index()[["Expense", 'Note', 'Amount(₹)']]
-            bar = support.meraBarChart(df=df2, x='Note', y='Amount(₹)', color="Expense", height=180, x_label="Category",
-                                       show_xtick=False)
-            line = support.meraLine(df=df, x='Date', y='Amount(₹)', color='Expense', slider=False, show_legend=False,
-                                    height=180)
-            scatter = support.meraScatter(df, 'Date', 'Amount(₹)', 'Expense', 'Amount(₹)', slider=False, )
-            heat = support.meraHeatmap(df, 'Day_name', 'Month_name', height=200, title="Transaction count Day vs Month")
-            month_bar = support.month_bar(df, 280)
-            sun = support.meraSunburst(df, 280)
+        
+        # Get transaction data for analysis
+        query2 = """
+            SELECT transaction_date, type, description, amount 
+            FROM transactions 
+            WHERE user_id = %s
+            ORDER BY transaction_date DESC
+        """
+        data = support.execute_query('search', query2, (user_id,))
+        
+        if data and len(data) > 0:
+            # Convert to DataFrame for analysis
+            df = pd.DataFrame(data, columns=['Date', 'Type', 'Description', 'Amount'])
+            
+            # Clean and process the data
+            df['Amount'] = pd.to_numeric(df['Amount'], errors='coerce').fillna(0)
+            df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+            df = df.dropna(subset=['Date'])
+            
+            # Add derived columns for analysis
+            df['Month'] = df['Date'].dt.month
+            df['Year'] = df['Date'].dt.year
+            df['Day'] = df['Date'].dt.day
+            df['Day_name'] = df['Date'].dt.day_name()
+            df['Month_name'] = df['Date'].dt.month_name()
+            
+            # Generate charts using support functions if available
+            try:
+                # Pie chart by transaction type
+                type_summary = df.groupby('Type')['Amount'].sum().reset_index()
+                pie = support.meraPie(df=type_summary, names='Type', values='Amount', hole=0.7, 
+                                    hole_text='Transactions', hole_font=20, height=180, width=180, 
+                                    margin=dict(t=1, b=1, l=1, r=1))
+                
+                # Bar chart by description
+                desc_summary = df.groupby(['Description', 'Type'])['Amount'].sum().reset_index()
+                bar = support.meraBarChart(df=desc_summary, x='Description', y='Amount', color="Type", 
+                                         height=180, x_label="Category", show_xtick=False)
+                
+                # Line chart over time
+                time_summary = df.groupby('Date')['Amount'].sum().reset_index()
+                line = support.meraLine(df=time_summary, x='Date', y='Amount', color='Type', 
+                                      slider=False, show_legend=False, height=180)
+                
+                # Scatter plot
+                scatter = support.meraScatter(df, 'Date', 'Amount', 'Type', 'Amount', slider=False)
+                
+                # Heatmap by day vs month
+                heat = support.meraHeatmap(df, 'Day_name', 'Month_name', height=200, 
+                                         title="Transaction count Day vs Month")
+                
+                # Monthly bar chart
+                month_bar = support.month_bar(df, 280)
+                
+                # Sunburst chart
+                sun = support.meraSunburst(df, 280)
+                
+            except Exception as e:
+                print(f"Error generating charts: {e}")
+                # Fallback to simple charts or empty data
+                pie = None
+                bar = None
+                line = None
+                scatter = None
+                heat = None
+                month_bar = None
+                sun = None
+            
             return render_template('analysis.html',
-                                   username=userdata[0][1],
+                                   username=userdata[0][0],
                                    pie=pie,
                                    bar=bar,
                                    line=line,
                                    scatter=scatter,
                                    heat=heat,
                                    month_bar=month_bar,
-                                   sun=sun,
-                                   )
+                                   sun=sun)
         else:
             return render_template('analysis.html',
-                                   username=userdata[0][1],
+                                   username=userdata[0][0],
                                    pie=None,
                                    bar=None,
                                    line=None,
                                    scatter=None,
                                    heat=None,
                                    month_bar=None,
-                                   sun=None,
-                                   )
+                                   sun=None)
     else:
-        return redirect('/')
+        return redirect('/login')
 
 
 @app.route('/login')
@@ -576,23 +575,36 @@ def login_validation():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            email = form.email.data
+            email = form.email.data.strip().lower()  # Normalize email
             password = form.password.data
             remember = form.remember.data
 
-            print(f"Login attempt for email: {email}")  # Debug log
+            logger.info(f"Login attempt for email: {email}")
+
+            # Validate input
+            if not email or not password:
+                flash('Email and password are required.')
+                return redirect('/login')
 
             # Try to get user by email first
             try:
-                print("Attempting to get user from Firebase...")  # Debug log
+                logger.info("Attempting to get user from Firebase...")
                 user_record = auth.get_user_by_email(email)
-                print(f"User found: {user_record.uid}")  # Debug log
+                logger.info(f"User found: {user_record.uid}")
 
-                session.clear()  # Clear any existing session data
-                session['user_id'] = str(user_record.uid)  # Ensure it's a string
-                session['username'] = str(user_record.display_name or email)  # Ensure it's a string
-                session['is_verified'] = bool(user_record.email_verified)  # Ensure it's a boolean
-                session.permanent = bool(remember)  # Ensure it's a boolean
+                # Verify email verification status
+                if not user_record.email_verified:
+                    logger.warning("User email not verified")
+                    flash("Please verify your email address before logging in.")
+                    return redirect('/login')
+
+                # Clear any existing session data
+                session.clear()
+                session['user_id'] = str(user_record.uid)
+                session['username'] = str(user_record.display_name or email)
+                session['is_verified'] = bool(user_record.email_verified)
+                session.permanent = bool(remember)
+
                 # Fetch and set user role in session
                 try:
                     with support.db_connection() as conn:
@@ -604,97 +616,37 @@ def login_validation():
                             else:
                                 session['role'] = 'user'  # Default role if not set
                 except Exception as role_e:
-                    print(f"Error fetching user role: {role_e}")
+                    logger.error(f"Error fetching user role: {role_e}")
                     session['role'] = 'user'
 
-                # Update local database with firebase_uid if not already present or different
-                try:
-                    with support.db_connection() as conn:
-                        with conn.cursor() as cur:
-                            # Get current internal ID and firebase_uid from local db
-                            cur.execute("SELECT id, firebase_uid FROM users WHERE email = %s", (email,))
-                            user_data = cur.fetchone()
-                            
-                            if user_data:
-                                internal_user_id = user_data[0]
-                                old_firebase_uid = user_data[1]
-                                new_firebase_uid = user_record.uid
-
-                                if not old_firebase_uid or old_firebase_uid != new_firebase_uid:
-                                    print(f"Firebase UID mismatch or not set. Updating references for user {email}. Old: {old_firebase_uid}, New: {new_firebase_uid}")
-
-                                    # Update all tables referencing firebase_uid *before* updating users table
-                                    update_queries = [
-                                        ("UPDATE stokvels SET created_by = %s WHERE created_by = %s", (new_firebase_uid, old_firebase_uid)),
-                                        ("UPDATE stokvel_members SET firebase_uid = %s WHERE firebase_uid = %s", (new_firebase_uid, old_firebase_uid)), # Assuming stokvel_members uses firebase_uid, not user_id for FK to users.firebase_uid based on \d users output
-                                        ("UPDATE transactions SET user_id = %s WHERE user_id = %s", (internal_user_id, internal_user_id)), # This still uses internal_user_id, not firebase_uid
-                                        ("UPDATE chat_history SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
-                                        ("UPDATE chatbot_preferences SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
-                                        ("UPDATE payment_methods SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
-                                        ("UPDATE payouts SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
-                                        ("UPDATE savings_goals SET user_id = %s WHERE user_id = %s", (new_firebase_uid, old_firebase_uid)),
-                                    ]
-                                    
-                                    for query, params in update_queries:
-                                        try:
-                                            # Special handling for transactions if it uses internal_user_id rather than firebase_uid as FK
-                                            if "FROM transactions t JOIN stokvels s ON t.stokvel_id = s.id WHERE t.user_id = %s" in query:
-                                                # This specific query from /contributions route has already been updated to use internal_user_id
-                                                # The update logic here in login_validation is for the foreign key reference from transactions.user_id to users.firebase_uid
-                                                # Based on \d users output: expenses_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)
-                                                # So, transactions.user_id references users.id, not users.firebase_uid
-                                                # We need to update existing transactions to ensure their user_id is the correct internal_user_id.
-                                                # We need to *ensure* that internal_user_id is stable and tied to firebase_uid.
-                                                # The current main.py does SELECT id FROM users WHERE firebase_uid = %s for internal_user_id.
-                                                # This logic below will update existing *user_id* in transactions to the correct *internal_user_id*.
-                                                # If user_id is already the correct internal_user_id then this update does nothing
-                                                # If it's an old internal_user_id, it will be updated.
-                                                print(f"Attempting to update transactions user_id from previous internal_user_id to current: {internal_user_id}")
-                                                cur.execute("UPDATE transactions SET user_id = %s WHERE user_id = (SELECT id FROM users WHERE firebase_uid = %s)", (internal_user_id, new_firebase_uid))
-                                            else:
-                                                print(f"Executing update query for related table: {query} with params {params}")
-                                                cur.execute(query, params)
-                                        except Exception as update_e:
-                                            print(f"Error updating related table {query}: {str(update_e)}")
-                                            # Log but don't stop the process, as some tables might not exist or have the column
-
-                                    # Now update the users table with the new firebase_uid
-                                    print(f"Updating users.firebase_uid for {email} to {new_firebase_uid}")
-                                    cur.execute("UPDATE users SET firebase_uid = %s WHERE email = %s", (new_firebase_uid, email))
-                                    conn.commit()
-                                    print(f"Successfully updated firebase_uid for {email} and related tables.")
-                                else:
-                                    print(f"firebase_uid for {email} already set and matches: {new_firebase_uid}")
-                            else:
-                                print(f"User with email {email} not found in local database during login_validation for firebase_uid update.")
-                except Exception as db_e:
-                    print(f"Database update error during login: {str(db_e)}")
-                    # This error is not critical enough to prevent login, but should be logged.
-
-                if not user_record.email_verified:
-                    print("User email not verified")  # Debug log
-                    flash("Please verify your email address before logging in.")
-                    return redirect('/login')
-
                 # Update last_login in the database
-                from datetime import datetime
-                support.execute_query("update", "UPDATE users SET last_login = %s, email = %s WHERE firebase_uid = %s", (datetime.utcnow(), user_record.email, user_record.uid))
+                try:
+                    from datetime import datetime
+                    support.execute_query("update", "UPDATE users SET last_login = %s, email = %s WHERE firebase_uid = %s", 
+                                         (datetime.utcnow(), user_record.email, user_record.uid))
+                except Exception as update_e:
+                    logger.error(f"Error updating last_login: {update_e}")
+                    # Non-critical error, continue with login
 
-                print("Login successful, redirecting to home")  # Debug log
+                logger.info("Login successful, redirecting to home")
                 flash("Login successful!")
                 return redirect('/home')
 
             except auth.UserNotFoundError as e:
-                print(f"User not found error: {str(e)}")  # Debug log
+                logger.warning(f"User not found error: {str(e)}")
+                flash('Invalid email or password')
+                return redirect('/login')
+            except auth.InvalidPasswordError as e:
+                logger.warning(f"Invalid password error: {str(e)}")
                 flash('Invalid email or password')
                 return redirect('/login')
             except Exception as e:
-                print(f"Firebase auth error: {str(e)}")  # Debug log
+                logger.error(f"Firebase auth error: {str(e)}")
                 flash('An error occurred during login. Please try again.')
                 return redirect('/login')
 
         except Exception as e:
-            print(f"Login validation (outer) error: {str(e)}")  # Debug log
+            logger.error(f"Login validation (outer) error: {str(e)}")
             flash('An error occurred during login. Please try again.')
             return redirect('/login')
     else:
@@ -903,80 +855,156 @@ def send_email_verification(to_email, verification_link):
 
 
 @app.route('/registration', methods=['POST'])
-@csrf.exempt
 def registration():
-    if 'user_id' not in session:
-        username = request.form.get('username')
-        email = request.form.get('email')
-        passwd = request.form.get('password')
-        full_name = request.form.get('full_name', '')
-        phone = request.form.get('phone', '')
-        id_number = request.form.get('id_number', '')
-        address = request.form.get('address', '')
-        date_of_birth = request.form.get('date_of_birth', None)
-        bio = request.form.get('bio', '')
-
-        print(f"Registration attempt - Username: {username}, Email: {email}")
-
-        if len(username) > 5 and len(email) > 10 and len(passwd) > 5:
-            # Check if email already exists in PostgreSQL database
-            try:
-                with support.db_connection() as conn:
-                    with conn.cursor() as cur:
-                        cur.execute("SELECT id FROM users WHERE email = %s", (email,))
-                        if cur.fetchone():
-                            flash("An account with this email already exists. Please log in.")
-                            return redirect('/login')
-            except Exception as db_e:
-                print(f"Database check error during registration: {db_e}")
-                flash("An error occurred during registration. Please try again.")
-                return redirect('/register')
-
-            try:
-                # Create user in Firebase Authentication
-                user = auth.create_user(
-                    email=email,
-                    password=passwd,
-                    display_name=username,
-                    email_verified=True  # Set to True since we're using email/password auth
-                )
-                print(f"Created Firebase user: {user.uid}")
-
-                # Store Firebase UID and username/email in your PostgreSQL database
-                with support.db_connection() as conn:
-                    with conn.cursor() as cur:
-                        cur.execute(
-                            "INSERT INTO users (firebase_uid, username, email, password) VALUES (%s, %s, %s, %s) RETURNING id",
-                            (user.uid, username, email, passwd)
-                        )
-                        local_user_id = cur.fetchone()[0]
-                        conn.commit()
-
-                        if local_user_id:
-                            session['user_id'] = user.uid
-                            session['username'] = username
-                            session['is_verified'] = True
-                            session.permanent = True
-                            flash("Registration successful! You can now log in.")
-                            return redirect('/login')
-                        else:
-                            flash("Registration failed: Could not retrieve local user ID.")
-                            auth.delete_user(user.uid)
-                            return redirect('/register')
-
-            except Exception as e:
-                print(f"Registration error: {str(e)}")
-                if "email-already-exists" in str(e):
-                    flash("Email address is already in use. Please use a different email or log in.")
-                else:
-                    flash(f"An unexpected error occurred during registration: {str(e)}")
-                return redirect('/register')
-        else:
-            flash("Not enough data to register, try again!!")
-            return redirect('/register')
-    else:
-        flash("Already a user is logged-in!")
+    if 'user_id' in session:
+        flash("Already a user is logged-in!", "warning")
         return redirect('/home')
+    try:
+        # Get and validate form data
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        passwd = request.form.get('password', '')
+        full_name = request.form.get('full_name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        id_number = request.form.get('id_number', '').strip()
+        address = request.form.get('address', '').strip()
+        date_of_birth = request.form.get('date_of_birth')
+        bio = request.form.get('bio', '').strip()
+
+        logger.info(f"Registration attempt - Username: {username}, Email: {email}")
+
+        # Enhanced validation with specific error messages
+        validation_errors = []
+        # Username validation
+        if len(username) < 3:
+            validation_errors.append("Username must be at least 3 characters long.")
+        elif len(username) > 30:
+            validation_errors.append("Username must be less than 30 characters.")
+        elif not username.replace('_', '').replace('-', '').isalnum():
+            validation_errors.append("Username can only contain letters, numbers, underscores, and hyphens.")
+        # Email validation
+        if len(email) < 5 or '@' not in email:
+            validation_errors.append("Please enter a valid email address.")
+        elif not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            validation_errors.append("Please enter a valid email address format.")
+        # Password validation
+        if len(passwd) < 6:
+            validation_errors.append("Password must be at least 6 characters long.")
+        elif len(passwd) > 128:
+            validation_errors.append("Password must be less than 128 characters.")
+        # Full name validation
+        if len(full_name) < 2:
+            validation_errors.append("Full name must be at least 2 characters long.")
+        elif len(full_name) > 100:
+            validation_errors.append("Full name must be less than 100 characters.")
+        # Phone validation
+        if not phone:
+            validation_errors.append("Phone number is required.")
+        elif not re.match(r'^[\+]?[0-9\s\-\(\)]{10,}$', phone):
+            validation_errors.append("Please enter a valid phone number.")
+        # ID number validation (South African ID format)
+        if not id_number:
+            validation_errors.append("ID number is required.")
+        elif not re.match(r'^\d{13}$', id_number.replace(' ', '')):
+            validation_errors.append("Please enter a valid 13-digit South African ID number.")
+        # Address validation
+        if len(address) < 10:
+            validation_errors.append("Address must be at least 10 characters long.")
+        elif len(address) > 500:
+            validation_errors.append("Address must be less than 500 characters.")
+        # Date of birth validation
+        if not date_of_birth:
+            validation_errors.append("Date of birth is required.")
+        else:
+            try:
+                dob = datetime.strptime(date_of_birth, '%Y-%m-%d')
+                age = (datetime.now() - dob).days / 365.25
+                if age < 18:
+                    validation_errors.append("You must be at least 18 years old to register.")
+                elif age > 120:
+                    validation_errors.append("Please enter a valid date of birth.")
+            except ValueError:
+                validation_errors.append("Please enter a valid date of birth.")
+        # Bio validation (optional)
+        if bio and len(bio) > 1000:
+            validation_errors.append("Bio must be less than 1000 characters.")
+        # If there are validation errors, return them
+        if validation_errors:
+            for error in validation_errors:
+                flash(error, "danger")
+            return redirect('/register')
+        # Check if email already exists in PostgreSQL database
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT id FROM users WHERE email = %s", (email,))
+                    if cur.fetchone():
+                        flash("An account with this email already exists. Please log in.", "warning")
+                        return redirect('/login')
+                    # Check if username already exists
+                    cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+                    if cur.fetchone():
+                        flash("Username is already taken. Please choose a different username.", "warning")
+                        return redirect('/register')
+        except Exception as db_e:
+            logger.error(f"Database check error during registration: {db_e}")
+            flash("An error occurred during registration. Please try again.", "danger")
+            return redirect('/register')
+        # Create user in Firebase Authentication
+        try:
+            user = auth.create_user(
+                email=email,
+                password=passwd,
+                display_name=username,
+                email_verified=True  # Set to True since we're using email/password auth
+            )
+            logger.info(f"Created Firebase user: {user.uid}")
+            # Store Firebase UID and user data in PostgreSQL database
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "INSERT INTO users (firebase_uid, username, email, password, full_name, phone, id_number, address, date_of_birth, bio, joined_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                        (user.uid, username, email, passwd, full_name, phone, id_number, address, date_of_birth, bio, datetime.utcnow())
+                    )
+                    local_user_id = cur.fetchone()[0]
+                    # Create default user settings
+                    cur.execute("""
+                        INSERT INTO user_settings (user_id, email_notifications, sms_notifications, weekly_summary, 
+                                                 receive_promotions, reminders_enabled, stokvel_updates, profile_visible, activity_sharing)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (user.uid, True, False, True, False, True, True, True, False))
+                    conn.commit()
+                    if local_user_id:
+                        # Set session data
+                        session['user_id'] = user.uid
+                        session['username'] = username
+                        session['is_verified'] = True
+                        session.permanent = True
+                        # Create welcome notification
+                        welcome_message = f"Welcome to KasiKash, {username}! Your account has been created successfully."
+                        create_notification(user.uid, welcome_message, notification_type='welcome')
+                        flash("Registration successful! Welcome to KasiKash!", "success")
+                        logger.info(f"User {username} registered successfully")
+                        return redirect('/home')
+                    else:
+                        flash("Registration failed: Could not retrieve local user ID.", "danger")
+                        auth.delete_user(user.uid)
+                        return redirect('/register')
+        except Exception as e:
+            logger.error(f"Registration error: {str(e)}")
+            if "email-already-exists" in str(e):
+                flash("Email address is already in use. Please use a different email or log in.", "warning")
+            elif "password-too-weak" in str(e):
+                flash("Password is too weak. Please choose a stronger password.", "warning")
+            elif "invalid-email" in str(e):
+                flash("Please enter a valid email address.", "warning")
+            else:
+                flash("An unexpected error occurred during registration. Please try again.", "danger")
+            return redirect('/register')
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        flash("An error occurred during registration. Please try again.", "danger")
+        return redirect('/register')
 
 
 @app.route('/get_started')
@@ -1027,7 +1055,6 @@ def stokvels():
                         s.monthly_contribution,
                         s.total_pool,
                         s.target_amount,
-                        s.goal_amount, 
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date,
@@ -1038,27 +1065,7 @@ def stokvels():
                 """, (firebase_uid,))
                 user_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-                # Fetch stokvels created by the current user
-                cur.execute("""
-                    SELECT 
-                        s.id, 
-                        s.name, 
-                        s.description, 
-                        s.monthly_contribution,
-                        s.total_pool,
-                        s.target_amount,
-                        s.goal_amount, 
-                        (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
-                        (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
-                        s.target_date,
-                        sm.role
-                    FROM stokvels s
-                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                    WHERE s.created_by = %s AND sm.user_id = %s
-                """, (firebase_uid, firebase_uid))
-                created_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
-
-        return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels)
+        return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=[])
     except Exception as e:
         flash(f"An error occurred while loading your stokvels: {e}")
         print(f"Stokvels page error: {e}")
@@ -1071,10 +1078,12 @@ def create_stokvel():
     name = request.form['name']
     description = request.form['description']
     monthly_contribution = request.form['monthly_contribution']
+    target_amount = request.form.get('target_amount', 0)
+    target_date = request.form.get('target_date')
     
     # Insert new stokvel and get its ID
-    query = "INSERT INTO stokvels (name, description, created_by, monthly_contribution) VALUES (%s, %s, %s, %s) RETURNING id"
-    result = support.execute_query("insert", query, (name, description, user_id, monthly_contribution))
+    query = "INSERT INTO stokvels (name, description, created_by, monthly_contribution, target_amount, target_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
+    result = support.execute_query("insert", query, (name, description, user_id, monthly_contribution, target_amount, target_date))
 
     stokvel_id = result[0] if result else None
     if stokvel_id:
@@ -1352,20 +1361,7 @@ def request_payout():
                     user_info = cur.fetchone()
                     user_name = user_info[0] if user_info else "A member"
 
-<<<<<<< HEAD
-                # For simplicity, directly record as completed.
-                # In a real app, this would be a 'pending' status requiring approval.
-                cur.execute("""
-                    INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status, transaction_type)
-                    VALUES (%s, %s, %s, 'payout', %s, CURRENT_DATE, 'completed', 'money')
-                """, (firebase_uid, stokvel_id, amount, description))
-                conn.commit()
-
-                # Create notification for stokvel admin
-                if stokvel_info and admin_user_id:
-=======
                     # Create notification for stokvel admin
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
                     message = f"{user_name} requested a payout of R{amount:.2f} from '{stokvel_name}' stokvel."
                     link = url_for('payouts') # Changed from 'payouts' to the specific admin approval page if one exists
                     create_notification(admin_user_id, message, link_url=link, notification_type='payout_requested')
@@ -1933,12 +1929,33 @@ def settings():
 
                 # Fetch notification/app preferences from user_settings table
                 cur.execute("""
-                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions
+                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions,
+                           reminders_enabled, stokvel_updates, profile_visible, activity_sharing
                     FROM user_settings
                     WHERE user_id = %s
                 """, (user_id,))
                 app_settings = cur.fetchone() or {}
+                
+                # Merge settings with defaults for missing values
                 user_settings.update(app_settings)
+                
+                # Set default values for missing settings
+                defaults = {
+                    'email_notifications': False,
+                    'sms_notifications': False,
+                    'weekly_summary': False,
+                    'receive_promotions': False,
+                    'reminders_enabled': True,
+                    'stokvel_updates': True,
+                    'profile_visible': True,
+                    'activity_sharing': False,
+                    'two_factor_enabled': False,
+                    'language_preference': 'en'
+                }
+                
+                for key, default_value in defaults.items():
+                    if key not in user_settings or user_settings[key] is None:
+                        user_settings[key] = default_value
         
         # Fallback for language preference if not in DB
         if 'language_preference' not in user_settings:
@@ -1956,48 +1973,65 @@ def update_settings():
     user_id = session['user_id']
     form_section = request.form.get('form_section')
 
-    query = None
-    params = None
+    try:
+        if form_section == 'language_preference':
+            language = request.form.get('language_preference')
+            if language:
+                session['language_preference'] = language
+                support.execute_query("update", "UPDATE users SET language_preference = %s WHERE firebase_uid = %s", (language, user_id))
+                flash("Language preference updated successfully!", "success")
 
-    if form_section == 'language_preference':
-        language = request.form.get('language_preference')
-        if language:
-            session['language_preference'] = language
-            query = "UPDATE users SET language_preference = %s WHERE firebase_uid = %s"
-            params = (language, user_id)
+        elif form_section == 'app_preferences':
+            # Get all notification preferences
+            email_notifications = 'email_notifications' in request.form
+            sms_notifications = 'sms_notifications' in request.form
+            weekly_summary = 'weekly_summary' in request.form
+            receive_promotions = 'receive_promotions' in request.form
+            reminders_enabled = 'reminders_enabled' in request.form
+            stokvel_updates = 'stokvel_updates' in request.form
+            # First, ensure user_settings record exists
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO user_settings (user_id, email_notifications, sms_notifications, weekly_summary, 
+                                                 receive_promotions, reminders_enabled, stokvel_updates)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (user_id) DO UPDATE SET
+                            email_notifications = EXCLUDED.email_notifications,
+                            sms_notifications = EXCLUDED.sms_notifications,
+                            weekly_summary = EXCLUDED.weekly_summary,
+                            receive_promotions = EXCLUDED.receive_promotions,
+                            reminders_enabled = EXCLUDED.reminders_enabled,
+                            stokvel_updates = EXCLUDED.stokvel_updates
+                    """, (user_id, email_notifications, sms_notifications, weekly_summary, 
+                         receive_promotions, reminders_enabled, stokvel_updates))
+                    conn.commit()
+            flash("App preferences updated successfully!", "success")
 
-    elif form_section == 'app_preferences':
-        email_notifications = 'email_notifications' in request.form
-        sms_notifications = 'sms_notifications' in request.form
-        weekly_summary = 'weekly_summary' in request.form
-        receive_promotions = 'receive_promotions' in request.form
-        query = """
-<<<<<<< HEAD
-                    UPDATE users
-            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, reminders_enabled = %s
-                    WHERE firebase_uid = %s
-=======
-            UPDATE user_settings
-            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s
-            WHERE user_id = %s
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
-        """
-        params = (email_notifications, sms_notifications, weekly_summary, receive_promotions, user_id)
+        elif form_section == 'privacy':
+            profile_visible = 'profile_visible' in request.form
+            activity_sharing = 'activity_sharing' in request.form
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO user_settings (user_id, profile_visible, activity_sharing)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (user_id) DO UPDATE SET
+                            profile_visible = EXCLUDED.profile_visible,
+                            activity_sharing = EXCLUDED.activity_sharing
+                    """, (user_id, profile_visible, activity_sharing))
+                    conn.commit()
+            flash("Privacy settings updated successfully!", "success")
 
-    elif form_section == 'security':
-        two_factor_enabled = 'two_factor_enabled' in request.form
-        query = "UPDATE users SET two_factor_enabled = %s WHERE firebase_uid = %s"
-        params = (two_factor_enabled, user_id)
-
-    if query and params:
-        try:
-            support.execute_query("update", query, params)
-            flash("Settings updated successfully!", "success")
-        except Exception as e:
-            print(f"Error updating settings for section {form_section}: {e}")
-            flash("An error occurred while updating settings.", "danger")
-    else:
-        flash("Invalid settings update request.", "warning")
+        elif form_section == 'security':
+            two_factor_enabled = 'two_factor_enabled' in request.form
+            support.execute_query("update", "UPDATE users SET two_factor_enabled = %s WHERE firebase_uid = %s", (two_factor_enabled, user_id))
+            flash("Security settings updated successfully!", "success")
+        else:
+            flash("Invalid settings update request.", "warning")
+    except Exception as e:
+        print(f"Error updating settings for section {form_section}: {e}")
+        flash("An error occurred while updating settings.", "danger")
     return redirect(url_for('settings'))
 
 
@@ -2047,24 +2081,35 @@ def profile():
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                # Get user data
+                # Get user data - Simplified query to avoid GROUP BY issues
+                cur.execute("SELECT * FROM users WHERE firebase_uid = %s", (session['user_id'],))
+                user = cur.fetchone()
+
+                if not user:
+                    flash('User profile not found')
+                    return redirect(url_for('home'))
+
+                # Get aggregated data separately
                 cur.execute("""
-                    SELECT u.*, 
+                    SELECT 
                            COUNT(DISTINCT s.id) as active_stokvels_count,
                            COALESCE(SUM(CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END), 0) as total_contributions,
-                           COALESCE(SUM(CASE WHEN t.type = 'withdrawal' THEN t.amount ELSE 0 END), 0) as total_withdrawals
+                        COALESCE(SUM(CASE WHEN t.type = 'payout' THEN t.amount ELSE 0 END), 0) as total_withdrawals
                     FROM users u
                     LEFT JOIN stokvel_members sm ON u.firebase_uid = sm.user_id
                     LEFT JOIN stokvels s ON sm.stokvel_id = s.id
                     LEFT JOIN transactions t ON u.firebase_uid = t.user_id
                     WHERE u.firebase_uid = %s
-                    GROUP BY u.id
+                    GROUP BY u.firebase_uid
                 """, (session['user_id'],))
-                user = cur.fetchone()
-                
-                if not user:
-                    flash('User profile not found')
-                    return redirect(url_for('home'))
+                stats = cur.fetchone()
+
+                if stats:
+                    user.update(stats)
+                else:
+                    user['active_stokvels_count'] = 0
+                    user['total_contributions'] = 0
+                    user['total_withdrawals'] = 0
                 
                 # Get current time for greeting
                 current_time = datetime.now()
@@ -2082,9 +2127,9 @@ def profile():
                 return render_template('profile.html', 
                                      user=user, 
                                      current_time=current_time,
-                                     active_stokvels_count=user['active_stokvels_count'],
-                                     total_contributions=user['total_contributions'],
-                                     total_withdrawals=user['total_withdrawals'])
+                                     active_stokvels_count=user.get('active_stokvels_count', 0),
+                                     total_contributions=user.get('total_contributions', 0),
+                                     total_withdrawals=user.get('total_withdrawals', 0))
     except Exception as e:
         print(f"Error in profile route: {e}")
         flash('Error loading profile')
@@ -2158,11 +2203,11 @@ def upload_kyc():
         id_doc.save(id_filepath)
         address_doc.save(address_filepath)
 
-        # Update user's KYC info in the database (use correct columns)
-        query = "UPDATE users SET id_document = %s, proof_of_address = %s WHERE firebase_uid = %s"
+        # Update user's KYC info and set status to 'pending_review'
+        query = "UPDATE users SET id_document = %s, proof_of_address = %s, kyc_status = 'pending_review' WHERE firebase_uid = %s"
         support.execute_query("update", query, (id_filename, address_filename, user_id))
 
-        flash('KYC documents uploaded successfully. They are pending review.', 'success')
+        flash('KYC documents uploaded successfully. They are now pending review.', 'success')
     except Exception as e:
         flash(f'An error occurred during KYC upload: {e}', 'danger')
 
@@ -2415,10 +2460,10 @@ def handle_chat():
                         response = "Sorry, there was an error creating your stokvel. Please try again later."
                         session.pop('chat_state', None)
                         session.pop('stokvel_data', None)
-                    return jsonify({'response': response})
+                    return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
                 else:
                     response = "Something went wrong. Please type 'cancel' to start over."
-                return jsonify({'response': response})
+                return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
 
             # Multi-turn add members to stokvel flow
             if chat_state == 'adding_stokvel_members':
@@ -2449,7 +2494,7 @@ def handle_chat():
                         response = "Sorry, there was an error adding that member. Try again or type 'no' to finish."
                 else:
                     response = "Please enter a valid email address to add a member, or type 'no' to finish."
-                return jsonify({'response': response})
+                return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
 
             # Start stokvel creation (move this above generic Q&A)
             if user_message_lower in [
@@ -2458,7 +2503,7 @@ def handle_chat():
             ]:
                 session['chat_state'] = 'stokvel_creation'
                 session['stokvel_data'] = {}
-                return jsonify({'response': 'Great! What would you like to name your stokvel? (Type "cancel" to stop at any time)'})
+                return jsonify({'response': 'Great! What would you like to name your stokvel? (Type "cancel" to stop at any time)', 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
 
             # List user's stokvels (move this above generic Q&A)
             if any(kw in user_message_lower for kw in ["my stokvels", "which stokvels am i a part of", "which stokvels do i belong to", "list my stokvels"]):
@@ -2479,7 +2524,7 @@ def handle_chat():
                 except Exception as e:
                     print(f"Error fetching stokvels: {e}")
                     response = "Sorry, I couldn't fetch your stokvels right now."
-                return jsonify({'response': response})
+                return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
 
             # --- Universal 5W/How/Feature Q&A ---
             # Define feature explanations
@@ -2511,7 +2556,7 @@ def handle_chat():
                     break
 
             if response:
-                return jsonify({'response': response})
+                return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
 
             # --- Fallback Responses ---
             if response is None:
@@ -2536,7 +2581,7 @@ def handle_chat():
         except Exception as e:
             print(f"Error saving chat history: {e}")
 
-        return jsonify(response={'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
+        return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
     except Exception as e:
         print(f"Chat handler error: {e}")
         return jsonify({'error': 'An internal error occurred.'}), 500
@@ -2618,611 +2663,14 @@ def download_stokvel_statement_pdf(stokvel_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"statement_{stokvel_id}_{period}.pdf", mimetype='application/pdf')
 
-<<<<<<< HEAD
-@app.route('/loan_requests')
-@login_required
-def loan_requests():
-    user_id = session.get('user_id')
-    loan_requests = []
-    repayment_histories = {}
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Fetch user's loan requests
-                cur.execute('''
-                    SELECT lr.id, s.name, lr.amount, lr.status, lr.reason, lr.created_at
-                    FROM loan_requests lr
-                    JOIN stokvels s ON lr.stokvel_id = s.id
-                    WHERE lr.user_id = %s
-                    ORDER BY lr.created_at DESC
-                ''', (user_id,))
-                for row in cur.fetchall():
-                    loan_id, stokvel_name, amount, status, reason, created_at = row
-                    # Fetch repayments for this loan
-                    cur.execute('''
-                        SELECT amount, date FROM loan_repayments WHERE loan_id = %s ORDER BY date
-                    ''', (loan_id,))
-                    repayments = cur.fetchall()
-                    repaid_total = sum(float(r[0]) for r in repayments)
-                    remaining = float(amount) - repaid_total
-                    loan_requests.append({
-                        'id': loan_id,
-                        'stokvel_name': stokvel_name,
-                        'amount': float(amount),
-                        'repaid_total': repaid_total,
-                        'remaining': remaining,
-                        'reason': reason,
-                        'status': status,
-                        'created_at': created_at.strftime('%Y-%m-%d') if created_at else '',
-                    })
-                    repayment_histories[loan_id] = [
-                        {'amount': float(r[0]), 'date': r[1].strftime('%Y-%m-%d') if r[1] else ''} for r in repayments
-                    ]
-    except Exception as e:
-        print(f"Error fetching loan requests: {e}")
-    return render_template('loan_requests.html', loan_requests=loan_requests, repayment_histories=repayment_histories)
-
-@app.route('/pay_back_loan', methods=['GET', 'POST'])
-@login_required
-def pay_back_loan():
-    loan = {
-        'stokvel_name': 'Example Stokvel',
-        'amount': 1000.00,
-        'status': 'approved'
-    }
-    if request.method == 'POST':
-        flash('Loan repayment submitted! (placeholder)', 'success')
-        return redirect(url_for('loan_requests'))
-    csrf_token = generate_csrf()
-    return render_template('pay_back_loan.html', loan=loan, csrf_token=csrf_token)
-
-@app.route('/request_loan', methods=['GET', 'POST'])
-@login_required
-def request_loan():
-    user_id = session.get('user_id')
-    if not user_id:
-        flash("Please log in to request a loan.", "error")
-        return redirect(url_for('login'))
-
-    # Fetch user's stokvels for the dropdown
-    stokvels = []
-=======
 @app.route('/activities')
 @login_required
 def activities():
     activities = []
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-<<<<<<< HEAD
-                    SELECT s.id, s.name 
-                    FROM stokvels s
-                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                    WHERE sm.user_id = %s
-                """, (user_id,))
-                stokvels_data = cur.fetchall()
-                for stokvel in stokvels_data:
-                    stokvels.append({'id': stokvel[0], 'name': stokvel[1]})
-    except Exception as e:
-        print(f"Error fetching stokvels: {e}")
-        flash("Could not load stokvels.", "error")
-
-    if request.method == 'POST':
-        stokvel_id = request.form.get('stokvel_id')
-        amount = request.form.get('amount')
-        reason = request.form.get('reason')
-        if not all([stokvel_id, amount, reason]):
-            flash("All fields are required.", "error")
-            return render_template('request_loan.html', stokvels=stokvels)
-        try:
-            amount = float(amount)
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        INSERT INTO loan_requests (user_id, stokvel_id, amount, reason)
-                        VALUES (%s, %s, %s, %s)
-                    """, (user_id, stokvel_id, amount, reason))
-                    conn.commit()
-            flash("Loan request submitted!", "success")
-            return redirect(url_for('loan_requests'))
-        except Exception as e:
-            print(f"Error submitting loan request: {e}")
-            flash("Could not submit loan request.", "error")
-            return render_template('request_loan.html', stokvels=stokvels)
-    else:
-        return render_template('request_loan.html', stokvels=stokvels)
-
-@app.route('/financial_insight', methods=['GET', 'POST'])
-@login_required
-def financial_insight():
-    user_id = session.get('user_id')
-    # Filters
-    date_from = request.args.get('date_from')
-    date_to = request.args.get('date_to')
-    stokvel_id = request.args.get('stokvel_id')
-    contrib_type = request.args.get('type')
-    filters = []
-    params = []
-    if date_from:
-        filters.append('transaction_date >= %s')
-        params.append(date_from)
-    if date_to:
-        filters.append('transaction_date <= %s')
-        params.append(date_to)
-    if stokvel_id:
-        filters.append('stokvel_id = %s')
-        params.append(stokvel_id)
-    if contrib_type:
-        filters.append('type = %s')
-        params.append(contrib_type)
-    filter_sql = (' AND ' + ' AND '.join(filters)) if filters else ''
-    # Personal metrics
-    with support.db_connection() as conn:
-        with conn.cursor() as cur:
-            # Contribution trends (personal)
-            cur.execute(f"""
-                SELECT DATE_TRUNC('month', transaction_date) AS month, COALESCE(SUM(amount),0)
-                FROM transactions WHERE user_id = %s AND type = 'contribution' {filter_sql}
-                GROUP BY month ORDER BY month
-            """, (user_id, *params))
-            personal_trend_raw = cur.fetchall()
-            personal_trend = [(m.strftime('%b %Y'), float(v)) for m, v in personal_trend_raw] if personal_trend_raw else []
-            # Contribution trends (community)
-            cur.execute(f"""
-                SELECT DATE_TRUNC('month', transaction_date) AS month, COALESCE(SUM(amount),0)
-                FROM transactions WHERE type = 'contribution' {filter_sql}
-                GROUP BY month ORDER BY month
-            """, tuple(params))
-            community_trend_raw = cur.fetchall()
-            community_trend = [(m.strftime('%b %Y'), float(v)) for m, v in community_trend_raw] if community_trend_raw else []
-            # Savings goal breakdown (personal)
-            cur.execute("SELECT name, current_amount, target_amount FROM savings_goals WHERE user_id = %s", (user_id,))
-            savings_goals = cur.fetchall()
-            # Top contributors (community)
-            cur.execute("""
-                SELECT u.username, COALESCE(SUM(t.amount),0) as total
-                FROM transactions t JOIN users u ON t.user_id = u.firebase_uid
-                WHERE t.type = 'contribution'
-                GROUP BY u.username ORDER BY total DESC LIMIT 5
-            """)
-            top_contributors = cur.fetchall()
-            # Recent activity (personal)
-            cur.execute(f"""
-                SELECT type, amount, transaction_date, description
-                FROM transactions WHERE user_id = %s {filter_sql}
-                ORDER BY transaction_date DESC LIMIT 10
-            """, (user_id, *params))
-            recent_activity = cur.fetchall()
-            # Milestones (personal)
-            cur.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE user_id = %s AND type = 'contribution'", (user_id,))
-            total_contrib = float(cur.fetchone()[0] or 0)
-            milestones = []
-            if total_contrib >= 10000: milestones.append('R10,000+ contributed!')
-            if total_contrib >= 5000: milestones.append('R5,000+ contributed!')
-            if total_contrib >= 1000: milestones.append('R1,000+ contributed!')
-            # Suggestions (personal)
-            suggestions = []
-            if savings_goals:
-                for goal in savings_goals:
-                    if goal[1] / (goal[2] or 1) > 0.8:
-                        suggestions.append(f"You're close to reaching your goal: {goal[0]}")
-            # Comparison to community
-            cur.execute("SELECT COALESCE(AVG(amount),0) FROM transactions WHERE type = 'contribution'")
-            community_avg = float(cur.fetchone()[0] or 0)
-            comparison = total_contrib - community_avg
-            # Growth rate (community)
-            cur.execute("""
-                SELECT DATE_TRUNC('month', transaction_date) AS month, COALESCE(SUM(amount),0)
-                FROM transactions WHERE type = 'contribution'
-                GROUP BY month ORDER BY month
-            """)
-            growth_data = cur.fetchall()
-            # Goal diversity (community)
-            cur.execute("SELECT name, COUNT(*) FROM savings_goals GROUP BY name")
-            goal_diversity = cur.fetchall()
-            # Active members (community)
-            cur.execute("""
-                SELECT COUNT(DISTINCT user_id) FROM transactions
-                WHERE type = 'contribution' AND DATE_TRUNC('month', transaction_date) = DATE_TRUNC('month', CURRENT_DATE)
-            """)
-            active_members = cur.fetchone()[0]
-            # Stacked bar data (personal)
-            cur.execute(f"""
-                SELECT DATE_TRUNC('month', transaction_date) AS month,
-                       SUM(CASE WHEN type = 'contribution' THEN amount ELSE 0 END) as contributions,
-                       SUM(CASE WHEN type = 'withdrawal' THEN amount ELSE 0 END) as withdrawals,
-                       SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as payouts
-                FROM transactions WHERE user_id = %s {filter_sql}
-                GROUP BY month ORDER BY month
-            """, (user_id, *params))
-            personal_bar_raw = cur.fetchall()
-            personal_bar_data = [
-                {
-                    'month': m.strftime('%b %Y'),
-                    'contributions': float(c),
-                    'withdrawals': float(w),
-                    'payouts': float(p)
-                } for m, c, w, p in personal_bar_raw
-            ] if personal_bar_raw else []
-            # Stacked bar data (community)
-            cur.execute(f"""
-                SELECT DATE_TRUNC('month', transaction_date) AS month,
-                       SUM(CASE WHEN type = 'contribution' THEN amount ELSE 0 END) as contributions,
-                       SUM(CASE WHEN type = 'withdrawal' THEN amount ELSE 0 END) as withdrawals,
-                       SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as payouts
-                FROM transactions {('WHERE ' + ' AND '.join(filters)) if filters else ''}
-                GROUP BY month ORDER BY month
-            """, tuple(params))
-            community_bar_raw = cur.fetchall()
-            community_bar_data = [
-                {
-                    'month': m.strftime('%b %Y'),
-                    'contributions': float(c),
-                    'withdrawals': float(w),
-                    'payouts': float(p)
-                } for m, c, w, p in community_bar_raw
-            ] if community_bar_raw else []
-            # --- Personal Financial Health Score ---
-            # Savings rate: total saved / total goal
-            cur.execute("SELECT COALESCE(SUM(current_amount),0), COALESCE(SUM(target_amount),0) FROM savings_goals WHERE user_id = %s", (user_id,))
-            total_saved, total_goal = cur.fetchone()
-            savings_rate = (total_saved / total_goal) if total_goal else 0
-            # Contribution consistency: number of months with contributions / months since first contribution
-            cur.execute("SELECT MIN(transaction_date), MAX(transaction_date) FROM transactions WHERE user_id = %s AND type = 'contribution'", (user_id,))
-            min_date, max_date = cur.fetchone()
-            if min_date and max_date:
-                months_active = (max_date.year - min_date.year) * 12 + (max_date.month - min_date.month) + 1
-                cur.execute("SELECT COUNT(DISTINCT DATE_TRUNC('month', transaction_date)) FROM transactions WHERE user_id = %s AND type = 'contribution'", (user_id,))
-                months_contributed = cur.fetchone()[0]
-                consistency = (months_contributed / months_active) if months_active else 0
-            else:
-                consistency = 0
-            # Goal progress: average progress across all goals
-            cur.execute("SELECT AVG(current_amount/NULLIF(target_amount,0)) FROM savings_goals WHERE user_id = %s", (user_id,))
-            avg_goal_progress = cur.fetchone()[0] or 0
-            # Health score (simple weighted sum, scale 0-100)
-            savings_rate = float(savings_rate)
-            consistency = float(consistency)
-            avg_goal_progress = float(avg_goal_progress)
-            health_score = int((savings_rate * 40 + consistency * 30 + avg_goal_progress * 30) * 100)
-            # --- Goal Forecasting ---
-            # Find next goal not yet reached
-            cur.execute("SELECT name, target_amount, current_amount FROM savings_goals WHERE user_id = %s AND current_amount < target_amount ORDER BY target_date ASC LIMIT 1", (user_id,))
-            next_goal = cur.fetchone()
-            goal_forecast = None
-            if next_goal:
-                name, target, current = next_goal
-                # Calculate average monthly contribution to goals
-                cur.execute("""
-                    SELECT COALESCE(SUM(amount),0)/GREATEST(COUNT(DISTINCT DATE_TRUNC('month', transaction_date)),1)
-                    FROM transactions WHERE user_id = %s AND type = 'contribution'""", (user_id,))
-                avg_monthly = cur.fetchone()[0] or 0
-                if avg_monthly > 0:
-                    months_needed = max(0, int((target - current) / avg_monthly))
-                    from datetime import datetime, timedelta
-                    forecast_date = datetime.now() + timedelta(days=months_needed*30)
-                    goal_forecast = f"You are on track to reach '{name}' by {forecast_date.strftime('%b %Y')} if you keep saving at your current rate."
-                else:
-                    goal_forecast = f"Set up regular contributions to reach your goal '{name}'."
-            # --- Community Badges ---
-            # Top contributor badge
-            cur.execute("""
-                SELECT user_id, SUM(amount) as total FROM transactions WHERE type = 'contribution' GROUP BY user_id ORDER BY total DESC LIMIT 1
-            """)
-            top_contributor = cur.fetchone()
-            community_badges = []
-            if top_contributor and top_contributor[0] == user_id:
-                community_badges.append('Top Contributor')
-            # Fastest saver badge (highest savings rate)
-            cur.execute("""
-                SELECT user_id, SUM(current_amount)/NULLIF(SUM(target_amount),0) as rate FROM savings_goals GROUP BY user_id ORDER BY rate DESC LIMIT 1
-            """)
-            fastest_saver = cur.fetchone()
-            if fastest_saver and fastest_saver[0] == user_id:
-                community_badges.append('Fastest Saver')
-            # --- Community Milestones ---
-            cur.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE type = 'contribution'")
-            total_community_saved = float(cur.fetchone()[0] or 0)
-            community_milestones = []
-            if total_community_saved >= 100000:
-                community_milestones.append('Community has saved over R100,000!')
-            if total_community_saved >= 50000:
-                community_milestones.append('Community has saved over R50,000!')
-            if total_community_saved >= 10000:
-                community_milestones.append('Community has saved over R10,000!')
-            # --- Stokvel Comparisons ---
-            # User's stokvels vs. community averages
-            cur.execute("""
-                SELECT s.id, s.name, s.total_pool FROM stokvels s
-                JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                WHERE sm.user_id = %s
-            """, (user_id,))
-            user_stokvels = cur.fetchall()
-            cur.execute("SELECT AVG(total_pool) FROM stokvels")
-            avg_pool = float(cur.fetchone()[0] or 0)
-            stokvel_comparisons = []
-            for stokvel in user_stokvels:
-                stokvel_comparisons.append({
-                    'name': stokvel[1],
-                    'total_pool': stokvel[2],
-                    'avg_pool': avg_pool,
-                    'above_avg': stokvel[2] > avg_pool
-                })
-            # --- Loan and Repayment Stats (personal) ---
-            # Total loans taken
-            cur.execute("SELECT COALESCE(SUM(amount),0) FROM loan_requests WHERE user_id = %s", (user_id,))
-            total_loans_taken = float(cur.fetchone()[0] or 0)
-            # Total repaid
-            cur.execute("""
-                SELECT COALESCE(SUM(lr.amount),0) FROM loan_repayments lr
-                JOIN loan_requests lq ON lr.loan_id = lq.id
-                WHERE lq.user_id = %s
-            """, (user_id,))
-            total_loans_repaid = float(cur.fetchone()[0] or 0)
-            # Outstanding balance
-            outstanding_loans = total_loans_taken - total_loans_repaid
-            # Monthly loan breakdown
-            cur.execute("""
-                SELECT DATE_TRUNC('month', lq.created_at) AS month, COALESCE(SUM(lq.amount),0) as total_loaned,
-                       COALESCE(SUM(lr.amount),0) as total_repaid
-                FROM loan_requests lq
-                LEFT JOIN loan_repayments lr ON lq.id = lr.loan_id
-                WHERE lq.user_id = %s
-                GROUP BY month ORDER BY month
-            """, (user_id,))
-            loan_monthly_raw = cur.fetchall()
-            loan_monthly_data = [
-                {
-                    'month': m.strftime('%b %Y'),
-                    'loaned': float(loaned),
-                    'repaid': float(repaid)
-                } for m, loaned, repaid in loan_monthly_raw
-            ] if loan_monthly_raw else []
-    return render_template('financial_insight.html',
-        total_contributions=total_contrib,
-        monthly_average=0,  # Placeholder, can compute as before
-        savings_progress=0, # Placeholder, can compute as before
-        community_total_contributions=0, # Placeholder, can compute as before
-        community_monthly_average=0, # Placeholder, can compute as before
-        community_savings_progress=0, # Placeholder, can compute as before
-        personal_trend=personal_trend,
-        community_trend=community_trend,
-        savings_goals=savings_goals,
-        top_contributors=top_contributors,
-        recent_activity=recent_activity,
-        milestones=milestones,
-        suggestions=suggestions,
-        comparison=comparison,
-        growth_data=growth_data,
-        goal_diversity=goal_diversity,
-        active_members=active_members,
-        date_from=date_from,
-        date_to=date_to,
-        stokvel_id=stokvel_id,
-        contrib_type=contrib_type,
-        personal_bar_data=personal_bar_data,
-        community_bar_data=community_bar_data,
-        health_score=health_score,
-        goal_forecast=goal_forecast,
-        community_badges=community_badges,
-        community_milestones=community_milestones,
-        stokvel_comparisons=stokvel_comparisons,
-        total_loans_taken=total_loans_taken,
-        total_loans_repaid=total_loans_repaid,
-        outstanding_loans=outstanding_loans,
-        loan_monthly_data=loan_monthly_data
-    )
-
-@app.route('/financial_insight/data', methods=['GET'])
-@login_required
-def financial_insight_data():
-    user_id = session.get('user_id')
-    date_from = request.args.get('date_from')
-    date_to = request.args.get('date_to')
-    stokvel_id = request.args.get('stokvel_id')
-    contrib_type = request.args.get('type')
-    filters = []
-    params = []
-    if date_from:
-        filters.append('transaction_date >= %s')
-        params.append(date_from)
-    if date_to:
-        filters.append('transaction_date <= %s')
-        params.append(date_to)
-    if stokvel_id:
-        filters.append('stokvel_id = %s')
-        params.append(stokvel_id)
-    if contrib_type:
-        filters.append('type = %s')
-        params.append(contrib_type)
-    filter_sql = (' AND ' + ' AND '.join(filters)) if filters else ''
-    with support.db_connection() as conn:
-        with conn.cursor() as cur:
-            # (Repeat all queries from /financial_insight, but collect results in a dict)
-            # ... (copy all queries and collect results) ...
-            # For brevity, only show a few key results here; in real code, include all
-            cur.execute(f"""
-                SELECT DATE_TRUNC('month', transaction_date) AS month, COALESCE(SUM(amount),0)
-                FROM transactions WHERE user_id = %s AND type = 'contribution' {filter_sql}
-                GROUP BY month ORDER BY month
-            """, (user_id, *params))
-            personal_trend = [(m.strftime('%b %Y'), float(v)) for m, v in cur.fetchall()]
-            cur.execute(f"""
-                SELECT DATE_TRUNC('month', transaction_date) AS month,
-                       SUM(CASE WHEN type = 'contribution' THEN amount ELSE 0 END) as contributions,
-                       SUM(CASE WHEN type = 'withdrawal' THEN amount ELSE 0 END) as withdrawals,
-                       SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as payouts
-                FROM transactions WHERE user_id = %s {filter_sql}
-                GROUP BY month ORDER BY month
-            """, (user_id, *params))
-            personal_bar_data = [
-                {
-                    'month': m.strftime('%b %Y'),
-                    'contributions': float(c),
-                    'withdrawals': float(w),
-                    'payouts': float(p)
-                } for m, c, w, p in cur.fetchall()
-            ]
-            # ... repeat for all other metrics ...
-            # --- Loan and Repayment Stats (personal) ---
-            cur.execute("SELECT COALESCE(SUM(amount),0) FROM loan_requests WHERE user_id = %s", (user_id,))
-            total_loans_taken = float(cur.fetchone()[0] or 0)
-            cur.execute("""
-                SELECT COALESCE(SUM(lr.amount),0) FROM loan_repayments lr
-                JOIN loan_requests lq ON lr.loan_id = lq.id
-                WHERE lq.user_id = %s
-            """, (user_id,))
-            total_loans_repaid = float(cur.fetchone()[0] or 0)
-            outstanding_loans = total_loans_taken - total_loans_repaid
-            cur.execute("""
-                SELECT DATE_TRUNC('month', lq.created_at) AS month, COALESCE(SUM(lq.amount),0) as total_loaned,
-                       COALESCE(SUM(lr.amount),0) as total_repaid
-                FROM loan_requests lq
-                LEFT JOIN loan_repayments lr ON lq.id = lr.loan_id
-                WHERE lq.user_id = %s
-                GROUP BY month ORDER BY month
-            """, (user_id,))
-            loan_monthly_raw = cur.fetchall()
-            loan_monthly_data = [
-                {
-                    'month': m.strftime('%b %Y'),
-                    'loaned': float(loaned),
-                    'repaid': float(repaid)
-                } for m, loaned, repaid in loan_monthly_raw
-            ] if loan_monthly_raw else []
-    return jsonify({
-        'personal_trend': personal_trend,
-        'personal_bar_data': personal_bar_data,
-        # ... add all other metrics as in the main route ...
-    })
-
-@app.route('/add_calendar_event', methods=['POST'])
-@login_required
-def add_calendar_event():
-    user_id = session.get('user_id')
-    event_date = request.form.get('date')
-    description = request.form.get('desc')
-    if not (event_date and description):
-        return jsonify({'success': False, 'error': 'Missing date or description'}), 400
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Create table if not exists
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS user_events (
-                        id SERIAL PRIMARY KEY,
-                        user_id VARCHAR(128) REFERENCES users(firebase_uid) ON DELETE CASCADE,
-                        event_date DATE NOT NULL,
-                        description TEXT NOT NULL
-                    )
-                """)
-                cur.execute("""
-                    INSERT INTO user_events (user_id, event_date, description)
-                    VALUES (%s, %s, %s)
-                """, (user_id, event_date, description))
-                conn.commit()
-        return jsonify({'success': True})
-    except Exception as e:
-        print(f"Error adding custom event: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/calendar_data')
-@login_required
-def calendar_data():
-    import calendar
-    from datetime import datetime, date, timedelta
-    user_id = session.get('user_id')
-    try:
-        month = int(request.args.get('month', datetime.now().month))
-        year = int(request.args.get('year', datetime.now().year))
-    except Exception:
-        month = datetime.now().month
-        year = datetime.now().year
-    # Build calendar days
-    first_day = date(year, month, 1)
-    _, last_day_num = calendar.monthrange(year, month)
-    days = []
-    today = date.today()
-    for i in range(1, last_day_num + 1):
-        d = date(year, month, i)
-        days.append({
-            'date': i,
-            'full_date': d.strftime('%Y-%m-%d'),
-            'is_today': d == today,
-            'is_weekend': d.weekday() >= 5
-        })
-    # Fetch events (reuse dashboard logic)
-    events = []
-    with support.db_connection() as conn:
-        with conn.cursor() as cur:
-            # Contributions
-            cur.execute("SELECT transaction_date, amount FROM transactions WHERE user_id=%s AND EXTRACT(MONTH FROM transaction_date)=%s AND EXTRACT(YEAR FROM transaction_date)=%s", (user_id, month, year))
-            for row in cur.fetchall():
-                events.append({'date': row[0].strftime('%Y-%m-%d'), 'type': 'contribution', 'desc': f'Contribution: R{row[1]}'})
-            # Payouts
-            cur.execute("SELECT transaction_date, amount FROM payouts WHERE user_id=%s AND EXTRACT(MONTH FROM transaction_date)=%s AND EXTRACT(YEAR FROM transaction_date)=%s", (user_id, month, year))
-            for row in cur.fetchall():
-                events.append({'date': row[0].strftime('%Y-%m-%d'), 'type': 'payout', 'desc': f'Payout: R{row[1]}'})
-            # Savings goals
-            cur.execute("SELECT target_date, name, target_amount FROM savings_goals WHERE user_id=%s AND EXTRACT(MONTH FROM target_date)=%s AND EXTRACT(YEAR FROM target_date)=%s", (user_id, month, year))
-            for row in cur.fetchall():
-                events.append({'date': row[0].strftime('%Y-%m-%d'), 'type': 'goal', 'desc': f'Goal: {row[1]} (R{row[2]})'})
-            # Repayments
-            cur.execute("SELECT date, amount FROM loan_repayments WHERE user_id=%s AND EXTRACT(MONTH FROM date)=%s AND EXTRACT(YEAR FROM date)=%s", (user_id, month, year))
-            for row in cur.fetchall():
-                events.append({'date': row[0].strftime('%Y-%m-%d'), 'type': 'repayment', 'desc': f'Repayment: R{row[1]}'})
-            # Custom events
-            try:
-                cur.execute("SELECT event_date, description FROM user_events WHERE user_id=%s AND EXTRACT(MONTH FROM event_date)=%s AND EXTRACT(YEAR FROM event_date)=%s", (user_id, month, year))
-                for row in cur.fetchall():
-                    events.append({'date': row[0].strftime('%Y-%m-%d'), 'type': 'custom', 'desc': row[1]})
-            except Exception:
-                pass  # Table may not exist yet
-    month_label = first_day.strftime('%B %Y')
-    return jsonify({
-        'days': days,
-        'events': events,
-        'month_label': month_label,
-        'month_num': month,
-        'year': year
-    })
-
-@app.route('/transactions')
-@login_required
-def transactions():
-    user_id = session.get('user_id')
-    transactions = []
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT transaction_date, type, amount, status, description, stokvel_id
-                    FROM transactions
-                    WHERE user_id = %s
-                    ORDER BY transaction_date DESC
-                """, (user_id,))
-                for row in cur.fetchall():
-                    transactions.append({
-                        'date': row[0].strftime('%Y-%m-%d') if row[0] else '',
-                        'type': row[1],
-                        'amount': float(row[2]),
-                        'status': row[3],
-                        'description': row[4],
-                        'stokvel_id': row[5]
-                    })
-    except Exception as e:
-        print(f"Error fetching transactions: {e}")
-    return render_template('transactions.html', transactions=transactions)
-
-@app.context_processor
-def inject_csrf_token():
-    return dict(csrf_token=generate_csrf())
-
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=8080)
-=======
                     SELECT t.type, t.amount, t.status, t.transaction_date, t.description, s.name as stokvel_name
                     FROM transactions t
                     JOIN stokvels s ON t.stokvel_id = s.id
@@ -3275,7 +2723,451 @@ if __name__ == "__main__":
         print(f"Error fetching activities: {e}")
     return render_template('activities.html', activities=activities)
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=True)
->>>>>>> 09799e6ad57bc08de1445d08a85e35f4e73d014d
+@app.context_processor
+def inject_csrf_token():
+    return dict(csrf_token=generate_csrf())
+
+@app.route('/pay_back_loan', methods=['GET', 'POST'])
+@login_required
+def pay_back_loan():
+    loan = {
+        'stokvel_name': 'Example Stokvel',
+        'amount': 1000.00,
+        'status': 'approved'
+    }
+    if request.method == 'POST':
+        flash('Loan repayment submitted! (placeholder)', 'success')
+        return redirect(url_for('loan_requests'))
+    csrf_token = generate_csrf()
+    return render_template('pay_back_loan.html', loan=loan, csrf_token=csrf_token)
+
+@app.route('/request_loan', methods=['GET', 'POST'])
+@login_required
+def request_loan():
+    user_id = session.get('user_id')
+    stokvels = []
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT s.id, s.name 
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE sm.user_id = %s
+                """, (user_id,))
+                stokvels_data = cur.fetchall()
+                for stokvel in stokvels_data:
+                    stokvels.append({'id': stokvel[0], 'name': stokvel[1]})
+    except Exception as e:
+        print(f"Error fetching stokvels: {e}")
+        flash("Could not load stokvels.", "error")
+
+    if request.method == 'POST':
+        stokvel_id = request.form.get('stokvel_id')
+        amount = request.form.get('amount')
+        reason = request.form.get('reason')
+        if not all([stokvel_id, amount, reason]):
+            flash("All fields are required.", "error")
+            return render_template('request_loan.html', stokvels=stokvels)
+        try:
+            amount = float(amount)
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO loan_requests (user_id, stokvel_id, amount, reason)
+                        VALUES (%s, %s, %s, %s)
+                    """, (user_id, stokvel_id, amount, reason))
+                    conn.commit()
+            flash("Loan request submitted!", "success")
+            return redirect(url_for('loan_requests'))
+        except Exception as e:
+            print(f"Error submitting loan request: {e}")
+            flash("Could not submit loan request.", "error")
+            return render_template('request_loan.html', stokvels=stokvels)
+    else:
+        return render_template('request_loan.html', stokvels=stokvels)
+
+@app.route('/loan_requests')
+@login_required
+def loan_requests():
+    user_id = session.get('user_id')
+    loan_requests = []
+    repayment_histories = {}
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    SELECT lr.id, s.name, lr.amount, lr.status, lr.reason, lr.created_at
+                    FROM loan_requests lr
+                    JOIN stokvels s ON lr.stokvel_id = s.id
+                    WHERE lr.user_id = %s
+                    ORDER BY lr.created_at DESC
+                ''', (user_id,))
+                for row in cur.fetchall():
+                    loan_id, stokvel_name, amount, status, reason, created_at = row
+                    cur.execute('''
+                        SELECT amount, date FROM loan_repayments WHERE loan_id = %s ORDER BY date
+                    ''', (loan_id,))
+                    repayments = cur.fetchall()
+                    repaid_total = sum(float(r[0]) for r in repayments)
+                    remaining = float(amount) - repaid_total
+                    loan_requests.append({
+                        'id': loan_id,
+                        'stokvel_name': stokvel_name,
+                        'amount': float(amount),
+                        'repaid_total': repaid_total,
+                        'remaining': remaining,
+                        'reason': reason,
+                        'status': status,
+                        'created_at': created_at.strftime('%Y-%m-%d') if created_at else '',
+                    })
+                    repayment_histories[loan_id] = [
+                        {'amount': float(r[0]), 'date': r[1].strftime('%Y-%m-%d') if r[1] else ''} for r in repayments
+                    ]
+    except Exception as e:
+        print(f"Error fetching loan requests: {e}")
+    return render_template('loan_requests.html', loan_requests=loan_requests, repayment_histories=repayment_histories)
+
+@app.route('/financial_insight', methods=['GET', 'POST'])
+@login_required
+def financial_insight():
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("User not found in session, please log in again.", "error")
+        return redirect('/login')
+
+    # Get filter parameters
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+    contrib_type = request.args.get('type', '')
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Build date filter
+                date_filter = ""
+                params = [user_id]
+                if date_from:
+                    date_filter += " AND t.transaction_date >= %s"
+                    params.append(date_from)
+                if date_to:
+                    date_filter += " AND t.transaction_date <= %s"
+                    params.append(date_to)
+                if contrib_type:
+                    date_filter += " AND t.type = %s"
+                    params.append(contrib_type)
+
+                # Get user's total contributions
+                cur.execute(f"""
+                    SELECT COALESCE(SUM(amount), 0) 
+                    FROM transactions 
+                    WHERE user_id = %s AND type = 'contribution'{date_filter}
+                """, params)
+                total_contributions = cur.fetchone()[0] or 0
+
+                # Get user's savings progress
+                cur.execute("""
+                    SELECT COALESCE(SUM(current_amount), 0), COALESCE(SUM(target_amount), 0)
+                    FROM savings_goals 
+                    WHERE user_id = %s
+                """, (user_id,))
+                current_saved, total_target = cur.fetchone()
+                savings_progress = (current_saved / total_target) if total_target > 0 else 0
+
+                # Calculate monthly average
+                cur.execute(f"""
+                    SELECT COALESCE(AVG(monthly_total), 0)
+                    FROM (
+                        SELECT DATE_TRUNC('month', transaction_date) as month,
+                               SUM(amount) as monthly_total
+                        FROM transactions 
+                        WHERE user_id = %s AND type = 'contribution'{date_filter}
+                        GROUP BY DATE_TRUNC('month', transaction_date)
+                    ) monthly_data
+                """, params)
+                monthly_average = cur.fetchone()[0] or 0
+
+                # Get loan statistics
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount), 0) 
+                    FROM loan_requests 
+                    WHERE user_id = %s AND status = 'approved'
+                """, (user_id,))
+                total_loans_taken = cur.fetchone()[0] or 0
+
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount), 0) 
+                    FROM loan_repayments 
+                    WHERE user_id = %s
+                """, (user_id,))
+                total_loans_repaid = cur.fetchone()[0] or 0
+
+                outstanding_loans = total_loans_taken - total_loans_repaid
+
+                # Calculate financial health score (simplified)
+                health_score = min(100, max(0, int(
+                    (savings_progress * 40) +  # 40% from goal progress
+                    (min(monthly_average / 1000, 1) * 30) +  # 30% from monthly average
+                    (min(total_contributions / 5000, 1) * 30)  # 30% from total contributions
+                )))
+
+                # Get recent activity
+                cur.execute(f"""
+                    SELECT t.type, t.amount, t.transaction_date, s.name
+                    FROM transactions t
+                    LEFT JOIN stokvels s ON t.stokvel_id = s.id
+                    WHERE t.user_id = %s{date_filter}
+                    ORDER BY t.transaction_date DESC
+                    LIMIT 10
+                """, params)
+                recent_activity = cur.fetchall()
+
+                # Get savings goals
+                cur.execute("""
+                    SELECT name, current_amount, target_amount
+                    FROM savings_goals 
+                    WHERE user_id = %s
+                    ORDER BY target_date ASC
+                """, (user_id,))
+                savings_goals = cur.fetchall()
+
+                # Generate milestones and suggestions
+                milestones = []
+                suggestions = []
+                
+                if total_contributions >= 1000:
+                    milestones.append("R1,000+ Total Contributions")
+                if total_contributions >= 5000:
+                    milestones.append("R5,000+ Total Contributions")
+                if savings_progress >= 0.5:
+                    milestones.append("50%+ Goal Progress")
+                if monthly_average >= 500:
+                    milestones.append("R500+ Monthly Average")
+
+                if savings_progress < 0.3:
+                    suggestions.append("Increase savings rate")
+                if monthly_average < 300:
+                    suggestions.append("Set up recurring contributions")
+                if outstanding_loans > 0:
+                    suggestions.append("Focus on loan repayment")
+
+                # Goal forecast
+                goal_forecast = None
+                if savings_goals:
+                    avg_monthly_needed = sum((goal[2] - goal[1]) for goal in savings_goals if goal[2] > goal[1]) / len(savings_goals)
+                    if monthly_average > 0:
+                        months_to_complete = avg_monthly_needed / monthly_average
+                        goal_forecast = f"Complete goals in {months_to_complete:.1f} months"
+
+                # Community data (simplified)
+                cur.execute("SELECT COUNT(DISTINCT user_id) FROM transactions WHERE type = 'contribution'")
+                active_members = cur.fetchone()[0] or 0
+
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'contribution'")
+                community_total_contributions = cur.fetchone()[0] or 0
+
+                cur.execute("SELECT COALESCE(AVG(monthly_total), 0) FROM (SELECT DATE_TRUNC('month', transaction_date) as month, SUM(amount) as monthly_total FROM transactions WHERE type = 'contribution' GROUP BY DATE_TRUNC('month', transaction_date)) monthly_data")
+                community_monthly_average = cur.fetchone()[0] or 0
+
+                # Top contributors
+                cur.execute("""
+                    SELECT u.username, COALESCE(SUM(t.amount), 0) as total
+                    FROM users u
+                    LEFT JOIN transactions t ON u.firebase_uid = t.user_id AND t.type = 'contribution'
+                    GROUP BY u.firebase_uid, u.username
+                    ORDER BY total DESC
+                    LIMIT 5
+                """)
+                top_contributors = cur.fetchall()
+
+                # Stokvel comparisons
+                cur.execute("""
+                    SELECT s.name, s.total_pool,
+                           (SELECT AVG(total_pool) FROM stokvels) as avg_pool
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE sm.user_id = %s
+                """, (user_id,))
+                stokvel_comparisons = []
+                for row in cur.fetchall():
+                    stokvel_comparisons.append({
+                        'name': row[0],
+                        'total_pool': row[1] or 0,
+                        'avg_pool': row[2] or 0,
+                        'above_avg': (row[1] or 0) > (row[2] or 0)
+                    })
+
+                # Community badges and milestones
+                community_badges = []
+                community_milestones = []
+                
+                if community_total_contributions >= 100000:
+                    community_milestones.append("R100K+ Community Contributions")
+                if active_members >= 50:
+                    community_badges.append("Active Community")
+                if community_monthly_average >= 1000:
+                    community_badges.append("High Engagement")
+
+                # Calculate comparison to community average
+                comparison = total_contributions - (community_total_contributions / max(active_members, 1))
+
+        return render_template('financial_insight.html',
+                             # Personal data
+                             total_contributions=total_contributions,
+                             savings_progress=savings_progress,
+                             monthly_average=monthly_average,
+                             health_score=health_score,
+                             goal_forecast=goal_forecast,
+                             milestones=milestones,
+                             suggestions=suggestions,
+                             recent_activity=recent_activity,
+                             savings_goals=savings_goals,
+                             total_loans_taken=total_loans_taken,
+                             total_loans_repaid=total_loans_repaid,
+                             outstanding_loans=outstanding_loans,
+                             
+                             # Community data
+                             active_members=active_members,
+                             community_total_contributions=community_total_contributions,
+                             community_monthly_average=community_monthly_average,
+                             community_savings_progress=savings_progress,  # Simplified
+                             top_contributors=top_contributors,
+                             stokvel_comparisons=stokvel_comparisons,
+                             community_badges=community_badges,
+                             community_milestones=community_milestones,
+                             comparison=comparison,
+                             
+                             # Filter data
+                             date_from=date_from,
+                             date_to=date_to,
+                             contrib_type=contrib_type)
+
+    except Exception as e:
+        print(f"Error in financial insight: {e}")
+        flash("An error occurred while loading financial insights. Please try again.")
+        return redirect('/home')
+
+@app.route('/financial_insight/data')
+@login_required
+def financial_insight_data():
+    """AJAX endpoint to get chart data for financial insights"""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    # Get filter parameters
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+    contrib_type = request.args.get('type', '')
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Build date filter
+                date_filter = ""
+                params = [user_id]
+                if date_from:
+                    date_filter += " AND t.transaction_date >= %s"
+                    params.append(date_from)
+                if date_to:
+                    date_filter += " AND t.transaction_date <= %s"
+                    params.append(date_to)
+                if contrib_type:
+                    date_filter += " AND t.type = %s"
+                    params.append(contrib_type)
+
+                # Personal trend data (monthly contributions)
+                cur.execute(f"""
+                    SELECT DATE_TRUNC('month', transaction_date)::date as month,
+                           SUM(amount) as total
+                    FROM transactions 
+                    WHERE user_id = %s AND type = 'contribution'{date_filter}
+                    GROUP BY DATE_TRUNC('month', transaction_date)
+                    ORDER BY month
+                """, params)
+                personal_trend = [[row[0].strftime('%Y-%m'), float(row[1])] for row in cur.fetchall()]
+
+                # Personal bar chart data (monthly breakdown by type)
+                cur.execute(f"""
+                    SELECT DATE_TRUNC('month', transaction_date)::date as month,
+                           SUM(CASE WHEN type = 'contribution' THEN amount ELSE 0 END) as contributions,
+                           SUM(CASE WHEN type = 'withdrawal' THEN amount ELSE 0 END) as withdrawals,
+                           SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as payouts
+                    FROM transactions 
+                    WHERE user_id = %s{date_filter}
+                    GROUP BY DATE_TRUNC('month', transaction_date)
+                    ORDER BY month
+                """, params)
+                personal_bar_data = []
+                for row in cur.fetchall():
+                    personal_bar_data.append({
+                        'month': row[0].strftime('%Y-%m'),
+                        'contributions': float(row[1]),
+                        'withdrawals': float(row[2]),
+                        'payouts': float(row[3])
+                    })
+
+                # Community trend data
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date)::date as month,
+                           SUM(amount) as total
+                    FROM transactions 
+                    WHERE type = 'contribution'
+                    GROUP BY DATE_TRUNC('month', transaction_date)
+                    ORDER BY month
+                """)
+                community_trend = [[row[0].strftime('%Y-%m'), float(row[1])] for row in cur.fetchall()]
+
+                # Community bar chart data
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date)::date as month,
+                           SUM(CASE WHEN type = 'contribution' THEN amount ELSE 0 END) as contributions,
+                           SUM(CASE WHEN type = 'withdrawal' THEN amount ELSE 0 END) as withdrawals,
+                           SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as payouts
+                    FROM transactions 
+                    GROUP BY DATE_TRUNC('month', transaction_date)
+                    ORDER BY month
+                """)
+                community_bar_data = []
+                for row in cur.fetchall():
+                    community_bar_data.append({
+                        'month': row[0].strftime('%Y-%m'),
+                        'contributions': float(row[1]),
+                        'withdrawals': float(row[2]),
+                        'payouts': float(row[3])
+                    })
+
+                # Loan monthly data
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', lr.created_at)::date as month,
+                           SUM(lr.amount) as loaned,
+                           COALESCE(SUM(lr2.amount), 0) as repaid
+                    FROM loan_requests lr
+                    LEFT JOIN loan_repayments lr2 ON lr.id = lr2.loan_id 
+                        AND DATE_TRUNC('month', lr.created_at) = DATE_TRUNC('month', lr2.date)
+                    WHERE lr.user_id = %s AND lr.status = 'approved'
+                    GROUP BY DATE_TRUNC('month', lr.created_at)
+                    ORDER BY month
+                """, (user_id,))
+                loan_monthly_data = []
+                for row in cur.fetchall():
+                    loan_monthly_data.append({
+                        'month': row[0].strftime('%Y-%m'),
+                        'loaned': float(row[1]),
+                        'repaid': float(row[2])
+                    })
+
+        return jsonify({
+            'personal_trend': personal_trend,
+            'personal_bar_data': personal_bar_data,
+            'community_trend': community_trend,
+            'community_bar_data': community_bar_data,
+            'loan_monthly_data': loan_monthly_data
+        })
+
+    except Exception as e:
+        print(f"Error in financial insight data: {e}")
+        return jsonify({'error': 'Failed to load data'}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0', port=8080)

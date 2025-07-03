@@ -13,13 +13,15 @@
                 <button id="chatbot-close" title="Close" aria-label="Close Chatbot"><i class="fas fa-times"></i></button>
             </nav>
         </header>
-        <div class="chatbot-mode-switch">
-            <div class="mode-segment">
-                <span class="mode-segment-label active-app" id="app-mode-label">App Mode</span>
-                <span class="mode-segment-label active-ai" id="ai-mode-label">AI Mode</span>
-                <div class="mode-segment-bg"></div>
-                <input type="checkbox" id="ai-mode-toggle" class="mode-segment-switch" aria-label="Toggle AI Mode">
-            </div>
+        <div class="chatbot-mode-switch flex items-center justify-center my-2">
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="ai-mode-toggle" class="sr-only peer" aria-label="Toggle AI Mode">
+                <div class="w-16 h-8 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-cyan-400 rounded-full peer dark:bg-gray-700 transition-all duration-300"></div>
+                <div class="absolute left-0.5 top-0.5 w-7 h-7 bg-white border border-gray-200 rounded-full shadow-md transition-all duration-300 peer-checked:translate-x-8 flex items-center justify-center">
+                    <span id="switch-icon" class="text-cyan-500 text-lg transition-all duration-300">🤖</span>
+                </div>
+                <span class="ml-4 text-sm font-semibold text-cyan-200 peer-checked:text-green-400 transition-colors duration-300" id="mode-label">AI Mode</span>
+            </label>
         </div>
         <div class="chatbot-divider" aria-hidden="true"></div>
         <main id="chatbot-messages" aria-live="polite" tabindex="0">
@@ -44,9 +46,9 @@
         <footer id="chatbot-input-area">
             <form id="chatbot-input" autocomplete="off" onsubmit="return false;">
                 <button id="quick-tips" title="Quick Tips" aria-label="Show Quick Tips" type="button"><i class="fas fa-lightbulb"></i></button>
-                <div class="input-send-wrapper" style="position: relative; display: flex; align-items: center; flex: 1;">
-                    <input type="text" id="user-message" placeholder="Type your message..." aria-label="Type your message" autocomplete="off" style="flex: 1; border-radius: 2.2rem; padding-right: 3.5rem;">
-                    <button id="send-message" aria-label="Send Message" type="submit" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; min-width: 44px; min-height: 44px; font-size: 1.3rem; background: #4a90e2; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-paper-plane"></i></button>
+                <div class="input-send-wrapper">
+                    <input type="text" id="user-message" placeholder="Type your message..." aria-label="Type your message" autocomplete="off">
+                    <button id="send-message" aria-label="Send Message" type="submit"><i class="fas fa-paper-plane"></i></button>
                 </div>
                 <aside id="quick-tips-menu" class="hidden" aria-label="Quick Tips">
                     <div class="tip-header">Common Questions</div>
@@ -58,21 +60,35 @@
             </form>
         </footer>
     </section>
-    <button id="chatbot-fab" title="Open Chat" aria-label="Open Chatbot" style="display:none;">💬</button>
+    <button id="chatbot-fab" title="Open Chat" aria-label="Open Chatbot">💬</button>
 </div>
 <script>
-// Responsive FAB visibility (show on mobile/minimized)
+// Improved FAB visibility logic
 (function() {
     function updateFabVisibility() {
         var fab = document.getElementById('chatbot-fab');
-        if (window.innerWidth <= 600) {
+        var container = document.getElementById('chatbot-container');
+        
+        // Show FAB when chatbot is minimized or on mobile
+        if (container.classList.contains('minimized') || window.innerWidth <= 768) {
             fab.style.display = 'flex';
+            fab.style.visibility = 'visible';
+            fab.style.opacity = '1';
         } else {
             fab.style.display = 'none';
         }
     }
+    
+    // Update on load, resize, and when chatbot state changes
     window.addEventListener('resize', updateFabVisibility);
     document.addEventListener('DOMContentLoaded', updateFabVisibility);
+    
+    // Observe chatbot container for class changes
+    const observer = new MutationObserver(updateFabVisibility);
+    const container = document.getElementById('chatbot-container');
+    if (container) {
+        observer.observe(container, { attributes: true, attributeFilter: ['class'] });
+    }
 })();
 </script>
 <style>

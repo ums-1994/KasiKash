@@ -17,7 +17,10 @@ CREATE TABLE IF NOT EXISTS users (
     address VARCHAR(255),
     id_document VARCHAR(255),
     proof_of_address VARCHAR(255),
-    last_login TIMESTAMP
+    last_login TIMESTAMP,
+    kyc_status VARCHAR(20) DEFAULT 'not_submitted',
+    kyc_rejection_reason TEXT,
+    kyc_approved_at TIMESTAMP
 );
 
 -- Create the stokvels table

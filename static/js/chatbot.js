@@ -33,40 +33,30 @@ document.addEventListener('DOMContentLoaded', () => {
         updateModeDisplay();
     }
     
-    // Update mode display for segmented control
+    // Update mode display for stylish toggle switch
     function updateModeDisplay() {
+        const switchIcon = document.getElementById('switch-icon');
+        const modeLabel = document.getElementById('mode-label');
         if (isAIMode) {
             chatbotContainer.classList.remove('app-mode');
-            aiModeLabel.classList.add('active-ai');
-            appModeLabel.classList.remove('active-app');
-            modeSegmentBg.style.left = '50%';
+            switchIcon.textContent = '🤖';
+            switchIcon.classList.remove('text-green-400');
+            switchIcon.classList.add('text-cyan-500');
+            modeLabel.textContent = 'AI Mode';
+            modeLabel.classList.remove('text-orange-400');
+            modeLabel.classList.add('text-cyan-200');
         } else {
             chatbotContainer.classList.add('app-mode');
-            appModeLabel.classList.add('active-app');
-            aiModeLabel.classList.remove('active-ai');
-            modeSegmentBg.style.left = '0';
+            switchIcon.textContent = '📱';
+            switchIcon.classList.remove('text-cyan-500');
+            switchIcon.classList.add('text-green-400');
+            modeLabel.textContent = 'App Mode';
+            modeLabel.classList.remove('text-cyan-200');
+            modeLabel.classList.add('text-green-400');
         }
     }
     
-    // Click handlers for segmented control
-    appModeLabel.addEventListener('click', () => {
-        if (isAIMode) {
-            isAIMode = false;
-            aiModeToggle.checked = false;
-            localStorage.setItem('kasiAIMode', 'false');
-            updateModeDisplay();
-            addMessage('📱 Switched to App Mode - Quick responses', 'bot');
-        }
-    });
-    aiModeLabel.addEventListener('click', () => {
-        if (!isAIMode) {
-            isAIMode = true;
-            aiModeToggle.checked = true;
-            localStorage.setItem('kasiAIMode', 'true');
-            updateModeDisplay();
-            addMessage('🤖 Switched to AI Mode - Powered by Google Gemma 3n 4B', 'bot');
-        }
-    });
+    // Toggle handler for the new switch
     aiModeToggle.addEventListener('change', () => {
         isAIMode = aiModeToggle.checked;
         localStorage.setItem('kasiAIMode', isAIMode.toString());
@@ -77,9 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessage(modeMessage, 'bot');
     });
     
-    // Initial state: chatbot starts minimized (class already on container)
-    // No need for isMinimized flag here, controlled by classList
-
     // Function to set chatbot state
     function setChatbotState(minimized) {
         if (minimized) {
@@ -88,15 +75,33 @@ document.addEventListener('DOMContentLoaded', () => {
             chatbotContainer.classList.remove('minimized');
             chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom when opened
         }
+        
+        // Update FAB visibility
+        updateFabVisibility();
     }
-
+    
+    // Update FAB visibility based on state
+    function updateFabVisibility() {
+        if (chatbotContainer.classList.contains('minimized') || window.innerWidth <= 768) {
+            chatbotFab.style.display = 'flex';
+            chatbotFab.style.visibility = 'visible';
+            chatbotFab.style.opacity = '1';
+        } else {
+            chatbotFab.style.display = 'none';
+        }
+    }
+    
     // Close/minimize chat window from close (X) button
-    chatbotClose.addEventListener('click', () => {
+    chatbotClose.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         setChatbotState(true);
     });
 
     // Open chat window from FAB
-    chatbotFab.addEventListener('click', () => {
+    chatbotFab.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         setChatbotState(false); // Open the chatbot
     });
 
@@ -108,14 +113,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Quick tips functionality
-    quickTipsBtn.addEventListener('click', () => {
+    // Quick tips functionality with improved positioning
+    quickTipsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         quickTipsMenu.classList.toggle('hidden');
+        
+        // Position the menu properly
+        if (!quickTipsMenu.classList.contains('hidden')) {
+            const rect = quickTipsBtn.getBoundingClientRect();
+            const menuRect = quickTipsMenu.getBoundingClientRect();
+            
+            // Check if menu would go off-screen
+            if (rect.bottom + menuRect.height > window.innerHeight) {
+                quickTipsMenu.style.bottom = '100%';
+                quickTipsMenu.style.top = 'auto';
+            } else {
+                quickTipsMenu.style.top = '100%';
+                quickTipsMenu.style.bottom = 'auto';
+            }
+        }
     });
     
     // Handle tip selection
     document.querySelectorAll('.tip').forEach(tip => {
-        tip.addEventListener('click', () => {
+        tip.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const question = tip.getAttribute('data-question');
             userInput.value = question;
             quickTipsMenu.classList.add('hidden');
@@ -130,15 +154,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Close tips on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !quickTipsMenu.classList.contains('hidden')) {
+            quickTipsMenu.classList.add('hidden');
+        }
+    });
+    
     // Send message on button click or form submit
     const chatbotInputForm = document.getElementById('chatbot-input');
     chatbotInputForm.addEventListener('submit', (e) => {
         e.preventDefault();
         sendMessage();
     });
+    
     sendButton.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         sendMessage();
+    });
+    
+    // Enter key to send message
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
     });
     
     // Get CSRF token from meta tag
@@ -277,9 +318,12 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessage('Hello! I\'m KasiKash Assistant. How can I help you today?', 'bot');
     }
 
-    // Initial state check for FAB display (since it's minimized by default in HTML)
-    setChatbotState(true); 
+    // Initial state check for FAB display
+    setChatbotState(true); // Start minimized
 
     // On load, set mode display
     updateModeDisplay();
+    
+    // Handle window resize
+    window.addEventListener('resize', updateFabVisibility);
 }); 
