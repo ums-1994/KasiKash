@@ -1,10 +1,14 @@
-from flask import render_template, request, redirect, session, flash, url_for, jsonify
+from flask import render_template, request, redirect, session, flash, url_for, jsonify, Response
 import support
 import psycopg2
 import psycopg2.extras
 from firebase_admin import auth
 from . import admin_bp
 from utils import login_required, create_notification
+import csv
+import pandas as pd
+from io import BytesIO
+from fpdf import FPDF
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -13,20 +17,46 @@ def dashboard():
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
     
+    firebase_uid = session.get('user_id')
+    stokvels = []
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT COUNT(*) FROM users")
-                user_count = cur.fetchone()[0]
-                cur.execute("SELECT COUNT(*) FROM stokvels")
-                stokvel_count = cur.fetchone()[0]
+                # Count all stokvel members with a user_id
+                cur.execute("SELECT COUNT(*) FROM stokvel_members WHERE user_id IS NOT NULL")
+                total_members = cur.fetchone()[0]
+                # Count all pending payouts
                 cur.execute("SELECT COUNT(*) FROM transactions WHERE type = 'payout' AND status = 'pending'")
                 pending_loans = cur.fetchone()[0]
+                # KYC and notifications as before
+                cur.execute("SELECT COUNT(*) FROM users WHERE (id_document IS NOT NULL AND id_document != '') AND (proof_of_address IS NOT NULL AND proof_of_address != '') AND kyc_approved_at IS NULL")
+                kyc_pending = cur.fetchone()[0]
+                cur.execute("SELECT COUNT(*) FROM notifications WHERE is_read = FALSE")
+                new_notifications = cur.fetchone()[0]
+                # Fetch stokvels created by the admin
+                cur.execute("""
+                    SELECT id, name, monthly_contribution, target_date
+                    FROM stokvels
+                    WHERE created_by = %s
+                """, (firebase_uid,))
+                stokvels = cur.fetchall()
+        print("Total members:", total_members)
+        print("Pending loans:", pending_loans)
+        print("KYC pending:", kyc_pending)
+        print("New notifications:", new_notifications)
     except Exception as e:
         print(f"Error fetching admin dashboard data: {e}")
-        user_count, stokvel_count, pending_loans = 0, 0, 0
+        total_members, pending_loans, kyc_pending, new_notifications = 0, 0, 0, 0
+        stokvels = []
 
-    return render_template('admin_dashboard.html', user_count=user_count, stokvel_count=stokvel_count, pending_loans=pending_loans)
+    return render_template(
+        'admin_dashboard.html', 
+        total_members=total_members, 
+        pending_loans=pending_loans, 
+        kyc_pending=kyc_pending, 
+        new_notifications=new_notifications,
+        stokvels=stokvels
+    )
 
 @admin_bp.route('/manage-users')
 @login_required
@@ -495,39 +525,252 @@ def reject_kyc(user_id):
         flash('Failed to reject KYC.', 'danger')
     return redirect(url_for('admin.kyc_approvals'))
 
-@admin_bp.route('/settings')
+@admin_bp.route('/admin/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
 
-    # --- Provide context variables for the settings page ---
-    # In production, fetch these from the database or config
+    # Ensure the admin_settings table exists
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    CREATE TABLE IF NOT EXISTS admin_settings (
+                        id SERIAL PRIMARY KEY,
+                        contribution_amount INTEGER,
+                        late_penalty INTEGER,
+                        grace_period INTEGER,
+                        max_loan_percent INTEGER,
+                        interest_rate INTEGER,
+                        repayment_period INTEGER,
+                        language VARCHAR(10),
+                        role_management VARCHAR(50),
+                        loan_approval_roles TEXT,
+                        meeting_frequency VARCHAR(20),
+                        meeting_time VARCHAR(5),
+                        meeting_reminders BOOLEAN,
+                        data_retention VARCHAR(10),
+                        enable_2fa BOOLEAN,
+                        meeting_day VARCHAR(10)
+                    )
+                ''')
+                # Ensure at least one row exists
+                cur.execute('SELECT COUNT(*) FROM admin_settings')
+                if cur.fetchone()[0] == 0:
+                    cur.execute('''
+                        INSERT INTO admin_settings (contribution_amount, late_penalty, grace_period, max_loan_percent, interest_rate, repayment_period, language, role_management, loan_approval_roles, meeting_frequency, meeting_time, meeting_reminders, data_retention, enable_2fa, meeting_day)
+                        VALUES (100, 10, 7, 50, 5, 6, 'en', '', '', 'monthly', '14:00', FALSE, '5', FALSE, 'Monday')
+                    ''')
+                    conn.commit()
+    except Exception as e:
+        print(f"Error ensuring admin_settings table: {e}")
+
+    if request.method == 'POST':
+        contribution_amount = request.form.get('contribution_amount', type=int)
+        late_penalty = request.form.get('late_penalty', type=int)
+        grace_period = request.form.get('grace_period', type=int)
+        max_loan_percent = request.form.get('max_loan_percent', type=int)
+        interest_rate = request.form.get('interest_rate', type=int)
+        repayment_period = request.form.get('repayment_period', type=int)
+        language = request.form.get('language')
+        role_management = request.form.get('role_management')
+        loan_approval_roles = ','.join(request.form.getlist('loan_approval_roles'))
+        meeting_frequency = request.form.get('meeting_frequency')
+        meeting_time = request.form.get('meeting_time')
+        meeting_reminders = request.form.get('meeting_reminders') == 'on'
+        data_retention = request.form.get('data_retention')
+        enable_2fa = request.form.get('enable_2fa') == 'on'
+        meeting_day = request.form.get('meeting_day')
+
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute('SELECT id FROM admin_settings LIMIT 1')
+                    row = cur.fetchone()
+                    if row:
+                        cur.execute('''
+                            UPDATE admin_settings SET
+                                contribution_amount=%s,
+                                late_penalty=%s,
+                                grace_period=%s,
+                                max_loan_percent=%s,
+                                interest_rate=%s,
+                                repayment_period=%s,
+                                language=%s,
+                                role_management=%s,
+                                loan_approval_roles=%s,
+                                meeting_frequency=%s,
+                                meeting_time=%s,
+                                meeting_reminders=%s,
+                                data_retention=%s,
+                                enable_2fa=%s,
+                                meeting_day=%s
+                            WHERE id=%s
+                        ''', (
+                            contribution_amount, late_penalty, grace_period, max_loan_percent, interest_rate, repayment_period,
+                            language, role_management, loan_approval_roles, meeting_frequency, meeting_time, meeting_reminders,
+                            data_retention, enable_2fa, meeting_day, row[0]
+                        ))
+                    else:
+                        cur.execute('''
+                            INSERT INTO admin_settings (
+                                contribution_amount, late_penalty, grace_period, max_loan_percent, interest_rate, repayment_period,
+                                language, role_management, loan_approval_roles, meeting_frequency, meeting_time, meeting_reminders,
+                                data_retention, enable_2fa, meeting_day
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ''', (
+                            contribution_amount, late_penalty, grace_period, max_loan_percent, interest_rate, repayment_period,
+                            language, role_management, loan_approval_roles, meeting_frequency, meeting_time, meeting_reminders,
+                            data_retention, enable_2fa, meeting_day
+                        ))
+                conn.commit()
+            flash('Settings saved successfully!', 'success')
+        except Exception as e:
+            flash(f'Error saving settings: {e}', 'danger')
+        return redirect(url_for('admin.settings'))
+
+    # Load settings for display
     default_settings = {
-        'contribution_amount': 200,
+        'contribution_amount': 100,
         'late_penalty': 10,
-        'grace_period': 5,
-        'max_loan_percent': 80,
+        'grace_period': 7,
+        'max_loan_percent': 50,
         'interest_rate': 5,
-        'repayment_period': 12,
-        'withdrawal_threshold': 1000,
-        'enable_2fa': True,
+        'repayment_period': 6,
+        'language': 'en',
+        'role_management': '',
+        'loan_approval_roles': '',
+        'meeting_frequency': 'monthly',
+        'meeting_time': '14:00',
+        'meeting_reminders': False,
+        'data_retention': '5',
+        'enable_2fa': False,
+        'meeting_day': 'Monday'
     }
-    audit_logs = [
-        {'action': 'Approved Loan', 'user': 'Admin1', 'target': 'User5', 'amount': 'R500', 'date': '2025-06-30'},
-        {'action': 'Rejected Withdrawal', 'user': 'Admin2', 'target': 'User3', 'amount': 'R2000', 'date': '2025-06-29'},
-    ]
-    attendance_data = [
-        {'meeting': 'June Meeting', 'date': '2025-06-01', 'present': 18, 'absent': 2},
-        {'meeting': 'May Meeting', 'date': '2025-05-01', 'present': 17, 'absent': 3},
-    ]
-    days_of_week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('SELECT * FROM admin_settings LIMIT 1')
+                row = cur.fetchone()
+                if row:
+                    colnames = [desc[0] for desc in cur.description]
+                    for i, col in enumerate(colnames):
+                        default_settings[col] = row[i]
+                    # Convert comma-separated roles to list if needed
+                    if 'loan_approval_roles' in default_settings and default_settings['loan_approval_roles']:
+                        default_settings['loan_approval_roles'] = default_settings['loan_approval_roles'].split(',')
+    except Exception as e:
+        flash(f'Error loading settings: {e}', 'danger')
+
+    # Fetch audit logs from the database
+    audit_logs = []
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT action, \"user\", target, amount, date FROM audit_logs ORDER BY date DESC LIMIT 20")
+                audit_logs = [
+                    {
+                        'action': row[0],
+                        'user': row[1],
+                        'target': row[2],
+                        'amount': row[3],
+                        'date': row[4].strftime('%Y-%m-%d %H:%M') if row[4] else ''
+                    }
+                    for row in cur.fetchall()
+                ]
+    except Exception as e:
+        print(f"Error fetching audit logs: {e}")
 
     return render_template(
         'admin_settings.html',
         default_settings=default_settings,
-        audit_logs=audit_logs,
-        attendance_data=attendance_data,
-        days_of_week=days_of_week
+        audit_logs=audit_logs
     )
+
+@admin_bp.route('/export/members')
+@login_required
+def export_members():
+    export_format = request.args.get('format', 'csv')
+    with support.db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT username, email, role, created_at FROM users")
+            rows = cur.fetchall()
+            columns = ['Username', 'Email', 'Role', 'Created At']
+    if export_format == 'csv':
+        def generate():
+            data = [columns] + list(rows)
+            for row in data:
+                yield ','.join([str(item) for item in row]) + '\n'
+        return Response(generate(), mimetype='text/csv',
+                        headers={"Content-Disposition": "attachment;filename=members.csv"})
+    elif export_format == 'excel':
+        df = pd.DataFrame(rows, columns=columns)
+        output = BytesIO()
+        df.to_excel(output, index=False, engine='openpyxl')
+        output.seek(0)
+        return Response(output.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        headers={"Content-Disposition": "attachment;filename=members.xlsx"})
+    elif export_format == 'pdf':
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        col_width = 40
+        # Table header
+        for col in columns:
+            pdf.cell(col_width, 10, str(col), 1)
+        pdf.ln()
+        # Table rows
+        for row in rows:
+            for item in row:
+                pdf.cell(col_width, 10, str(item), 1)
+            pdf.ln()
+        pdf_bytes = pdf.output(dest='S').encode('latin1')
+        return Response(pdf_bytes, mimetype='application/pdf',
+                        headers={"Content-Disposition": "attachment;filename=members.pdf"})
+    else:
+        flash('Unsupported export format.', 'danger')
+        return redirect(url_for('admin.settings'))
+
+@admin_bp.route('/export/transactions')
+@login_required
+def export_transactions():
+    export_format = request.args.get('format', 'csv')
+    with support.db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, user_id, stokvel_id, amount, type, status, transaction_date FROM transactions")
+            rows = cur.fetchall()
+            columns = ['ID', 'User ID', 'Stokvel ID', 'Amount', 'Type', 'Status', 'Date']
+    if export_format == 'csv':
+        def generate():
+            data = [columns] + list(rows)
+            for row in data:
+                yield ','.join([str(item) for item in row]) + '\n'
+        return Response(generate(), mimetype='text/csv',
+                        headers={"Content-Disposition": "attachment;filename=transactions.csv"})
+    elif export_format == 'excel':
+        df = pd.DataFrame(rows, columns=columns)
+        output = BytesIO()
+        df.to_excel(output, index=False, engine='openpyxl')
+        output.seek(0)
+        return Response(output.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        headers={"Content-Disposition": "attachment;filename=transactions.xlsx"})
+    elif export_format == 'pdf':
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        col_width = 40
+        for col in columns:
+            pdf.cell(col_width, 10, str(col), 1)
+        pdf.ln()
+        for row in rows:
+            for item in row:
+                pdf.cell(col_width, 10, str(item), 1)
+            pdf.ln()
+        pdf_bytes = pdf.output(dest='S').encode('latin1')
+        return Response(pdf_bytes, mimetype='application/pdf',
+                        headers={"Content-Disposition": "attachment;filename=transactions.pdf"})
+    else:
+        flash('Unsupported export format.', 'danger')
+        return redirect(url_for('admin.settings'))

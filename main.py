@@ -865,7 +865,10 @@ def stokvels():
                 """, (firebase_uid,))
                 user_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-                # Fetch stokvels created by the current user
+                # Combine created stokvels with joined stokvels
+                all_stokvels = {s['id']: s for s in user_stokvels}
+
+                # Fetch stokvels created by the current user and merge them in
                 cur.execute("""
                     SELECT 
                         s.id, 
@@ -878,18 +881,21 @@ def stokvels():
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date,
-                        sm.role
+                        'admin' as role
                     FROM stokvels s
-                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                    WHERE s.created_by = %s AND sm.user_id = %s
-                """, (firebase_uid, firebase_uid))
-                created_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+                    WHERE s.created_by = %s
+                """, (firebase_uid,))
+                created_stokvels_data = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-        return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels)
+                for stokvel in created_stokvels_data:
+                    if stokvel['id'] not in all_stokvels:
+                        all_stokvels[stokvel['id']] = stokvel
+
+        return render_template('stokvels.html', stokvels=list(all_stokvels.values()))
     except Exception as e:
         flash(f"An error occurred while loading your stokvels: {e}")
         print(f"Stokvels page error: {e}")
-        return render_template('stokvels.html', stokvels=[], created_stokvels=[])
+        return render_template('stokvels.html', stokvels=[])
 
 @app.route('/create_stokvel', methods=['POST'])
 @login_required
