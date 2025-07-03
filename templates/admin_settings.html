@@ -150,6 +150,25 @@
         height: 1.2em;
     }
 </style>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="settings-flash-popup" style="position:fixed;top:30px;right:30px;z-index:9999;">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category|default('success') }}" style="background:#22c55e;color:white;padding:18px 32px;border-radius:12px;margin-bottom:10px;min-width:250px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-size:1.2rem;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(function() {
+        var popup = document.getElementById('settings-flash-popup');
+        if (popup) popup.style.display = 'none';
+      }, 3000);
+    </script>
+  {% endif %}
+{% endwith %}
+<form action="{{ url_for('admin.settings') }}" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="settings-container">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <h1 class="admin-settings-title"><i class="bi bi-shield-lock"></i> Admin Settings</h1>
@@ -185,17 +204,17 @@
                 <h4><i class="bi bi-translate"></i> Languages</h4>
                 <div class="help-text">Select your preferred language for the admin dashboard.</div>
                 <div class="setting-controls">
-                    <select class="form-select" style="width: 220px;">
-                        <option value="en" selected>English</option>
-                        <option value="zu">isiZulu</option>
-                        <option value="xh">isiXhosa</option>
-                        <option value="af">Afrikaans</option>
-                        <option value="st">Sesotho</option>
-                        <option value="ts">Xitsonga</option>
-                        <option value="tn">Setswana</option>
-                        <option value="ss">siSwati</option>
-                        <option value="ve">Tshivenda</option>
-                        <option value="nr">isiNdebele</option>
+                    <select class="form-select" name="language" style="width: 220px;">
+                        <option value="en" {% if default_settings.language == 'en' %}selected{% endif %}>English</option>
+                        <option value="zu" {% if default_settings.language == 'zu' %}selected{% endif %}>isiZulu</option>
+                        <option value="xh" {% if default_settings.language == 'xh' %}selected{% endif %}>isiXhosa</option>
+                        <option value="af" {% if default_settings.language == 'af' %}selected{% endif %}>Afrikaans</option>
+                        <option value="st" {% if default_settings.language == 'st' %}selected{% endif %}>Sesotho</option>
+                        <option value="ts" {% if default_settings.language == 'ts' %}selected{% endif %}>Xitsonga</option>
+                        <option value="tn" {% if default_settings.language == 'tn' %}selected{% endif %}>Setswana</option>
+                        <option value="ss" {% if default_settings.language == 'ss' %}selected{% endif %}>siSwati</option>
+                        <option value="ve" {% if default_settings.language == 've' %}selected{% endif %}>Tshivenda</option>
+                        <option value="nr" {% if default_settings.language == 'nr' %}selected{% endif %}>isiNdebele</option>
                     </select>
                 </div>
             </div>
@@ -203,11 +222,11 @@
                 <h4><i class="bi bi-person-badge"></i> Role Management</h4>
                 <div class="help-text">Assign roles (Admin, Treasurer, Secretary, Member) with specific permissions for each user.</div>
                 <div class="setting-controls">
-                    <select class="form-select" style="width: 250px;">
-                        <option value="admin">Admin (Full access)</option>
-                        <option value="treasurer">Treasurer (Financial access)</option>
-                        <option value="secretary">Secretary (Meeting management)</option>
-                        <option value="member">Member (Limited access)</option>
+                    <select class="form-select" name="role_management" style="width: 250px;">
+                        <option value="admin" {% if default_settings.role_management == 'admin' %}selected{% endif %}>Admin (Full access)</option>
+                        <option value="treasurer" {% if default_settings.role_management == 'treasurer' %}selected{% endif %}>Treasurer (Financial access)</option>
+                        <option value="secretary" {% if default_settings.role_management == 'secretary' %}selected{% endif %}>Secretary (Meeting management)</option>
+                        <option value="member" {% if default_settings.role_management == 'member' %}selected{% endif %}>Member (Limited access)</option>
                     </select>
                 </div>
             </div>
@@ -215,10 +234,10 @@
                 <h4><i class="bi bi-hand-thumbs-up"></i> Loan Approval Permissions</h4>
                 <div class="help-text">Choose which roles can approve or reject loan requests.</div>
                 <div class="setting-controls">
-                    <select class="form-select" multiple style="width: 100%;">
-                        <option value="admin" selected>Admins</option>
-                        <option value="treasurer" selected>Treasurers</option>
-                        <option value="secretary">Secretaries</option>
+                    <select class="form-select" name="loan_approval_roles" multiple style="width: 100%;">
+                        <option value="admin" {% if 'admin' in default_settings.loan_approval_roles %}selected{% endif %}>Admins</option>
+                        <option value="treasurer" {% if 'treasurer' in default_settings.loan_approval_roles %}selected{% endif %}>Treasurers</option>
+                        <option value="secretary" {% if 'secretary' in default_settings.loan_approval_roles %}selected{% endif %}>Secretaries</option>
                     </select>
                 </div>
             </div>
@@ -261,17 +280,17 @@
                         <label>Monthly Amount:</label>
                         <div class="input-group" style="width: 150px;">
                             <span class="input-group-text">R</span>
-                            <input type="number" class="form-control" value="{{ default_settings.contribution_amount }}">
+                            <input type="number" class="form-control" name="contribution_amount" value="{{ default_settings.contribution_amount }}">
                         </div>
                     </div>
                     <div class="control-group">
                         <label>Late Penalty:</label>
-                        <input type="range" class="form-range" min="0" max="50" value="{{ default_settings.late_penalty }}">
+                        <input type="range" class="form-range" name="late_penalty" min="0" max="50" value="{{ default_settings.late_penalty }}">
                         <span>{{ default_settings.late_penalty }}%</span>
                     </div>
                     <div class="control-group">
                         <label>Grace Period:</label>
-                        <input type="number" class="form-control" style="width: 80px;" value="{{ default_settings.grace_period }}">
+                        <input type="number" class="form-control" name="grace_period" style="width: 80px;" value="{{ default_settings.grace_period }}">
                         <span>days</span>
                     </div>
                 </div>
@@ -282,17 +301,17 @@
                 <div class="setting-controls flex-column align-items-start">
                     <div class="control-group">
                         <label>Max Loan (% of contributions):</label>
-                        <input type="range" class="form-range" min="10" max="100" value="{{ default_settings.max_loan_percent }}">
+                        <input type="range" class="form-range" name="max_loan_percent" min="10" max="100" value="{{ default_settings.max_loan_percent }}">
                         <span>{{ default_settings.max_loan_percent }}%</span>
                     </div>
                     <div class="control-group">
                         <label>Interest Rate:</label>
-                        <input type="range" class="form-range" min="0" max="20" value="{{ default_settings.interest_rate }}">
+                        <input type="range" class="form-range" name="interest_rate" min="0" max="20" value="{{ default_settings.interest_rate }}">
                         <span>{{ default_settings.interest_rate }}%</span>
                     </div>
                     <div class="control-group">
                         <label>Repayment Period:</label>
-                        <input type="range" class="form-range" min="1" max="24" value="{{ default_settings.repayment_period }}">
+                        <input type="range" class="form-range" name="repayment_period" min="1" max="24" value="{{ default_settings.repayment_period }}">
                         <span>{{ default_settings.repayment_period }} months</span>
                     </div>
                 </div>
@@ -320,26 +339,30 @@
                 <div class="setting-controls flex-column align-items-start">
                     <div class="control-group">
                         <label>Meeting Frequency:</label>
-                        <select class="form-select" style="width: 150px;">
-                            <option value="weekly">Weekly</option>
-                            <option value="biweekly">Bi-weekly</option>
-                            <option value="monthly">Monthly</option>
+                        <select class="form-select" name="meeting_frequency" style="width: 150px;">
+                            <option value="weekly" {% if default_settings.meeting_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                            <option value="biweekly" {% if default_settings.meeting_frequency == 'biweekly' %}selected{% endif %}>Bi-weekly</option>
+                            <option value="monthly" {% if default_settings.meeting_frequency == 'monthly' %}selected{% endif %}>Monthly</option>
                         </select>
                     </div>
                     <div class="control-group">
                         <label>Day of Week:</label>
-                        <select class="form-select" style="width: 200px;">
-                            {% for day in days_of_week %}
-                            <option value="{{ day }}" {% if day == 'Sunday' %}selected{% endif %}>{{ day }}</option>
-                            {% endfor %}
+                        <select class="form-select" name="meeting_day" style="width: 180px;">
+                            <option value="Monday" {% if default_settings.meeting_day == 'Monday' %}selected{% endif %}>Monday</option>
+                            <option value="Tuesday" {% if default_settings.meeting_day == 'Tuesday' %}selected{% endif %}>Tuesday</option>
+                            <option value="Wednesday" {% if default_settings.meeting_day == 'Wednesday' %}selected{% endif %}>Wednesday</option>
+                            <option value="Thursday" {% if default_settings.meeting_day == 'Thursday' %}selected{% endif %}>Thursday</option>
+                            <option value="Friday" {% if default_settings.meeting_day == 'Friday' %}selected{% endif %}>Friday</option>
+                            <option value="Saturday" {% if default_settings.meeting_day == 'Saturday' %}selected{% endif %}>Saturday</option>
+                            <option value="Sunday" {% if default_settings.meeting_day == 'Sunday' %}selected{% endif %}>Sunday</option>
                         </select>
                     </div>
                     <div class="control-group">
                         <label>Time:</label>
-                        <input type="time" class="form-control" style="width: 120px;" value="14:00">
+                        <input type="time" class="form-control" name="meeting_time" style="width: 120px;" value="{{ default_settings.meeting_time }}">
                     </div>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="meetingReminders" checked>
+                        <input class="form-check-input" type="checkbox" name="meeting_reminders" id="meetingReminders" {% if default_settings.meeting_reminders %}checked{% endif %}>
                         <label class="form-check-label" for="meetingReminders">Send automatic reminders</label>
                     </div>
                 </div>
@@ -393,9 +416,15 @@
                 <h4><i class="bi bi-download"></i> Data Export</h4>
                 <div class="help-text">Download member lists and transaction history for backup or reporting.</div>
                 <div class="setting-controls">
-                    <button class="btn btn-primary"><i class="bi bi-download"></i> Export Member Data</button>
-                    <button class="btn btn-primary ms-2"><i class="bi bi-download"></i> Export Transactions</button>
-                    <select class="form-select ms-2" style="width: 120px;">
+                    <form id="member-export-form" method="GET" action="{{ url_for('admin.export_members') }}" style="display:inline;">
+                        <input type="hidden" name="format" value="csv">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-download"></i> Export Member Data</button>
+                    </form>
+                    <form id="transaction-export-form" method="GET" action="{{ url_for('admin.export_transactions') }}" style="display:inline;">
+                        <input type="hidden" name="format" value="csv">
+                        <button type="submit" class="btn btn-primary ms-2"><i class="bi bi-download"></i> Export Transactions</button>
+                    </form>
+                    <select class="form-select ms-2" style="width: 120px; display:inline-block;" id="export-format-select">
                         <option value="csv">CSV</option>
                         <option value="pdf">PDF</option>
                         <option value="excel">Excel</option>
@@ -407,7 +436,7 @@
                 <div class="help-text">Enable 2FA for admin accounts to enhance security.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="enable2FA" {% if default_settings.enable_2fa %}checked{% endif %}>
+                        <input class="form-check-input" type="checkbox" name="enable_2fa" id="enable2FA" {% if default_settings.enable_2fa %}checked{% endif %}>
                         <label class="form-check-label" for="enable2FA">Require 2FA for all admin logins</label>
                     </div>
                     {% if default_settings.enable_2fa %}
@@ -427,11 +456,11 @@
                 <div class="setting-controls flex-column align-items-start">
                     <div class="control-group">
                         <label>Keep transaction history for:</label>
-                        <select class="form-select" style="width: 150px;">
-                            <option value="1">1 year</option>
-                            <option value="3">3 years</option>
-                            <option value="5" selected>5 years</option>
-                            <option value="forever">Indefinitely</option>
+                        <select class="form-select" name="data_retention" style="width: 150px;">
+                            <option value="1" {% if default_settings.data_retention == '1' %}selected{% endif %}>1 year</option>
+                            <option value="3" {% if default_settings.data_retention == '3' %}selected{% endif %}>3 years</option>
+                            <option value="5" {% if default_settings.data_retention == '5' %}selected{% endif %}>5 years</option>
+                            <option value="forever" {% if default_settings.data_retention == 'forever' %}selected{% endif %}>Indefinitely</option>
                         </select>
                     </div>
                 </div>
@@ -439,10 +468,11 @@
         </div>
     </div>
     <div class="d-flex justify-content-end mt-4">
-        <button class="btn btn-secondary me-2">Cancel</button>
-        <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
     </div>
 </div>
+</form>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Tab switching functionality
@@ -464,29 +494,6 @@
                 this.nextElementSibling.textContent = this.value + (this.id.includes('Percent') ? '%' : '');
             });
         });
-        // Save settings
-        document.getElementById('saveSettings').addEventListener('click', function() {
-            const settings = {
-                contribution_amount: document.querySelector('input[value="{{ default_settings.contribution_amount }}"]').value,
-                late_penalty: document.querySelector('input[value="{{ default_settings.late_penalty }}"]').value,
-                // Collect all other settings...
-                enable_2fa: document.getElementById('enable2FA').checked
-            };
-            fetch('/admin/save-settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(settings)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        });
         // Initialize tooltips
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -497,6 +504,11 @@
             if (this.checked) {
                 window.location.href = '/home'; // Redirect to user dashboard route
             }
+        });
+        document.getElementById('export-format-select').addEventListener('change', function() {
+            document.querySelectorAll('form input[name=\'format\']').forEach(function(input) {
+                input.value = document.getElementById('export-format-select').value;
+            });
         });
     });
 </script>
