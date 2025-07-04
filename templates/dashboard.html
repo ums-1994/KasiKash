@@ -436,8 +436,8 @@ body {
 <div class="welcome-banner">
   <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
     <div>
-      <h2 class="welcome-title">Sawubona, {{ user.username }}!</h2>
-      <div class="welcome-subtitle">Welcome back to your financial dashboard.</div>
+      <h2 class="welcome-title">{{ t('dashboard', user_language) }}</h2>
+      <div class="welcome-subtitle">{{ t('welcome_back', user_language) }}</div>
     </div>
     <div style="display: flex; align-items: center; gap: 1rem;">
       <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
@@ -465,75 +465,51 @@ body {
     <div class="accent text-xl mb-1">{{ user.username }}</div>
     <div class="text-white text-sm mb-2">{{ user.email }}</div>
     <div style="display: flex; gap: 0.5rem;">
-      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Member</span>
-      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">Joined: {{ user.joined_date }}</span>
+      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">{{ t('member', user_language) }}</span>
+      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">{{ t('joined', user_language) }}: {{ user.joined_date }}</span>
     </div>
-  </div>
-  <!-- Savings Tracker Card -->
-  <div class="glass-card">
-    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-      <i class="fas fa-chart-line accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
-      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Savings Tracker</span>
-    </div>
-    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-      {% for day in weekly_contributions %}
-        {% set bar_height = 20 + (day|int)*2 %}
-        <div class="day-bar" data-bar-height="{{ bar_height }}"></div>
-      {% endfor %}
-    </div>
-    <div style="color: #fff; font-size: 1.125rem; font-weight: 600;">R {{ current_balance|default('0.00') }}</div>
-    <div style="color: #bfdbfe; font-size: 0.875rem;">Goal: R {{ savings_goal|default('0.00') }}</div>
   </div>
   <!-- Quick Actions Card -->
   <div class="glass-card">
     <div style="display: flex; align-items: center; margin-bottom: 1rem;">
       <i class="fas fa-bolt accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
-      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Quick Actions</span>
+      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">{{ t('quick_actions', user_language) }}</span>
     </div>
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-      <a href="{{ url_for('make_contribution') }}" 
+      <a href="{{ url_for('loan_application') }}"
         style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
         onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-plus-circle" style="color: #34d399; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Make Contribution</span>
+        <i class="fas fa-file-signature" style="color: #60a5fa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>{{ t('loan_application', user_language) }}</span>
       </a>
-      <a href="{{ url_for('savings_goals') }}" 
+      <a href="{{ url_for('loan_repayments') }}"
         style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
         onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-bullseye" style="color: #a78bfa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Set Goals</span>
+        <i class="fas fa-money-check-alt" style="color: #34d399; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>{{ t('loan_payment', user_language) }}</span>
       </a>
-      <a href="{{ url_for('stokvels') }}" 
+      <a href="{{ url_for('invite_members') }}"
         style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
         onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-user-plus" style="color: #60a5fa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Manage Stokvels</span>
+        <i class="fas fa-user-plus" style="color: #fbbf24; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>{{ t('invite_members', user_language) }}</span>
       </a>
-      <a href="{{ url_for('payment_methods') }}" 
+      <a href="{{ url_for('financial_insight') }}"
         style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
         onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <i class="fas fa-credit-card" style="color: #fbbf24; font-size: 1.25rem; margin-right: 0.5rem;"></i>
-        <span>Payment Methods</span>
+        <i class="fas fa-chart-pie" style="color: #a78bfa; font-size: 1.25rem; margin-right: 0.5rem;"></i>
+        <span>{{ t('financial_insights', user_language) }}</span>
       </a>
     </div>
-</div>
-  <!-- Financial Insight Card -->
-  <a href="{{ url_for('analysis') }}" class="glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; text-decoration: none; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 32px rgba(123,97,255,0.2)';" onmouseout="this.style.boxShadow='none';">
-    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-      <i class="fas fa-chart-pie accent" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
-      <span class="accent" style="font-size: 1.25rem; font-weight: bold;">Financial Insight</span>
-    </div>
-    <div style="color: #fff; font-size: 0.875rem; text-align: center; margin-bottom: 0.25rem;">View your financial trends, progress, and key metrics in one place.</div>
-    <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd; margin-top: 0.5rem;">See Insights</span>
-  </a>
+  </div>
   <!-- Recent Activity Card (now in grid, spans 2 columns on large screens) -->
   <div class="glass-card activity-card" style="grid-column: span 2;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
       <div style="display: flex; align-items: center;">
         <i class="fas fa-stream accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
-        <span class="accent" style="font-size: 1.125rem; font-weight: bold;">Recent Activity</span>
+        <span class="accent" style="font-size: 1.125rem; font-weight: bold;">{{ t('recent_activity', user_language) }}</span>
       </div>
-      <a href="{{ url_for('activities') }}" style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s; text-decoration: none;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">View All</a>
+      <a href="{{ url_for('activities') }}" style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s; text-decoration: none;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">{{ t('view_all', user_language) }}</a>
     </div>
     <div class="activity-timeline">
       {% for activity in recent_activities|default([
@@ -562,11 +538,11 @@ body {
   <!-- Calendar Card (now in grid, spans 2 columns on large screens) -->
   <div class="glass-card calendar-card" style="grid-column: span 2;">
     <div class="calendar-nav">
-      <button onclick="prevMonth()" aria-label="Previous Month"><i class="fas fa-chevron-left"></i></button>
-      <div class="accent text-xl">{{ calendar_month }} {{ calendar_year }}</div>
-      <button onclick="nextMonth()" aria-label="Next Month"><i class="fas fa-chevron-right"></i></button>
+      <button id="prevMonthBtn" aria-label="{{ t('previous_month', user_language) }}"><i class="fas fa-chevron-left"></i></button>
+      <div class="accent text-xl" id="calendarMonthLabel">{{ calendar_month }} {{ calendar_year }}</div>
+      <button id="nextMonthBtn" aria-label="{{ t('next_month', user_language) }}"><i class="fas fa-chevron-right"></i></button>
     </div>
-    <div class="calendar">
+    <div class="calendar" id="calendarGrid">
       {% for day in calendar_days %}
         <div class="calendar-day {% if day.is_today %}today{% endif %}">
           <div>{{ day.date }}</div>
@@ -577,14 +553,66 @@ body {
                 {% endfor %}
             </ul>
           {% endif %}
-</div>
-        {% endfor %}
+        </div>
+      {% endfor %}
     </div>
 </div>
 </div>
 {% endblock %}
 {% block extra_js %}
 <script>
+let currentMonth = {{ calendar_month_num|tojson }};
+let currentYear = {{ calendar_year|tojson }};
+
+function updateCalendar(month, year) {
+  fetch(`/dashboard/calendar_data?month=${month}&year=${year}`)
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('calendarMonthLabel').textContent = data.calendar_month + ' ' + data.calendar_year;
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      data.calendar_days.forEach(day => {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day' + (day.is_today ? ' today' : '');
+        dayDiv.innerHTML = `<div>${day.date}</div>`;
+        if (day.events && day.events.length > 0) {
+          const ul = document.createElement('ul');
+          ul.style.marginTop = '0.25rem';
+          ul.style.fontSize = '0.75rem';
+          day.events.forEach(event => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class='fas fa-calendar-alt' style='color: #bfdbfe; margin-right: 0.25rem;'></i>${event}`;
+            ul.appendChild(li);
+          });
+          dayDiv.appendChild(ul);
+        }
+        grid.appendChild(dayDiv);
+      });
+      currentMonth = month;
+      currentYear = year;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('prevMonthBtn').addEventListener('click', function() {
+    let month = currentMonth - 1;
+    let year = currentYear;
+    if (month < 1) {
+      month = 12;
+      year--;
+    }
+    updateCalendar(month, year);
+  });
+  document.getElementById('nextMonthBtn').addEventListener('click', function() {
+    let month = currentMonth + 1;
+    let year = currentYear;
+    if (month > 12) {
+      month = 1;
+      year++;
+    }
+    updateCalendar(month, year);
+  });
+});
 // Progress circle calculation (example)
 document.querySelectorAll('.progress-circle').forEach(function(circle) {
   var percent = parseFloat(circle.getAttribute('data-percent')) || 0;

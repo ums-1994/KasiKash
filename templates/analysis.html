@@ -1,93 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends "base.html" %}
 
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/style.css') }}">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag/dist/css/multi-select-tag.css">
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <title>Expense Tracker - Analysis</title>
-    </head>
-    <body class="body">
-     <div class="bg-nav d-flex flex-column flex-md-row align-items-center pb-0 mb-0 border-bottom">
-      <h5 class="m-3 mr-md-auto font-weight-normal"><a href="/" style="text-decoration : none">Expense Tracker - {{ user_name }}</a></h5>
-
-      <nav class="m-2 my-md-0 mr-md-3">
-        <a class="py-2 m-2 text-dark" href="/home">Home</a>
-        <a class="py-2 m-2 text-dark" href="/analysis">Analysis</a>
-        <a class="py-2 m-2 text-dark" href="/profile">Profile</a>
-        <a class="py-2 m-2 text-dark" href="/contact">Contact Us</a>
-      </nav>
-         <a class="btn m-2 btn-outline-warning" href="/logout">Logout</a>
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">KasiKash Financial Insights</h1>
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Contributions</h3>
+            <p class="text-2xl font-bold text-green-600">R{{ '%.2f'|format(total_contributions) }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Payouts</h3>
+            <p class="text-2xl font-bold text-blue-600">R{{ '%.2f'|format(total_payouts) }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Loans</h3>
+            <p class="text-2xl font-bold text-yellow-600">R{{ '%.2f'|format(total_loans) }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Current Balance</h3>
+            <p class="text-2xl font-bold text-purple-600">R{{ '%.2f'|format(current_balance) }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Members</h3>
+            <p class="text-2xl font-bold text-indigo-600">{{ member_count }}</p>
+        </div>
     </div>
 
-     <div class="container">
-         <div class="row my-3">
-             <div class="col">
-                 <div class="row">
-                     <div class="col-auto goal-panel text-center m-2">
-                         <div id="pie" class="chart"></div>
-                     </div>
-                     <div class="col-5 goal-panel m-2">
-                        <div id="stack_bar" class="chart"></div>
-                     </div>
-                     <div class="col-4 goal-panel m-2">
-                        <div id="line" class="graph"></div>
-                     </div>
-                 </div>
-                 <div class="row my-2">
-                     <div class="col-7 goal-panel m-2">
-                         <div id="month_bar" class="chart"></div>
-                     </div>
-                     <div class="col-4 goal-panel m-2">
-                         <div id="sun" class="chart"></div>
-                     </div>
-                 </div>
-                 <div class="row">
-                     <div class="col-md-6 goal-panel text-center m-2">
-                         <div id="scatter" class="chart"></div>
-                     </div>
-                     <div class="col-md-5 goal-panel m-2">
-                        <div id="heat" class="chart"></div>
-                     </div>
-                 </div>
+    <!-- Stokvels Table -->
+    <div class="bg-white rounded-lg shadow mb-8">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Your Stokvels</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Pool</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Contribution</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for stokvel in stokvels %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ stokvel[1] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ stokvel[2] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ stokvel[3] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ stokvel[4] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stokvel[5] if stokvel[5] else 'N/A' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center py-4 text-gray-400">No stokvels found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-             </div>
-         </div>
-     </div>
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Contributions Over Time</h3>
+            <div id="contributionsChart" style="height:300px;"></div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Payouts Over Time</h3>
+            <div id="payoutsChart" style="height:300px;"></div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Loans Over Time</h3>
+            <div id="loansChart" style="height:300px;"></div>
+        </div>
+    </div>
+</div>
 
+<!-- Plotly.js CDN -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    // Prepare chart data from Flask context
+    const contributionsData = {{ contributions_chart|tojson }};
+    const payoutsData = {{ payouts_chart|tojson }};
+    const loansData = {{ loans_chart|tojson }};
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-     <script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
-     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script> <!-- Plotly CDN -->
-     <script src="{{ url_for('static', filename='js/script.js') }}"></script> <!-- Local JS -->
-     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-     <script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag/dist/js/multi-select-tag.js"></script>
-    </body>
-    <script type='text/javascript'>
-      var bar = {{bar | safe}};
-      var pie = {{pie | safe}};
-      var line_graph = {{line | safe}};
-      var scatter_graph = {{scatter | safe}};
-      var heat_graph = {{heat | safe}};
-      var month_graph = {{month_bar | safe}};
-      var sun_graph = {{sun | safe}};
-
-<!--Plotly.plot('div_id',data,{});-->
-      Plotly.plot('pie',pie,{});
-      Plotly.plot('stack_bar',bar,{});
-      Plotly.plot('line',line_graph,{});
-      Plotly.plot('scatter',scatter_graph,{});
-      Plotly.plot('heat',heat_graph,{});
-      Plotly.plot('month_bar',month_graph,{});
-      Plotly.plot('sun',sun_graph,{});
-
-    </script>
-</html>
+    function makeLineChart(divId, data, label, color) {
+        const months = data.map(d => d.month);
+        const amounts = data.map(d => d.amount);
+        const trace = {
+            x: months,
+            y: amounts,
+            type: 'scatter',
+            mode: 'lines+markers',
+            marker: { color: color },
+            line: { color: color },
+            fill: 'tozeroy',
+            name: label
+        };
+        const layout = {
+            margin: { t: 30, l: 40, r: 10, b: 40 },
+            xaxis: { title: 'Month' },
+            yaxis: { title: 'Amount (R)' },
+            plot_bgcolor: '#f9fafb',
+            paper_bgcolor: '#fff',
+        };
+        Plotly.newPlot(divId, [trace], layout, {responsive: true});
+    }
+    makeLineChart('contributionsChart', contributionsData, 'Contributions', '#10b981');
+    makeLineChart('payoutsChart', payoutsData, 'Payouts', '#3b82f6');
+    makeLineChart('loansChart', loansData, 'Loans', '#f59e42');
+</script>
+{% endblock %}

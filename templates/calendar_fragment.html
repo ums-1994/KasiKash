@@ -1,0 +1,44 @@
+<div class="glass-card calendar-card" style="grid-column: span 2;" id="calendar-card" data-month="{{ month }}" data-year="{{ calendar_year }}">
+  <div class="calendar-nav">
+    <button onclick="navigateMonth(-1, event)" aria-label="Previous Month">Previous Month</button>
+    <div class="accent text-xl" id="calendar-title">{{ calendar_month }} {{ calendar_year }}</div>
+    <button onclick="navigateMonth(1, event)" aria-label="Next Month">Next Month</button>
+  </div>
+  <div class="calendar" id="calendar-days">
+    {% for day in calendar_days %}
+      <div class="calendar-day {% if day.is_today %}today{% endif %}">
+        <div>{{ day.date }}</div>
+        {% if day.events %}
+          <ul style="margin-top: 0.25rem; font-size: 0.75rem;">
+            {% for event in day.events %}
+              <li><i class="fas fa-calendar-alt" style="color: #bfdbfe; margin-right: 0.25rem;"></i>{{ event }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+// Re-attach the navigation handler after AJAX update
+function navigateMonth(direction, event) {
+  event.preventDefault();
+  var card = document.getElementById('calendar-card');
+  var currentMonth = parseInt(card.getAttribute('data-month'));
+  var currentYear = parseInt(card.getAttribute('data-year'));
+  var newMonth = currentMonth + direction;
+  var newYear = currentYear;
+  if (newMonth < 1) {
+    newMonth = 12;
+    newYear -= 1;
+  } else if (newMonth > 12) {
+    newMonth = 1;
+    newYear += 1;
+  }
+  fetch(`/calendar_fragment?month=${newMonth}&year=${newYear}`)
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('calendar-card').outerHTML = html;
+    });
+}
+</script> 

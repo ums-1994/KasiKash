@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Recent Activities</h1>
+        {% if activities and activities|length > 0 %}
+            <div class="space-y-6">
+                {% for activity in activities %}
+                    <div class="bg-gray-100 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <div class="font-bold text-gray-800">{{ activity.title }}</div>
+                                <div class="text-gray-500 text-sm">Status: <span class="font-semibold">{{ activity.status }}</span></div>
+                            </div>
+                            <div class="text-lg font-bold text-blue-600">R{{ '%.2f'|format(activity.amount) }}</div>
+                        </div>
+                        <div class="text-gray-400 text-sm mb-2">Date: {{ activity.date }}</div>
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {% if activity.type == 'contribution' %}bg-green-100 text-green-800{% elif activity.type == 'withdrawal' %}bg-red-100 text-red-800{% elif activity.type == 'goal' %}bg-blue-100 text-blue-800{% else %}bg-gray-200 text-gray-700{% endif %}">
+                            {{ activity.type|capitalize }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-center text-gray-500">No activities found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

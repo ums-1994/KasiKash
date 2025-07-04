@@ -189,16 +189,16 @@
     <!-- CTA Section -->
     <section class="py-20 bg-black bg-opacity-50">
         <div class="container mx-auto px-4 text-center">
-            <h2 class="text-4xl font-bold mb-6 text-gradient">Ready to Get Started?</h2>
+            <h2 class="text-4xl font-bold mb-6 text-gradient">{{ t('ready_to_get_started', user_language) }}</h2>
             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                Join thousands of South Africans building wealth together through trusted community savings.
+                {{ t('join_thousands', user_language) }}
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="/register" class="bg-gradient-to-r from-ocean-3 to-ocean-2 text-black font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">
-                    Start Free Trial
+                    {{ t('start_free_trial', user_language) }}
                 </a>
                 <a href="/contact" class="border border-ocean-2 text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">
-                    Contact Sales
+                    {{ t('contact_sales', user_language) }}
                 </a>
             </div>
         </div>

@@ -389,18 +389,18 @@
                     {% endwith %}
                 </div>
 
-                <h2 class="text-3xl font-bold mb-8 text-center text-gradient">Welcome Back</h2>
+                <h2 class="text-3xl font-bold mb-8 text-center text-gradient">{{ t('login', user_language) }}</h2>
 
                 <form action="{{ url_for('login_validation') }}" method="POST" class="space-y-6">
                     {{ form.csrf_token }}
 
                     <div class="relative">
-                        {{ form.email(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder="Email") }}
+                        {{ form.email(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder=t('email', user_language)) }}
                         <i class="fas fa-envelope input-icon absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
 
                     <div class="relative">
-                        {{ form.password(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder="Password") }}
+                        {{ form.password(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder=t('password', user_language)) }}
                         <i class="fas fa-lock input-icon absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
 
@@ -417,8 +417,8 @@
                     {{ form.submit(class="w-full py-3 px-6 rounded-full bg-gradient-to-r from-ocean-2 to-ocean-3 text-white font-semibold hover:from-ocean-3 hover:to-ocean-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ocean-2") }}
 
                     <div class="text-center text-gray-300">
-                        Don't have an account?
-                        <a href="/register" class="text-ocean-2 hover:text-ocean-3 font-medium">Register</a>
+                        {{ t('no_account', user_language) }}
+                        <a href="/register" class="text-ocean-2 hover:text-ocean-3 font-medium">{{ t('register', user_language) }}</a>
                     </div>
                 </form>
             </div>

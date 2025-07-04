@@ -220,7 +220,15 @@
       </div>
       <div class="p-6 border-t border-gray-800">
         <a href="/logout" class="flex items-center text-gray-200 hover:text-white">
-          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">BN</span>
+          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">
+            {% if user and user.username %}
+              {{ user.username.split(' ')[0][0]|upper }}{% if user.username.split(' ')|length > 1 %}{{ user.username.split(' ')[1][0]|upper }}{% endif %}
+            {% elif user and user.email %}
+              {{ user.email[0]|upper }}
+            {% else %}
+              U
+            {% endif %}
+          </span>
           Logout
         </a>
       </div>
