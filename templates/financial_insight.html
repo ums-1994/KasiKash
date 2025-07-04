@@ -1,224 +1,114 @@
-{% extends 'base.html' %}
-{% block title %}Financial Insights - KasiKash{% endblock %}
-{% block extra_css %}
-<link href="https://fonts.googleapis.com/css?family=Inter:400,600|Montserrat:700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
-  font-family: 'Inter', 'Montserrat', sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 0;
-}
-.page-container {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  box-sizing: border-box;
-}
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1.5rem;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 2rem;
-  position: relative;
-  max-width: 700px;
-  width: 100%;
-  margin: 0 auto;
-}
-.metric-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-@media (max-width: 900px) {
-  .glass-card { padding: 1.25rem; }
-  .metric-grid { gap: 1rem; }
-}
-@media (max-width: 700px) {
-  .glass-card { max-width: 98vw; }
-  .metric-grid { grid-template-columns: 1fr; gap: 1rem; }
-}
-.metric-card {
-  background: rgba(255, 255, 255, 0.03);
-  padding: 1rem;
-  border-radius: 1rem;
-  transition: all 0.3s ease;
-}
-.metric-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
-}
-.metric-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, #7B61FF, #61DAFB);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 0.25rem;
-}
-.metric-label {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-}
-.trend-indicator {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 1rem;
-  margin-top: 0.5rem;
-}
-.trend-up {
-  background: rgba(52, 211, 153, 0.1);
-  color: #34D399;
-}
-.trend-down {
-  background: rgba(239, 68, 68, 0.1);
-  color: #EF4444;
-}
-.chart-container {
-  position: relative;
-  height: 180px;
-  width: 100%;
-  margin-top: 1rem;
-}
-</style>
-{% endblock %}
+{% extends "base.html" %}
+
 {% block content %}
-<div class="page-container">
-  <div class="glass-card">
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center">
-        <i class="fas fa-chart-pie accent text-2xl mr-3"></i>
-        <span class="accent text-lg font-bold">Financial Insights</span>
-      </div>
-      <select class="bg-white bg-opacity-5 text-white text-sm rounded-lg px-3 py-2 border border-white border-opacity-10">
-        <option value="month">This Month</option>
-        <option value="quarter">This Quarter</option>
-        <option value="year">This Year</option>
-      </select>
-    </div>
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-value">R {{ total_contributions|default('0.00') }}</div>
-        <div class="metric-label">Total Contributions</div>
-        <div class="trend-indicator trend-up">
-          <i class="fas fa-arrow-up mr-1"></i> 12%
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">KasiKash Financial Insights</h1>
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Contributions</h3>
+            <p class="text-2xl font-bold text-green-600">R{{ '%.2f'|format(total_contributions) }}</p>
         </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">{{ (savings_progress|default(0) * 100)|round|int }}%</div>
-        <div class="metric-label">Goal Progress</div>
-        <div class="trend-indicator trend-up">
-          <i class="fas fa-arrow-up mr-1"></i> 8%
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Payouts</h3>
+            <p class="text-2xl font-bold text-blue-600">R{{ '%.2f'|format(total_payouts) }}</p>
         </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">R {{ monthly_average|default('0.00') }}</div>
-        <div class="metric-label">Monthly Average</div>
-        <div class="trend-indicator trend-down">
-          <i class="fas fa-arrow-down mr-1"></i> 3%
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Loans</h3>
+            <p class="text-2xl font-bold text-yellow-600">R{{ '%.2f'|format(total_loans) }}</p>
         </div>
-      </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Current Balance</h3>
+            <p class="text-2xl font-bold text-purple-600">R{{ '%.2f'|format(current_balance) }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Members</h3>
+            <p class="text-2xl font-bold text-indigo-600">{{ member_count }}</p>
+        </div>
     </div>
-    <div class="chart-container">
-      <canvas id="contributionsChart"></canvas>
+
+    <!-- Stokvels Table -->
+    <div class="bg-white rounded-lg shadow mb-8">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Your Stokvels</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Pool</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Contribution</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for stokvel in stokvels %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ stokvel[1] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ stokvel[2] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ stokvel[3] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R{{ stokvel[4] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stokvel[5] if stokvel[5] else 'N/A' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center py-4 text-gray-400">No stokvels found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Contributions Over Time</h3>
+            <div id="contributionsChart" style="height:300px;"></div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Payouts Over Time</h3>
+            <div id="payoutsChart" style="height:300px;"></div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Loans Over Time</h3>
+            <div id="loansChart" style="height:300px;"></div>
+        </div>
+    </div>
 </div>
-{% endblock %}
-{% block extra_js %}
+
+<!-- Plotly.js CDN -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const contributionsCtx = document.getElementById('contributionsChart').getContext('2d');
-  const gradient = contributionsCtx.createLinearGradient(0, 0, 0, 180);
-  gradient.addColorStop(0, 'rgba(123, 97, 255, 0.2)');
-  gradient.addColorStop(1, 'rgba(123, 97, 255, 0)');
+    // Prepare chart data from Flask context
+    const contributionsData = {{ contributions_chart|tojson }};
+    const payoutsData = {{ payouts_chart|tojson }};
+    const loansData = {{ loans_chart|tojson }};
 
-  const chartLabels = {{ contribution_dates|default([])|tojson }};
-  const chartData = {{ monthly_contributions|default([])|tojson }};
-
-  new Chart(contributionsCtx, {
-    type: 'line',
-    data: {
-      labels: chartLabels,
-      datasets: [{
-        label: 'Contributions',
-        data: chartData,
-        borderColor: '#7B61FF',
-        backgroundColor: gradient,
-        borderWidth: 2,
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: '#7B61FF',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          titleColor: '#1a1a1a',
-          bodyColor: '#1a1a1a',
-          padding: 12,
-          borderColor: 'rgba(123, 97, 255, 0.1)',
-          borderWidth: 1,
-          displayColors: false,
-          callbacks: {
-            label: function(context) {
-              return 'R ' + context.parsed.y;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: 'rgba(255, 255, 255, 0.05)'
-          },
-          ticks: {
-            color: 'rgba(255, 255, 255, 0.7)',
-            callback: function(value) {
-              return 'R ' + value;
-            }
-          }
-        },
-        x: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            color: 'rgba(255, 255, 255, 0.7)',
-            maxRotation: 0
-          }
-        }
-      }
+    function makeLineChart(divId, data, label, color) {
+        const months = data.map(d => d.month);
+        const amounts = data.map(d => d.amount);
+        const trace = {
+            x: months,
+            y: amounts,
+            type: 'scatter',
+            mode: 'lines+markers',
+            marker: { color: color },
+            line: { color: color },
+            fill: 'tozeroy',
+            name: label
+        };
+        const layout = {
+            margin: { t: 30, l: 40, r: 10, b: 40 },
+            xaxis: { title: 'Month' },
+            yaxis: { title: 'Amount (R)' },
+            plot_bgcolor: '#f9fafb',
+            paper_bgcolor: '#fff',
+        };
+        Plotly.newPlot(divId, [trace], layout, {responsive: true});
     }
-  });
-});
+    makeLineChart('contributionsChart', contributionsData, 'Contributions', '#10b981');
+    makeLineChart('payoutsChart', payoutsData, 'Payouts', '#3b82f6');
+    makeLineChart('loansChart', loansData, 'Loans', '#f59e42');
 </script>
 {% endblock %} 

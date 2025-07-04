@@ -2,114 +2,70 @@
 <html lang="en">
     <head>
         <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/style.css') }}">
-
-        <!-- Bootstrap CSS -->
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" integrity="sha384-QYIZto+st3yW+o8+5OHfT6S482Zsvz2WfOzpFSXMF9zqeLcFV0/wlZpMtyFcZALm" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-        <title>Expense Tracker - Contact</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contact - KasiKash</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+        <style>
+            body { font-family: 'Montserrat', sans-serif; background: linear-gradient(135deg, #000428, #004e92); color: white; }
+            .text-gradient { background: linear-gradient(90deg, #60efff, #00ff87); -webkit-background-clip: text; background-clip: text; color: transparent; }
+            .glow { text-shadow: 0 0 10px rgba(96, 239, 255, 0.7); }
+        </style>
     </head>
-    <body>
-     <div class="bg-nav d-flex flex-column flex-md-row align-items-center pb-0 mb-0 border-bottom">
-      <h5 class="m-3 mr-md-auto font-weight-normal">Expense Tracker </h5>
-
-      <nav class="m-2 my-md-0 mr-md-3">
-        <a class="py-2 m-2 text-dark" href="/home">Home</a>
-        <a class="py-2 m-2 text-dark" href="/">Login</a>
-        <a class="py-2 m-2 text-dark" href="/register">Register</a>
-      </nav>
-
-    </div>
-
-     <div class="container">
-         <section class="contact-sec sec-pad">
-          <div class="container">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="contact-detail">
-                  <h1 class="section-title">Contact us</h1>
-
-                  <ul class="contact-ul">
-                    <li><i class="material-icons">home</i> 32, Vasant Kunj, Delhi</li>
-
-                    <li>
-                      <i class="material-icons">call</i>
-                      <a href="tel:08510000000"><b>08510000000</b></a>,
-                      <a href="tel:08510000000"><b>08560000000</b></a>
-                    </li>
-
-                    <li>
-                      <i class="material-icons">email</i>
-                      <a href="mailto:help@expense.com"><b> help@expense.com</b></a>
-                    </li>
-                  </ul>
-
-                  <span>
-                      <i class="fa-brands fa-facebook"></i>
-                  </span>
+    <body class="antialiased">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto">
+                    <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                </a>
+                <ul class="hidden md:flex space-x-8">
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
+                    <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                    <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a></li>
+                    <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                </ul>
+            </div>
+        </nav>
+        <section class="pt-32 pb-20">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6 text-gradient">{{ t('contact_us', user_language) }}</h1>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+                    {{ t('contact_us_desc', user_language) }}
+                </p>
+                <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
+                    <form action="mailto:support@kasikash.co.za" method="POST" enctype="text/plain" class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-left text-gray-200 mb-1">{{ t('name', user_language) }}</label>
+                            <input type="text" id="name" name="name" class="w-full rounded px-3 py-2 text-black" required>
+                        </div>
+                        <div>
+                            <label for="email" class="block text-left text-gray-200 mb-1">{{ t('email', user_language) }}</label>
+                            <input type="email" id="email" name="email" class="w-full rounded px-3 py-2 text-black" required>
+                        </div>
+                        <div>
+                            <label for="message" class="block text-left text-gray-200 mb-1">{{ t('message', user_language) }}</label>
+                            <textarea id="message" name="message" rows="4" class="w-full rounded px-3 py-2 text-black" required></textarea>
+                        </div>
+                        <button type="submit" class="bg-ocean-2 text-black font-bold py-2 px-6 rounded-full hover:bg-ocean-3 transition">{{ t('send_message', user_language) }}</button>
+                    </form>
                 </div>
-              </div>
-
-              <div class="col-md-6">
-                <form action="/feedback" class="contFrm" method="POST">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <div class="row">
-                    <div class="col-sm-6">
-                      <input type="text" name="name" placeholder="Your Name" class="inptFld" required />
-                    </div>
-
-                    <div class="col-sm-6">
-                      <input type="email" name="email" placeholder="Email Address" class="inptFld" required />
-                    </div>
-
-                    <div class="col-sm-6">
-                      <input type="tel" name="phone" placeholder="Phone Number" class="inptFld" required />
-                    </div>
-
-                    <div class="col-sm-6">
-                      <input type="text" name="sub" placeholder="Subject" class="inptFld" required />
-                    </div>
-
-                    <div class="col-12">
-                      <textarea class="inptFld" name="message" placeholder="Your Message..." required></textarea>
-                    </div>
-
-                    <div class="col-12">
-                      <input type="submit" name="submit" value="SUBMIT" class="inptBtn" />
-                    </div>
-                  </div>
-                </form>
-              </div>
+                <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gradient">{{ t('contact_info', user_language) }}</h2>
+                    <p class="text-lg text-gray-200 mb-2"><i class="fas fa-envelope mr-2"></i>{{ t('support_email', user_language) }}</p>
+                    <p class="text-lg text-gray-200 mb-2"><i class="fas fa-phone mr-2"></i>{{ t('support_phone', user_language) }}</p>
+                    <p class="text-lg text-gray-200"><i class="fas fa-map-marker-alt mr-2"></i>{{ t('support_address', user_language) }}</p>
+                </div>
             </div>
-
-            <div style="text-align: center; margin-top: 20px;">
-              <p> Copyright &copy;
-                <script>
-                  document.write(new Date().getFullYear());
-                </script>
-                All rights reserved | ExpenseApp, Inc
-              </p>
-            </div>
-
-          </div>
         </section>
-
-
-     </div>
-
-
-
-
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-   </body>
+        <footer class="bg-black text-white py-12 mt-12">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-gray-400">&copy; 2024 KasiKash. All rights reserved.</p>
+            </div>
+        </footer>
+    </body>
 </html>

@@ -7,6 +7,7 @@ import plotly.express as px
 import json
 import warnings
 import support
+import support_sqlite
 from functools import wraps
 import psycopg2
 import psycopg2.extras
@@ -39,6 +40,7 @@ from email.mime.multipart import MIMEMultipart
 from werkzeug.utils import secure_filename
 import re
 from decimal import Decimal, InvalidOperation
+import calendar
 
 # Load environment variables
 load_dotenv()
@@ -286,6 +288,7 @@ def home():
                     'events': []  # Add events here if needed
                 })
         calendar_month = calendar.month_name[month]
+        calendar_month_num = month
         calendar_year = year
         # --- End calendar logic ---
 
@@ -372,6 +375,7 @@ def home():
                             recent_activities=recent_activities,
                             calendar_days=calendar_days,
                             calendar_month=calendar_month,
+                            calendar_month_num=calendar_month_num,
                             calendar_year=calendar_year
                             ) # Pass user dictionary and calendar data
     except Exception as e:
@@ -381,54 +385,103 @@ def home():
 
 
 @app.route('/analysis')
+@login_required
 def analysis():
-    if 'user_id' in session:
-        # Changed to firebase_uid
-        query = "select * from user_login where firebase_uid = %s "
-        userdata = support.execute_query('search', query, (session['user_id'],))
-        # Changed to firebase_uid
-        query2 = "select pdate,expense, pdescription, amount from user_expenses where firebase_uid = %s"
-
-        data = support.execute_query('search', query2, (session['user_id'],))
-        df = pd.DataFrame(data, columns=['Date', 'Expense', 'Note', 'Amount(₹)'])
-        df = support.generate_df(df)
-
-        if df.shape[0] > 0:
-            pie = support.meraPie(df=df, names='Expense', values='Amount(₹)', hole=0.7, hole_text='Expense',
-                                  hole_font=20,
-                                  height=180, width=180, margin=dict(t=1, b=1, l=1, r=1))
-            df2 = df.groupby(['Note', "Expense"]).sum().reset_index()[["Expense", 'Note', 'Amount(₹)']]
-            bar = support.meraBarChart(df=df2, x='Note', y='Amount(₹)', color="Expense", height=180, x_label="Category",
-                                       show_xtick=False)
-            line = support.meraLine(df=df, x='Date', y='Amount(₹)', color='Expense', slider=False, show_legend=False,
-                                    height=180)
-            scatter = support.meraScatter(df, 'Date', 'Amount(₹)', 'Expense', 'Amount(₹)', slider=False, )
-            heat = support.meraHeatmap(df, 'Day_name', 'Month_name', height=200, title="Transaction count Day vs Month")
-            month_bar = support.month_bar(df, 280)
-            sun = support.meraSunburst(df, 280)
-            return render_template('analysis.html',
-                                   username=userdata[0][1],
-                                   pie=pie,
-                                   bar=bar,
-                                   line=line,
-                                   scatter=scatter,
-                                   heat=heat,
-                                   month_bar=month_bar,
-                                   sun=sun,
-                                   )
-        else:
-            return render_template('analysis.html',
-                                   username=userdata[0][1],
-                                   pie=None,
-                                   bar=None,
-                                   line=None,
-                                   scatter=None,
-                                   heat=None,
-                                   month_bar=None,
-                                   sun=None,
-                                   )
-    else:
-        return redirect('/')
+    if 'user_id' not in session:
+        return redirect('/login')
+    try:
+        firebase_uid = session['user_id']
+        # Initialize summary values
+        total_contributions = 0.0
+        total_payouts = 0.0
+        total_loans = 0.0
+        current_balance = 0.0
+        member_count = 0
+        stokvels = []
+        contributions_chart = []
+        payouts_chart = []
+        loans_chart = []
+        # Fetch summary data
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Total contributions
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount),0) FROM transactions
+                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
+                """, (firebase_uid,))
+                total_contributions = float(cur.fetchone()[0] or 0)
+                # Total payouts
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount),0) FROM transactions
+                    WHERE user_id = %s AND type = 'payout' AND status = 'completed'
+                """, (firebase_uid,))
+                total_payouts = float(cur.fetchone()[0] or 0)
+                # Total loans
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount),0) FROM transactions
+                    WHERE user_id = %s AND type = 'loan' AND status IN ('approved','pending')
+                """, (firebase_uid,))
+                total_loans = float(cur.fetchone()[0] or 0)
+                # Current balance (contributions - payouts)
+                current_balance = total_contributions - total_payouts
+                # Member count (across all user's stokvels)
+                cur.execute("""
+                    SELECT COUNT(DISTINCT sm.user_id)
+                    FROM stokvel_members sm
+                    JOIN stokvels s ON sm.stokvel_id = s.id
+                    WHERE s.id IN (SELECT stokvel_id FROM stokvel_members WHERE user_id = %s)
+                """, (firebase_uid,))
+                member_count = int(cur.fetchone()[0] or 0)
+                # Stokvels list
+                cur.execute("""
+                    SELECT s.id, s.name, s.total_pool, s.monthly_contribution, s.target_amount, s.target_date
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE sm.user_id = %s
+                """, (firebase_uid,))
+                stokvels = cur.fetchall()
+                # Chart data: Contributions by month
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date) AS month, SUM(amount)
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
+                    GROUP BY month ORDER BY month
+                """, (firebase_uid,))
+                contributions_chart = cur.fetchall()
+                # Chart data: Payouts by month
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date) AS month, SUM(amount)
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'payout' AND status = 'completed'
+                    GROUP BY month ORDER BY month
+                """, (firebase_uid,))
+                payouts_chart = cur.fetchall()
+                # Chart data: Loans by month
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date) AS month, SUM(amount)
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'loan' AND status IN ('approved','pending')
+                    GROUP BY month ORDER BY month
+                """, (firebase_uid,))
+                loans_chart = cur.fetchall()
+        # Prepare chart data for JS
+        def chart_to_dict(chart):
+            return [{"month": row[0].strftime('%Y-%m'), "amount": float(row[1])} for row in chart if row[0]]
+        return render_template('analysis.html',
+            total_contributions=total_contributions,
+            total_payouts=total_payouts,
+            total_loans=total_loans,
+            current_balance=current_balance,
+            member_count=member_count,
+            stokvels=stokvels,
+            contributions_chart=chart_to_dict(contributions_chart),
+            payouts_chart=chart_to_dict(payouts_chart),
+            loans_chart=chart_to_dict(loans_chart)
+        )
+    except Exception as e:
+        print(f"Analysis error: {str(e)}")
+        flash("Error loading financial insights. Please try again.")
+        return redirect('/home')
 
 
 @app.route('/login')
@@ -2525,6 +2578,217 @@ def activities():
     except Exception as e:
         print(f"Error fetching activities: {e}")
     return render_template('activities.html', activities=activities)
+
+@app.route('/loan-application', methods=['GET', 'POST'])
+@login_required
+def loan_application():
+    if request.method == 'POST':
+        user_id = session['user_id']
+        amount = request.form.get('amount')
+        reason = request.form.get('reason')
+        duration = request.form.get('duration')
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO transactions (user_id, type, amount, description, status, duration, transaction_date)
+                        VALUES (%s, 'loan', %s, %s, 'pending', %s, NOW())
+                    """, (user_id, amount, reason, duration))
+                    conn.commit()
+            flash('Loan application submitted successfully!', 'success')
+            return redirect(url_for('loan_application'))
+        except Exception as e:
+            print(f"Error submitting loan application: {e}")
+            flash('An error occurred while submitting your loan application.', 'danger')
+            return redirect(url_for('loan_application'))
+    return render_template('loan_application.html')
+
+@app.route('/loan-repayments', methods=['GET', 'POST'])
+@login_required
+def loan_repayments():
+    user_id = session['user_id']
+    if request.method == 'POST':
+        loan_id = request.form.get('loan_id')
+        amount = request.form.get('amount')
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    # Insert repayment transaction
+                    cur.execute("""
+                        INSERT INTO transactions (user_id, type, amount, description, status, related_loan_id, transaction_date)
+                        VALUES (%s, 'repayment', %s, %s, 'pending', %s, NOW())
+                    """, (user_id, amount, 'Loan repayment', loan_id))
+                    conn.commit()
+            flash('Repayment submitted successfully!', 'success')
+        except Exception as e:
+            print(f"Error submitting repayment: {e}")
+            flash('An error occurred while submitting your repayment.', 'danger')
+        return redirect(url_for('loan_repayments'))
+    # On GET, show outstanding loans
+    loans = []
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, amount, description, status, duration, transaction_date
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'loan' AND status IN ('approved', 'pending')
+                    ORDER BY transaction_date DESC
+                """, (user_id,))
+                loans = cur.fetchall()
+    except Exception as e:
+        print(f"Error fetching loans: {e}")
+        flash('Could not load your loans.', 'danger')
+    return render_template('loan_repayments.html', loans=loans)
+
+@app.route('/invite_members', methods=['GET', 'POST'])
+@login_required
+def invite_members():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user_id = session['user_id']
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO invites (inviter_id, email, status, invited_at)
+                        VALUES (%s, %s, 'pending', NOW())
+                    """, (user_id, email))
+                    conn.commit()
+            flash('Invitation sent successfully!', 'success')
+        except Exception as e:
+            print(f"Error sending invite: {e}")
+            flash('An error occurred while sending the invitation.', 'danger')
+        return redirect(url_for('invite_members'))
+    return render_template('invite_members.html')
+
+@app.route('/financial-insight')
+@login_required
+def financial_insight():
+    if 'user_id' not in session:
+        return redirect('/login')
+    try:
+        firebase_uid = session['user_id']
+        # Initialize summary values
+        total_contributions = 0.0
+        total_payouts = 0.0
+        total_loans = 0.0
+        current_balance = 0.0
+        member_count = 0
+        stokvels = []
+        contributions_chart = []
+        payouts_chart = []
+        loans_chart = []
+        # Fetch summary data
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Total contributions
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount),0) FROM transactions
+                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
+                """, (firebase_uid,))
+                total_contributions = float(cur.fetchone()[0] or 0)
+                # Total payouts
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount),0) FROM transactions
+                    WHERE user_id = %s AND type = 'payout' AND status = 'completed'
+                """, (firebase_uid,))
+                total_payouts = float(cur.fetchone()[0] or 0)
+                # Total loans
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount),0) FROM transactions
+                    WHERE user_id = %s AND type = 'loan' AND status IN ('approved','pending')
+                """, (firebase_uid,))
+                total_loans = float(cur.fetchone()[0] or 0)
+                # Current balance (contributions - payouts)
+                current_balance = total_contributions - total_payouts
+                # Member count (across all user's stokvels)
+                cur.execute("""
+                    SELECT COUNT(DISTINCT sm.user_id)
+                    FROM stokvel_members sm
+                    JOIN stokvels s ON sm.stokvel_id = s.id
+                    WHERE s.id IN (SELECT stokvel_id FROM stokvel_members WHERE user_id = %s)
+                """, (firebase_uid,))
+                member_count = int(cur.fetchone()[0] or 0)
+                # Stokvels list
+                cur.execute("""
+                    SELECT s.id, s.name, s.total_pool, s.monthly_contribution, s.target_amount, s.target_date
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE sm.user_id = %s
+                """, (firebase_uid,))
+                stokvels = cur.fetchall()
+                # Chart data: Contributions by month
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date) AS month, SUM(amount)
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
+                    GROUP BY month ORDER BY month
+                """, (firebase_uid,))
+                contributions_chart = cur.fetchall()
+                # Chart data: Payouts by month
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date) AS month, SUM(amount)
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'payout' AND status = 'completed'
+                    GROUP BY month ORDER BY month
+                """, (firebase_uid,))
+                payouts_chart = cur.fetchall()
+                # Chart data: Loans by month
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', transaction_date) AS month, SUM(amount)
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'loan' AND status IN ('approved','pending')
+                    GROUP BY month ORDER BY month
+                """, (firebase_uid,))
+                loans_chart = cur.fetchall()
+        # Prepare chart data for JS
+        def chart_to_dict(chart):
+            return [{"month": row[0].strftime('%Y-%m'), "amount": float(row[1])} for row in chart if row[0]]
+        return render_template('financial_insight.html',
+            total_contributions=total_contributions,
+            total_payouts=total_payouts,
+            total_loans=total_loans,
+            current_balance=current_balance,
+            member_count=member_count,
+            stokvels=stokvels,
+            contributions_chart=chart_to_dict(contributions_chart),
+            payouts_chart=chart_to_dict(payouts_chart),
+            loans_chart=chart_to_dict(loans_chart)
+        )
+    except Exception as e:
+        print(f"Financial Insight error: {str(e)}")
+        flash("Error loading financial insights. Please try again.")
+        return redirect('/home')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/features')
+def features():
+    return render_template('features.html')
+
+@app.route('/dashboard/calendar_data')
+def dashboard_calendar_data():
+    # Get month and year from query params
+    month = int(request.args.get('month', datetime.now().month))
+    year = int(request.args.get('year', datetime.now().year))
+    # Generate calendar_days using the same logic as dashboard
+    cal = calendar.Calendar()
+    days = list(cal.itermonthdates(year, month))
+    calendar_days = []
+    for day in days:
+        calendar_days.append({
+            'date': day.day,
+            'is_today': day == datetime.now().date(),
+            'events': []  # TODO: Add real events if available
+        })
+    return jsonify({'calendar_days': calendar_days, 'calendar_month': calendar.month_name[month], 'calendar_year': year})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))

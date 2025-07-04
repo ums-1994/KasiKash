@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - KasiKash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: linear-gradient(135deg, #000428, #004e92); color: white; }
+        .text-gradient { background: linear-gradient(90deg, #60efff, #00ff87); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .glow { text-shadow: 0 0 10px rgba(96, 239, 255, 0.7); }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto">
+                <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+            </a>
+            <ul class="hidden md:flex space-x-8">
+                <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
+                <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
+                <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a></li>
+                <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+            </ul>
+        </div>
+    </nav>
+    <section class="pt-32 pb-20">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 text-gradient">{{ t('about_kasikash', user_language) }}</h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+                {{ t('about_kasikash_desc', user_language) }}
+            </p>
+            <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
+                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('our_mission', user_language) }}</h2>
+                <p class="text-lg text-gray-200 mb-4">{{ t('our_mission_desc', user_language) }}</p>
+                <ul class="text-left text-gray-200 space-y-2">
+                    <li><i class="fas fa-check text-ocean-2 mr-2"></i> {{ t('empower_communities', user_language) }}</li>
+                    <li><i class="fas fa-check text-ocean-2 mr-2"></i> {{ t('promote_inclusion', user_language) }}</li>
+                    <li><i class="fas fa-check text-ocean-2 mr-2"></i> {{ t('foster_trust', user_language) }}</li>
+                </ul>
+            </div>
+
+            <!-- How It Works Section -->
+            <div class="max-w-3xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
+                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('how_it_works', user_language) }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    <div>
+                        <div class="text-4xl mb-2 text-ocean-2"><i class="fas fa-users"></i></div>
+                        <h3 class="font-bold text-lg mb-2">{{ t('create_or_join_stokvel', user_language) }}</h3>
+                        <p class="text-gray-200">{{ t('create_or_join_stokvel_desc', user_language) }}</p>
+                    </div>
+                    <div>
+                        <div class="text-4xl mb-2 text-ocean-3"><i class="fas fa-piggy-bank"></i></div>
+                        <h3 class="font-bold text-lg mb-2">{{ t('save_and_contribute', user_language) }}</h3>
+                        <p class="text-gray-200">{{ t('save_and_contribute_desc', user_language) }}</p>
+                    </div>
+                    <div>
+                        <div class="text-4xl mb-2 text-ocean-5"><i class="fas fa-chart-line"></i></div>
+                        <h3 class="font-bold text-lg mb-2">{{ t('grow_together', user_language) }}</h3>
+                        <p class="text-gray-200">{{ t('grow_together_desc', user_language) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meet the Team Section -->
+            <div class="max-w-3xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
+                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('meet_the_team', user_language) }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div>
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Team Member" class="mx-auto rounded-full w-24 h-24 mb-2">
+                        <h3 class="font-bold text-lg">Thabo Mokoena</h3>
+                        <p class="text-gray-200">{{ t('founder_ceo', user_language) }}</p>
+                    </div>
+                    <div>
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Team Member" class="mx-auto rounded-full w-24 h-24 mb-2">
+                        <h3 class="font-bold text-lg">Lerato Dlamini</h3>
+                        <p class="text-gray-200">{{ t('head_of_product', user_language) }}</p>
+                    </div>
+                    <div>
+                        <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="Team Member" class="mx-auto rounded-full w-24 h-24 mb-2">
+                        <h3 class="font-bold text-lg">Sibusiso Nkosi</h3>
+                        <p class="text-gray-200">{{ t('lead_engineer', user_language) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form Section -->
+            <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-gradient">Contact Us</h2>
+                <form action="mailto:support@kasikash.co.za" method="POST" enctype="text/plain" class="space-y-4">
+                    <div>
+                        <label for="name" class="block text-left text-gray-200 mb-1">Name</label>
+                        <input type="text" id="name" name="name" class="w-full rounded px-3 py-2 text-black" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-left text-gray-200 mb-1">Email</label>
+                        <input type="email" id="email" name="email" class="w-full rounded px-3 py-2 text-black" required>
+                    </div>
+                    <div>
+                        <label for="message" class="block text-left text-gray-200 mb-1">Message</label>
+                        <textarea id="message" name="message" rows="4" class="w-full rounded px-3 py-2 text-black" required></textarea>
+                    </div>
+                    <button type="submit" class="bg-ocean-2 text-black font-bold py-2 px-6 rounded-full hover:bg-ocean-3 transition">Send Message</button>
+                </form>
+            </div>
+
+            <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8">
+                <h2 class="text-2xl font-bold mb-4 text-gradient">Contact Info</h2>
+                <p class="text-lg text-gray-200 mb-2"><i class="fas fa-envelope mr-2"></i>support@kasikash.co.za</p>
+                <p class="text-lg text-gray-200 mb-2"><i class="fas fa-phone mr-2"></i>+27 11 123 4567</p>
+                <p class="text-lg text-gray-200"><i class="fas fa-map-marker-alt mr-2"></i>Johannesburg, South Africa</p>
+            </div>
+        </div>
+    </section>
+    <footer class="bg-black text-white py-12 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">&copy; 2024 KasiKash. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html> 

@@ -67,7 +67,7 @@
         <div>
             <p class="text-gray-600">Active Stokvels</p>
             <h3 class="text-2xl font-bold text-gray-800">{{ active_stokvels | default(0) }}</h3> {# Assuming active_stokvels is passed #}
-            <p class="text-sm text-gray-500">Participating groups</p>
+            <p class="text-sm text-gray-500">{{ t('participating_groups', user_language) }}</p>
              </div>
         <div class="p-3 bg-gray-200 rounded-full">
             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -116,8 +116,8 @@
 
     <!-- Recent Activity -->
     <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h3>
-        <p class="text-gray-600 mb-4">Your latest transactions</p>
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">{{ t('recent_activity', user_language) }}</h3>
+        <p class="text-gray-600 mb-4">{{ t('your_latest_transactions', user_language) }}</p>
         <ul>
             {% if table_data %} {# Using existing table_data for recent transactions #}
                 {% for transaction in table_data[:5] %} {# Displaying up to 5 recent transactions #}
@@ -146,6 +146,8 @@
 
 <!-- Your Stokvels Section - Placeholder -->
 <div class="mt-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">{{ t('your_stokvels', user_language) }}</h3>
+    <p class="text-gray-600 mb-4">{{ t('overview_of_savings_groups', user_language) }}</p>
     <h3 class="text-xl font-semibold text-gray-800 mb-4">Your Stokvels</h3>
     <p class="text-gray-600 mb-4">Overview of your savings groups</p>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
