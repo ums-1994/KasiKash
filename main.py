@@ -266,6 +266,19 @@ def home():
                         user["email"] = user_data[1]
                         user["profile_picture"] = user_data[2]
                         # user["joined_date"] = user_data[3]  # Remove or comment out this line
+
+                    # Fetch stokvels the user is a member of, with joined_at
+                    cur.execute("""
+                        SELECT s.name, sm.joined_at
+                        FROM stokvels s
+                        JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                        WHERE sm.user_id = %s
+                    """, (session['user_id'],))
+                    stokvels_joined = cur.fetchall()
+                    user["stokvel_count"] = len(stokvels_joined)
+                    user["stokvel_joined_dates"] = [
+                        {"name": row[0], "joined_at": row[1].strftime('%Y-%m-%d') if row[1] else "Unknown"} for row in stokvels_joined
+                    ]
         except Exception as e:
             print(f"User info fetch error: {e}")
 
@@ -946,7 +959,7 @@ def stokvels():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Fetch stokvels where the current user is a member, including their role
+                # Fetch stokvels where the current user is a member, including their role and joined_at
                 cur.execute("""
                     SELECT 
                         s.id, 
@@ -959,7 +972,8 @@ def stokvels():
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date,
-                        sm.role
+                        sm.role,
+                        sm.joined_at
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
                     WHERE sm.user_id = %s
@@ -979,7 +993,8 @@ def stokvels():
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date,
-                        sm.role
+                        sm.role,
+                        sm.joined_at
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
                     WHERE s.created_by = %s AND sm.user_id = %s

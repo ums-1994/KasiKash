@@ -1,0 +1,2 @@
+UPDATE stokvel_members SET joined_at = CURRENT_TIMESTAMP WHERE joined_at IS NULL;
+ALTER TABLE stokvel_members ALTER COLUMN joined_at SET DEFAULT CURRENT_TIMESTAMP; 

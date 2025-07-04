@@ -33,23 +33,21 @@
         </nav>
         <section class="pt-32 pb-20">
             <div class="container mx-auto px-4 text-center">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6 text-gradient">{{ t('contact_us', user_language) }}</h1>
-                <p class="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-                    {{ t('contact_us_desc', user_language) }}
-                </p>
+                <h1 class="text-3xl font-bold mb-4">{{ t('contact_heading', user_language) }}</h1>
+                <p class="mb-6">{{ t('contact_message', user_language) }}</p>
                 <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
                     <form action="mailto:support@kasikash.co.za" method="POST" enctype="text/plain" class="space-y-4">
                         <div>
-                            <label for="name" class="block text-left text-gray-200 mb-1">{{ t('name', user_language) }}</label>
-                            <input type="text" id="name" name="name" class="w-full rounded px-3 py-2 text-black" required>
+                            <label for="name">{{ t('name', user_language) }}</label>
+                            <input type="text" id="name" name="name" placeholder="{{ t('your_name', user_language) }}" class="w-full rounded px-3 py-2 text-black" required>
                         </div>
                         <div>
-                            <label for="email" class="block text-left text-gray-200 mb-1">{{ t('email', user_language) }}</label>
-                            <input type="email" id="email" name="email" class="w-full rounded px-3 py-2 text-black" required>
+                            <label for="email">{{ t('email', user_language) }}</label>
+                            <input type="email" id="email" name="email" placeholder="{{ t('your_email', user_language) }}" class="w-full rounded px-3 py-2 text-black" required>
                         </div>
                         <div>
-                            <label for="message" class="block text-left text-gray-200 mb-1">{{ t('message', user_language) }}</label>
-                            <textarea id="message" name="message" rows="4" class="w-full rounded px-3 py-2 text-black" required></textarea>
+                            <label for="message">{{ t('message', user_language) }}</label>
+                            <textarea id="message" name="message" placeholder="{{ t('your_message', user_language) }}" rows="4" class="w-full rounded px-3 py-2 text-black" required></textarea>
                         </div>
                         <button type="submit" class="bg-ocean-2 text-black font-bold py-2 px-6 rounded-full hover:bg-ocean-3 transition">{{ t('send_message', user_language) }}</button>
                     </form>

@@ -2,7 +2,8 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">KasiKash Financial Insights</h1>
+    <h1 class="text-3xl font-bold mb-4">{{ t('analysis_heading', user_language) }}</h1>
+    <span>{{ t('no_analysis_data', user_language) }}</span>
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <div class="bg-white rounded-lg shadow p-6">

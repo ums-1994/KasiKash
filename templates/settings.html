@@ -5,11 +5,11 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ t('settings', user_language) }}</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ t('settings', user_language)|replace('_', ' ')|title }}</h1>
         
         <!-- Account Security -->
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('account_security', user_language) }}</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('account_security', user_language)|replace('_', ' ')|title }}</h2>
             <form action="/settings/update" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_section" value="security">
@@ -18,75 +18,69 @@
                         <input type="checkbox" name="two_factor_enabled" value="on" 
                                class="form-checkbox h-4 w-4 text-blue-600"
                                {% if user.two_factor_enabled %}checked{% endif %}>
-                        <span class="ml-2 text-gray-700">Enable Two-Factor Authentication</span>
+                        <span class="ml-2 text-gray-700">{{ t('enable_two_factor_auth', user_language)|replace('_', ' ')|title }}</span>
                     </label>
-                    <p class="text-sm text-gray-500 mt-1">Add an extra layer of security to your account</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ t('two_factor_help', user_language)|replace('_', ' ')|title }}</p>
                 </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    {{ t('save', user_language) }} Security Settings
-                </button>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save', user_language)|replace('_', ' ')|title }} Security Settings</button>
             </form>
         </div>
 
         <!-- Notifications -->
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('notifications', user_language) }}</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('notifications', user_language)|replace('_', ' ')|title }}</h2>
             <form action="/settings/update" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_section" value="notifications">
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="notification_preferences">
-                        Notification Preferences
+                        {{ t('notification_preferences', user_language)|replace('_', ' ')|title }}
                     </label>
                     <select name="notification_preferences" id="notification_preferences"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="email" {% if user.notification_preferences == 'email' %}selected{% endif %}>Email Only</option>
-                        <option value="sms" {% if user.notification_preferences == 'sms' %}selected{% endif %}>SMS Only</option>
-                        <option value="both" {% if user.notification_preferences == 'both' %}selected{% endif %}>Email and SMS</option>
-                        <option value="none" {% if user.notification_preferences == 'none' %}selected{% endif %}>No Notifications</option>
+                        <option value="email" {% if user.notification_preferences == 'email' %}selected{% endif %}>{{ t('email_only', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="sms" {% if user.notification_preferences == 'sms' %}selected{% endif %}>{{ t('sms_only', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="both" {% if user.notification_preferences == 'both' %}selected{% endif %}>{{ t('email_and_sms', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="none" {% if user.notification_preferences == 'none' %}selected{% endif %}>{{ t('no_notifications', user_language)|replace('_', ' ')|title }}</option>
                     </select>
-                    <p class="text-sm text-gray-500 mt-1">Choose how you want to receive notifications</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ t('choose_notification_method', user_language)|replace('_', ' ')|title }}</p>
                 </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    {{ t('save', user_language) }} Notification Settings
-                </button>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save', user_language)|replace('_', ' ')|title }} Notification Settings</button>
             </form>
         </div>
 
         <!-- Language Preferences -->
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('language_preferences', user_language) }}</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('language_preferences', user_language)|replace('_', ' ')|title }}</h2>
             <form action="/settings/update" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_section" value="language_preference">
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="language_preference">
-                        {{ t('preferred_language', user_language) }}
+                        {{ t('preferred_language', user_language)|replace('_', ' ')|title }}
                     </label>
                     <select name="language_preference" id="language_preference"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
-                        <option value="af" {% if user.language_preference == 'af' %}selected{% endif %}>Afrikaans</option>
-                        <option value="zu" {% if user.language_preference == 'zu' %}selected{% endif %}>isiZulu</option>
-                        <option value="xh" {% if user.language_preference == 'xh' %}selected{% endif %}>isiXhosa</option>
-                        <option value="st" {% if user.language_preference == 'st' %}selected{% endif %}>Sesotho</option>
-                        <option value="tn" {% if user.language_preference == 'tn' %}selected{% endif %}>Setswana</option>
-                        <option value="ss" {% if user.language_preference == 'ss' %}selected{% endif %}>siSwati</option>
-                        <option value="ve" {% if user.language_preference == 've' %}selected{% endif %}>Tshivenda</option>
-                        <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>Xitsonga</option>
-                        <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>isiNdebele</option>
+                        <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>{{ t('english', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="af" {% if user.language_preference == 'af' %}selected{% endif %}>{{ t('afrikaans', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="zu" {% if user.language_preference == 'zu' %}selected{% endif %}>{{ t('zulu', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="xh" {% if user.language_preference == 'xh' %}selected{% endif %}>{{ t('xhosa', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="st" {% if user.language_preference == 'st' %}selected{% endif %}>{{ t('sesotho', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="tn" {% if user.language_preference == 'tn' %}selected{% endif %}>{{ t('setswana', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="ss" {% if user.language_preference == 'ss' %}selected{% endif %}>{{ t('siswati', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="ve" {% if user.language_preference == 've' %}selected{% endif %}>{{ t('venda', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>{{ t('tsonga', user_language)|replace('_', ' ')|title }}</option>
+                        <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>{{ t('ndebele', user_language)|replace('_', ' ')|title }}</option>
                     </select>
-                    <p class="text-sm text-gray-500 mt-1">{{ t('choose_language', user_language) }}</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ t('choose_language', user_language)|replace('_', ' ')|title }}</p>
                 </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    {{ t('save_language_settings', user_language) }}
-                </button>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save_language_settings', user_language)|replace('_', ' ')|title }}</button>
             </form>
         </div>
 
         <!-- App Preferences -->
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">App Preferences</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('app_preferences', user_language)|replace('_', ' ')|title }}</h2>
             <form action="/settings/update" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_section" value="app_preferences">
@@ -94,8 +88,8 @@
                     <!-- Email Notifications Toggle -->
                     <label for="email_notifications" class="flex items-center justify-between cursor-pointer">
                         <div>
-                            <span class="text-gray-800 font-medium">Email Notifications</span>
-                            <p class="text-sm text-gray-500">Receive updates and alerts via email</p>
+                            <span class="text-gray-800 font-medium">{{ t('email_notifications', user_language)|replace('_', ' ')|title }}</span>
+                            <p class="text-sm text-gray-500">{{ t('email_notifications_help', user_language)|replace('_', ' ')|title }}</p>
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="email_notifications" name="email_notifications" class="sr-only" {% if user.email_notifications %}checked{% endif %}>
@@ -107,8 +101,8 @@
                     <!-- SMS Notifications Toggle -->
                     <label for="sms_notifications" class="flex items-center justify-between cursor-pointer">
                         <div>
-                            <span class="text-gray-800 font-medium">SMS Notifications</span>
-                            <p class="text-sm text-gray-500">Get important updates via SMS</p>
+                            <span class="text-gray-800 font-medium">{{ t('sms_notifications', user_language)|replace('_', ' ')|title }}</span>
+                            <p class="text-sm text-gray-500">{{ t('sms_notifications_help', user_language)|replace('_', ' ')|title }}</p>
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="sms_notifications" name="sms_notifications" class="sr-only" {% if user.sms_notifications %}checked{% endif %}>
@@ -120,8 +114,8 @@
                     <!-- Weekly Summary Toggle -->
                     <label for="weekly_summary" class="flex items-center justify-between cursor-pointer">
                         <div>
-                            <span class="text-gray-800 font-medium">Weekly Summary</span>
-                            <p class="text-sm text-gray-500">Get a weekly overview of your stokvel activities</p>
+                            <span class="text-gray-800 font-medium">{{ t('weekly_summary', user_language)|replace('_', ' ')|title }}</span>
+                            <p class="text-sm text-gray-500">{{ t('weekly_summary_help', user_language)|replace('_', ' ')|title }}</p>
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="weekly_summary" name="weekly_summary" class="sr-only" {% if user.weekly_summary %}checked{% endif %}>
@@ -133,8 +127,8 @@
                     <!-- Contribution Reminders Toggle -->
                     <label for="reminders_enabled" class="flex items-center justify-between cursor-pointer">
                         <div>
-                            <span class="text-gray-800 font-medium">Contribution Reminders</span>
-                            <p class="text-sm text-gray-500">Get notified before your contribution is due</p>
+                            <span class="text-gray-800 font-medium">{{ t('contribution_reminders', user_language)|replace('_', ' ')|title }}</span>
+                            <p class="text-sm text-gray-500">{{ t('contribution_reminders_help', user_language)|replace('_', ' ')|title }}</p>
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="reminders_enabled" name="reminders_enabled" class="sr-only" {% if user.reminders_enabled %}checked{% endif %}>
@@ -144,9 +138,7 @@
                     </label>
                 </div>
                 <div class="mt-6">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Save App Preferences
-                    </button>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save_app_preferences', user_language)|replace('_', ' ')|title }}</button>
                 </div>
             </form>
         </div>

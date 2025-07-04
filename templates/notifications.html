@@ -18,11 +18,11 @@
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Notifications</h1>
+            <h1 class="text-3xl font-bold mb-4">{{ t('notifications_heading', user_language) }}</h1>
             {% if notifications %}
             <form action="{{ url_for('clear_notifications') }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="text-sm text-blue-600 hover:underline focus:outline-none">Mark all as read</button>
+                <button type="submit" class="text-sm text-blue-600 hover:underline focus:outline-none">{{ t('mark_all_as_read', user_language) }}</button>
             </form>
             {% endif %}
         </div>
@@ -62,8 +62,8 @@
                         <div class="mb-4">
                              <i class="fas fa-envelope-open-text fa-3x text-gray-300"></i>
                         </div>
-                        <h3 class="font-semibold">No notifications yet</h3>
-                        <p class="text-sm">We'll let you know when something important happens.</p>
+                        <h3 class="font-semibold">{{ t('no_notifications_yet', user_language) }}</h3>
+                        <p class="text-sm">{{ t('we_ll_let_you_know', user_language) }}</p>
                     </li>
                 {% endif %}
             </ul>

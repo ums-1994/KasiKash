@@ -259,9 +259,9 @@
             <div id="particles-js"></div>
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">Choose Your Plan</h2>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('choose_your_plan', user_language) }}</h2>
                     <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                        From testing the waters to building wealth empires, we have a plan that grows with your community dreams.
+                        {{ t('pricing_message', user_language) }}
                     </p>
                 </div>
 
@@ -270,68 +270,64 @@
                     <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-2 animate-float">🆓</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Free</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-2">R0<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('free_plan', user_language) }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-2">{{ t('r0_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 5 Members</span>
+                                    <span class="text-gray-300">{{ t('up_to_5_members', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Monthly Tips & Resources</span>
+                                    <span class="text-gray-300">{{ t('monthly_tips_resources', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Pay-as-you-go)</span>
+                                    <span class="text-gray-300">{{ t('events_pay_as_you_go', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Pay-as-you-go)</span>
+                                    <span class="text-gray-300">{{ t('marketplace_pay_as_you_go', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (6.00% p.a.)</span>
+                                    <span class="text-gray-300">{{ t('savings_account_6_00_pa', user_language) }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-2 to-ocean-2 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-3 hover:to-ocean-3">
-                                Get Started Free
-                            </a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-2 to-ocean-2 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-3 hover:to-ocean-3">{{ t('get_started_free', user_language) }}</a>
                         </div>
                     </div>
 
                     <!-- Silver Plan -->
                     <div class="card-hover bg-gray-900 bg-opacity-70 rounded-2xl overflow-hidden border-2 border-ocean-3 transform transition-all duration-500 hover:-translate-y-5 relative">
-                        <div class="absolute top-0 right-0 bg-ocean-3 text-black px-6 py-1 rounded-bl-lg font-bold">Most Popular</div>
+                        <div class="absolute top-0 right-0 bg-ocean-3 text-black px-6 py-1 rounded-bl-lg font-bold">{{ t('most_popular', user_language) }}</div>
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-3 animate-float-reverse">🥈</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Silver</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-3">R50<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('silver_plan', user_language) }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-3">{{ t('r50_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 10 Members (+R50 per 10 more)</span>
+                                    <span class="text-gray-300">{{ t('up_to_10_members_r50_per_10_more', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Monthly Learning Session</span>
+                                    <span class="text-gray-300">{{ t('monthly_learning_session', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Up to 10% Discount)</span>
+                                    <span class="text-gray-300">{{ t('events_up_to_10_discount', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Up to 10% Discount)</span>
+                                    <span class="text-gray-300">{{ t('marketplace_up_to_10_discount', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (6.25% p.a.)</span>
+                                    <span class="text-gray-300">{{ t('savings_account_6_25_pa', user_language) }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-3 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-4 hover:to-ocean-4">
-                                Choose Silver
-                            </a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-3 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-4 hover:to-ocean-4">{{ t('choose_silver', user_language) }}</a>
                         </div>
                     </div>
 
@@ -339,33 +335,31 @@
                     <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-5 animate-float">🥇</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Gold</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-5">R100<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('gold_plan', user_language) }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-5">{{ t('r100_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 15 Members (+R75 per 10 more)</span>
+                                    <span class="text-gray-300">{{ t('up_to_15_members_r75_per_10_more', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Group Coach Access</span>
+                                    <span class="text-gray-300">{{ t('group_coach_access', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Up to 30% Discount)</span>
+                                    <span class="text-gray-300">{{ t('events_up_to_30_discount', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Up to 30% Discount)</span>
+                                    <span class="text-gray-300">{{ t('marketplace_up_to_30_discount', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (6.75% p.a.)</span>
+                                    <span class="text-gray-300">{{ t('savings_account_6_75_pa', user_language) }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-5 to-ocean-5 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-2 hover:to-ocean-2">
-                                Choose Gold
-                            </a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-5 to-ocean-5 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-2 hover:to-ocean-2">{{ t('choose_gold', user_language) }}</a>
                         </div>
                     </div>
 
@@ -373,47 +367,45 @@
                     <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-4 animate-float-reverse">💎</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">Platinum</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-4">R150<span class="text-lg font-normal text-gray-300">/month</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('platinum_plan', user_language) }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-4">{{ t('r150_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Up to 20 Members (+R100 per 10 more)</span>
+                                    <span class="text-gray-300">{{ t('up_to_20_members_r100_per_10_more', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Executive Coach</span>
+                                    <span class="text-gray-300">{{ t('executive_coach', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">0.5 Hour Quarterly Check-in</span>
+                                    <span class="text-gray-300">{{ t('0_5_hour_quarterly_check_in', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Events (Up to 50% Discount)</span>
+                                    <span class="text-gray-300">{{ t('events_up_to_50_discount', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Exhibitor Stand</span>
+                                    <span class="text-gray-300">{{ t('exhibitor_stand', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Marketplace (Up to 50% Discount)</span>
+                                    <span class="text-gray-300">{{ t('marketplace_up_to_50_discount', user_language) }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">Savings Account (7.25% p.a.)</span>
+                                    <span class="text-gray-300">{{ t('savings_account_7_25_pa', user_language) }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-4 to-ocean-4 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-5 hover:to-ocean-5">
-                                Choose Platinum
-                            </a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-4 to-ocean-4 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-5 hover:to-ocean-5">{{ t('choose_platinum', user_language) }}</a>
                         </div>
                     </div>
                 </div>
 
                 <p class="text-center text-gray-400 mt-12">
-                    All plans include our core stokvel management tools and 24/7 customer support.
+                    {{ t('all_plans_include_core_stokvel_management_tools_and_24_7_customer_support', user_language) }}
                 </p>
             </div>
         </section>
@@ -422,8 +414,8 @@
         <section class="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">Transaction Costs</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">The fees are the same for all plans - Free, Silver, Gold, and Platinum. No surprises!</p>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('transaction_costs', user_language) }}</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('transaction_costs_message', user_language) }}</p>
                 </div>
 
                 <div class="max-w-4xl mx-auto">
@@ -432,8 +424,8 @@
                             <table class="w-full">
                                 <thead>
                                     <tr class="bg-gray-800">
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-ocean-2 uppercase tracking-wider">Service</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-ocean-2 uppercase tracking-wider">Fee</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-ocean-2 uppercase tracking-wider">{{ t('service', user_language) }}</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-ocean-2 uppercase tracking-wider">{{ t('fee', user_language) }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-gray-900 divide-y divide-gray-800">
@@ -464,37 +456,37 @@
                                     </tr>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-white">Instant Secure EFT Deposit</div>
+                                            <div class="text-sm font-medium text-white">{{ t('instant_secure_eft_deposit', user_language) }}</div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R10.00 per transaction</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ t('r10_00_per_transaction', user_language) }}</td>
                                     </tr>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-white">Online Card Deposit</div>
+                                            <div class="text-sm font-medium text-white">{{ t('online_card_deposit', user_language) }}</div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R3.99 per R100</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ t('r3_99_per_r100', user_language) }}</td>
                                     </tr>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-white">Cash Deposit (ATM/Retail)</div>
+                                            <div class="text-sm font-medium text-white">{{ t('cash_deposit_atm_retail', user_language) }}</div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">R2.99 per R100 (min R9.99)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ t('r2_99_per_r100_min_r9_99', user_language) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         <div class="mt-8 p-4 bg-gray-800 rounded-lg">
-                            <h4 class="font-bold text-ocean-2 mb-2">Important Notes:</h4>
+                            <h4 class="font-bold text-ocean-2 mb-2">{{ t('important_notes', user_language) }}:</h4>
                             <ul class="text-sm text-gray-300 space-y-2">
-                                <li>• Savings Account services only available in RSA and interest is linked to SARB repo rate changes.</li>
-                                <li>• Admin Account is your stokvel money sitting in an account owned by the Executive(s) with another bank.</li>
-                                <li>• Third-Parties Banking & Services only available in RSA.</li>
-                                <li>• EFT transfers may take 2-3 working days to reflect on your profile.</li>
-                                <li>• Cash payments of R400 or less incur a standard ATM/retail fee of R9.99.</li>
-                                <li>• Cash payments available at selected ATMs and tills of over 5,100 stores across South Africa.</li>
-                                <li>• Consultant Assisted Calls: R10 per call attended to, per club member.</li>
-                                <li>• All fees include VAT.</li>
+                                <li>• {{ t('savings_account_services_only_available_in_rsa_and_interest_is_linked_to_sarb_repo_rate_changes', user_language) }}</li>
+                                <li>• {{ t('admin_account_is_your_stokvel_money_sitting_in_an_account_owned_by_the_executives_with_another_bank', user_language) }}</li>
+                                <li>• {{ t('third_parties_banking_services_only_available_in_rsa', user_language) }}</li>
+                                <li>• {{ t('eft_transfers_may_take_2_3_working_days_to_reflect_on_your_profile', user_language) }}</li>
+                                <li>• {{ t('cash_payments_of_r400_or_less_incur_a_standard_atm_retail_fee_of_r9_99', user_language) }}</li>
+                                <li>• {{ t('cash_payments_available_at_selected_atms_and_tills_of_over_5_1000_stores_across_south_africa', user_language) }}</li>
+                                <li>• {{ t('consultant_assisted_calls_r10_per_call_attended_to_per_club_member', user_language) }}</li>
+                                <li>• {{ t('all_fees_include_vat', user_language) }}</li>
                             </ul>
                         </div>
                     </div>
@@ -506,38 +498,36 @@
         <section class="py-20 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="max-w-4xl mx-auto text-center">
-                    <h2 class="text-4xl font-bold text-white mb-4">Need More? Get A Custom Plan</h2>
-                    <p class="text-xl text-gray-300 mb-8">Tailored Just for Your Stokvel's Unique Needs</p>
+                    <h2 class="text-4xl font-bold text-white mb-4">{{ t('need_more_get_a_custom_plan', user_language) }}</h2>
+                    <p class="text-xl text-gray-300 mb-8">{{ t('tailored_just_for_your_stokvels_unique_needs', user_language) }}</p>
                     
                     <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl border border-gray-800 p-8">
                         <div class="flex items-center justify-center mb-6">
                             <div class="text-4xl mr-4">🎯</div>
-                            <h3 class="text-2xl font-bold text-ocean-2">Bespoke Solutions for Your Goals</h3>
+                            <h3 class="text-2xl font-bold text-ocean-2">{{ t('bespoke_solutions_for_your_goals', user_language) }}</h3>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <div class="p-4 bg-gray-800 rounded-lg">
                                 <div class="text-2xl mb-2">⚡</div>
-                                <h4 class="font-bold text-ocean-3 mb-2">Specialized Tech Features</h4>
-                                <p class="text-gray-300">Custom integrations and advanced functionality</p>
+                                <h4 class="font-bold text-ocean-3 mb-2">{{ t('specialized_tech_features', user_language) }}</h4>
+                                <p class="text-gray-300">{{ t('custom_integrations_and_advanced_functionality', user_language) }}</p>
                             </div>
                             <div class="p-4 bg-gray-800 rounded-lg">
                                 <div class="text-2xl mb-2">🎨</div>
-                                <h4 class="font-bold text-ocean-3 mb-2">Custom Branding</h4>
-                                <p class="text-gray-300">Your unique identity and visual style</p>
+                                <h4 class="font-bold text-ocean-3 mb-2">{{ t('custom_branding', user_language) }}</h4>
+                                <p class="text-gray-300">{{ t('your_unique_identity_and_visual_style', user_language) }}</p>
                             </div>
                             <div class="p-4 bg-gray-800 rounded-lg">
                                 <div class="text-2xl mb-2">📋</div>
-                                <h4 class="font-bold text-ocean-3 mb-2">Unique Legal Terms</h4>
-                                <p class="text-gray-300">Tailored agreements and conditions</p>
+                                <h4 class="font-bold text-ocean-3 mb-2">{{ t('unique_legal_terms', user_language) }}</h4>
+                                <p class="text-gray-300">{{ t('tailored_agreements_and_conditions', user_language) }}</p>
                             </div>
                         </div>
 
-                        <p class="text-gray-300 mb-8">With the Custom Plan, you're not just another customer; you're a partner in creating a stokvel experience that's as unique as you are.</p>
+                        <p class="text-gray-300 mb-8">{{ t('with_the_custom_plan_youre_not_just_another_customer_youre_a_partner_in_creating_a_stokvel_experience_that_s_as_unique_as_you_are', user_language) }}</p>
                         
-                        <a href="/contact" class="inline-block bg-gradient-to-r from-ocean-3 to-ocean-2 text-black font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">
-                            Book a Call with Our Experts
-                        </a>
+                        <a href="/contact" class="inline-block bg-gradient-to-r from-ocean-3 to-ocean-2 text-black font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">{{ t('book_a_call_with_our_experts', user_language) }}</a>
                     </div>
                 </div>
             </div>
@@ -548,9 +538,9 @@
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
-                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
+                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">{{ t('kasi_kash', user_language) }}</h4>
                         <p class="text-gray-400 mb-4">
-                            Your digital stokvel platform for community wealth building.
+                            {{ t('your_digital_stokvel_platform_for_community_wealth_building', user_language) }}
                         </p>
                         <div class="flex space-x-4">
                             <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300">
@@ -568,33 +558,33 @@
                         </div>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('quick_links', user_language) }}</h4>
                         <ul class="space-y-2">
-                            <li><a href="/get_started" class="text-gray-400 hover:text-white">Get Started</a></li>
-                            <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
-                            <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
-                            <li><a href="#about" class="text-gray-400 hover:text-white">About</a></li>
+                            <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language) }}</a></li>
+                            <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language) }}</a></li>
+                            <li><a href="/contact" class="text-gray-400 hover:text-white">{{ t('contact', user_language) }}</a></li>
+                            <li><a href="#about" class="text-gray-400 hover:text-white">{{ t('about', user_language) }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('legal', user_language) }}</h4>
                         <ul class="space-y-2">
-                            <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">Licenses</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('terms_of_service', user_language) }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('privacy_policy', user_language) }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('licenses', user_language) }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('contact_us', user_language) }}</h4>
                         <ul class="space-y-2">
-                            <li class="text-gray-400">Email: support@kasikash.co.za</li>
-                            <li class="text-gray-400">Phone: +27 11 123 4567</li>
-                            <li class="text-gray-400">Address: Johannesburg, South Africa</li>
+                            <li class="text-gray-400">{{ t('email_support_kasikash_co_za', user_language) }}</li>
+                            <li class="text-gray-400">{{ t('phone_27_11_123_4567', user_language) }}</li>
+                            <li class="text-gray-400">{{ t('address_johannesburg_south_africa', user_language) }}</li>
                         </ul>
                     </div>
                 </div>
                 <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                    <p>&copy; 2024 KasiKash. All rights reserved.</p>
+                    <p>&copy; 2024 {{ t('kasi_kash_all_rights_reserved', user_language) }}</p>
                 </div>
             </div>
         </footer>

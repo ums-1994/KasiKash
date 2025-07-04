@@ -464,9 +464,19 @@ body {
     </div>
     <div class="accent text-xl mb-1">{{ user.username }}</div>
     <div class="text-white text-sm mb-2">{{ user.email }}</div>
-    <div style="display: flex; gap: 0.5rem;">
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
       <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">{{ t('member', user_language) }}</span>
-      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">{{ t('joined', user_language) }}: {{ user.joined_date }}</span>
+      <span style="background: rgba(191, 219, 254, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; color: #93c5fd;">{{ t('stokvel_count', user_language) }}: {{ user.stokvel_count }}</span>
+    </div>
+    <div style="width: 100%;">
+      <ul style="font-size: 0.85rem; color: #c7d2fe; margin: 0; padding: 0; list-style: none;">
+        {% for stokvel in user.stokvel_joined_dates %}
+          <li style="margin-bottom: 2px;">
+            <i class="fas fa-users" style="margin-right: 4px;"></i>
+            {{ stokvel.name }}: {{ t('joined', user_language) }} {{ stokvel.joined_at }}
+          </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
   <!-- Quick Actions Card -->

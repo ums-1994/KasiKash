@@ -32,19 +32,14 @@
     </nav>
     <section class="pt-32 pb-20">
         <div class="container mx-auto px-4 text-center">
-            <h1 class="text-5xl md:text-6xl font-bold mb-6 text-gradient">{{ t('about_kasikash', user_language) }}</h1>
-            <p class="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-                {{ t('about_kasikash_desc', user_language) }}
-            </p>
-            <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
-                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('our_mission', user_language) }}</h2>
-                <p class="text-lg text-gray-200 mb-4">{{ t('our_mission_desc', user_language) }}</p>
-                <ul class="text-left text-gray-200 space-y-2">
-                    <li><i class="fas fa-check text-ocean-2 mr-2"></i> {{ t('empower_communities', user_language) }}</li>
-                    <li><i class="fas fa-check text-ocean-2 mr-2"></i> {{ t('promote_inclusion', user_language) }}</li>
-                    <li><i class="fas fa-check text-ocean-2 mr-2"></i> {{ t('foster_trust', user_language) }}</li>
-                </ul>
-            </div>
+            <h1 class="text-3xl font-bold mb-4">{{ t('about_heading', user_language) }}</h1>
+            <p class="mb-6">{{ t('about_message', user_language) }}</p>
+            <h2 class="text-2xl font-semibold mb-2">{{ t('our_team', user_language) }}</h2>
+            <ul>
+                <li>{{ t('team_member_1', user_language) }}</li>
+                <li>{{ t('team_member_2', user_language) }}</li>
+                <li>{{ t('team_member_3', user_language) }}</li>
+            </ul>
 
             <!-- How It Works Section -->
             <div class="max-w-3xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">

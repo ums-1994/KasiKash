@@ -17,10 +17,10 @@
 {% endblock %}
 
 {% block header_content %}
-<h1 class="text-2xl font-semibold text-gray-800">Dashboard</h1>
-<span class="ml-4 px-3 py-1 bg-green-200 text-green-800 text-sm font-semibold rounded-full">
-    {{ active_stokvels | default(0) }} Active Stokvels {# Assuming active_stokvels is passed to the template #}
-</span>
+<h1 class="text-3xl font-bold mb-4">{{ t('home_heading', user_language) }}</h1>
+<p class="mb-6">{{ t('home_message', user_language) }}</p>
+<a href="/register" class="btn btn-primary">{{ t('get_started', user_language) }}</a>
+<a href="/login" class="btn btn-secondary ml-2">{{ t('login', user_language) }}</a>
 {% endblock %}
 
 

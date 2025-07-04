@@ -257,18 +257,10 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
             <div class="container mx-auto px-4 py-20 text-center relative z-10">
-                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                    <span class="text-gradient">Digital Stokvels</span><br>
-                    <span class="text-white">for Modern Communities</span>
-                </h1>
-                <p class="text-xl md:text-2xl text-gray-200 mb-12 max-w-3xl mx-auto leading-relaxed">
-                    Transform your stokvel with secure digital management, smart investments, and community growth tools.
-                </p>
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="/register" class="btn-glow bg-gradient-to-r from-ocean-3 to-ocean-2 text-black font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">
-                        Start Free Trial <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
+                <h1 class="text-4xl font-bold mb-4">{{ t('welcome_heading', user_language) }}</h1>
+                <p class="text-lg mb-6">{{ t('welcome_message', user_language) }}</p>
+                <a href="/register" class="btn btn-primary">{{ t('get_started', user_language) }}</a>
+                <a href="/login" class="btn btn-secondary ml-2">{{ t('login', user_language) }}</a>
             </div>
             
             <!-- Wave Shape -->
@@ -285,10 +277,8 @@
         <section id="features" class="py-20 bg-black bg-opacity-50 relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">Why Choose KasiKash?</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                        Built specifically for South African communities with features that matter most to stokvel success.
-                    </p>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('why_choose_heading', user_language) }}</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('why_choose_message', user_language) }}</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -296,30 +286,24 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
                             <i class="fas fa-shield-alt"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">SARB Regulated</h3>
-                        <p class="text-gray-300">
-                            Licensed and regulated financial services provider with full compliance to South African Reserve Bank standards.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('sarb_regulated_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('sarb_regulated_message', user_language) }}</p>
                     </div>
                     
                     <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800 transform transition-all duration-500 hover:scale-105">
                         <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
                             <i class="fas fa-lock"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Bank-Level Security</h3>
-                        <p class="text-gray-300">
-                            256-bit encryption and secure infrastructure that meets global banking security standards.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language) }}</p>
                     </div>
                     
                     <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800">
                         <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
                             <i class="fas fa-users"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Community Focused</h3>
-                        <p class="text-gray-300">
-                            Built by and for South African communities with features tailored to local needs and traditions.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_focused_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('community_focused_message', user_language) }}</p>
                     </div>
                 </div>
             </div>
@@ -329,10 +313,8 @@
         <section class="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">Our Features</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                        Everything you need to run a successful digital stokvel
-                    </p>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('our_features_heading', user_language) }}</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('our_features_message', user_language) }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -341,10 +323,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Smart Savings</h3>
-                        <p class="text-gray-300">
-                            Automated contributions, compound interest, and goal tracking to maximize your stokvel's growth potential.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('smart_savings_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('smart_savings_message', user_language) }}</p>
                     </div>
 
                     <!-- Community Management -->
@@ -352,10 +332,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
                             <i class="fas fa-users"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Community Management</h3>
-                        <p class="text-gray-300">
-                            Easy member onboarding, contribution tracking, and transparent financial reporting for all members.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_management_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('community_management_message', user_language) }}</p>
                     </div>
 
                     <!-- Bank-Level Security -->
@@ -363,10 +341,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
                             <i class="fas fa-lock"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Bank-Level Security</h3>
-                        <p class="text-gray-300">
-                            Your money is protected with enterprise-grade security, encryption, and regulatory compliance.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language) }}</p>
                     </div>
 
                     <!-- Community Success -->
@@ -374,10 +350,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-4 text-center">
                             <i class="fas fa-trophy"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Community Success</h3>
-                        <p class="text-gray-300">
-                            Real people achieving their financial dreams through our platform with proven results.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_success_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('community_success_message', user_language) }}</p>
                     </div>
 
                     <!-- Easy-to-Use Platform -->
@@ -385,10 +359,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
                             <i class="fas fa-mobile-alt"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Easy-to-Use Platform</h3>
-                        <p class="text-gray-300">
-                            Intuitive design that makes managing your stokvel simple and effective for all members.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('easy_to_use_platform_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('easy_to_use_platform_message', user_language) }}</p>
                     </div>
 
                     <!-- Events & Marketplace -->
@@ -396,10 +368,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
                             <i class="fas fa-store"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Events & Marketplace</h3>
-                        <p class="text-gray-300">
-                            Access to exclusive events and a marketplace for your stokvel's needs with special discounts.
-                        </p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('events_marketplace_heading', user_language) }}</h3>
+                        <p class="text-gray-300">{{ t('events_marketplace_message', user_language) }}</p>
                     </div>
                 </div>
             </div>
@@ -409,10 +379,8 @@
         <section class="py-20 bg-black relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">What Our Community Says</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                        Hear from stokvels that are already building wealth with KasiKash
-                    </p>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('testimonials_heading', user_language) }}</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('testimonials_message', user_language) }}</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -485,14 +453,10 @@
         <!-- CTA Section -->
         <section class="py-20 rainbow-gradient relative overflow-hidden">
             <div class="container mx-auto px-4 text-center">
-                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to Transform Your Stokvel?</h2>
-                <p class="text-xl text-black mb-8 max-w-3xl mx-auto">
-                    Join thousands of South Africans building wealth together through trusted community savings.
-                </p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">{{ t('cta_heading', user_language) }}</h2>
+                <p class="text-xl text-black mb-8 max-w-3xl mx-auto">{{ t('cta_message', user_language) }}</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="/register" class="bg-black text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90">
-                        Start Your Free Trial
-                    </a>
+                    <a href="/register" class="bg-black text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90">{{ t('start_your_free_trial', user_language) }}</a>
                 </div>
             </div>
         </section>
@@ -504,7 +468,7 @@
                     <div>
                         <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
                         <p class="text-gray-400 mb-4">
-                            Your digital stokvel platform for community wealth building.
+                            {{ t('footer_about_message', user_language) }}
                         </p>
                         <div class="flex space-x-4">
                             <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300">
@@ -524,26 +488,26 @@
                     <div>
                         <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
                         <ul class="space-y-2">
-                            <li><a href="/get_started" class="text-gray-400 hover:text-white">Get Started</a></li>
-                            <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
-                            <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
-                            <li><a href="#about" class="text-gray-400 hover:text-white">About</a></li>
+                            <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language) }}</a></li>
+                            <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language) }}</a></li>
+                            <li><a href="/contact" class="text-gray-400 hover:text-white">{{ t('contact', user_language) }}</a></li>
+                            <li><a href="#about" class="text-gray-400 hover:text-white">{{ t('about', user_language) }}</a></li>
                         </ul>
                     </div>
                     <div>
                         <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
                         <ul class="space-y-2">
-                            <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">Licenses</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('terms_of_service', user_language) }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('privacy_policy', user_language) }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('licenses', user_language) }}</a></li>
                         </ul>
                     </div>
                     <div>
                         <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
                         <ul class="space-y-2">
-                            <li class="text-gray-400">Email: support@kasikash.co.za</li>
-                            <li class="text-gray-400">Phone: +27 11 123 4567</li>
-                            <li class="text-gray-400">Address: Johannesburg, South Africa</li>
+                            <li class="text-gray-400">{{ t('email', user_language) }}: support@kasikash.co.za</li>
+                            <li class="text-gray-400">{{ t('phone', user_language) }}: +27 11 123 4567</li>
+                            <li class="text-gray-400">{{ t('address', user_language) }}: Johannesburg, South Africa</li>
                         </ul>
                     </div>
                 </div>
