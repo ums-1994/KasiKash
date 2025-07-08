@@ -132,6 +132,9 @@
                 <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="{{ url_for('admin.manage_users') }}" class="{% if request.endpoint == 'admin.manage_users' %}active{% endif %}"><i class="fas fa-users"></i> Manage Users</a>
                 <a href="{{ url_for('admin.loan_approvals') }}" class="{% if request.endpoint == 'admin.loan_approvals' %}active{% endif %}"><i class="fas fa-hand-holding-usd"></i> Loan Approvals</a>
+                <a href="{{ url_for('admin.financial_reports') }}" class="{% if request.endpoint == 'admin.financial_reports' %}active{% endif %}"><span class="inline-block align-middle" style="width:22px;vertical-align:middle;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;"><path fill="#fff" d="M4 4.75A.75.75 0 0 1 4.75 4h14.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 4.75Zm0 4A.75.75 0 0 1 4.75 8h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 8.75Zm0 4A.75.75 0 0 1 4.75 12h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 4 12.75Zm0 4A.75.75 0 0 1 4.75 16h3.5a.75.75 0 0 1 0 1.5h-3.5A.75.75 0 0 1 4 16.75Z"/></svg>
+                </span> Financial Reports</a>
                 <a href="{{ url_for('admin.events') }}" class="{% if request.endpoint == 'admin.events' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Events</a>
                 <a href="{{ url_for('admin.memberships') }}" class="{% if request.endpoint == 'admin.memberships' %}active{% endif %}"><i class="fas fa-medal"></i> Membership Plans</a>
                 <a href="{{ url_for('admin.notifications') }}" class="{% if request.endpoint == 'admin.notifications' %}active{% endif %}"><i class="fas fa-bell"></i> Notifications</a>

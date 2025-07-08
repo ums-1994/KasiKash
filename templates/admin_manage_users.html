@@ -1,106 +1,106 @@
 {% extends 'admin_base.html' %}
 {% block admin_content %}
-<h1>Manage Users</h1>
-<p>Here you can manage all users.</p>
+<h1>{{ t('manage_users', user_language) }}</h1>
+<p>{{ t('manage_users_description', user_language) if t('manage_users_description', user_language) != 'manage_users_description' else 'Here you can manage all users.' }}</p>
 <!-- Search/filter bar -->
 <form method="GET" action="{{ url_for('admin.manage_users') }}" class="mb-4 flex items-center gap-4">
-  <input type="text" name="search" class="border rounded px-3 py-2 text-black" placeholder="Search by username or email" value="{{ search_query or '' }}">
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
-  <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddUserModal()">Add User</button>
+  <input type="text" name="search" class="border rounded px-3 py-2 text-black" placeholder="{{ t('search', user_language) }} {{ t('username', user_language) }} {{ t('or', user_language) }} {{ t('email', user_language) }}" value="{{ search_query or '' }}">
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{{ t('search', user_language) }}</button>
+  <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddUserModal()">{{ t('add_user', user_language) }}</button>
 </form>
 <table class="table-auto w-full mt-2 text-sm">
   <thead>
     <tr>
-      <th>Email</th>
-      <th>Role</th>
-      <th>Created At</th>
-      <th>Stokvel</th>
-      <th>Actions</th>
+      <th>{{ t('email', user_language) }}</th>
+      <th>{{ t('role', user_language) }}</th>
+      <th>{{ t('created_at', user_language) }}</th>
+      <th>{{ t('stokvel', user_language) }}</th>
+      <th>{{ t('actions', user_language) }}</th>
     </tr>
   </thead>
   <tbody>
     {% for user in users %}
     <tr>
       <td>{{ user.email }}</td>
-      <td>{{ user.role }}</td>
+      <td>{{ t(user.role, user_language) }}</td>
       <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
-      <td>{{ user.stokvel_name|default('None') }}</td>
+      <td>{{ user.stokvel_name|default(t('none', user_language)) }}</td>
       <td class="flex gap-2">
-        <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewUserModal('{{ user.username|replace("'", "\\'")|e }}', '{{ user.email|replace("'", "\\'")|e }}', '{{ user.role|replace("'", "\\'")|e }}', '{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'|e }}', '{{ user.stokvel_name|default('None')|replace("'", "\\'")|e }}')">View</button>
-        <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditUserModal('{{ user.username|replace("'", "\\'")|e }}', '{{ user.email|replace("'", "\\'")|e }}', '{{ user.role|replace("'", "\\'")|e }}')">Edit</button>
-        <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="deleteUser('{{ user.email|replace("'", "\\'")|e }}')">Delete</button>
+        <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}', '{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'|e }}', '{{ user.stokvel_name|default(t('none', user_language))|replace("'", "&#39;")|e }}')">{{ t('view', user_language) }}</button>
+        <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}')">{{ t('edit', user_language) }}</button>
+        <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="deleteUser('{{ user.email|replace("'", "&#39;")|e }}')">{{ t('delete', user_language) }}</button>
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="5">No users found.</td></tr>
+    <tr><td colspan="5">{{ t('no_users_found', user_language) if t('no_users_found', user_language) != 'no_users_found' else 'No users found.' }}</td></tr>
     {% endfor %}
   </tbody>
 </table>
 <!-- Add User Modal -->
 <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
-    <button onclick="closeAddUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-    <h3 class="text-lg font-bold mb-2">Add User</h3>
+    <button type="button" onclick="closeAddUserModal();" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">{{ t('add_user', user_language) }}</h3>
     <form id="addUserForm" action="{{ url_for('admin.add_user') }}" method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="mb-2">
-        <label class="block font-semibold mb-1">Username</label>
+        <label class="block font-semibold mb-1">{{ t('username', user_language) }}</label>
         <input type="text" name="username" class="border rounded px-3 py-2 w-full text-black" required>
       </div>
       <div class="mb-2">
-        <label class="block font-semibold mb-1">Email</label>
+        <label class="block font-semibold mb-1">{{ t('email', user_language) }}</label>
         <input type="email" name="email" class="border rounded px-3 py-2 w-full text-black" required>
       </div>
       <div class="mb-2">
-        <label class="block font-semibold mb-1">Role</label>
+        <label class="block font-semibold mb-1">{{ t('role', user_language) }}</label>
         <select name="role" class="border rounded px-3 py-2 w-full text-black">
-          <option value="user" selected>User</option>
-          <option value="admin">Admin</option>
+          <option value="user" selected>{{ t('user', user_language) }}</option>
+          <option value="admin">{{ t('admin', user_language) }}</option>
         </select>
       </div>
       <div class="mb-2">
-        <label class="block font-semibold mb-1">Assign to Stokvel</label>
+        <label class="block font-semibold mb-1">{{ t('assign_to_stokvel', user_language) if t('assign_to_stokvel', user_language) != 'assign_to_stokvel' else 'Assign to Stokvel' }}</label>
         <select name="stokvel_id" class="border rounded px-3 py-2 w-full text-black">
-          <option value="">-- Select Stokvel --</option>
+          <option value="">-- {{ t('select_stokvel', user_language) if t('select_stokvel', user_language) != 'select_stokvel' else 'Select Stokvel' }} --</option>
           {% for stokvel in stokvels %}
             <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
           {% endfor %}
         </select>
       </div>
-      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2">Add User</button>
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2">{{ t('add_user', user_language) }}</button>
     </form>
   </div>
 </div>
 <!-- Edit User Modal -->
 <div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
-    <button onclick="closeEditUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-    <h3 class="text-lg font-bold mb-2">Edit User</h3>
+    <button type="button" onclick="closeEditUserModal();" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">{{ t('edit_user', user_language) }}</h3>
     <form>
       <div class="mb-2">
-        <label class="block font-semibold mb-1">Username</label>
+        <label class="block font-semibold mb-1">{{ t('username', user_language) }}</label>
         <input id="editUsername" type="text" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
       </div>
       <div class="mb-2">
-        <label class="block font-semibold mb-1">Email</label>
+        <label class="block font-semibold mb-1">{{ t('email', user_language) }}</label>
         <input id="editEmail" type="email" class="border rounded px-3 py-2 w-full" required disabled title="Coming soon">
       </div>
       <div class="mb-2">
-        <label class="block font-semibold mb-1">Role</label>
+        <label class="block font-semibold mb-1">{{ t('role', user_language) }}</label>
         <select id="editRole" class="border rounded px-3 py-2 w-full" disabled title="Coming soon">
-          <option>User</option>
-          <option>Admin</option>
+          <option>{{ t('user', user_language) }}</option>
+          <option>{{ t('admin', user_language) }}</option>
         </select>
       </div>
-      <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Save Changes</button>
+      <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">{{ t('save_changes', user_language) }}</button>
     </form>
   </div>
 </div>
 <!-- View User Modal -->
 <div id="viewUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
-    <button onclick="closeViewUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-    <h3 class="text-lg font-bold mb-2">User Details</h3>
+    <button type="button" onclick="closeViewUserModal();" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+    <h3 class="text-lg font-bold mb-2">{{ t('user_details', user_language) if t('user_details', user_language) != 'user_details' else 'User Details' }}</h3>
     <ul id="viewUserDetails" class="mb-2"></ul>
   </div>
 </div>

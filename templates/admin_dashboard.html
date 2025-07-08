@@ -1,148 +1,418 @@
 {% extends 'admin_base.html' %}
 {% block admin_content %}
 <style>
-  .dashboard-welcome {
-    background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  body {
+    background: linear-gradient(180deg, #183153 0%, #101c2c 100%);
+  }
+  .dashboard-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+  .dashboard-header {
+    background: linear-gradient(90deg, #183153 60%, #22304a 100%);
     color: #60efff;
-    border-radius: 18px;
+    border-radius: 20px;
     box-shadow: 0 4px 24px rgba(35,41,70,0.10);
     padding: 2rem 2.5rem 2rem 2rem;
-    margin-bottom: 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border: 2px solid #22304a;
+    border: none;
+    margin-bottom: 1.5rem;
   }
-  .dashboard-welcome h1 {
+  .dashboard-header h1 {
     color: #60efff;
     font-size: 2rem;
     font-weight: 700;
     margin: 0;
   }
-  .dashboard-welcome p {
+  .dashboard-header p {
     color: #eaf6fb;
     font-size: 1.1rem;
     margin-top: 0.5rem;
     font-weight: 500;
     margin-bottom: 0;
   }
-  .dashboard-cards {
+  .stat-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
   }
-  .dashboard-card {
-    background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(35,41,70,0.10);
-    padding: 2rem 1.5rem 1.5rem 1.5rem;
-    text-align: center;
-    border: 2px solid #22304a;
-    color: #eaf6fb;
+  .stat-card {
+    background: #16213a;
+    border-radius: 18px;
+    border: 1.5px solid #22304a;
+    box-shadow: 0 2px 8px rgba(35,41,70,0.10);
+    padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+  }
+  .stat-card .stat-icon {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    font-size: 2.1rem;
+    border-radius: 0.7rem;
+    padding: 0.4rem 0.5rem;
+  }
+  .stat-card.stat-users .stat-icon { background: #3b2cc8; color: #fff; }
+  .stat-card.stat-loans .stat-icon { background: #f59e42; color: #fff; }
+  .stat-card.stat-deposits .stat-icon { background: #1edb8a; color: #fff; }
+  .stat-card.stat-kyc .stat-icon { background: #b13be0; color: #fff; }
+  .stat-card .stat-label { font-size: 1.05rem; color: #b6c2e2; margin-bottom: 0.2rem; }
+  .stat-card .stat-value { font-size: 2.1rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
+  .stat-card .stat-delta { font-size: 0.95rem; color: #1edb8a; display: flex; align-items: center; gap: 0.3rem; }
+  .stat-card .stat-delta.negative { color: #ff4d6d; }
+  .stat-card .stat-extra { font-size: 0.9rem; }
+  .quick-actions-panel {
+    background: #16213a;
+    border: 1.5px solid #22304a;
+    border-radius: 18px;
+    margin-bottom: 2rem;
+    padding: 1.2rem 1.5rem;
+  }
+  .quick-actions-title { font-size: 1.25rem; color: #fff; font-weight: 600; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+  .quick-actions-row { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .quick-action-btn {
+    flex: 1 1 180px;
+    background: transparent;
+    border: 1.5px solid #22304a;
+    border-radius: 1rem;
+    color: #3b2cc8;
+    font-size: 1.08rem;
+    font-weight: 500;
+    padding: 1.1rem 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 0;
-  }
-  .dashboard-card .icon {
-    font-size: 2.5rem;
-    color: #60efff;
-    margin-bottom: 1rem;
-  }
-  .dashboard-card .value {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #60efff;
-    margin-bottom: 0.3rem;
-  }
-  .dashboard-card .label {
-    font-size: 1.1rem;
-    color: #eaf6fb;
-    font-weight: 500;
-  }
-  .dashboard-events {
-    background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(35,41,70,0.10);
-    padding: 1.5rem 2rem;
-    border: 2px solid #22304a;
-    margin-bottom: 2rem;
-    color: #eaf6fb;
-  }
-  .dashboard-actions {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-    justify-content: flex-start;
-  }
-  .dashboard-action-btn {
-    background: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
-    color: #101c2c;
-    border: none;
-    border-radius: 8px;
-    padding: 0.9rem 2.2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(96,239,255,0.10);
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    gap: 0.7rem;
+    transition: background 0.2s, box-shadow 0.2s;
     cursor: pointer;
   }
-  .dashboard-action-btn:hover {
-    background: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
-    color: #101c2c;
-    box-shadow: 0 4px 16px rgba(0,255,135,0.18);
-    text-decoration: none;
+  .quick-action-btn i { font-size: 1.5rem; }
+  .quick-action-btn.users { color: #3b2cc8; }
+  .quick-action-btn.loans { color: #f59e42; }
+  .quick-action-btn.rewards { color: #1edb8a; }
+  .quick-action-btn.reports { color: #b13be0; }
+  .quick-action-btn:hover { background: #22304a; box-shadow: 0 2px 12px #1edb8a33; }
+  .dashboard-charts {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .chart-card {
+    background: #151f36;
+    border: 1.5px solid #22304a;
+    border-radius: 1rem;
+    flex: 1 1 350px;
+    min-width: 320px;
+    padding: 1.2rem 1.5rem;
+    color: #fff;
+  }
+  .chart-title {
+    font-size: 1.1rem;
+    color: #b6c2e2;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+  }
+  .chart-placeholder {
+    width: 100%;
+    height: 180px;
+    background: repeating-linear-gradient(135deg, #22304a, #22304a 10px, #1e3357 10px, #1e3357 20px);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #60efff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .management-cards-row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .management-card {
+    flex: 1 1 300px;
+    min-width: 260px;
+    background: linear-gradient(135deg, #3b2cc8 0%, #1edb8a 100%);
+    border-radius: 1rem;
+    color: #fff;
+    padding: 1.5rem 1.2rem;
+    box-shadow: 0 2px 12px #1edb8a33;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .management-card.card-loans {
+    background: linear-gradient(135deg, #f59e42 0%, #ff4d6d 100%);
+  }
+  .management-card.card-reports {
+    background: linear-gradient(135deg, #b13be0 0%, #3b2cc8 100%);
+  }
+  .management-card-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  .management-card-desc {
+    font-size: 0.98rem;
+    color: #eaf6fb;
+  }
+  .dashboard-activity-row {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .activity-section, .notifications-section {
+    flex: 1 1 350px;
+    min-width: 320px;
+    background: #151f36;
+    border: 1.5px solid #22304a;
+    border-radius: 1rem;
+    color: #fff;
+    padding: 1.2rem 1.5rem;
+  }
+  .activity-title, .notifications-title {
+    font-size: 1.1rem;
+    color: #b6c2e2;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+  }
+  .activity-list, .notifications-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 1rem;
+  }
+  .activity-list li, .notifications-list li {
+    border-bottom: 1px solid #22304a;
+    padding: 0.7rem 0;
+  }
+  .activity-list li:last-child, .notifications-list li:last-child {
+    border-bottom: none;
   }
 </style>
 
-<div class="dashboard-welcome">
-  <div>
-    <h1>Welcome back, {{ admin_name or 'Admin' }} <span style="font-size:1.8rem;">👋</span></h1>
-    <p>Here's a quick overview of your platform's activity.</p>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="dashboard-main">
+  <div class="dashboard-header">
+    <div>
+      <h1>Welcome, Admin <span style="font-size:1.8rem;">👋</span></h1>
+      <p>Stokvel Admin Dashboard</p>
+    </div>
+    <div>
+      <a href="{{ url_for('admin.settings') }}" title="Admin Settings">
+        <i class="fas fa-cog" style="font-size:2rem;color:#60efff;"></i>
+      </a>
+    </div>
   </div>
-  <div>
-    <a href="{{ url_for('admin.settings') }}" title="Admin Settings">
-      <i class="fas fa-cog" style="font-size:2rem;color:#60efff;"></i>
-    </a>
+
+  <!-- Stat Cards -->
+  <div class="stat-grid">
+    <div class="stat-card stat-users">
+      <span class="stat-icon"><i class="fas fa-user-friends"></i></span>
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value" id="usersCount">{{ total_members }}</div>
+      <div class="stat-delta"><i class="fas fa-arrow-up"></i> +12% <span class="stat-extra">from last month</span></div>
+    </div>
+    <div class="stat-card stat-loans">
+      <span class="stat-icon"><i class="fas fa-hand-holding-usd"></i></span>
+      <div class="stat-label">Active Loans</div>
+      <div class="stat-value" id="loansCount">{{ pending_loans }}</div>
+      <div class="stat-delta"><i class="fas fa-arrow-up"></i> 6 <span class="stat-extra">pending approval</span></div>
+    </div>
+    <div class="stat-card stat-deposits">
+      <span class="stat-icon"><i class="fas fa-piggy-bank"></i></span>
+      <div class="stat-label">Total Deposits</div>
+      <div class="stat-value" id="depositsCount">R {{ '{:,.2f}'.format(total_deposits) }}</div>
+      <div class="stat-delta"><i class="fas fa-arrow-up"></i> +8% <span class="stat-extra">from last month</span></div>
+    </div>
+    <div class="stat-card stat-kyc">
+      <span class="stat-icon"><i class="fas fa-shield-alt"></i></span>
+      <div class="stat-label">KYC Pending</div>
+      <div class="stat-value" id="kycCount">{{ kyc_pending }}</div>
+      <div class="stat-delta negative"><i class="fas fa-arrow-down"></i> 4 <span class="stat-extra">urgent reviews</span></div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions-panel">
+    <div class="quick-actions-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+    <div class="quick-actions-row">
+      <a href="{{ url_for('admin.manage_users') }}" class="quick-action-btn users"><i class="fas fa-user-friends"></i> Manage Users</a>
+      <a href="{{ url_for('admin.loan_approvals') }}" class="quick-action-btn loans"><i class="fas fa-hand-holding-usd"></i> Loan Approvals</a>
+      <a href="/virtual-rewards" class="quick-action-btn rewards"><i class="fas fa-gift"></i> Virtual Rewards</a>
+      <a href="{{ url_for('admin.financial_reports') }}" class="quick-action-btn reports"><i class="fas fa-chart-bar"></i> Generate Reports</a>
+    </div>
+  </div>
+
+  <!-- Charts & Analytics -->
+  <div class="dashboard-charts">
+    <div class="chart-card">
+      <div class="chart-title">Financial Chart</div>
+      <canvas id="financialChart" width="400" height="180"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">User Growth Chart</div>
+      <canvas id="userGrowthChart" width="400" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- Management Cards -->
+  <div class="management-cards-row" style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+    <!-- User Management Card -->
+    <div style="flex:1 1 300px; min-width:260px; background:linear-gradient(135deg,#4f46e5 0%,#38bdf8 100%); border-radius:18px; color:#fff; padding:1.7rem 1.3rem 1.3rem 1.3rem; box-shadow:0 2px 12px #38bdf833; display:flex; flex-direction:column; gap:1.1rem;">
+      <div style="display:flex;align-items:center;gap:0.7rem;font-size:1.18rem;font-weight:600;">
+        User Management <span style="font-size:1.3rem; margin-left:auto;"><i class="fas fa-users"></i></span>
+      </div>
+      <div style="font-size:1.01rem; color:#eaf6fb;">View, add, edit, or suspend user accounts with advanced filtering and bulk operations.</div>
+      <div style="display:flex;flex-direction:column;gap:0.7rem;">
+        <a href="/users" style="background:rgba(255,255,255,0.18);border-radius:8px;padding:0.7rem 0;text-align:center;color:#fff;font-weight:500;text-decoration:none;transition:background 0.2s;">Manage Users</a>
+        <a href="#" style="background:rgba(255,255,255,0.18);border-radius:8px;padding:0.7rem 0;text-align:center;color:#fff;font-weight:500;text-decoration:none;transition:background 0.2s;">Bulk Operations</a>
+      </div>
+    </div>
+    <!-- Loan Approvals Card -->
+    <div style="flex:1 1 300px; min-width:260px; background:linear-gradient(135deg,#fbbf24 0%,#f97316 100%); border-radius:18px; color:#fff; padding:1.7rem 1.3rem 1.3rem 1.3rem; box-shadow:0 2px 12px #fbbf2433; display:flex; flex-direction:column; gap:1.1rem;">
+      <div style="display:flex;align-items:center;gap:0.7rem;font-size:1.18rem;font-weight:600;">
+        Loan Approvals <span style="font-size:1.3rem; margin-left:auto;"><i class="fas fa-coins"></i></span>
+      </div>
+      <div style="font-size:1.01rem; color:#fff;">Review and approve loan applications with detailed financial analysis and risk assessment.</div>
+      <div style="display:flex;flex-direction:column;gap:0.7rem;">
+        <a href="{{ url_for('admin.loan_approvals') }}" style="background:rgba(255,255,255,0.18);border-radius:8px;padding:0.7rem 0;text-align:center;color:#fff;font-weight:500;text-decoration:none;position:relative;transition:background 0.2s;">
+          Review Applications
+          <span style="position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);background:#fff;color:#f97316;font-size:0.95rem;font-weight:700;border-radius:999px;padding:0.1rem 0.7rem;">12</span>
+        </a>
+        <a href="#" style="background:rgba(255,255,255,0.18);border-radius:8px;padding:0.7rem 0;text-align:center;color:#fff;font-weight:500;text-decoration:none;transition:background 0.2s;">Approval History</a>
+      </div>
+    </div>
+    <!-- Financial Reports Card -->
+    <div style="flex:1 1 300px; min-width:260px; background:linear-gradient(135deg,#34d399 0%,#38bdf8 100%); border-radius:18px; color:#fff; padding:1.7rem 1.3rem 1.3rem 1.3rem; box-shadow:0 2px 12px #34d39933; display:flex; flex-direction:column; gap:1.1rem;">
+      <div style="display:flex;align-items:center;gap:0.7rem;font-size:1.18rem;font-weight:600;">
+        Financial Reports <span style="font-size:1.3rem; margin-left:auto;"><i class="fas fa-chart-bar"></i></span>
+      </div>
+      <div style="font-size:1.01rem; color:#eaf6fb;">Generate comprehensive financial reports with advanced analytics and export capabilities.</div>
+      <div style="display:flex;flex-direction:column;gap:0.7rem;">
+        <a href="{{ url_for('admin.financial_reports') }}" style="background:rgba(255,255,255,0.18);border-radius:8px;padding:0.7rem 0;text-align:center;color:#fff;font-weight:500;text-decoration:none;transition:background 0.2s;">Generate Reports</a>
+        <a href="#" style="background:rgba(255,255,255,0.18);border-radius:8px;padding:0.7rem 0;text-align:center;color:#fff;font-weight:500;text-decoration:none;transition:background 0.2s;">Export Data</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity & Notifications -->
+  <div class="dashboard-activity-row">
+    <div class="activity-section">
+      <div class="activity-title">Recent Activity</div>
+      <ul class="activity-list" id="activityFeed">
+        <li>Jane Smith deposited R500 <span style="color:#1edb8a;float:right;">2m ago</span></li>
+        <li>John Doe requested a loan <span style="color:#f59e42;float:right;">10m ago</span></li>
+        <li>Mike Lee completed KYC <span style="color:#b13be0;float:right;">30m ago</span></li>
+      </ul>
+    </div>
+    <div class="notifications-section">
+      <div class="notifications-title">System Notifications</div>
+      <ul class="notifications-list" id="notificationsFeed">
+        <li>System backup completed <span style="color:#60efff;float:right;">1h ago</span></li>
+        <li>4 KYC reviews pending <span style="color:#ff4d6d;float:right;">now</span></li>
+      </ul>
+    </div>
   </div>
 </div>
 
-<div class="dashboard-cards">
-  <div class="dashboard-card">
-    <span class="icon"><i class="fas fa-users"></i></span>
-    <span class="value">{{ total_members }}</span>
-    <span class="label">Total Members</span>
-  </div>
-  <div class="dashboard-card">
-    <span class="icon"><i class="fas fa-hand-holding-usd"></i></span>
-    <span class="value">{{ pending_loans}}</span>
-    <span class="label">Pending Loans</span>
-  </div>
-  <div class="dashboard-card">
-    <span class="icon"><i class="fas fa-id-card"></i></span>
-    <span class="value">{{ kyc_pending }}</span>
-    <span class="label">KYC Pending</span>
-  </div>
-  <div class="dashboard-card">
-    <span class="icon"><i class="fas fa-bell"></i></span>
-    <span class="value">{{ new_notifications }}</span>
-    <span class="label">New Notifications</span>
-  </div>
-</div>
+<!-- Animated Counters & Real-time JS -->
+<script>
+// Animate counters
+function animateCounter(id, end, prefix = '', duration = 1200) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let start = 0;
+  const step = Math.ceil(end / (duration / 16));
+  function update() {
+    start += step;
+    if (start >= end) {
+      el.textContent = prefix + end;
+    } else {
+      el.textContent = prefix + start;
+      requestAnimationFrame(update);
+    }
+  }
+  update();
+}
+// Example: Replace with real values from backend
+animateCounter('usersCount', 50);
+animateCounter('loansCount', 3);
+animateCounter('depositsCount', 253512, 'R ');
+animateCounter('kycCount', 2);
 
-<div class="dashboard-events">
-  <h3 style="color:#60efff;font-size:1.2rem;font-weight:600;margin-bottom:0.7rem;">Upcoming Events</h3>
-  <ul style="margin:0;padding-left:1.2rem;">
-    <li>June 30: Mid-year Report Meeting</li>
-    <li>July 4: Member Webinar</li>
-  </ul>
-</div>
+// Chart.js chart instances
+let financialChart, userGrowthChart;
 
-<div class="dashboard-actions">
-  <a href="{{ url_for('admin.manage_users') }}" class="dashboard-action-btn">Add New User</a>
-  <a href="{{ url_for('admin.loan_approvals') }}" class="dashboard-action-btn">View Loan Requests</a>
-  <a href="{{ url_for('admin.notifications') }}" class="dashboard-action-btn">Send Notification</a>
-</div>
+function renderFinancialChart(data) {
+  const ctx = document.getElementById('financialChart').getContext('2d');
+  if (financialChart) financialChart.destroy();
+  financialChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Balance',
+        data: data.values,
+        borderColor: '#1edb8a',
+        backgroundColor: 'rgba(30,219,138,0.1)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+}
+
+function renderUserGrowthChart(data) {
+  const ctx = document.getElementById('userGrowthChart').getContext('2d');
+  if (userGrowthChart) userGrowthChart.destroy();
+  userGrowthChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'New Users',
+        data: data.values,
+        backgroundColor: '#3b2cc8',
+        borderRadius: 8
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+}
+
+async function fetchAndUpdateCharts() {
+  try {
+    const [finRes, userRes] = await Promise.all([
+      fetch('/api/dashboard/financial'),
+      fetch('/api/dashboard/user-growth')
+    ]);
+    const finData = await finRes.json();
+    const userData = await userRes.json();
+    renderFinancialChart(finData);
+    renderUserGrowthChart(userData);
+  } catch (e) {
+    // Optionally show error
+  }
+}
+
+// Initial load and polling
+fetchAndUpdateCharts();
+setInterval(fetchAndUpdateCharts, 30000);
+// Optionally, add WebSocket hooks for instant updates
+</script>
 {% endblock %}

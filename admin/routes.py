@@ -9,12 +9,17 @@ import csv
 import pandas as pd
 from io import BytesIO
 from fpdf import FPDF
+from translations import t
+
+def get_user_language():
+    return session.get('language_preference', 'en')
 
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
+    user_language = get_user_language()
     if session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
     
     firebase_uid = session.get('user_id')
@@ -40,13 +45,17 @@ def dashboard():
                     WHERE created_by = %s
                 """, (firebase_uid,))
                 stokvels = cur.fetchall()
+                # Fetch total deposits
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'deposit'")
+                total_deposits = cur.fetchone()[0]
         print("Total members:", total_members)
         print("Pending loans:", pending_loans)
         print("KYC pending:", kyc_pending)
         print("New notifications:", new_notifications)
+        print("Total deposits:", total_deposits)
     except Exception as e:
         print(f"Error fetching admin dashboard data: {e}")
-        total_members, pending_loans, kyc_pending, new_notifications = 0, 0, 0, 0
+        total_members, pending_loans, kyc_pending, new_notifications, total_deposits = 0, 0, 0, 0, 0
         stokvels = []
 
     return render_template(
@@ -55,14 +64,16 @@ def dashboard():
         pending_loans=pending_loans, 
         kyc_pending=kyc_pending, 
         new_notifications=new_notifications,
-        stokvels=stokvels
+        stokvels=stokvels,
+        total_deposits=total_deposits
     )
 
 @admin_bp.route('/manage-users')
 @login_required
 def manage_users():
+    user_language = get_user_language()
     if session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
 
     search_query = request.args.get('search', '')
@@ -97,7 +108,7 @@ def manage_users():
         print(f"Error fetching users or stokvels for admin: {e}")
         flash('Could not load users or stokvels.', 'danger')
 
-    return render_template('admin_manage_users.html', users=users, search_query=search_query, stokvels=stokvels)
+    return render_template('admin_manage_users.html', users=users, search_query=search_query, stokvels=stokvels, t=t, user_language=user_language)
 
 @admin_bp.route('/users/add', methods=['POST'])
 @login_required
@@ -156,8 +167,9 @@ def add_user():
 @admin_bp.route('/loan-approvals')
 @login_required
 def loan_approvals():
+    user_language = get_user_language()
     if session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
 
     status = request.args.get('status', 'pending')
@@ -176,7 +188,7 @@ def loan_approvals():
     except Exception as e:
         print(f"Error fetching loan approvals: {e}")
         flash('Could not load loan approvals.', 'danger')
-    return render_template('admin_loan_approvals.html', loans=loans, current_status=status)
+    return render_template('admin_loan_approvals.html', loans=loans, current_status=status, t=t, user_language=user_language)
 
 @admin_bp.route('/loans/approve', methods=['POST'])
 @login_required
@@ -289,8 +301,9 @@ def user_loan_history(email):
 @admin_bp.route('/events', methods=['GET', 'POST'])
 @login_required
 def events():
+    user_language = get_user_language()
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
 
     if request.method == 'POST':
@@ -333,13 +346,14 @@ def events():
     except Exception as e:
         print(f"Error fetching events or stokvels: {e}")
         flash('Could not load page data.', 'danger')
-    return render_template('admin_events.html', events=events, stokvels=stokvels)
+    return render_template('admin_events.html', events=events, stokvels=stokvels, t=t, user_language=user_language)
 
 @admin_bp.route('/memberships', methods=['GET'])
 @login_required
 def memberships():
+    user_language = get_user_language()
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
     search_query = request.args.get('q', '').strip()
     memberships = []
@@ -354,7 +368,7 @@ def memberships():
     except Exception as e:
         print(f"Error fetching membership plans: {e}")
         flash('Could not load membership plans.', 'danger')
-    return render_template('admin_memberships.html', memberships=memberships, search_query=search_query)
+    return render_template('admin_memberships.html', memberships=memberships, search_query=search_query, t=t, user_language=user_language)
 
 @admin_bp.route('/memberships/add', methods=['POST'])
 @login_required
@@ -379,10 +393,11 @@ def add_membership_plan():
 @admin_bp.route('/notifications')
 @login_required
 def notifications():
+    user_language = get_user_language()
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
-    return render_template('admin_notifications.html')
+    return render_template('admin_notifications.html', t=t, user_language=user_language)
 
 @admin_bp.route('/notifications/send', methods=['POST'])
 @login_required
@@ -413,8 +428,9 @@ def send_notification():
 @admin_bp.route('/kyc-approvals')
 @login_required
 def kyc_approvals():
+    user_language = get_user_language()
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
 
     search_query = request.args.get('q', '').strip()
@@ -445,7 +461,7 @@ def kyc_approvals():
         print(f"Error fetching KYC approvals: {e}")
         traceback.print_exc()
         flash('Could not load KYC approvals.', 'danger')
-    return render_template('admin_kyc_approvals.html', kyc_users=kyc_users, search_query=search_query, debug_kyc_users=kyc_users)
+    return render_template('admin_kyc_approvals.html', kyc_users=kyc_users, search_query=search_query, debug_kyc_users=kyc_users, t=t, user_language=user_language)
 
 @admin_bp.route('/kyc-approve/<int:user_id>', methods=['POST'])
 @login_required
@@ -528,8 +544,9 @@ def reject_kyc(user_id):
 @admin_bp.route('/admin/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
+    user_language = get_user_language()
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash('You do not have permission to access this page.', 'danger')
+        flash(t('error', user_language), 'danger')
         return redirect(url_for('home'))
 
     # Ensure the admin_settings table exists
@@ -626,6 +643,7 @@ def settings():
                             data_retention, enable_2fa, meeting_day
                         ))
                 conn.commit()
+            session['language_preference'] = language  # Ensure session is updated for immediate effect
             flash('Settings saved successfully!', 'success')
         except Exception as e:
             flash(f'Error saving settings: {e}', 'danger')
@@ -686,7 +704,9 @@ def settings():
     return render_template(
         'admin_settings.html',
         default_settings=default_settings,
-        audit_logs=audit_logs
+        audit_logs=audit_logs,
+        t=t,
+        user_language=user_language
     )
 
 @admin_bp.route('/export/members')
@@ -774,3 +794,27 @@ def export_transactions():
     else:
         flash('Unsupported export format.', 'danger')
         return redirect(url_for('admin.settings'))
+
+@admin_bp.route('/set-language', methods=['POST'])
+def set_language():
+    """
+    Allows the user to switch to any language. Stores the selected language in the session.
+    Expects a 'language' field in the POST form data.
+    Redirects back to the referring page or dashboard.
+    """
+    language = request.form.get('language')
+    valid_codes = ['en', 'zu', 'xh', 'af', 'st', 'ts', 'tn', 'ss', 've', 'nr']
+    if language not in valid_codes:
+        language = 'en'
+    session['language_preference'] = language
+    flash(f'Language switched to {language}.', 'success')
+    return redirect(request.referrer or url_for('admin.dashboard'))
+
+@admin_bp.route('/financial-reports')
+@login_required
+def financial_reports():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('home'))
+    # Placeholder: In the future, fetch and filter report data here
+    return render_template('admin_financial_reports.html')
