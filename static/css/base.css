@@ -162,4 +162,52 @@ body {
 .shake {
   animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
   transform: translate3d(0, 0, 0);
+}
+
+/* Financial Advisor Dark Theme */
+.financial-advisor-dark {
+    background: #181f2a !important;
+    color: #e6f6ff !important;
+}
+.financial-advisor-dark .card, .financial-advisor-dark .rounded, .financial-advisor-dark .border {
+    background: #232c3d !important;
+    border-color: #22304a !important;
+    color: #e6f6ff !important;
+}
+.financial-advisor-dark .text-primary, .financial-advisor-dark .text-cyan {
+    color: #3deaff !important;
+}
+.financial-advisor-dark .text-accent {
+    color: #00e0ff !important;
+}
+.financial-advisor-dark .highlight {
+    color: #00e0ff !important;
+    font-weight: bold;
+}
+.financial-advisor-dark .btn-indigo, .financial-advisor-dark .btn-green {
+    background: linear-gradient(90deg, #00e0ff 0%, #3deaff 100%);
+    color: #181f2a !important;
+    border: none;
+}
+.financial-advisor-dark .btn-indigo:hover, .financial-advisor-dark .btn-green:hover {
+    background: #3deaff;
+    color: #181f2a !important;
+}
+.financial-advisor-dark .border {
+    border-color: #22304a !important;
+}
+.financial-advisor-dark .bg-blue-50, .financial-advisor-dark .bg-green-50, .financial-advisor-dark .bg-orange-50 {
+    background: #232c3d !important;
+}
+.financial-advisor-dark .text-gray-800, .financial-advisor-dark .text-gray-600, .financial-advisor-dark .text-gray-700, .financial-advisor-dark .text-gray-500 {
+    color: #e6f6ff !important;
+}
+.financial-advisor-dark .border-blue-400, .financial-advisor-dark .border-green-400, .financial-advisor-dark .border-orange-400 {
+    border-color: #00e0ff !important;
+}
+.financial-advisor-dark .bg-indigo-50 {
+    background: #22304a !important;
+}
+.financial-advisor-dark .text-indigo-600, .financial-advisor-dark .text-indigo-700 {
+    color: #3deaff !important;
 } 
