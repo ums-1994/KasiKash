@@ -30,6 +30,7 @@ from dateutil import parser as date_parser
 from translations import get_text
 from admin import admin_bp  # Import the blueprint
 from utils import login_required
+from financial_advisor import advisor_bp
 
 # Email handling imports
 import smtplib
@@ -2349,6 +2350,17 @@ def download_stokvel_statement_pdf(stokvel_id):
     doc.build(elements)
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"statement_{stokvel_id}_{period}.pdf", mimetype='application/pdf')
+
+print("Registered endpoints:")
+for rule in app.url_map.iter_rules():
+    print(rule.endpoint, rule)
+
+# ... after app = Flask(__name__) ...
+
+from financial_advisor import advisor_bp
+app.register_blueprint(advisor_bp)
+
+# ... rest of the code ...
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
