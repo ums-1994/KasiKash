@@ -326,4 +326,26 @@ CREATE TABLE IF NOT EXISTS user_settings (
     email_notifications BOOLEAN DEFAULT TRUE,
     sms_notifications BOOLEAN DEFAULT FALSE,
     theme VARCHAR(20) DEFAULT 'light'
+);
+
+-- Table to store uploaded statement text and AI analysis for each user
+CREATE TABLE IF NOT EXISTS financial_statement_analysis (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(64) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    statement_text TEXT,
+    ai_analysis TEXT,
+    transactions_json JSONB,
+    file_name VARCHAR(255)
+    -- Optionally, add FOREIGN KEY (user_id) REFERENCES users(firebase_uid)
+);
+
+-- Table to store chat history for the financial advisor assistant
+CREATE TABLE IF NOT EXISTS financial_advisor_chat (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(64) NOT NULL,
+    statement_analysis_id INTEGER REFERENCES financial_statement_analysis(id),
+    message TEXT,
+    response TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 

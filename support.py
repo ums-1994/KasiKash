@@ -10,6 +10,7 @@ import json
 import warnings
 import plotly.graph_objects as go
 from plotly.offline import plot
+from psycopg2.extras import Json
 
 warnings.filterwarnings("ignore")
 
@@ -118,4 +119,45 @@ def execute_query(operation, query, params=None):
         if cur:
             cur.close()
         if conn:
-            conn.close() 
+            conn.close()
+
+def save_statement_analysis(conn, user_id, statement_text, ai_analysis, transactions, file_name):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO financial_statement_analysis
+            (user_id, statement_text, ai_analysis, transactions_json, file_name)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (user_id, statement_text, ai_analysis, Json(transactions), file_name)
+        )
+        analysis_id = cur.fetchone()[0]
+        conn.commit()
+        return analysis_id
+
+def get_latest_analysis(conn, user_id):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, statement_text, ai_analysis
+            FROM financial_statement_analysis
+            WHERE user_id = %s
+            ORDER BY uploaded_at DESC
+            LIMIT 1
+            """,
+            (user_id,)
+        )
+        return cur.fetchone()  # (id, statement_text, ai_analysis)
+
+def save_advisor_chat(conn, user_id, analysis_id, message, response):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO financial_advisor_chat
+            (user_id, statement_analysis_id, message, response)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (user_id, analysis_id, message, response)
+        )
+        conn.commit() 

@@ -1,6 +1,7 @@
 <div class="space-y-4">
   <div class="font-semibold text-gray-800 mb-2">Upload Financial Data</div>
-  <form id="upload-form" enctype="multipart/form-data" class="space-y-3">
+  <form id="upload-form" action="/financial_advisor/upload" enctype="multipart/form-data" method="post" class="space-y-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="user_id" value="{{ user_id }}">
     <input type="file" name="file" accept=".pdf,.png,.jpg" class="block w-full text-sm text-gray-700 border border-gray-300 rounded p-2" />
     <button type="submit" class="btn btn-indigo w-full mt-2">Analyze Statement</button>
