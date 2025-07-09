@@ -257,10 +257,18 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
             <div class="container mx-auto px-4 py-20 text-center relative z-10">
-                <h1 data-intro="Welcome to KasiKash! This is your dashboard where you can see an overview of your finances." data-step="2">{{ t('welcome_heading', user_language)|replace('_', ' ')|title }}</h1>
-                <p class="text-lg mb-6" data-intro="This message welcomes you to the app and gives you a quick overview." data-step="3">{{ t('welcome_message', user_language)|replace('_', ' ')|title }}</p>
-                <a href="/register" class="btn btn-primary" data-intro="Click here to register and create your account." data-step="4">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a>
-                <a href="/login" class="btn btn-secondary ml-2" data-intro="Already have an account? Click here to log in." data-step="5">{{ t('login', user_language)|replace('_', ' ')|title }}</a>
+                <h1 class="text-5xl md:text-6xl font-extrabold text-gradient glow mb-4" style="letter-spacing: -2px;">Welcome to KasiKash</h1>
+                <div class="max-w-2xl mx-auto mb-6">
+                    <div class="bg-white/10 border border-white/20 rounded-2xl p-6 shadow-lg flex flex-col items-center">
+                        <h2 class="text-2xl md:text-3xl font-bold text-ocean-2 mb-2">Your Digital Stokvel Platform</h2>
+                        <p class="text-lg md:text-xl text-white/90 mb-2">KasiKash empowers you to save, grow, and manage your money together. Create stokvels, set savings goals, make contributions, request payouts, and more—all in one secure, easy-to-use app.</p>
+                        <p class="text-base text-ocean-3">Join a community of savers and unlock your financial potential!</p>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+                    <a href="/register" class="bg-ocean-2 text-black font-bold py-4 px-10 rounded-full text-lg shadow-lg hover:bg-ocean-3 transition duration-300 transform hover:scale-105 btn-glow">Get Started</a>
+                    <a href="/login" class="bg-black/80 text-white font-bold py-4 px-10 rounded-full text-lg shadow-lg hover:bg-ocean-1 transition duration-300 transform hover:scale-105">Login</a>
+                </div>
             </div>
             
             <!-- Wave Shape -->

@@ -33,30 +33,30 @@
         </nav>
         <section class="pt-32 pb-20">
             <div class="container mx-auto px-4 text-center">
-                <h1 class="text-3xl font-bold mb-4">{{ t('contact_heading', user_language) }}</h1>
-                <p class="mb-6">{{ t('contact_message', user_language) }}</p>
+                <h1 class="text-3xl font-bold mb-4">Contact Us</h1>
+                <p class="mb-6">{{ t('contact_message', user_language)|replace('_', ' ')|capitalize }}</p>
                 <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
                     <form action="mailto:support@kasikash.co.za" method="POST" enctype="text/plain" class="space-y-4">
                         <div>
-                            <label for="name">{{ t('name', user_language) }}</label>
-                            <input type="text" id="name" name="name" placeholder="{{ t('your_name', user_language) }}" class="w-full rounded px-3 py-2 text-black" required>
+                            <label for="name">{{ t('name', user_language)|replace('_', ' ')|capitalize }}</label>
+                            <input type="text" id="name" name="name" placeholder="{{ t('your_name', user_language)|replace('_', ' ')|capitalize }}" class="w-full rounded px-3 py-2 text-black" required>
                         </div>
                         <div>
-                            <label for="email">{{ t('email', user_language) }}</label>
-                            <input type="email" id="email" name="email" placeholder="{{ t('your_email', user_language) }}" class="w-full rounded px-3 py-2 text-black" required>
+                            <label for="email">{{ t('email', user_language)|replace('_', ' ')|capitalize }}</label>
+                            <input type="email" id="email" name="email" placeholder="{{ t('your_email', user_language)|replace('_', ' ')|capitalize }}" class="w-full rounded px-3 py-2 text-black" required>
                         </div>
                         <div>
-                            <label for="message">{{ t('message', user_language) }}</label>
-                            <textarea id="message" name="message" placeholder="{{ t('your_message', user_language) }}" rows="4" class="w-full rounded px-3 py-2 text-black" required></textarea>
+                            <label for="message">{{ t('message', user_language)|replace('_', ' ')|capitalize }}</label>
+                            <textarea id="message" name="message" placeholder="{{ t('your_message', user_language)|replace('_', ' ')|capitalize }}" rows="4" class="w-full rounded px-3 py-2 text-black" required></textarea>
                         </div>
-                        <button type="submit" class="bg-ocean-2 text-black font-bold py-2 px-6 rounded-full hover:bg-ocean-3 transition">{{ t('send_message', user_language) }}</button>
+                        <button type="submit" class="bg-ocean-2 text-black font-bold py-2 px-6 rounded-full hover:bg-ocean-3 transition">{{ t('send_message', user_language)|replace('_', ' ')|capitalize }}</button>
                     </form>
                 </div>
                 <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8">
-                    <h2 class="text-2xl font-bold mb-4 text-gradient">{{ t('contact_info', user_language) }}</h2>
-                    <p class="text-lg text-gray-200 mb-2"><i class="fas fa-envelope mr-2"></i>{{ t('support_email', user_language) }}</p>
-                    <p class="text-lg text-gray-200 mb-2"><i class="fas fa-phone mr-2"></i>{{ t('support_phone', user_language) }}</p>
-                    <p class="text-lg text-gray-200"><i class="fas fa-map-marker-alt mr-2"></i>{{ t('support_address', user_language) }}</p>
+                    <h2 class="text-2xl font-bold mb-4 text-gradient">{{ t('contact_info', user_language)|replace('_', ' ')|title }}</h2>
+                    <p class="text-lg text-gray-200 mb-2"><i class="fas fa-envelope mr-2"></i>{{ t('support_email', user_language)|replace('_', ' ')|capitalize }}</p>
+                    <p class="text-lg text-gray-200 mb-2"><i class="fas fa-phone mr-2"></i>{{ t('support_phone', user_language)|replace('_', ' ')|capitalize }}</p>
+                    <p class="text-lg text-gray-200"><i class="fas fa-map-marker-alt mr-2"></i>{{ t('support_address', user_language)|replace('_', ' ')|capitalize }}</p>
                 </div>
             </div>
         </section>
