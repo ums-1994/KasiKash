@@ -1,3 +1,6 @@
+{% import 'translations.html' as translations %}
+{% set t = translations.t %}
+
 {% extends 'base.html' %}
 {% block title %}Dashboard - KasiKash{% endblock %}
 {% block extra_css %}
@@ -432,6 +435,7 @@ body {
 </style>
 {% endblock extra_css %}
 {% block content %}
+
 <!-- Top Welcome Banner -->
 <div class="welcome-banner">
   <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
@@ -497,7 +501,7 @@ body {
         <i class="fas fa-plus-circle" style="color: #34d399; font-size: 1.25rem; margin-right: 0.5rem;"></i>
         <span>Make Contribution</span>
       </a>
-      <a href="{{ url_for('savings_goals') }}" 
+      <a href="{{ url_for('create_savings_goal') }}" 
         style="display: flex; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem; transition: background 0.2s; color: #fff; font-size: 0.875rem; text-decoration: none;"
         onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
         <i class="fas fa-bullseye" style="color: #a78bfa; font-size: 1.25rem; margin-right: 0.5rem;"></i>

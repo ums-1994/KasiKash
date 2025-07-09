@@ -1,3 +1,6 @@
+{% import 'translations.html' as translations %}
+{% set t = translations.t %}
+
 <!DOCTYPE html>
 <html lang="{{ user_language }}">
 <head>
@@ -162,68 +165,81 @@
             border: 2px solid #7B61FF;
             box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
         }
+        
+        /* Bell shake animation for new notifications */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+        
+        .shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Sidebar -->
-    <div class="h-screen w-64 bg-gray-900 flex flex-col justify-between fixed inset-y-0 left-0">
-      <div>
-        <div class="p-6">
-          <span class="text-2xl font-bold text-white">KasiKash</span>
+    <div class="fixed inset-y-0 left-0 w-64 sidebar">
+        <!-- Logo -->
+        <div class="flex items-center justify-center h-16 logo-section">
+            <a href="/" class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-10 w-auto animate-float">
+                <span class="text-2xl logo-text">KasiKash</span>
+            </a>
         </div>
+        <!-- Navigation -->
         <nav class="mt-8">
-          <ul class="space-y-2">
-            <li>
-              <a href="/home" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-home mr-3"></i> Home
-              </a>
-            </li>
-            <li>
-              <a href="/stokvels" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-users mr-3"></i> Stokvels
-              </a>
-            </li>
-            <li>
-              <a href="/contributions" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-dollar-sign mr-3"></i> Contributions
-              </a>
-            </li>
-            <li>
-              <a href="/payouts" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-wallet mr-3"></i> Payouts
-              </a>
-            </li>
-            <li>
-              <a href="/savings_goals" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-chart-line mr-3"></i> Savings Goals
-              </a>
-            </li>
-            <li>
-              <a href="/payment_methods" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-credit-card mr-3"></i> Payment Methods
-              </a>
-            </li>
-            <li>
-              <a href="/settings" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-cog mr-3"></i> Settings
-              </a>
-            </li>
-            {% if session.role == 'admin' %}
-            <li>
-              <a href="/admin/dashboard" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-user-shield mr-3"></i> Admin
-              </a>
-            </li>
-            {% endif %}
-          </ul>
+            <div class="px-4 space-y-2">
+                {% for item in [
+                    {'url': url_for('home'), 'icon': 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'text': t('home', user_language)},
+                    {'url': url_for('stokvels'), 'icon': 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'text': t('stokvels', user_language)},
+                    {'url': url_for('contributions'), 'icon': 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'text': t('contributions', user_language)},
+                    {'url': url_for('payouts'), 'icon': 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'text': t('payouts', user_language)},
+                    {'url': url_for('create_savings_goal'), 'icon': 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'text': t('savings_goals', user_language)},
+                    {'url': url_for('payment_methods'), 'icon': 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'text': t('payment_methods', user_language)},
+                    {'url': url_for('rewards.rewards_card_page'), 'icon': 'M4 6h16M4 10h16M4 14h16M4 18h16', 'text': 'My Rewards Card'},
+                    {'url': url_for('settings'), 'icon': 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'text': t('settings', user_language)}
+                ] %}
+                <a href="{{ item.url }}" class="flex items-center px-4 py-3 rounded-xl nav-link">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ item.icon }}"/>
+                    </svg>
+                    {{ item.text }}
+                </a>
+                {% endfor %}
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-xl nav-link">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    Admin
+                </a>
+                {% endif %}
+                <a href="{{ url_for('settings') }}" class="flex items-center px-4 py-3 rounded-xl nav-link">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Settings
+                </a>
+            </div>
         </nav>
-      </div>
-      <div class="p-6 border-t border-gray-800">
-        <a href="/logout" class="flex items-center text-gray-200 hover:text-white">
-          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">{{ session.user_initials if session.user_initials else 'BN' }}</span>
-          Logout
-        </a>
-      </div>
+        <!-- User Section -->
+        <div class="absolute bottom-0 w-full p-4 user-section">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-xl user-avatar flex items-center justify-center text-white font-bold text-base">
+                        {% set name = username if username else 'User' %}
+                        {% set name_parts = name.split() %}
+                        {% set initials = (name_parts[0][0] ~ (name_parts[1][0] if name_parts|length > 1 else '')) | upper %}
+                        {{ initials }}
+                    </div>
+                </div>
+                <div class="ml-3">
+                    <a href="/logout" class="text-sm logout-link">{{ t('logout', user_language) }}</a>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="ml-64">
         <!-- Top Bar with Profile and Notifications -->
@@ -231,7 +247,7 @@
             <div class="flex items-center justify-between w-full px-6 py-4">
                 <h2 class="text-xl page-title">{% block page_title %}{% endblock %}</h2>
                 <div class="flex items-center space-x-6">
-                    <a href="/notifications" id="notification-icon" class="notification-icon relative">
+                    <a href="{{ url_for('notifications') }}" id="notification-icon" class="notification-icon relative">
                         <i class="fa-solid fa-bell w-6 h-6 text-xl"></i>
                         <span id="notification-badge"
                               class="notification-badge absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white{% if not (notification_count and notification_count > 0) %} hidden{% endif %}">

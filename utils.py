@@ -32,10 +32,10 @@ def create_notification(user_id, message, link_url=None, notification_type='gene
     """Creates and saves an in-app notification for a user."""
     try:
         query = """
-            INSERT INTO notifications (user_id, message, link_url, type)
+            INSERT INTO notifications (user_id, type, message, link_url)
             VALUES (%s, %s, %s, %s)
         """
-        support.execute_query("insert", query, (user_id, message, link_url, notification_type))
+        support.execute_query("insert", query, (user_id, notification_type, message, link_url))
         print(f"Notification created for user {user_id}: '{message}'")
         return True
     except Exception as e:

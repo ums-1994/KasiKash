@@ -326,4 +326,85 @@ CREATE TABLE IF NOT EXISTS user_settings (
     email_notifications BOOLEAN DEFAULT TRUE,
     sms_notifications BOOLEAN DEFAULT FALSE,
     theme VARCHAR(20) DEFAULT 'light'
+);
+
+-- Virtual Reward Card Table
+CREATE TABLE IF NOT EXISTS virtual_reward_cards (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    card_number VARCHAR(16) NOT NULL UNIQUE,
+    balance INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reward Transaction Table
+CREATE TABLE IF NOT EXISTS reward_transactions (
+    id SERIAL PRIMARY KEY,
+    card_id INTEGER NOT NULL REFERENCES virtual_reward_cards(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount INT NOT NULL,
+    transaction_type VARCHAR(50) NOT NULL, -- earn, spend, donate, purchase_airtime, purchase_electricity
+    description TEXT,
+    related_id INTEGER, -- e.g., donation_id, purchase_id, etc.
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Airtime Purchases Table
+CREATE TABLE IF NOT EXISTS airtime_purchases (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount INT NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Electricity Purchases Table
+CREATE TABLE IF NOT EXISTS electricity_purchases (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount INT NOT NULL,
+    meter_number VARCHAR(30) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Donations Table
+CREATE TABLE IF NOT EXISTS donations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount INT NOT NULL,
+    cause VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Marketplace Items Table
+CREATE TABLE IF NOT EXISTS marketplace_items (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price_in_points INT NOT NULL,
+    image_url VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Marketplace Orders Table
+CREATE TABLE IF NOT EXISTS marketplace_orders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    item_id INTEGER NOT NULL REFERENCES marketplace_items(id) ON DELETE CASCADE,
+    quantity INT NOT NULL DEFAULT 1,
+    total_points INT NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reward Rules Table for Admin Configuration
+CREATE TABLE IF NOT EXISTS reward_rules (
+    id SERIAL PRIMARY KEY,
+    rule_name VARCHAR(100) NOT NULL UNIQUE,
+    rule_value VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ); 

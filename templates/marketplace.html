@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Marketplace</h2>
+  <p>Your Points Balance: <strong>{{ balance }}</strong></p>
+  <div class="row">
+    {% for item in items %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        {% if item.image_url %}
+        <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.name }}">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ item.name }}</h5>
+          <p class="card-text">{{ item.description }}</p>
+          <p class="card-text"><strong>{{ item.price }}</strong> points</p>
+          <form method="post" action="/marketplace/buy/{{ item.id }}">
+            <input type="number" name="quantity" value="1" min="1" class="form-control mb-2" style="max-width: 80px; display: inline-block;">
+            <button type="submit" class="btn btn-success">Buy</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <a href="{{ url_for('rewards.marketplace_orders') }}" class="btn btn-primary mt-4">View My Orders</a>
+</div>
+{% endblock %} 

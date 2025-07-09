@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">My Vouchers</h1>
+            <p class="mt-2 text-gray-600">View and manage your airtime and electricity vouchers</p>
+        </div>
+
+        <!-- Vouchers Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for voucher in vouchers %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Voucher Header -->
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ voucher.type.title() }} Voucher</h3>
+                            <p class="text-sm opacity-90">{{ voucher.amount }} Points</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if voucher.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ voucher.status.title() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher Content -->
+                <div class="px-6 py-4">
+                    <!-- Voucher Code -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Voucher Code</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" value="{{ voucher.code }}" readonly 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-mono">
+                            <button onclick="copyToClipboard('{{ voucher.code }}')" 
+                                    class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Voucher Details -->
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex justify-between">
+                            <span>Created:</span>
+                            <span>{{ voucher.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        {% if voucher.used_at %}
+                        <div class="flex justify-between">
+                            <span>Used:</span>
+                            <span>{{ voucher.used_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if voucher.status == 'active' %}
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <button onclick="redeemVoucher('{{ voucher.code }}')" 
+                                class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            Redeem Voucher
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Empty State -->
+        {% if not vouchers %}
+        <div class="text-center py-12">
+            <div class="mx-auto h-12 w-12 text-gray-400">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No vouchers yet</h3>
+            <p class="mt-1 text-sm text-gray-500">Purchase airtime or electricity to get your first voucher!</p>
+            <div class="mt-6">
+                <a href="{{ url_for('rewards.rewards_card_page') }}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    Go to Rewards Card
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.classList.add('bg-green-600');
+        button.classList.remove('bg-blue-600');
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('bg-green-600');
+            button.classList.add('bg-blue-600');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+
+function redeemVoucher(voucherCode) {
+    if (!confirm('Are you sure you want to redeem this voucher? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch(`/rewards/vouchers/redeem/${voucherCode}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload(); // Refresh to show updated status
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while redeeming the voucher.');
+    });
+}
+</script>
+{% endblock %} 

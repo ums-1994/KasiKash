@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto py-8 px-4">
+  <div class="max-w-3xl mx-auto">
+    <!-- Header and Actions -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-1">Virtual Reward Card</h1>
+        <p class="text-gray-300">Earn rewards, track spending, and grow your savings</p>
+      </div>
+      <div class="flex space-x-2 mt-4 md:mt-0">
+        <button class="px-4 py-2 bg-gray-800 text-white rounded-lg flex items-center hover:bg-gray-700"><i class="fas fa-eye mr-2"></i>View Statement</button>
+        <button class="px-4 py-2 bg-gray-800 text-white rounded-lg flex items-center hover:bg-gray-700"><i class="fas fa-cog mr-2"></i>Card Settings</button>
+      </div>
+    </div>
+
+    <!-- Virtual Card -->
+    <div class="w-full max-w-lg mx-auto mb-8">
+      <div class="relative rounded-2xl shadow-xl bg-gradient-to-br from-[#1e2746] to-[#2b3560] p-6 flex flex-col justify-between h-56 text-white overflow-hidden">
+        <!-- Card Brand and Chip -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <div class="text-lg font-bold tracking-wide text-[#4fd1c5]">KASIKASH</div>
+            <div class="text-xs tracking-widest text-gray-300">STOKVEL REWARDS</div>
+          </div>
+          <div class="w-12 h-8 bg-yellow-400 rounded-md flex items-center justify-center shadow-inner">
+            <svg width="28" height="18" viewBox="0 0 28 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="28" height="18" rx="4" fill="#fff" fill-opacity="0.7"/>
+              <rect x="4" y="5" width="20" height="8" rx="2" fill="#e2e8f0"/>
+            </svg>
+          </div>
+        </div>
+        <!-- Card Number -->
+        <div class="mb-4">
+          <div class="text-xs text-gray-400 tracking-widest mb-1">CARD NUMBER</div>
+          <div class="font-mono text-2xl tracking-widest font-semibold">{{ card.card_number or '4532-1234-5678-9012' }}</div>
+        </div>
+        <!-- Balance and Expiry -->
+        <div class="flex items-center justify-between mt-2">
+          <div>
+            <div class="text-xs text-gray-400">AVAILABLE BALANCE</div>
+            <div class="text-2xl font-bold">R{{ '%.2f' % (card.balance or 0) }}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-gray-400">VALID THRU</div>
+            <div class="text-lg font-mono tracking-widest">12/28</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-gray-900 rounded-xl p-4 flex items-center justify-between shadow">
+        <div>
+          <div class="text-xs text-gray-400">Current Balance</div>
+          <div class="text-lg font-bold">R{{ '%.2f' % (card.balance or 0) }}</div>
+        </div>
+        <div class="bg-blue-600 p-2 rounded-full"><i class="fas fa-wallet text-white"></i></div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-4 flex items-center justify-between shadow">
+        <div>
+          <div class="text-xs text-gray-400">Total Earned</div>
+          <div class="text-lg font-bold">R{{ '%.2f' % (total_earned or 0) }}</div>
+        </div>
+        <div class="bg-green-600 p-2 rounded-full"><i class="fas fa-arrow-down text-white"></i></div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-4 flex items-center justify-between shadow">
+        <div>
+          <div class="text-xs text-gray-400">Total Spent</div>
+          <div class="text-lg font-bold">R{{ '%.2f' % (total_spent or 0) }}</div>
+        </div>
+        <div class="bg-purple-600 p-2 rounded-full"><i class="fas fa-shopping-cart text-white"></i></div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-4 flex items-center justify-between shadow">
+        <div>
+          <div class="text-xs text-gray-400">Active Programs</div>
+          <div class="text-lg font-bold">{{ active_programs or 0 }}</div>
+        </div>
+        <div class="bg-yellow-500 p-2 rounded-full"><i class="fas fa-award text-white"></i></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex space-x-2 mb-6" id="reward-tabs">
+      <button id="tab-activity" class="px-4 py-2 rounded-t-lg bg-gray-800 text-white font-semibold focus:outline-none" onclick="showTab('activity')">Recent Activity</button>
+      <button id="tab-rewards" class="px-4 py-2 rounded-t-lg bg-gray-700 text-gray-400 font-semibold focus:outline-none" onclick="showTab('rewards')">Reward Programs</button>
+      <button id="tab-marketplace" class="px-4 py-2 rounded-t-lg bg-gray-700 text-gray-400 font-semibold focus:outline-none" onclick="showTab('marketplace')">Marketplace</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div id="tab-content-activity">
+      <!-- Recent Transactions -->
+      <div class="bg-gray-800 rounded-b-xl shadow p-6 mb-8">
+        <h3 class="text-lg font-semibold mb-4 text-white">Recent Transactions</h3>
+        {% if transactions %}
+        <ul class="divide-y divide-gray-700">
+          {% for tx in transactions %}
+          <li class="flex items-center py-3">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center {% if tx.amount > 0 %}bg-green-600{% else %}bg-red-600{% endif %}">
+              {% if tx.amount > 0 %}
+                <i class="fas fa-arrow-up text-white"></i>
+              {% else %}
+                <i class="fas fa-arrow-down text-white"></i>
+              {% endif %}
+            </div>
+            <div class="ml-4 flex-1">
+              <div class="font-semibold text-white">{{ tx.description }}</div>
+              <div class="text-xs text-gray-400">{{ tx.date.strftime('%Y-%m-%d') if tx.date else '' }}</div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold {% if tx.amount > 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                {% if tx.amount > 0 %}+{% endif %}R{{ '%.2f' % (tx.amount or 0) }}
+              </div>
+              <div class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full inline-block mt-1">{{ tx.type }}</div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-gray-400">No transactions yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="tab-content-rewards" style="display:none;">
+      <!-- Reward Programs Section -->
+      <div class="bg-gray-800 rounded-xl shadow p-6 mb-8">
+        <h3 class="text-lg font-semibold mb-4 text-white">Reward Programs</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Welcome Bonus -->
+          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col justify-between shadow">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-lg font-bold text-white">Welcome Bonus</div>
+              <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold">R15</span>
+            </div>
+            <div class="text-white mb-4">Get R15 when you join KasiKash</div>
+            <a href="/join" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center"><i class="fas fa-gift mr-2"></i>Join now</a>
+          </div>
+          <!-- Friend Referral -->
+          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col justify-between shadow">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-lg font-bold text-white">Friend Referral</div>
+              <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold">R10</span>
+            </div>
+            <div class="text-white mb-4">Earn R10 for each friend you refer</div>
+            <a href="/referral" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center"><i class="fas fa-gift mr-2"></i>Refer friends</a>
+          </div>
+          <!-- Monthly Contributor -->
+          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col justify-between shadow">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-lg font-bold text-white">Monthly Contributor</div>
+              <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold">R5</span>
+            </div>
+            <div class="text-white mb-4">Monthly bonus for contributions of R500+</div>
+            <a href="/contributions" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center"><i class="fas fa-gift mr-2"></i>Contribute R500+</a>
+          </div>
+          <!-- Event Attendance -->
+          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col justify-between shadow">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-lg font-bold text-white">Event Attendance</div>
+              <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold">R5</span>
+            </div>
+            <div class="text-white mb-4">Attend stokvel meetings and events</div>
+            <a href="/events" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center"><i class="fas fa-gift mr-2"></i>View events</a>
+          </div>
+          <!-- Loan Payment Bonus -->
+          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col justify-between shadow">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-lg font-bold text-white">Loan Payment Bonus</div>
+              <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold">R10</span>
+            </div>
+            <div class="text-white mb-4">Bonus for on-time loan payments</div>
+            <a href="/loans" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center"><i class="fas fa-gift mr-2"></i>Pay on time</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-content-marketplace" style="display:none;">
+      <!-- Marketplace Section -->
+      <div class="bg-gray-800 rounded-xl shadow p-6 mb-8">
+        <h3 class="text-lg font-semibold text-white mb-4">Redeem Rewards</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Redeem Rewards -->
+          <div>
+            <div class="bg-gray-900 rounded-xl p-4 mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-semibold text-white">Airtime Voucher</div>
+                <div class="text-blue-400 font-bold">R15</div>
+              </div>
+              <div class="text-gray-300 mb-2">Get R20 airtime voucher</div>
+              <form method="POST" action="/rewards/marketplace/redeem/airtime" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-blue-500 hover:underline">Buy Airtime</button>
+              </form>
+            </div>
+            <div class="bg-gray-900 rounded-xl p-4 mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-semibold text-white">Electricity Voucher</div>
+                <div class="text-blue-400 font-bold">R20</div>
+              </div>
+              <div class="text-gray-300 mb-2">Get R20 electricity voucher</div>
+              <form method="POST" action="/rewards/marketplace/redeem/electricity" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-blue-500 hover:underline">Buy Electricity</button>
+              </form>
+            </div>
+            <div class="bg-gray-900 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-semibold text-white">Community Donation</div>
+                <div class="text-green-400 font-bold">Any Amount</div>
+              </div>
+              <div class="text-gray-300 mb-4">Donate to community fund</div>
+              <form method="POST" action="/rewards/marketplace/redeem/donate" class="space-y-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                  <label for="donation_amount" class="block text-sm font-medium text-gray-300 mb-1">Donation Amount (Points)</label>
+                  <input type="number" id="donation_amount" name="amount" min="1" max="{{ card.balance or 0 }}" 
+                         class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                         placeholder="Enter amount to donate" required>
+                  <p class="text-xs text-gray-400 mt-1">Available balance: {{ card.balance or 0 }} points</p>
+                </div>
+                <div>
+                  <label for="donation_cause" class="block text-sm font-medium text-gray-300 mb-1">Cause (Optional)</label>
+                  <input type="text" id="donation_cause" name="cause" 
+                         class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                         placeholder="e.g., Community Fund, Education, etc.">
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition">
+                  <i class="fas fa-heart mr-2"></i>Donate
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function showTab(tab) {
+        // Tab buttons
+        document.getElementById('tab-activity').className = 'px-4 py-2 rounded-t-lg bg-gray-700 text-gray-400 font-semibold focus:outline-none';
+        document.getElementById('tab-rewards').className = 'px-4 py-2 rounded-t-lg bg-gray-700 text-gray-400 font-semibold focus:outline-none';
+        document.getElementById('tab-marketplace').className = 'px-4 py-2 rounded-t-lg bg-gray-700 text-gray-400 font-semibold focus:outline-none';
+        // Tab content
+        document.getElementById('tab-content-activity').style.display = 'none';
+        document.getElementById('tab-content-rewards').style.display = 'none';
+        document.getElementById('tab-content-marketplace').style.display = 'none';
+        if (tab === 'activity') {
+          document.getElementById('tab-activity').className = 'px-4 py-2 rounded-t-lg bg-gray-800 text-white font-semibold focus:outline-none';
+          document.getElementById('tab-content-activity').style.display = '';
+        } else if (tab === 'rewards') {
+          document.getElementById('tab-rewards').className = 'px-4 py-2 rounded-t-lg bg-gray-800 text-white font-semibold focus:outline-none';
+          document.getElementById('tab-content-rewards').style.display = '';
+        } else if (tab === 'marketplace') {
+          document.getElementById('tab-marketplace').className = 'px-4 py-2 rounded-t-lg bg-gray-800 text-white font-semibold focus:outline-none';
+          document.getElementById('tab-content-marketplace').style.display = '';
+        }
+      }
+    </script>
+  </div>
+</div>
+{% endblock %} 

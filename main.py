@@ -30,6 +30,7 @@ from dateutil import parser as date_parser
 from translations import get_text
 from admin import admin_bp  # Import the blueprint
 from utils import login_required
+from rewards import rewards_bp
 
 # Email handling imports
 import smtplib
@@ -217,9 +218,18 @@ def get_notification_count(user_id):
     if not user_id:
         return 0
     try:
-        query = "SELECT COUNT(*) FROM notifications WHERE user_id = %s AND is_read = FALSE"
-        result = support.execute_query("search", query, (user_id,))
-        return result[0][0] if result else 0
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get user's internal ID
+                cur.execute("SELECT id FROM users WHERE firebase_uid = %s", (user_id,))
+                user_result = cur.fetchone()
+                if not user_result:
+                    return 0
+                
+                internal_user_id = user_result[0]
+                cur.execute("SELECT COUNT(*) FROM notifications WHERE user_id = %s AND is_read = FALSE", (internal_user_id,))
+                result = cur.fetchone()
+                return result[0] if result else 0
     except Exception as e:
         print(f"Error getting notification count: {e}")
         return 0
@@ -227,11 +237,21 @@ def get_notification_count(user_id):
 def create_notification(user_id, message, link_url=None, notification_type='general'):
     """Creates and saves an in-app notification for a user."""
     try:
-        query = """
-            INSERT INTO notifications (user_id, message, link_url, type)
-            VALUES (%s, %s, %s, %s)
-        """
-        support.execute_query("insert", query, (user_id, message, link_url, notification_type))
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get user's internal ID
+                cur.execute("SELECT id FROM users WHERE firebase_uid = %s", (user_id,))
+                user_result = cur.fetchone()
+                if not user_result:
+                    print(f"User not found for firebase_uid: {user_id}")
+                    return False
+                
+                internal_user_id = user_result[0]
+                cur.execute("""
+                    INSERT INTO notifications (user_id, type, message, link_url, created_at)
+                    VALUES (%s, %s, %s, %s, NOW())
+                """, (user_id, notification_type, message, link_url))
+                conn.commit()
         print(f"Notification created for user {user_id}: '{message}'")
         return True
     except Exception as e:
@@ -865,10 +885,7 @@ def stokvels():
                 """, (firebase_uid,))
                 user_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-                # Combine created stokvels with joined stokvels
-                all_stokvels = {s['id']: s for s in user_stokvels}
-
-                # Fetch stokvels created by the current user and merge them in
+                # Fetch stokvels created by the current user
                 cur.execute("""
                     SELECT 
                         s.id, 
@@ -881,21 +898,18 @@ def stokvels():
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date,
-                        'admin' as role
+                        sm.role
                     FROM stokvels s
-                    WHERE s.created_by = %s
-                """, (firebase_uid,))
-                created_stokvels_data = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE s.created_by = %s AND sm.user_id = %s
+                """, (firebase_uid, firebase_uid))
+                created_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-                for stokvel in created_stokvels_data:
-                    if stokvel['id'] not in all_stokvels:
-                        all_stokvels[stokvel['id']] = stokvel
-
-        return render_template('stokvels.html', stokvels=list(all_stokvels.values()))
+        return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels)
     except Exception as e:
         flash(f"An error occurred while loading your stokvels: {e}")
         print(f"Stokvels page error: {e}")
-        return render_template('stokvels.html', stokvels=[])
+        return render_template('stokvels.html', stokvels=[], created_stokvels=[])
 
 @app.route('/create_stokvel', methods=['POST'])
 @login_required
@@ -1075,6 +1089,21 @@ def make_contribution():
                         link = url_for('contributions')
                         create_notification(admin_user_id, message, link_url=link, notification_type='contribution_made')
 
+                    # Create notification for the contributing user
+                    user_message = f"Your contribution of R{amount:.2f} to '{stokvel_name}' has been recorded successfully! You earned {int(amount)} reward points."
+                    create_notification(firebase_uid, user_message, link_url=link, notification_type='contribution_confirmed')
+
+                    # Add reward points for contribution
+                    try:
+                        from rewards import add_reward
+                        # Calculate reward points: 1 point per R1 contributed
+                        reward_points = int(amount)
+                        if reward_points > 0:
+                            add_reward(firebase_uid, reward_points, 'contribution', f'Contribution to {stokvel_name}')
+                    except Exception as e:
+                        print(f"Error adding reward points: {e}")
+                        # Don't fail the contribution if reward points fail
+
                     # Get default payment method for flash message
                     cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s AND is_default = TRUE", (firebase_uid,))
                     payment_method = cur.fetchone()
@@ -1089,7 +1118,7 @@ def make_contribution():
                         elif method_type == 'bank_account':
                             payment_info = f" from your {details.get('bank_name', 'bank')} account"
                         
-            flash(f"Contribution of R{amount:.2f} recorded successfully{payment_info}!")
+            flash(f"Contribution of R{amount:.2f} recorded successfully{payment_info}! You earned {int(amount)} reward points!")
             return redirect(url_for('contributions'))
         except ValueError:
             flash("Amount must be a number.")
@@ -1212,8 +1241,6 @@ def request_payout():
         print(f"Error requesting payout: {e}")
         flash("An error occurred while requesting your payout. Please try again.")
         return redirect('/payouts')
-
-@app.route('/savings_goals')
 @login_required
 def savings_goals():
     firebase_uid = session['user_id']
@@ -1284,6 +1311,7 @@ def create_savings_goal():
                 cur.execute("""
                     INSERT INTO savings_goals (user_id, name, target_amount, current_amount, target_date, status)
                     VALUES (%s, %s, %s, %s, %s, 'active')
+                    RETURNING id
                 """, (firebase_uid, name, target_amount, 0.0, target_date))
                 conn.commit()
 
@@ -1459,8 +1487,36 @@ def join_stokvel(stokvel_id):
                     flash("You are already a member of this stokvel.")
                     return redirect(f'/stokvel/{stokvel_id}/members')
 
+                # Get stokvel name and admin user for notification
+                cur.execute("""
+                    SELECT s.name, sm.user_id 
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE s.id = %s AND sm.role = 'admin'
+                """, (stokvel_id,))
+                stokvel_info = cur.fetchone()
+                
+                # Get the joining user's name
+                cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (user_id,))
+                user_info = cur.fetchone()
+                user_name = user_info[0] if user_info else "A new member"
+
                 cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id) VALUES (%s, %s)", (stokvel_id, user_id))
                 conn.commit()
+                
+                # Create notification for stokvel admin
+                if stokvel_info:
+                    stokvel_name, admin_user_id = stokvel_info
+                    message = f"{user_name} has joined '{stokvel_name}' stokvel."
+                    link = url_for('view_stokvel_members', stokvel_id=stokvel_id)
+                    create_notification(admin_user_id, message, link_url=link, notification_type='member_joined')
+                
+                # Create notification for the joining user
+                if stokvel_info:
+                    stokvel_name = stokvel_info[0]
+                    user_message = f"Welcome! You have successfully joined '{stokvel_name}' stokvel."
+                    create_notification(user_id, user_message, link_url=link, notification_type='joined_stokvel')
+                
         flash("Successfully joined the stokvel!")
         return redirect(f'/stokvel/{stokvel_id}/members')
     except Exception as e:
@@ -1476,8 +1532,36 @@ def leave_stokvel(stokvel_id):
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
+                # Get stokvel name and admin user for notification before leaving
+                cur.execute("""
+                    SELECT s.name, sm.user_id 
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE s.id = %s AND sm.role = 'admin'
+                """, (stokvel_id,))
+                stokvel_info = cur.fetchone()
+                
+                # Get the leaving user's name
+                cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (user_id,))
+                user_info = cur.fetchone()
+                user_name = user_info[0] if user_info else "A member"
+
                 cur.execute("DELETE FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id))
                 conn.commit()
+                
+                # Create notification for stokvel admin
+                if stokvel_info:
+                    stokvel_name, admin_user_id = stokvel_info
+                    message = f"{user_name} has left '{stokvel_name}' stokvel."
+                    link = url_for('view_stokvel_members', stokvel_id=stokvel_id)
+                    create_notification(admin_user_id, message, link_url=link, notification_type='member_left')
+                
+                # Create notification for the leaving user
+                if stokvel_info:
+                    stokvel_name = stokvel_info[0]
+                    user_message = f"You have successfully left '{stokvel_name}' stokvel."
+                    create_notification(user_id, user_message, link_url=url_for('stokvels'), notification_type='left_stokvel')
+                
         flash("Successfully left the stokvel.")
         return redirect('/stokvels')
     except Exception as e:
@@ -1517,16 +1601,16 @@ def notifications():
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Fetch notifications for the user using firebase_uid
                 cur.execute("""
-                    SELECT * FROM notifications 
+                    SELECT id, message, type, is_read, link_url, created_at
+                    FROM notifications 
                     WHERE user_id = %s 
                     ORDER BY created_at DESC
                 """, (user_id,))
                 notifications = cur.fetchall()
-                # Mark notifications as read
-                cur.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s", (user_id,))
-                conn.commit()
-        return render_template('notifications.html', notifications=notifications)
+                
+        return render_template('user_notifications.html', notifications=notifications)
     except Exception as e:
         print(f"Error fetching notifications: {e}")
         flash("Could not load notifications.", "danger")
@@ -1537,8 +1621,11 @@ def notifications():
 def clear_notifications():
     user_id = session['user_id']
     try:
-        support.execute_query("delete", "DELETE FROM notifications WHERE user_id = %s", (user_id,))
-        flash("All notifications cleared.", "success")
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM notifications WHERE user_id = %s", (user_id,))
+                conn.commit()
+                flash("All notifications cleared.", "success")
     except Exception as e:
         print(f"Error clearing notifications: {e}")
         flash("Failed to clear notifications.", "danger")
@@ -1549,6 +1636,79 @@ def clear_notifications():
 def notifications_count():
     count = get_notification_count(session.get('user_id'))
     return jsonify({'count': count})
+
+# API routes for notification management
+@app.route('/api/notifications/<int:notification_id>/read', methods=['POST'])
+@login_required
+def mark_notification_read(notification_id):
+    try:
+        user_id = session.get('user_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE notifications 
+                    SET is_read = TRUE 
+                    WHERE id = %s AND user_id = %s
+                """, (notification_id, user_id))
+                conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error marking notification as read: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/notifications/<int:notification_id>/unread', methods=['POST'])
+@login_required
+def mark_notification_unread(notification_id):
+    try:
+        user_id = session.get('user_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE notifications 
+                    SET is_read = FALSE 
+                    WHERE id = %s AND user_id = %s
+                """, (notification_id, user_id))
+                conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error marking notification as unread: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/notifications/mark-all-read', methods=['POST'])
+@login_required
+def mark_all_notifications_read():
+    try:
+        user_id = session.get('user_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE notifications 
+                    SET is_read = TRUE 
+                    WHERE user_id = %s
+                """, (user_id,))
+                conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error marking all notifications as read: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/notifications/mark-all-unread', methods=['POST'])
+@login_required
+def mark_all_notifications_unread():
+    try:
+        user_id = session.get('user_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE notifications 
+                    SET is_read = FALSE 
+                    WHERE user_id = %s
+                """, (user_id,))
+                conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error marking all notifications as unread: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/payment_methods')
@@ -1629,24 +1789,24 @@ def add_payment_method():
         if not all([card_holder_name, card_number, expiry_date, cvv]):
             flash("All card fields are required.", "danger")
             return redirect(url_for('payment_methods'))
-        details_dict = {
-            "card_holder_name": card_holder_name,
-            "card_number": card_number,
-            "expiry_date": expiry_date,
-            # "cvv": cvv  # Do not persist CVV
-        }
-    elif payment_type == 'bank_account':
-        account_holder_name = request.form.get('account_holder_name')
-        account_number = request.form.get('account_number')
-        bank_name = request.form.get('bank_name')
-        if not all([account_holder_name, account_number, bank_name]):
-            flash("All bank account fields are required.", "danger")
-            return redirect(url_for('payment_methods'))
-        details_dict = {
-            "account_holder_name": account_holder_name,
-            "account_number": account_number,
-            "bank_name": bank_name
-        }
+            details_dict = {
+                "card_holder_name": card_holder_name,
+                "card_number": card_number,
+                "expiry_date": expiry_date,
+                # "cvv": cvv 
+            }
+        elif payment_type == 'bank_account':
+            account_holder_name = request.form.get('account_holder_name')
+            account_number = request.form.get('account_number')
+            bank_name = request.form.get('bank_name')
+            if not all([account_holder_name, account_number, bank_name]):
+                flash("All bank account fields are required.", "danger")
+                return redirect(url_for('payment_methods'))
+            details_dict = {
+                "account_holder_name": account_holder_name,
+                "account_number": account_number,
+                "bank_name": bank_name
+            }
     else:
         flash("Invalid payment type selected.", "danger")
         return redirect(url_for('payment_methods'))
@@ -1664,6 +1824,11 @@ def add_payment_method():
                     VALUES (%s, %s, %s, %s)
                 """, (user_id, payment_type, details_json, is_default))
                 conn.commit()
+
+                # Create notification for payment method addition
+                payment_type_name = "credit card" if payment_type in ['credit_card', 'debit_card'] else "bank account"
+                message = f"Your {payment_type_name} has been added successfully!"
+                create_notification(user_id, message, link_url=url_for('payment_methods'), notification_type='payment_method_added')
 
         flash("Payment method added successfully!", "success")
         return redirect(url_for('payment_methods'))
@@ -1695,6 +1860,10 @@ def set_default_payment_method():
                 """, (method_id, user_id))
                 conn.commit()
 
+                # Create notification for default payment method change
+                message = "Your default payment method has been updated successfully!"
+                create_notification(user_id, message, link_url=url_for('payment_methods'), notification_type='default_payment_updated')
+
         flash("Default payment method updated successfully!")
         return redirect('/payment_methods')
     except Exception as e:
@@ -1720,6 +1889,10 @@ def delete_payment_method():
                     WHERE id = %s AND user_id = %s
                 """, (method_id, user_id))
                 conn.commit()
+
+                # Create notification for payment method deletion
+                message = "Your payment method has been deleted successfully!"
+                create_notification(user_id, message, link_url=url_for('payment_methods'), notification_type='payment_method_deleted')
 
         flash("Payment method deleted successfully!")
         return redirect('/payment_methods')
@@ -1799,6 +1972,11 @@ def update_settings():
     if query and params:
         try:
             support.execute_query("update", query, params)
+            
+            # Create notification for settings update
+            message = "Your settings have been updated successfully!"
+            create_notification(user_id, message, link_url=url_for('settings'), notification_type='settings_updated')
+            
             flash("Settings updated successfully!", "success")
         except Exception as e:
             print(f"Error updating settings for section {form_section}: {e}")
@@ -1912,6 +2090,11 @@ def update_profile():
     
     query = "UPDATE users SET username = %s, phone = %s, date_of_birth = %s, bio = %s, full_name = %s, id_number = %s, address = %s WHERE firebase_uid = %s"
     support.execute_query("update", query, (username, phone, date_of_birth, bio, full_name, id_number, address, user_id))
+    
+    # Create notification for profile update
+    message = "Your profile has been updated successfully!"
+    create_notification(user_id, message, link_url=url_for('profile'), notification_type='profile_updated')
+    
     return redirect(url_for('profile'))
 
 @app.route('/profile/upload_picture', methods=['POST'])
@@ -1932,6 +2115,10 @@ def upload_profile_picture():
         
         # Update user profile picture path in database
         support.execute_query("update", "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s", (filename, user_id))
+        
+        # Create notification for profile picture update
+        message = "Your profile picture has been updated successfully!"
+        create_notification(user_id, message, link_url=url_for('profile'), notification_type='profile_picture_updated')
         
         flash('Profile picture updated successfully!', 'success')
     else:
@@ -1962,6 +2149,10 @@ def upload_kyc():
         # Update user's KYC info in the database and set status to 'pending'
         query = "UPDATE users SET id_document = %s, proof_of_address = %s, kyc_status = 'pending' WHERE firebase_uid = %s"
         support.execute_query("update", query, (id_filename, address_filename, user_id))
+
+        # Create notification for KYC upload
+        message = "Your KYC documents have been uploaded successfully and are pending review."
+        create_notification(user_id, message, link_url=url_for('profile'), notification_type='kyc_uploaded')
 
         flash('KYC documents uploaded successfully. They are now pending review.', 'success')
     except Exception as e:
@@ -2148,14 +2339,7 @@ def rule_based_chat(user_message, user_id, user_name):
                     # Clear the creation state
                     del stokvel_creation_state[user_id]
 
-                    summary = f"""✅ Perfect! I've created your stokvel with these details:
-
-Name: {data['name']}
-Monthly Contribution: R{data['monthly_contribution']:.2f}
-Target Amount: {'R{:.2f}'.format(data['target_amount']) if data.get('target_amount') else 'Not set'}
-Target Date: {data['target_date'].strftime('%Y-%m-%d') if data.get('target_date') else 'Not set'}
-
-To add members, say: add member email@example.com to '{data['name']}'"""
+                    summary = f"Perfect! I've created your stokvel with these details:\n\nName: {data['name']}\nMonthly Contribution: R{data['monthly_contribution']:.2f}\nTarget Amount: {'R{:.2f}'.format(data['target_amount']) if data.get('target_amount') else 'Not set'}\nTarget Date: {data['target_date'].strftime('%Y-%m-%d') if data.get('target_date') else 'Not set'}\n\nTo add members, say: add member email@example.com to '{data['name']}'"
                     return summary
                 else:
                     # Clear the creation state on error
@@ -2349,6 +2533,19 @@ def download_stokvel_statement_pdf(stokvel_id):
     doc.build(elements)
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"statement_{stokvel_id}_{period}.pdf", mimetype='application/pdf')
+
+@app.route('/virtual-rewards')
+def virtual_rewards():
+    # You can add login checks or user context here if needed
+    return render_template('virtual_rewards.html')
+
+# Register the rewards blueprint
+app.register_blueprint(rewards_bp, url_prefix='/rewards')
+
+# Debug: Print all registered endpoints
+print('Registered endpoints:')
+for rule in app.url_map.iter_rules():
+    print(rule.endpoint, rule)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))

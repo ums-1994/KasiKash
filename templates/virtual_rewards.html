@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Rewards Card</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-cyan-200 to-yellow-100 min-h-screen">
+{% extends 'base.html' %}
+{% block title %}Virtual Rewards{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto py-10">
+    <div class="glass-card p-8 mb-8 flex flex-col md:flex-row gap-8 items-center">
+        <div class="flex-1">
+            <h2 class="text-2xl font-bold mb-2 text-blue-900 flex items-center gap-2">
+                <i class="fas fa-gift text-yellow-400"></i> Virtual Reward Card
+            </h2>
+            <div class="text-lg text-blue-800 mb-2">Card Number: <span class="font-mono tracking-widest">KC00000123456</span></div>
+            <div class="flex flex-wrap gap-6 mb-4">
+                <div class="text-green-600 font-semibold">Current Balance: <span class="text-2xl">R245.50</span></div>
+                <div class="text-blue-700">Total Earned: <span class="font-bold">R1,250.00</span></div>
+                <div class="text-pink-700">Total Spent: <span class="font-bold">R1,004.50</span></div>
+            </div>
+            <div class="mb-2 text-sm text-green-700 font-semibold">Status: <span class="bg-green-200 px-2 py-1 rounded">Active (Premium Member)</span></div>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+            <img src="/static/img_1.png" alt="Reward Card" class="w-40 rounded-xl shadow-lg">
+            <div class="text-xs text-gray-500">Your digital rewards card</div>
+        </div>
+    </div>
+
+    <div class="glass-card p-6 mb-8">
+        <h3 class="text-xl font-bold mb-4 text-blue-900">Recent Transactions</h3>
+        <table class="min-w-full text-left text-blue-900 mb-2">
+            <thead>
+                <tr class="bg-blue-100">
+                    <th class="py-2 px-4">Date</th>
+                    <th class="py-2 px-4">Description</th>
+                    <th class="py-2 px-4">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="py-2 px-4">2025-07-01</td><td>Welcome bonus</td><td class="text-green-600">+R50.00</td></tr>
+                <tr><td class="py-2 px-4">2025-07-02</td><td>Monthly contribution bonus</td><td class="text-green-600">+R25.00</td></tr>
+                <tr><td class="py-2 px-4">2025-07-03</td><td>Event attendance</td><td class="text-green-600">+R20.00</td></tr>
+                <tr><td class="py-2 px-4">2025-07-04</td><td>Referral bonus</td><td class="text-green-600">+R100.00</td></tr>
+                <tr><td class="py-2 px-4">2025-07-05</td><td>Marketplace purchase</td><td class="text-red-500">-R60.00</td></tr>
+                <tr><td class="py-2 px-4">2025-07-06</td><td>Event ticket purchase</td><td class="text-red-500">-R40.00</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="glass-card p-6 mb-8">
+        <h3 class="text-xl font-bold mb-4 text-blue-900">Available Reward Programs</h3>
+        <div class="flex flex-wrap gap-3 mb-4">
+            <span class="reward-badge">Welcome Bonus - R50 (one-time)</span>
+            <span class="reward-badge">Friend Referral - R100/referral</span>
+            <span class="reward-badge">Monthly Contributor - R25/month</span>
+            <span class="reward-badge">Event Attendance - R20/event</span>
+            <span class="reward-badge">Loan Payment Bonus - R15</span>
+        </div>
+        <ul class="list-disc pl-6 text-blue-900 text-sm">
+            <li>Welcome Bonus: R50 for joining KasiKash</li>
+            <li>Friend Referral: R100 for each friend referred</li>
+            <li>Monthly Contributor: R25 for monthly contributions over R500</li>
+            <li>Event Attendance: R20 per event attended</li>
+            <li>Loan Payment Bonus: R15 for on-time loan payments</li>
+        </ul>
+    </div>
+
+    <div class="glass-card p-6 mb-8">
+        <h3 class="text-xl font-bold mb-4 text-blue-900">Marketplace & Redemption Options</h3>
+        <div class="flex flex-wrap gap-3 mb-4">
+            <span class="reward-badge">Airtime Voucher<br><span class="text-xs">R20 value for 15 points</span></span>
+            <span class="reward-badge">Grocery Voucher<br><span class="text-xs">R50 value for 40 points</span></span>
+            <span class="reward-badge">Community Donation<br><span class="text-xs">Any amount</span></span>
+        </div>
+        <ul class="list-disc pl-6 text-blue-900 text-sm">
+            <li>Redeem for airtime, groceries, or donate to community projects.</li>
+            <li>Ways to earn more: Refer friends, make regular contributions, attend events and meetings.</li>
+        </ul>
+    </div>
+</div>
+<style>
+    .glass-card {
+        background: rgba(255,255,255,0.12);
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+        backdrop-filter: blur(8px);
+        border: 1.5px solid rgba(255,255,255,0.18);
+    }
+    .reward-badge {
+        background: linear-gradient(90deg, #38bdf8 0%, #fbbf24 100%);
+        color: #fff;
+        border-radius: 999px;
+        padding: 0.3rem 1rem;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+</body>
+</html>

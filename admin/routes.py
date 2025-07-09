@@ -180,7 +180,7 @@ def loan_approvals():
                  cur.execute("""
                     SELECT t.id, u.username, u.email, t.amount, t.status, t.transaction_date, t.description as comment
                     FROM transactions t
-                    LEFT JOIN users u ON t.user_id = u.firebase_uid
+                    LEFT JOIN users u ON t.user_id = u.id
                     WHERE t.type = 'payout' AND t.status = %s
                     ORDER BY t.transaction_date DESC
                 """, (status,))
@@ -405,21 +405,61 @@ def send_notification():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
+    
+    notification_type = request.form.get('notification_type', 'stokvel')  # stokvel, all_users, specific_user
     stokvel = request.form.get('stokvel')
+    specific_user_email = request.form.get('specific_user_email')
     urgent = request.form.get('urgent') == 'on'
     message = request.form.get('message')
-    notif_type = request.form.get('type')
+    notif_type = request.form.get('type', 'admin_notification')
+    
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Find all user_ids in the selected stokvel
-                cur.execute("SELECT user_id FROM stokvel_members WHERE stokvel_id = (SELECT id FROM stokvels WHERE name = %s)", (stokvel,))
-                user_ids = cur.fetchall()
-                for (user_id,) in user_ids:
-                    if user_id:
-                        cur.execute("INSERT INTO notifications (user_id, message, type, is_urgent, created_at) VALUES (%s, %s, %s, %s, NOW())", (user_id, message, notif_type, urgent))
+                user_ids = []
+                
+                if notification_type == 'stokvel' and stokvel:
+                    # Find all firebase_uid in the selected stokvel
+                    cur.execute("""
+                        SELECT u.firebase_uid 
+                        FROM stokvel_members sm
+                        JOIN users u ON sm.user_id = u.id
+                        WHERE sm.stokvel_id = (SELECT id FROM stokvels WHERE name = %s)
+                        AND u.firebase_uid IS NOT NULL
+                    """, (stokvel,))
+                    user_ids = cur.fetchall()
+                elif notification_type == 'all_users':
+                    # Get all firebase_uid
+                    cur.execute("SELECT firebase_uid FROM users WHERE firebase_uid IS NOT NULL")
+                    user_ids = cur.fetchall()
+                elif notification_type == 'specific_user' and specific_user_email:
+                    # Get specific firebase_uid
+                    cur.execute("SELECT firebase_uid FROM users WHERE email = %s AND firebase_uid IS NOT NULL", (specific_user_email,))
+                    user_result = cur.fetchone()
+                    if user_result:
+                        user_ids = [user_result]
+                    else:
+                        user_ids = []
+                else:
+                    user_ids = []
+                
+                # Send notifications to all target users
+                for (firebase_uid,) in user_ids:
+                    if firebase_uid:
+                        cur.execute("""
+                            INSERT INTO notifications (user_id, type, message, created_at) 
+                            VALUES (%s, %s, %s, NOW())
+                        """, (firebase_uid, notif_type, message))
+                
                 conn.commit()
-        flash('Notification sent successfully!', 'success')
+                
+                # Create success message with count
+                recipient_count = len(user_ids)
+                if recipient_count == 1:
+                    flash(f'Notification sent successfully to 1 user!', 'success')
+                else:
+                    flash(f'Notification sent successfully to {recipient_count} users!', 'success')
+                    
     except Exception as e:
         print(f"Error sending notification: {e}")
         flash('Failed to send notification.', 'danger')
@@ -818,3 +858,372 @@ def financial_reports():
         return redirect(url_for('home'))
     # Placeholder: In the future, fetch and filter report data here
     return render_template('admin_financial_reports.html')
+
+@admin_bp.route('/virtual-rewards')
+@login_required
+def virtual_rewards():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('home'))
+    
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get all users with their reward card balances
+                cur.execute("""
+                    SELECT u.id, u.username, u.email, vrc.balance, vrc.card_number
+                    FROM users u
+                    LEFT JOIN virtual_reward_cards vrc ON u.id = vrc.user_id
+                    ORDER BY u.username
+                """)
+                users = cur.fetchall()
+                
+                # Get recent reward transactions
+                cur.execute("""
+                    SELECT rt.amount, rt.transaction_type, rt.description, rt.created_at, u.username, u.email
+                    FROM reward_transactions rt
+                    JOIN users u ON rt.user_id = u.id
+                    ORDER BY rt.created_at DESC
+                    LIMIT 20
+                """)
+                transactions = cur.fetchall()
+                
+                # Get total reward statistics
+                cur.execute("""
+                    SELECT 
+                        COUNT(DISTINCT vrc.user_id) as total_users_with_cards,
+                        COALESCE(SUM(vrc.balance), 0) as total_balance,
+                        COUNT(rt.id) as total_transactions
+                    FROM virtual_reward_cards vrc
+                    LEFT JOIN reward_transactions rt ON vrc.user_id = rt.user_id
+                """)
+                stats = cur.fetchone()
+                
+    except Exception as e:
+        print(f"Error fetching virtual rewards data: {e}")
+        users = []
+        transactions = []
+        stats = (0, 0, 0)
+    
+    return render_template('admin_virtual_rewards.html', 
+                         users=users, 
+                         transactions=transactions, 
+                         stats=stats)
+
+@admin_bp.route('/virtual-rewards/distribute', methods=['POST'])
+@login_required
+def distribute_rewards():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    email = request.form.get('email')
+    reward_type = request.form.get('reward_type')
+    amount = request.form.get('amount')
+    description = request.form.get('description', 'Admin reward distribution')
+    
+    if not all([email, reward_type, amount]):
+        flash('Email, reward type, and amount are required.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    try:
+        amount = int(amount)
+        if amount <= 0:
+            flash('Amount must be positive.', 'danger')
+            return redirect(url_for('admin.virtual_rewards'))
+            
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get user by email
+                cur.execute("SELECT firebase_uid FROM users WHERE email = %s", (email,))
+                user = cur.fetchone()
+                
+                if not user:
+                    flash('User not found.', 'danger')
+                    return redirect(url_for('admin.virtual_rewards'))
+                
+                firebase_uid = user[0]
+                
+                # Import and use the add_reward function from rewards module
+                from rewards import add_reward
+                success = add_reward(firebase_uid, amount, reward_type, description)
+                
+                if success:
+                    flash(f'Successfully distributed {amount} {reward_type} to {email}', 'success')
+                else:
+                    flash('Failed to distribute reward. User may not have a reward card.', 'danger')
+                    
+    except ValueError:
+        flash('Amount must be a valid number.', 'danger')
+    except Exception as e:
+        print(f"Error distributing reward: {e}")
+        flash('An error occurred while distributing the reward.', 'danger')
+    
+    return redirect(url_for('admin.virtual_rewards'))
+
+@admin_bp.route('/virtual-rewards/bulk-distribute', methods=['POST'])
+@login_required
+def bulk_distribute_rewards():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    reward_type = request.form.get('reward_type')
+    amount = request.form.get('amount')
+    description = request.form.get('description', 'Bulk admin reward distribution')
+    user_filter = request.form.get('user_filter', 'all')  # all, active, new_users
+    
+    if not all([reward_type, amount]):
+        flash('Reward type and amount are required.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    try:
+        amount = int(amount)
+        if amount <= 0:
+            flash('Amount must be positive.', 'danger')
+            return redirect(url_for('admin.virtual_rewards'))
+            
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Build query based on filter
+                if user_filter == 'active':
+                    # Users with recent activity (last 30 days)
+                    cur.execute("""
+                        SELECT DISTINCT u.id 
+                        FROM users u
+                        JOIN reward_transactions rt ON u.id = rt.user_id
+                        WHERE rt.created_at >= CURRENT_DATE - INTERVAL '30 days'
+                    """)
+                elif user_filter == 'new_users':
+                    # Users who joined in last 30 days
+                    cur.execute("""
+                        SELECT id FROM users 
+                        WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+                    """)
+                else:
+                    # All users
+                    cur.execute("SELECT id FROM users")
+                
+                users = cur.fetchall()
+                success_count = 0
+                
+                from rewards import add_reward
+                for user in users:
+                    # Get firebase_uid for the user
+                    cur.execute("SELECT firebase_uid FROM users WHERE id = %s", (user[0],))
+                    firebase_uid_result = cur.fetchone()
+                    if firebase_uid_result and firebase_uid_result[0]:
+                        if add_reward(firebase_uid_result[0], amount, reward_type, description):
+                            success_count += 1
+                
+                flash(f'Successfully distributed {amount} {reward_type} to {success_count} users', 'success')
+                    
+    except ValueError:
+        flash('Amount must be a valid number.', 'danger')
+    except Exception as e:
+        print(f"Error bulk distributing rewards: {e}")
+        flash('An error occurred during bulk distribution.', 'danger')
+    
+    return redirect(url_for('admin.virtual_rewards'))
+
+@admin_bp.route('/virtual-rewards/analytics')
+@login_required
+def reward_analytics():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Monthly reward distribution
+                cur.execute("""
+                    SELECT 
+                        DATE_TRUNC('month', created_at) as month,
+                        SUM(amount) as total_amount,
+                        COUNT(*) as transaction_count
+                    FROM reward_transactions
+                    WHERE amount > 0
+                    GROUP BY DATE_TRUNC('month', created_at)
+                    ORDER BY month DESC
+                    LIMIT 12
+                """)
+                monthly_data = cur.fetchall()
+                
+                # Top reward earners
+                cur.execute("""
+                    SELECT u.username, u.email, SUM(rt.amount) as total_earned
+                    FROM reward_transactions rt
+                    JOIN users u ON rt.user_id = u.id
+                    WHERE rt.amount > 0
+                    GROUP BY u.id, u.username, u.email
+                    ORDER BY total_earned DESC
+                    LIMIT 10
+                """)
+                top_earners = cur.fetchall()
+                
+                # Reward type distribution
+                cur.execute("""
+                    SELECT transaction_type, COUNT(*) as count, SUM(amount) as total
+                    FROM reward_transactions
+                    GROUP BY transaction_type
+                    ORDER BY total DESC
+                """)
+                type_distribution = cur.fetchall()
+                
+    except Exception as e:
+        print(f"Error fetching reward analytics: {e}")
+        monthly_data = []
+        top_earners = []
+        type_distribution = []
+    
+    return render_template('admin_reward_analytics.html', 
+                         monthly_data=monthly_data,
+                         top_earners=top_earners,
+                         type_distribution=type_distribution)
+
+@admin_bp.route('/virtual-rewards/export')
+@login_required
+def export_reward_data():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    export_type = request.args.get('type', 'transactions')
+    export_format = request.args.get('format', 'csv')
+    
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                if export_type == 'transactions':
+                    cur.execute("""
+                        SELECT rt.created_at, u.username, u.email, rt.transaction_type, 
+                               rt.description, rt.amount
+                        FROM reward_transactions rt
+                        JOIN users u ON rt.user_id = u.id
+                        ORDER BY rt.created_at DESC
+                    """)
+                    data = cur.fetchall()
+                    columns = ['Date', 'Username', 'Email', 'Type', 'Description', 'Amount']
+                    filename = 'reward_transactions'
+                elif export_type == 'balances':
+                    cur.execute("""
+                        SELECT u.username, u.email, vrc.balance, vrc.card_number
+                        FROM users u
+                        LEFT JOIN virtual_reward_cards vrc ON u.id = vrc.user_id
+                        ORDER BY vrc.balance DESC
+                    """)
+                    data = cur.fetchall()
+                    columns = ['Username', 'Email', 'Balance', 'Card Number']
+                    filename = 'user_balances'
+                else:
+                    flash('Invalid export type.', 'danger')
+                    return redirect(url_for('admin.virtual_rewards'))
+        
+        if export_format == 'csv':
+            def generate():
+                yield ','.join(columns) + '\n'
+                for row in data:
+                    yield ','.join([str(item) if item else '' for item in row]) + '\n'
+            
+            return Response(generate(), mimetype='text/csv',
+                          headers={"Content-Disposition": f"attachment;filename={filename}.csv"})
+        
+        elif export_format == 'excel':
+            df = pd.DataFrame(data, columns=columns)
+            output = BytesIO()
+            df.to_excel(output, index=False, engine='openpyxl')
+            output.seek(0)
+            return Response(output.getvalue(), 
+                          mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                          headers={"Content-Disposition": f"attachment;filename={filename}.xlsx"})
+        
+        else:
+            flash('Unsupported export format.', 'danger')
+            
+    except Exception as e:
+        print(f"Error exporting reward data: {e}")
+        flash('An error occurred while exporting data.', 'danger')
+    
+    return redirect(url_for('admin.virtual_rewards'))
+
+@admin_bp.route('/virtual-rewards/rules', methods=['GET', 'POST'])
+@login_required
+def reward_rules():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    if request.method == 'POST':
+        # Save reward rules
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    # Check if table exists, create if not
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS reward_rules (
+                            id SERIAL PRIMARY KEY,
+                            rule_name VARCHAR(100) NOT NULL UNIQUE,
+                            rule_value VARCHAR(255) NOT NULL,
+                            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """)
+                    
+                    # Clear existing rules
+                    cur.execute("DELETE FROM reward_rules")
+                    
+                    # Insert new rules
+                    rules = [
+                        ('contribution_multiplier', request.form.get('contribution_multiplier', '1')),
+                        ('welcome_bonus', request.form.get('welcome_bonus', '0')),
+                        ('referral_bonus', request.form.get('referral_bonus', '0')),
+                        ('monthly_bonus', request.form.get('monthly_bonus', '0')),
+                        ('event_attendance_bonus', request.form.get('event_attendance_bonus', '0')),
+                        ('loan_payment_bonus', request.form.get('loan_payment_bonus', '0')),
+                    ]
+                    
+                    for rule_name, rule_value in rules:
+                        cur.execute("""
+                            INSERT INTO reward_rules (rule_name, rule_value, created_at)
+                            VALUES (%s, %s, CURRENT_TIMESTAMP)
+                        """, (rule_name, rule_value))
+                    
+                    conn.commit()
+                    flash('Reward rules updated successfully!', 'success')
+                    
+        except Exception as e:
+            print(f"Error updating reward rules: {e}")
+            flash('An error occurred while updating rules.', 'danger')
+    
+    # Load current rules
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Check if table exists first
+                cur.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_name = 'reward_rules'
+                    );
+                """)
+                table_exists = cur.fetchone()[0]
+                
+                if table_exists:
+                    cur.execute("SELECT rule_name, rule_value FROM reward_rules")
+                    rules = dict(cur.fetchall())
+                else:
+                    rules = {}
+    except Exception as e:
+        print(f"Error loading reward rules: {e}")
+        rules = {}
+    
+    return render_template('admin_reward_rules.html', rules=rules)
+
+@admin_bp.route('/member-rewards')
+@login_required
+def member_rewards():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('home'))
+    return render_template('admin_member_rewards.html')

@@ -139,6 +139,7 @@
                 <a href="{{ url_for('admin.memberships') }}" class="{% if request.endpoint == 'admin.memberships' %}active{% endif %}"><i class="fas fa-medal"></i> Membership Plans</a>
                 <a href="{{ url_for('admin.notifications') }}" class="{% if request.endpoint == 'admin.notifications' %}active{% endif %}"><i class="fas fa-bell"></i> Notifications</a>
                 <a href="{{ url_for('admin.kyc_approvals') }}" class="{% if request.endpoint == 'admin.kyc_approvals' %}active{% endif %}"><i class="fas fa-id-card"></i> KYC Approvals</a>
+                <a href="{{ url_for('admin.virtual_rewards') }}" class="{% if request.endpoint == 'admin.virtual_rewards' %}active{% endif %}"><i class="fas fa-gift"></i> Virtual Rewards</a>
                 <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </nav>

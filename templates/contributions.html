@@ -163,8 +163,9 @@
                                 class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                             Cancel
                         </button>
-                        <button type="submit"
-                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        <button type="submit" id="submitBtn"
+                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                                onclick="this.disabled=true; this.textContent='Processing...';">
                             Make Contribution
                         </button>
                     </div>
@@ -202,5 +203,52 @@ function downloadStatement() {
     // Redirect to the statement download page with the period as a query parameter
     window.location.href = `/stokvel/${stokvelId}/statement/download?period=${period}`;
 }
-</script>
+
+// Prevent double form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action*="make_contribution"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn.disabled) {
+                e.preventDefault();
+                return false;
+            }
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+        });
+    }
+});
+
+        // Update notification count after successful contribution
+        function updateNotificationCount() {
+            fetch('/notifications/count')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('notification-badge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.remove('hidden');
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.classList.add('hidden');
+                            badge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(err => console.error('Error updating notification count:', err));
+        }
+
+        // Update notification count after form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const contributionForm = document.getElementById('contributionForm');
+            if (contributionForm) {
+                contributionForm.addEventListener('submit', function() {
+                    // Update notification count after a short delay to allow server processing
+                    setTimeout(updateNotificationCount, 1000);
+                });
+            }
+        });
+    </script>
 {% endblock %} 
