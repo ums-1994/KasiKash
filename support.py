@@ -121,34 +121,51 @@ def execute_query(operation, query, params=None):
         if conn:
             conn.close()
 
-def save_statement_analysis(conn, user_id, statement_text, ai_analysis, transactions, file_name):
+def save_statement_analysis(conn, user_id, statement_text, ai_analysis, transactions, file_name, ai_budget_plan=None):
     with conn.cursor() as cur:
         cur.execute(
             """
             INSERT INTO financial_statement_analysis
-            (user_id, statement_text, ai_analysis, transactions_json, file_name)
-            VALUES (%s, %s, %s, %s, %s)
+            (user_id, statement_text, ai_analysis, transactions_json, file_name, ai_budget_plan)
+            VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
-            (user_id, statement_text, ai_analysis, Json(transactions), file_name)
+            (user_id, statement_text, ai_analysis, Json(transactions), file_name, ai_budget_plan)
         )
         analysis_id = cur.fetchone()[0]
         conn.commit()
         return analysis_id
 
-def get_latest_analysis(conn, user_id):
+def get_latest_analysis(conn, user_id, with_budget=False):
     with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT id, statement_text, ai_analysis
-            FROM financial_statement_analysis
-            WHERE user_id = %s
-            ORDER BY uploaded_at DESC
-            LIMIT 1
-            """,
-            (user_id,)
-        )
-        return cur.fetchone()  # (id, statement_text, ai_analysis)
+        cur.execute("SELECT user_id FROM financial_statement_analysis")
+        all_user_ids = cur.fetchall()
+        print(f"[DEBUG] All user_ids in financial_statement_analysis: {all_user_ids}", flush=True)
+        print(f"[DEBUG] get_latest_analysis query param: {user_id}", flush=True)
+        if with_budget:
+            cur.execute(
+                """
+                SELECT id, statement_text, ai_analysis, transactions_json, ai_budget_plan
+                FROM financial_statement_analysis
+                WHERE user_id = %s
+                ORDER BY uploaded_at DESC
+                LIMIT 1
+                """,
+                (user_id,)
+            )
+            return cur.fetchone()  # (id, statement_text, ai_analysis, transactions_json, ai_budget_plan)
+        else:
+            cur.execute(
+                """
+                SELECT id, statement_text, ai_analysis
+                FROM financial_statement_analysis
+                WHERE user_id = %s
+                ORDER BY uploaded_at DESC
+                LIMIT 1
+                """,
+                (user_id,)
+            )
+            return cur.fetchone()  # (id, statement_text, ai_analysis)
 
 def save_advisor_chat(conn, user_id, analysis_id, message, response):
     with conn.cursor() as cur:

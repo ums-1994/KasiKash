@@ -29,6 +29,7 @@
 </div>
 <script src="{{ url_for('static', filename='js/financial_advisor.js') }}"></script>
 <script>
+window.USER_ID = "{{ user_id|e }}";
 // Simple tab switching
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');

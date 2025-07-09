@@ -10,6 +10,17 @@ import PyPDF2
 from openai import OpenAI
 from support import db_connection, save_statement_analysis, get_latest_analysis, save_advisor_chat
 
+# Delete old financial advisor data on app startup
+try:
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM financial_advisor_chat;")
+            cur.execute("DELETE FROM financial_statement_analysis;")
+        conn.commit()
+    print("[INFO] Old financial advisor data deleted on startup.")
+except Exception as e:
+    print(f"[ERROR] Failed to delete old financial advisor data: {e}")
+
 advisor_bp = Blueprint('advisor', __name__, url_prefix='/financial_advisor')
 
 @advisor_bp.route('/', methods=['GET'])
@@ -18,29 +29,45 @@ def dashboard():
     user_id = session.get('user_id')
     return render_template('financial_advisor.html', user_id=user_id)
 
+@advisor_bp.route('/debug_session', methods=['GET'])
+def debug_session():
+    from flask import session
+    return jsonify({
+        'session_user_id': session.get('user_id'),
+        'session': dict(session)
+    })
+
 @advisor_bp.route('/chat', methods=['POST'])
 def chat():
     data = request.json
     user_msg = data.get('message')
     user_id = data.get('user_id')
-
+    print(f"[DEBUG] user_id from request: {data.get('user_id')}", flush=True)
+    print(f"[DEBUG] user_id from session: {session.get('user_id')}", flush=True)
+    if user_id:
+        user_id = user_id.strip()
+    else:
+        user_id = session.get('user_id', '').strip()
+    print(f"[DEBUG] /chat user_id: {user_id}", flush=True)
     # Fetch latest analysis from database for context
     from flask import g
     with db_connection() as conn:
-        analysis = get_latest_analysis(conn, user_id)
+        analysis = get_latest_analysis(conn, user_id, with_budget=True)
+    print(f"[DEBUG] get_latest_analysis result: {analysis}", flush=True)
     if not analysis:
-        return jsonify({'error': 'Please upload a statement first to provide context for your question.'}), 400
-    analysis_id, statement_text, analysis_text = analysis
-
+        return jsonify({'error': 'No financial analysis found for your account. Please upload a statement and ensure it is processed successfully before chatting.'}), 400
+    analysis_id, statement_text, analysis_text, transactions_json, ai_budget_plan = analysis
     # Build context-aware prompt
     context_prompt = (
-        "You are a financial advisor. Here is the user's bank statement and previous analysis:\n\n"
-        f"Statement:\n{statement_text}\n\n"
-        f"Previous AI Analysis:\n{analysis_text}\n\n"
+        "You are a financial advisor. Here is the user's bank statement, previous analysis, parsed transactions, and budget plan. "
+        "Use ALL the data to answer the user's question and provide actionable, detailed advice.\n\n"
+        f"Statement (raw data):\n{statement_text}\n\n"
+        f"Previous AI Financial Analysis & Advice:\n{analysis_text}\n\n"
+        f"Parsed Transactions:\n{transactions_json}\n\n"
+        f"Budget Plan:\n{ai_budget_plan}\n\n"
         f"User's follow-up question/request:\n{user_msg}"
     )
-
-    # Use OpenRouter API for Google Gemma 2 9B model (same as main chatbot)
+    # Save the full prompt and AI response for traceability
     api_key = current_app.config.get('OPENROUTER_API_KEY') or os.getenv("OPENROUTER_API_KEY")
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -72,16 +99,19 @@ def chat():
     except Exception as e:
         print(f"OpenRouter API error: {e}", flush=True)
         return jsonify({'error': f'AI service error: {str(e)}'}), 500
-
-    # Save chat history to database
+    # Save chat history to database (including prompt and response)
     with db_connection() as conn:
-        save_advisor_chat(conn, user_id, analysis_id, user_msg, assistant_msg)
-
+        save_advisor_chat(conn, user_id, analysis_id, context_prompt, assistant_msg)
     return jsonify(response=assistant_msg)
 
 @advisor_bp.route('/upload', methods=['POST'])
 def upload_statement():
     user_id = request.form.get('user_id')
+    if user_id:
+        user_id = user_id.strip()
+    else:
+        user_id = ''
+    print(f"[DEBUG] /upload user_id: {user_id}", flush=True)
     file = request.files.get('file')
 
     # Debug prints
@@ -119,7 +149,7 @@ def upload_statement():
         img = Image.open(io.BytesIO(file.read()))
         text = pytesseract.image_to_string(img)
 
-    # Prompt for Google Gemma 2 9B model
+    # Prompt for Google Gemma 2 9B model (analysis)
     prompt = (
         "Below is a bank statement. Please analyze the user's financial situation, "
         "summarize key spending and savings patterns, and provide professional, actionable financial advice.\n"
@@ -132,17 +162,18 @@ def upload_statement():
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-    payload = {
-        "model": "google/gemma-2-9b-it",
-        "messages": [
-            {"role": "user", "content": prompt}
-        ]
-    }
+    ai_analysis = None
+    ai_budget_plan = None
     try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
-            json=payload
+            json={
+                "model": "google/gemma-2-9b-it",
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ]
+            }
         )
         response.raise_for_status()
         result = response.json()
@@ -150,7 +181,25 @@ def upload_statement():
             print(f"OpenRouter API error: {result}", flush=True)
             return jsonify({'error': 'AI service did not return a valid response. Please try again later.'}), 502
         ai_analysis = result['choices'][0]['message']['content']
-        # Store context in session for follow-up questions
+        # Now, request a structured budget plan
+        budget_prompt = (
+            "Based on the following bank statement and your previous analysis, create a structured, detailed budget plan as a clear, readable text.\n"
+            f"Statement:\n{text}\n\nPrevious Analysis:\n{ai_analysis}"
+        )
+        budget_response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json={
+                "model": "google/gemma-2-9b-it",
+                "messages": [
+                    {"role": "user", "content": budget_prompt}
+                ]
+            }
+        )
+        budget_response.raise_for_status()
+        budget_result = budget_response.json()
+        if 'choices' in budget_result:
+            ai_budget_plan = budget_result['choices'][0]['message']['content']
         session['advisor_statement_text'] = text
         session['advisor_analysis'] = ai_analysis
     except requests.exceptions.HTTPError as e:
@@ -161,7 +210,6 @@ def upload_statement():
     except Exception as e:
         print(f"OpenRouter API error: {e}", flush=True)
         return jsonify({'error': f'AI service error: {str(e)}'}), 500
-
     # Optionally, still parse transactions for your own records
     transactions = []
     for line in text.splitlines():
@@ -173,19 +221,14 @@ def upload_statement():
             amount = float(amt_str.replace('R','').replace(',',''))
         except: continue
         desc = ' '.join(desc_parts)
-        tx = Transaction(user_id=user_id, date=date, description=desc, amount=amount, category='Uncategorized')
-        db.session.add(tx)
         transactions.append({'date': date_str, 'description': desc, 'amount': amount})
-    db.session.commit()
-
     alerts = []
     alerts.append("⚠️ You've exceeded your food budget this month.")
-
     # Save analysis to database and store analysis_id in session
     with db_connection() as conn:
         analysis_id = save_statement_analysis(
-            conn, user_id, text, ai_analysis, transactions, file.filename
+            conn, user_id, text, ai_analysis, transactions, file.filename, ai_budget_plan
         )
+    print(f"[DEBUG] /upload saved analysis_id: {analysis_id} for user_id: {user_id}", flush=True)
     session['advisor_analysis_id'] = analysis_id
-
-    return jsonify(success=True, transactions=transactions, alerts=alerts, analysis=ai_analysis) 
+    return jsonify(success=True, transactions=transactions, alerts=alerts, analysis=ai_analysis, budget_plan=ai_budget_plan) 

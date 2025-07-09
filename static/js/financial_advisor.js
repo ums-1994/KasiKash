@@ -2,13 +2,25 @@
 
 // --- Chat Functionality ---
 async function sendChat(msg) {
-  const res = await fetch('/financial_advisor/chat', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ user_id: window.USER_ID || '', message: msg })
-  });
-  const data = await res.json();
-  return data.response;
+  try {
+    const res = await fetch('/financial_advisor/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ user_id: window.USER_ID || '', message: msg })
+    });
+    if (!res.ok) {
+      let errorMsg = 'An error occurred.';
+      try {
+        const errData = await res.json();
+        errorMsg = errData.error || errorMsg;
+      } catch (e) {}
+      throw new Error(errorMsg);
+    }
+    const data = await res.json();
+    return data.response;
+  } catch (err) {
+    return '[Error] ' + (err.message || 'Failed to contact assistant.');
+  }
 }
 
 function appendMessage(who, text) {
@@ -29,8 +41,17 @@ function initChat() {
     if (!txt) return;
     appendMessage('You', txt);
     input.value = '';
+    sendBtn.disabled = true;
+    const box = document.getElementById('messages');
+    const loadingEl = document.createElement('div');
+    loadingEl.className = 'text-left text-gray-400';
+    loadingEl.textContent = 'Advisor is typing...';
+    box.appendChild(loadingEl);
+    box.scrollTop = box.scrollHeight;
     const reply = await sendChat(txt);
+    box.removeChild(loadingEl);
     appendMessage('Advisor', reply);
+    sendBtn.disabled = false;
   };
   input.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') sendBtn.click();

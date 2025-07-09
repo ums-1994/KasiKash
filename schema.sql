@@ -210,10 +210,10 @@ EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column firebase_uid already exists in users.';
 END $$;
 
--- Gamification tables
+-- Gamification tables (updated for Firebase UID)
 CREATE TABLE IF NOT EXISTS user_points (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
+    user_id VARCHAR(128) REFERENCES users(firebase_uid),
     points INT DEFAULT 0
 );
 
@@ -226,27 +226,27 @@ CREATE TABLE IF NOT EXISTS badges (
 
 CREATE TABLE IF NOT EXISTS user_badges (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
+    user_id VARCHAR(128) REFERENCES users(firebase_uid),
     badge_id INT REFERENCES badges(id),
     earned_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS streaks (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
+    user_id VARCHAR(128) REFERENCES users(firebase_uid),
     current_streak INT DEFAULT 0,
     last_contribution_date DATE
 );
 
 CREATE TABLE IF NOT EXISTS user_achievements (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id),
+    user_id VARCHAR(128) NOT NULL REFERENCES users(firebase_uid),
     achievement_type VARCHAR(50) NOT NULL,
     achieved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS user_levels (
-    user_id INT PRIMARY KEY REFERENCES users(id),
+    user_id VARCHAR(128) PRIMARY KEY REFERENCES users(firebase_uid),
     level INT DEFAULT 1,
     experience INT DEFAULT 0,
     last_level_up TIMESTAMP
@@ -264,12 +264,33 @@ CREATE TABLE IF NOT EXISTS challenges (
 );
 
 CREATE TABLE IF NOT EXISTS user_challenges (
-    user_id INT REFERENCES users(id),
+    user_id VARCHAR(128) REFERENCES users(firebase_uid),
     challenge_id INT REFERENCES challenges(id),
     progress DECIMAL(12,2) DEFAULT 0,
     completed BOOLEAN DEFAULT false,
     completed_at TIMESTAMP,
     PRIMARY KEY (user_id, challenge_id)
+);
+
+-- Chatbot and advisor chat tables (updated for Firebase UID)
+CREATE TABLE IF NOT EXISTS chat_history (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) REFERENCES users(firebase_uid),
+    message TEXT NOT NULL,
+    response TEXT NOT NULL,
+    is_flagged BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS chatbot_preferences (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) REFERENCES users(firebase_uid),
+    language VARCHAR(10) DEFAULT 'en',
+    notification_enabled BOOLEAN DEFAULT TRUE,
+    quick_tips_enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id)
 );
 
 -- Add savings_goal_id to transactions if not already present
@@ -349,3 +370,12 @@ CREATE TABLE IF NOT EXISTS financial_advisor_chat (
     response TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 
+
+ALTER TABLE financial_statement_analysis ADD COLUMN IF NOT EXISTS ai_budget_plan TEXT; 
+
+-- Optional/legacy tables (uncomment if needed)
+-- CREATE TABLE IF NOT EXISTS expenses (...);
+-- CREATE TABLE IF NOT EXISTS user_expenses (...);
+-- CREATE TABLE IF NOT EXISTS payouts (...);
+-- CREATE TABLE IF NOT EXISTS loan_requests (...);
+-- CREATE TABLE IF NOT EXISTS loan_repayments (...); 
