@@ -226,7 +226,7 @@
     
     <div class="content-wrapper">
         <!-- Navbar -->
-        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300">
+        <nav class="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 transition-all duration-300" data-intro="This is the main navigation bar. Use it to access login, pricing, features, contact, and about pages." data-step="1">
             <div class="container mx-auto flex justify-between items-center">
                 <a href="/" class="flex items-center space-x-3">
                     <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto animate-float">
@@ -257,10 +257,10 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
             <div class="container mx-auto px-4 py-20 text-center relative z-10">
-                <h1 class="text-4xl font-bold mb-4">{{ t('welcome_heading', user_language)|replace('_', ' ')|title }}</h1>
-                <p class="text-lg mb-6">{{ t('welcome_message', user_language)|replace('_', ' ')|title }}</p>
-                <a href="/register" class="btn btn-primary">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a>
-                <a href="/login" class="btn btn-secondary ml-2">{{ t('login', user_language)|replace('_', ' ')|title }}</a>
+                <h1 data-intro="Welcome to KasiKash! This is your dashboard where you can see an overview of your finances." data-step="2">{{ t('welcome_heading', user_language)|replace('_', ' ')|title }}</h1>
+                <p class="text-lg mb-6" data-intro="This message welcomes you to the app and gives you a quick overview." data-step="3">{{ t('welcome_message', user_language)|replace('_', ' ')|title }}</p>
+                <a href="/register" class="btn btn-primary" data-intro="Click here to register and create your account." data-step="4">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a>
+                <a href="/login" class="btn btn-secondary ml-2" data-intro="Already have an account? Click here to log in." data-step="5">{{ t('login', user_language)|replace('_', ' ')|title }}</a>
             </div>
             
             <!-- Wave Shape -->
@@ -277,7 +277,7 @@
         <section id="features" class="py-20 bg-black bg-opacity-50 relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('why_choose_heading', user_language)|replace('_', ' ')|title }}</h2>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient" data-intro="These are some of the reasons to choose KasiKash. Explore the features below!" data-step="6">{{ t('why_choose_heading', user_language)|replace('_', ' ')|title }}</h2>
                     <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('why_choose_message', user_language)|replace('_', ' ')|title }}</p>
                 </div>
                 
@@ -317,7 +317,7 @@
                     <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('our_features_message', user_language)|replace('_', ' ')|title }}</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" data-intro="Explore these main features of KasiKash. Each card represents a powerful tool for your financial journey!" data-step="7">
                     <!-- Smart Savings -->
                     <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-2 transition-all duration-300">
                         <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
@@ -451,7 +451,7 @@
         </section>
 
         <!-- CTA Section -->
-        <section class="py-20 rainbow-gradient relative overflow-hidden">
+        <section class="py-20 rainbow-gradient relative overflow-hidden" data-intro="This section encourages you to start your free trial and join the KasiKash community." data-step="8">
             <div class="container mx-auto px-4 text-center">
                 <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">{{ t('cta_heading', user_language)|replace('_', ' ')|title }}</h2>
                 <p class="text-xl text-black mb-8 max-w-3xl mx-auto">{{ t('cta_message', user_language)|replace('_', ' ')|title }}</p>
@@ -462,7 +462,7 @@
         </section>
 
         <!-- Footer -->
-        <footer class="bg-black text-white py-12">
+        <footer class="bg-black text-white py-12" data-intro="This is the footer. Here you can find more information about KasiKash, legal links, and contact details." data-step="10">
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
@@ -486,7 +486,7 @@
                         </div>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('quick_links', user_language)|replace('_', ' ')|title }}</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white" data-intro="Quick Links: Use these shortcuts to quickly access important pages like getting started, features, contact, and about." data-step="9">{{ t('quick_links', user_language)|replace('_', ' ')|title }}</h4>
                         <ul class="space-y-2">
                             <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a></li>
                             <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language)|replace('_', ' ')|title }}</a></li>

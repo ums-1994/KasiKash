@@ -7,12 +7,10 @@
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2 flex items-center"><i class="fas fa-bullseye mr-2 text-green-400"></i>{{ t('savings_goals_heading', user_language)|replace('_', ' ')|title }}</h1>
+            <h1 class="page-title" data-intro="This is your Savings Goals page. Here you can set, track, and manage your savings goals." data-step="1">Savings Goals</h1>
             <p class="text-gray-300">Track and manage your savings goals</p>
         </div>
-        <button onclick="openModal('createGoalModal')" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <i class="fas fa-plus mr-2"></i>{{ t('add_goal', user_language)|replace('_', ' ')|title }}
-        </button>
+        <button onclick="openModal('createGoalModal')" class="btn btn-primary" data-intro="Click here to add a new savings goal." data-step="2">Add Savings Goal</button>
     </div>
 
     <!-- Savings Goals Table -->

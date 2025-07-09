@@ -433,11 +433,11 @@ body {
 {% endblock extra_css %}
 {% block content %}
 <!-- Top Welcome Banner -->
-<div class="welcome-banner">
+<div class="welcome-banner" data-intro="Welcome to your dashboard! Here you can see an overview of your account and activity." data-step="1">
   <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
     <div>
-      <h2 class="welcome-title">{{ t('dashboard', user_language) }}</h2>
-      <div class="welcome-subtitle">{{ t('welcome_back', user_language) }}</div>
+      <h2 class="welcome-title" data-intro="This is your dashboard title. It shows your current section." data-step="2">{{ t('dashboard', user_language) }}</h2>
+      <div class="welcome-subtitle" data-intro="A friendly welcome message to greet you every time you log in." data-step="3">{{ t('welcome_back', user_language) }}</div>
     </div>
     <div style="display: flex; align-items: center; gap: 1rem;">
       <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
@@ -454,7 +454,7 @@ body {
 <!-- Dashboard Grid -->
 <div class="dashboard-grid">
   <!-- User Profile Card -->
-  <div class="glass-card" style="display: flex; flex-direction: column; align-items: center;">
+  <div class="glass-card" style="display: flex; flex-direction: column; align-items: center;" data-intro="This card shows your profile information, including your username, email, and stokvel memberships." data-step="4">
     <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem;">
       {% if user.profile_picture %}
         <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" class="w-full h-full object-cover">
@@ -480,7 +480,7 @@ body {
     </div>
   </div>
   <!-- Quick Actions Card -->
-  <div class="glass-card">
+  <div class="glass-card" data-intro="Quick Actions: Use these shortcuts to apply for a loan, make repayments, invite members, or view financial insights." data-step="5">
     <div style="display: flex; align-items: center; margin-bottom: 1rem;">
       <i class="fas fa-bolt accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
       <span class="accent" style="font-size: 1.125rem; font-weight: bold;">{{ t('quick_actions', user_language) }}</span>
@@ -513,7 +513,7 @@ body {
     </div>
   </div>
   <!-- Recent Activity Card (now in grid, spans 2 columns on large screens) -->
-  <div class="glass-card activity-card" style="grid-column: span 2;">
+  <div class="glass-card activity-card" style="grid-column: span 2;" data-intro="Recent Activity: See your latest contributions, goals, and withdrawals here." data-step="6">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
       <div style="display: flex; align-items: center;">
         <i class="fas fa-stream accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
@@ -546,7 +546,7 @@ body {
     </div>
 </div>
   <!-- Calendar Card (now in grid, spans 2 columns on large screens) -->
-  <div class="glass-card calendar-card" style="grid-column: span 2;">
+  <div class="glass-card calendar-card" style="grid-column: span 2;" data-intro="Calendar: Track important dates and events for your stokvels." data-step="7">
     <div class="calendar-nav">
       <button id="prevMonthBtn" aria-label="{{ t('previous_month', user_language) }}"><i class="fas fa-chevron-left"></i></button>
       <div class="accent text-xl" id="calendarMonthLabel">{{ calendar_month }} {{ calendar_year }}</div>

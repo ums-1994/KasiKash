@@ -277,6 +277,42 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- Intro.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js/minified/introjs.min.css">
+    <!-- Intro.js JS -->
+    <script src="https://cdn.jsdelivr.net/npm/intro.js/minified/intro.min.js"></script>
+    <script>
+      // Helper to get a unique key for each page
+      function getTutorialKey() {
+        // Use the current path as a unique key
+        return 'kasikashTutorialCompleted_' + window.location.pathname.replace(/\//g, '_');
+      }
+      // Launch tutorial for the current page
+      function startAppTutorial() {
+        introJs().setOptions({
+          nextLabel: 'Next',
+          prevLabel: 'Back',
+          doneLabel: 'Finish',
+          skipLabel: 'Skip',
+          showProgress: true,
+          showBullets: false
+        }).start();
+        introJs().oncomplete(function() {
+          localStorage.setItem(getTutorialKey(), 'true');
+        });
+        introJs().onexit(function() {
+          localStorage.setItem(getTutorialKey(), 'true');
+        });
+      }
+      // On first visit to this page, show tutorial
+      document.addEventListener('DOMContentLoaded', function() {
+        if (localStorage.getItem(getTutorialKey()) !== 'true') {
+          setTimeout(function() {
+            startAppTutorial();
+          }, 800);
+        }
+      });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

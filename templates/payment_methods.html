@@ -5,12 +5,10 @@
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2 flex items-center"><i class="fas fa-credit-card mr-2 text-blue-400"></i>{{ t('payment_methods_heading', user_language)|replace('_', ' ')|title }}</h1>
+            <h1 class="page-title" data-intro="This is your Payment Methods page. Here you can add, view, and manage your payment methods." data-step="1">Payment Methods</h1>
             <p class="text-gray-300">Manage your payment methods for contributions and payouts</p>
         </div>
-        <button onclick="document.getElementById('addPaymentMethodModal').classList.remove('hidden')" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <i class="fas fa-plus mr-2"></i>{{ t('add_payment_method', user_language)|replace('_', ' ')|title }}
-        </button>
+        <button onclick="document.getElementById('addPaymentMethodModal').classList.remove('hidden')" class="btn btn-primary" data-intro="Click here to add a new payment method." data-step="2">Add Payment Method</button>
     </div>
 
     <!-- Payment Methods Grid -->
