@@ -31,7 +31,10 @@ var layout = {
 
 var config = {responsive: true}
 
-Plotly.newPlot('myDiv', data, layout, config );
+// Only run Plotly code if Plotly is available and the element exists
+if (typeof Plotly !== 'undefined' && document.getElementById('myDiv')) {
+    Plotly.newPlot('myDiv', data, layout, config);
+}
 
 
 

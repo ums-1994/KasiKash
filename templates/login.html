@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t('login_title', user_language) }}</title>
+    <title>{{ t('login_title', user_language)|replace('_', ' ')|title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -348,15 +348,15 @@
             <div class="container mx-auto flex justify-between items-center">
                 <a href="/" class="flex items-center space-x-3">
                     <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto animate-float">
-                    <span class="text-2xl font-bold text-gradient glow">{{ t('app_name', user_language) }}</span>
+                    <span class="text-2xl font-bold text-gradient glow">{{ t('app_name', user_language)|replace('_', ' ')|title }}</span>
                 </a>
                 <ul class="hidden md:flex space-x-8">
-                    <li><a href="/" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('home', user_language) }}</a></li>
-                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('login', user_language) }}</a></li>
-                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('pricing', user_language) }}</a></li>
-                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('features', user_language) }}</a></li>
+                    <li><a href="/" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('home', user_language)|replace('_', ' ')|title }}</a></li>
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('login', user_language)|replace('_', ' ')|title }}</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('pricing', user_language)|replace('_', ' ')|title }}</a></li>
+                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('features', user_language)|replace('_', ' ')|title }}</a></li>
                     <li class="dropdown">
-                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('contact', user_language) }}</a>
+                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('contact', user_language)|replace('_', ' ')|title }}</a>
                         <div class="dropdown-content">
                             <div class="contact-info">
                                 <p class="mb-3"><i class="fas fa-envelope"></i> {{ t('contact_email', user_language) }}</p>
@@ -365,7 +365,7 @@
                             </div>
                         </div>
                     </li>
-                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('about', user_language) }}</a></li>
+                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('about', user_language)|replace('_', ' ')|title }}</a></li>
                 </ul>
                 <button class="md:hidden text-white">
                     <i class="fas fa-bars text-2xl"></i>
@@ -389,34 +389,34 @@
                     {% endwith %}
                 </div>
 
-                <h2 class="text-3xl font-bold mb-8 text-center text-gradient">{{ t('login', user_language) }}</h2>
+                <h2 class="text-3xl font-bold mb-8 text-center text-gradient">{{ t('login', user_language)|replace('_', ' ')|title }}</h2>
 
                 <form action="{{ url_for('login_validation') }}" method="POST" class="space-y-6">
                     {{ form.csrf_token }}
 
                     <div class="relative">
-                        {{ form.email(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder=t('email', user_language)) }}
+                        {{ form.email(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder=t('email', user_language)|replace('_', ' ')|title) }}
                         <i class="fas fa-envelope input-icon absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
 
                     <div class="relative">
-                        {{ form.password(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder=t('password', user_language)) }}
+                        {{ form.password(class="input-field w-full py-3 px-5 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-2", placeholder=t('password', user_language)|replace('_', ' ')|title) }}
                         <i class="fas fa-lock input-icon absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
 
                     <div class="flex items-center justify-between">
                         <label class="flex items-center text-white">
                             {{ form.remember(class="mr-2") }}
-                            {{ t('remember_me', user_language) }}
+                            {{ t('remember_me', user_language)|replace('_', ' ')|title }}
                         </label>
-                        <a href="{{ url_for('forgot_password') }}" class="text-white hover:text-ocean-2 transition-colors duration-300">{{ t('forgot_password', user_language) }}</a>
+                        <a href="{{ url_for('forgot_password') }}" class="text-white hover:text-ocean-2 transition-colors duration-300">{{ t('forgot_password', user_language)|replace('_', ' ')|title }}</a>
                     </div>
 
                     {{ form.submit(class="w-full py-3 px-6 rounded-full bg-gradient-to-r from-ocean-2 to-ocean-3 text-white font-semibold hover:from-ocean-3 hover:to-ocean-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ocean-2") }}
 
                     <div class="text-center text-gray-300">
                         {{ t('no_account', user_language) }}
-                        <a href="/register" class="text-ocean-2 hover:text-ocean-3 font-medium">{{ t('register', user_language) }}</a>
+                        <a href="/register" class="text-ocean-2 hover:text-ocean-3 font-medium">{{ t('register', user_language)|replace('_', ' ')|title }}</a>
                     </div>
                 </form>
             </div>
@@ -427,7 +427,7 @@
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
-                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">{{ t('app_name', user_language) }}</h4>
+                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">{{ t('app_name', user_language)|replace('_', ' ')|title }}</h4>
                         <p class="text-gray-400 mb-4">
                             {{ t('app_description', user_language) }}
                         </p>
@@ -447,33 +447,33 @@
                         </div>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('quick_links', user_language) }}</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('quick_links', user_language)|replace('_', ' ')|title }}</h4>
                         <ul class="space-y-2">
-                            <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language) }}</a></li>
-                            <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language) }}</a></li>
-                            <li><a href="/contact" class="text-gray-400 hover:text-white">{{ t('contact', user_language) }}</a></li>
-                            <li><a href="#about" class="text-gray-400 hover:text-white">{{ t('about', user_language) }}</a></li>
+                            <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="/contact" class="text-gray-400 hover:text-white">{{ t('contact', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#about" class="text-gray-400 hover:text-white">{{ t('about', user_language)|replace('_', ' ')|title }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('legal', user_language) }}</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('legal', user_language)|replace('_', ' ')|title }}</h4>
                         <ul class="space-y-2">
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('terms_of_service', user_language) }}</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('privacy_policy', user_language) }}</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('licenses', user_language) }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('terms_of_service', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('privacy_policy', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('licenses', user_language)|replace('_', ' ')|title }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('contact_us', user_language) }}</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('contact_us', user_language)|replace('_', ' ')|title }}</h4>
                         <ul class="space-y-2">
-                            <li class="text-gray-400">{{ t('footer_email', user_language) }}</li>
-                            <li class="text-gray-400">{{ t('footer_phone', user_language) }}</li>
-                            <li class="text-gray-400">{{ t('footer_address', user_language) }}</li>
+                            <li class="text-gray-400">{{ t('footer_email', user_language)|replace('_', ' ')|title }}</li>
+                            <li class="text-gray-400">{{ t('footer_phone', user_language)|replace('_', ' ')|title }}</li>
+                            <li class="text-gray-400">{{ t('footer_address', user_language)|replace('_', ' ')|title }}</li>
                         </ul>
                     </div>
                 </div>
                 <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                    <p>&copy; 2024 {{ t('app_name', user_language) }}. {{ t('all_rights_reserved', user_language) }}</p>
+                    <p>&copy; 2024 {{ t('app_name', user_language)|replace('_', ' ')|title }}. {{ t('all_rights_reserved', user_language)|replace('_', ' ')|title }}</p>
                 </div>
             </div>
         </footer>

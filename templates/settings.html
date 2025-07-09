@@ -3,145 +3,143 @@
 {% block title %}{{ t('settings', user_language) }} - KasiKash{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ t('settings', user_language)|replace('_', ' ')|title }}</h1>
-        
-        <!-- Account Security -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('account_security', user_language)|replace('_', ' ')|title }}</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="security">
-                <div class="mb-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="two_factor_enabled" value="on" 
-                               class="form-checkbox h-4 w-4 text-blue-600"
-                               {% if user.two_factor_enabled %}checked{% endif %}>
-                        <span class="ml-2 text-gray-700">{{ t('enable_two_factor_auth', user_language)|replace('_', ' ')|title }}</span>
-                    </label>
-                    <p class="text-sm text-gray-500 mt-1">{{ t('two_factor_help', user_language)|replace('_', ' ')|title }}</p>
-                </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save', user_language)|replace('_', ' ')|title }} Security Settings</button>
-            </form>
-        </div>
+<div class="space-y-6 max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-8 flex items-center"><i class="fas fa-cog mr-2 text-blue-400"></i>{{ t('settings', user_language)|replace('_', ' ')|title }}</h1>
+    
+    <!-- Account Security -->
+    <div class="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6 mb-6">
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center"><i class="fas fa-shield-alt mr-2 text-green-400"></i>{{ t('account_security', user_language)|replace('_', ' ')|title }}</h2>
+        <form action="/settings/update" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="form_section" value="security">
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="two_factor_enabled" value="on" 
+                           class="form-checkbox h-4 w-4 text-blue-600"
+                           {% if user.two_factor_enabled %}checked{% endif %}>
+                    <span class="ml-2 text-gray-300">{{ t('enable_two_factor_auth', user_language)|replace('_', ' ')|title }}</span>
+                </label>
+                <p class="text-sm text-gray-400 mt-1">{{ t('two_factor_help', user_language)|replace('_', ' ')|title }}</p>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300">{{ t('save', user_language)|replace('_', ' ')|title }} Security Settings</button>
+        </form>
+    </div>
 
-        <!-- Notifications -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('notifications', user_language)|replace('_', ' ')|title }}</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="notifications">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="notification_preferences">
-                        {{ t('notification_preferences', user_language)|replace('_', ' ')|title }}
-                    </label>
-                    <select name="notification_preferences" id="notification_preferences"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="email" {% if user.notification_preferences == 'email' %}selected{% endif %}>{{ t('email_only', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="sms" {% if user.notification_preferences == 'sms' %}selected{% endif %}>{{ t('sms_only', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="both" {% if user.notification_preferences == 'both' %}selected{% endif %}>{{ t('email_and_sms', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="none" {% if user.notification_preferences == 'none' %}selected{% endif %}>{{ t('no_notifications', user_language)|replace('_', ' ')|title }}</option>
-                    </select>
-                    <p class="text-sm text-gray-500 mt-1">{{ t('choose_notification_method', user_language)|replace('_', ' ')|title }}</p>
-                </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save', user_language)|replace('_', ' ')|title }} Notification Settings</button>
-            </form>
-        </div>
+    <!-- Notifications -->
+    <div class="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6 mb-6">
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center"><i class="fas fa-bell mr-2 text-yellow-400"></i>{{ t('notifications', user_language)|replace('_', ' ')|title }}</h2>
+        <form action="/settings/update" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="form_section" value="notifications">
+            <div class="mb-4">
+                <label class="block text-gray-300 text-sm font-bold mb-2" for="notification_preferences">
+                    {{ t('notification_preferences', user_language)|replace('_', ' ')|title }}
+                </label>
+                <select name="notification_preferences" id="notification_preferences"
+                        class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="email" {% if user.notification_preferences == 'email' %}selected{% endif %}>{{ t('email_only', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="sms" {% if user.notification_preferences == 'sms' %}selected{% endif %}>{{ t('sms_only', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="both" {% if user.notification_preferences == 'both' %}selected{% endif %}>{{ t('email_and_sms', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="none" {% if user.notification_preferences == 'none' %}selected{% endif %}>{{ t('no_notifications', user_language)|replace('_', ' ')|title }}</option>
+                </select>
+                <p class="text-sm text-gray-400 mt-1">{{ t('choose_notification_method', user_language)|replace('_', ' ')|title }}</p>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300">{{ t('save', user_language)|replace('_', ' ')|title }} Notification Settings</button>
+        </form>
+    </div>
 
-        <!-- Language Preferences -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('language_preferences', user_language)|replace('_', ' ')|title }}</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="language_preference">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="language_preference">
-                        {{ t('preferred_language', user_language)|replace('_', ' ')|title }}
-                    </label>
-                    <select name="language_preference" id="language_preference"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>{{ t('english', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="af" {% if user.language_preference == 'af' %}selected{% endif %}>{{ t('afrikaans', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="zu" {% if user.language_preference == 'zu' %}selected{% endif %}>{{ t('zulu', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="xh" {% if user.language_preference == 'xh' %}selected{% endif %}>{{ t('xhosa', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="st" {% if user.language_preference == 'st' %}selected{% endif %}>{{ t('sesotho', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="tn" {% if user.language_preference == 'tn' %}selected{% endif %}>{{ t('setswana', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="ss" {% if user.language_preference == 'ss' %}selected{% endif %}>{{ t('siswati', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="ve" {% if user.language_preference == 've' %}selected{% endif %}>{{ t('venda', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>{{ t('tsonga', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>{{ t('ndebele', user_language)|replace('_', ' ')|title }}</option>
-                    </select>
-                    <p class="text-sm text-gray-500 mt-1">{{ t('choose_language', user_language)|replace('_', ' ')|title }}</p>
-                </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save_language_settings', user_language)|replace('_', ' ')|title }}</button>
-            </form>
-        </div>
+    <!-- Language Preferences -->
+    <div class="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6 mb-6">
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center"><i class="fas fa-language mr-2 text-purple-400"></i>{{ t('language_preferences', user_language)|replace('_', ' ')|title }}</h2>
+        <form action="/settings/update" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="form_section" value="language_preference">
+            <div class="mb-4">
+                <label class="block text-gray-300 text-sm font-bold mb-2" for="language_preference">
+                    {{ t('preferred_language', user_language)|replace('_', ' ')|title }}
+                </label>
+                <select name="language_preference" id="language_preference"
+                        class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>{{ t('english', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="af" {% if user.language_preference == 'af' %}selected{% endif %}>{{ t('afrikaans', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="zu" {% if user.language_preference == 'zu' %}selected{% endif %}>{{ t('zulu', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="xh" {% if user.language_preference == 'xh' %}selected{% endif %}>{{ t('xhosa', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="st" {% if user.language_preference == 'st' %}selected{% endif %}>{{ t('sesotho', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="tn" {% if user.language_preference == 'tn' %}selected{% endif %}>{{ t('setswana', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="ss" {% if user.language_preference == 'ss' %}selected{% endif %}>{{ t('siswati', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="ve" {% if user.language_preference == 've' %}selected{% endif %}>{{ t('venda', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>{{ t('tsonga', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>{{ t('ndebele', user_language)|replace('_', ' ')|title }}</option>
+                </select>
+                <p class="text-sm text-gray-400 mt-1">{{ t('choose_language', user_language)|replace('_', ' ')|title }}</p>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300">{{ t('save_language_settings', user_language)|replace('_', ' ')|title }}</button>
+        </form>
+    </div>
 
-        <!-- App Preferences -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('app_preferences', user_language)|replace('_', ' ')|title }}</h2>
-            <form action="/settings/update" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="form_section" value="app_preferences">
-                <div class="space-y-4">
-                    <!-- Email Notifications Toggle -->
-                    <label for="email_notifications" class="flex items-center justify-between cursor-pointer">
-                        <div>
-                            <span class="text-gray-800 font-medium">{{ t('email_notifications', user_language)|replace('_', ' ')|title }}</span>
-                            <p class="text-sm text-gray-500">{{ t('email_notifications_help', user_language)|replace('_', ' ')|title }}</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="email_notifications" name="email_notifications" class="sr-only" {% if user.email_notifications %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
-                    </label>
+    <!-- App Preferences -->
+    <div class="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6 mb-6">
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center"><i class="fas fa-sliders-h mr-2 text-green-400"></i>{{ t('app_preferences', user_language)|replace('_', ' ')|title }}</h2>
+        <form action="/settings/update" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="form_section" value="app_preferences">
+            <div class="space-y-4">
+                <!-- Email Notifications Toggle -->
+                <label for="email_notifications" class="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <span class="text-white font-medium">{{ t('email_notifications', user_language)|replace('_', ' ')|title }}</span>
+                        <p class="text-sm text-gray-400">{{ t('email_notifications_help', user_language)|replace('_', ' ')|title }}</p>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="email_notifications" name="email_notifications" class="sr-only" {% if user.email_notifications %}checked{% endif %}>
+                        <div class="block bg-gray-400 w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                    </div>
+                </label>
 
-                    <!-- SMS Notifications Toggle -->
-                    <label for="sms_notifications" class="flex items-center justify-between cursor-pointer">
-                        <div>
-                            <span class="text-gray-800 font-medium">{{ t('sms_notifications', user_language)|replace('_', ' ')|title }}</span>
-                            <p class="text-sm text-gray-500">{{ t('sms_notifications_help', user_language)|replace('_', ' ')|title }}</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="sms_notifications" name="sms_notifications" class="sr-only" {% if user.sms_notifications %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
-                    </label>
+                <!-- SMS Notifications Toggle -->
+                <label for="sms_notifications" class="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <span class="text-white font-medium">{{ t('sms_notifications', user_language)|replace('_', ' ')|title }}</span>
+                        <p class="text-sm text-gray-400">{{ t('sms_notifications_help', user_language)|replace('_', ' ')|title }}</p>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="sms_notifications" name="sms_notifications" class="sr-only" {% if user.sms_notifications %}checked{% endif %}>
+                        <div class="block bg-gray-400 w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                    </div>
+                </label>
 
-                    <!-- Weekly Summary Toggle -->
-                    <label for="weekly_summary" class="flex items-center justify-between cursor-pointer">
-                        <div>
-                            <span class="text-gray-800 font-medium">{{ t('weekly_summary', user_language)|replace('_', ' ')|title }}</span>
-                            <p class="text-sm text-gray-500">{{ t('weekly_summary_help', user_language)|replace('_', ' ')|title }}</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="weekly_summary" name="weekly_summary" class="sr-only" {% if user.weekly_summary %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
-                    </label>
+                <!-- Weekly Summary Toggle -->
+                <label for="weekly_summary" class="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <span class="text-white font-medium">{{ t('weekly_summary', user_language)|replace('_', ' ')|title }}</span>
+                        <p class="text-sm text-gray-400">{{ t('weekly_summary_help', user_language)|replace('_', ' ')|title }}</p>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="weekly_summary" name="weekly_summary" class="sr-only" {% if user.weekly_summary %}checked{% endif %}>
+                        <div class="block bg-gray-400 w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                    </div>
+                </label>
 
-                    <!-- Contribution Reminders Toggle -->
-                    <label for="reminders_enabled" class="flex items-center justify-between cursor-pointer">
-                        <div>
-                            <span class="text-gray-800 font-medium">{{ t('contribution_reminders', user_language)|replace('_', ' ')|title }}</span>
-                            <p class="text-sm text-gray-500">{{ t('contribution_reminders_help', user_language)|replace('_', ' ')|title }}</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="reminders_enabled" name="reminders_enabled" class="sr-only" {% if user.reminders_enabled %}checked{% endif %}>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                        </div>
-                    </label>
-                </div>
-                <div class="mt-6">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ t('save_app_preferences', user_language)|replace('_', ' ')|title }}</button>
-                </div>
-            </form>
-        </div>
+                <!-- Contribution Reminders Toggle -->
+                <label for="reminders_enabled" class="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <span class="text-white font-medium">{{ t('contribution_reminders', user_language)|replace('_', ' ')|title }}</span>
+                        <p class="text-sm text-gray-400">{{ t('contribution_reminders_help', user_language)|replace('_', ' ')|title }}</p>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="reminders_enabled" name="reminders_enabled" class="sr-only" {% if user.reminders_enabled %}checked{% endif %}>
+                        <div class="block bg-gray-400 w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="mt-6">
+                <button type="submit" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300">{{ t('save_app_preferences', user_language)|replace('_', ' ')|title }}</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -149,10 +147,10 @@
     /* Tailwind CSS for the toggle */
     input:checked ~ .dot {
         transform: translateX(100%);
-        background-color: #48bb78; /* equivalent to green-500 */
+        background-color: #48bb78; /* green-500 */
     }
     input:checked ~ .block {
-        background-color: #a0aec0; /* equivalent to gray-400 */
+        background-color: #a0aec0; /* gray-400 */
     }
 </style>
 {% endblock %} 

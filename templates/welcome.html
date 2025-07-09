@@ -257,10 +257,10 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
             <div class="container mx-auto px-4 py-20 text-center relative z-10">
-                <h1 class="text-4xl font-bold mb-4">{{ t('welcome_heading', user_language) }}</h1>
-                <p class="text-lg mb-6">{{ t('welcome_message', user_language) }}</p>
-                <a href="/register" class="btn btn-primary">{{ t('get_started', user_language) }}</a>
-                <a href="/login" class="btn btn-secondary ml-2">{{ t('login', user_language) }}</a>
+                <h1 class="text-4xl font-bold mb-4">{{ t('welcome_heading', user_language)|replace('_', ' ')|title }}</h1>
+                <p class="text-lg mb-6">{{ t('welcome_message', user_language)|replace('_', ' ')|title }}</p>
+                <a href="/register" class="btn btn-primary">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a>
+                <a href="/login" class="btn btn-secondary ml-2">{{ t('login', user_language)|replace('_', ' ')|title }}</a>
             </div>
             
             <!-- Wave Shape -->
@@ -277,8 +277,8 @@
         <section id="features" class="py-20 bg-black bg-opacity-50 relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('why_choose_heading', user_language) }}</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('why_choose_message', user_language) }}</p>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('why_choose_heading', user_language)|replace('_', ' ')|title }}</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('why_choose_message', user_language)|replace('_', ' ')|title }}</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -286,24 +286,24 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
                             <i class="fas fa-shield-alt"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('sarb_regulated_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('sarb_regulated_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('sarb_regulated_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('sarb_regulated_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
                     
                     <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800 transform transition-all duration-500 hover:scale-105">
                         <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
                             <i class="fas fa-lock"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
                     
                     <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800">
                         <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
                             <i class="fas fa-users"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_focused_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('community_focused_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_focused_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('community_focused_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
                 </div>
             </div>
@@ -313,8 +313,8 @@
         <section class="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('our_features_heading', user_language) }}</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('our_features_message', user_language) }}</p>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('our_features_heading', user_language)|replace('_', ' ')|title }}</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('our_features_message', user_language)|replace('_', ' ')|title }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -323,8 +323,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('smart_savings_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('smart_savings_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('smart_savings_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('smart_savings_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
 
                     <!-- Community Management -->
@@ -332,8 +332,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
                             <i class="fas fa-users"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_management_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('community_management_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_management_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('community_management_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
 
                     <!-- Bank-Level Security -->
@@ -341,8 +341,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
                             <i class="fas fa-lock"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
 
                     <!-- Community Success -->
@@ -350,8 +350,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-4 text-center">
                             <i class="fas fa-trophy"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_success_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('community_success_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_success_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('community_success_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
 
                     <!-- Easy-to-Use Platform -->
@@ -359,8 +359,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
                             <i class="fas fa-mobile-alt"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('easy_to_use_platform_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('easy_to_use_platform_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('easy_to_use_platform_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('easy_to_use_platform_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
 
                     <!-- Events & Marketplace -->
@@ -368,8 +368,8 @@
                         <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
                             <i class="fas fa-store"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('events_marketplace_heading', user_language) }}</h3>
-                        <p class="text-gray-300">{{ t('events_marketplace_message', user_language) }}</p>
+                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('events_marketplace_heading', user_language)|replace('_', ' ')|title }}</h3>
+                        <p class="text-gray-300">{{ t('events_marketplace_message', user_language)|replace('_', ' ')|title }}</p>
                     </div>
                 </div>
             </div>
@@ -379,8 +379,8 @@
         <section class="py-20 bg-black relative overflow-hidden">
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('testimonials_heading', user_language) }}</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('testimonials_message', user_language) }}</p>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('testimonials_heading', user_language)|replace('_', ' ')|title }}</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('testimonials_message', user_language)|replace('_', ' ')|title }}</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -453,10 +453,10 @@
         <!-- CTA Section -->
         <section class="py-20 rainbow-gradient relative overflow-hidden">
             <div class="container mx-auto px-4 text-center">
-                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">{{ t('cta_heading', user_language) }}</h2>
-                <p class="text-xl text-black mb-8 max-w-3xl mx-auto">{{ t('cta_message', user_language) }}</p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">{{ t('cta_heading', user_language)|replace('_', ' ')|title }}</h2>
+                <p class="text-xl text-black mb-8 max-w-3xl mx-auto">{{ t('cta_message', user_language)|replace('_', ' ')|title }}</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="/register" class="bg-black text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90">{{ t('start_your_free_trial', user_language) }}</a>
+                    <a href="/register" class="bg-black text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90">{{ t('start_your_free_trial', user_language)|replace('_', ' ')|title }}</a>
                 </div>
             </div>
         </section>
@@ -466,9 +466,9 @@
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
-                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
+                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">{{ t('app_name', user_language)|replace('_', ' ')|title }}</h4>
                         <p class="text-gray-400 mb-4">
-                            {{ t('footer_about_message', user_language) }}
+                            {{ t('footer_about_message', user_language)|replace('_', ' ')|title }}
                         </p>
                         <div class="flex space-x-4">
                             <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300">
@@ -486,28 +486,28 @@
                         </div>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('quick_links', user_language)|replace('_', ' ')|title }}</h4>
                         <ul class="space-y-2">
-                            <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language) }}</a></li>
-                            <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language) }}</a></li>
-                            <li><a href="/contact" class="text-gray-400 hover:text-white">{{ t('contact', user_language) }}</a></li>
-                            <li><a href="#about" class="text-gray-400 hover:text-white">{{ t('about', user_language) }}</a></li>
+                            <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="/contact" class="text-gray-400 hover:text-white">{{ t('contact', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#about" class="text-gray-400 hover:text-white">{{ t('about', user_language)|replace('_', ' ')|title }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('legal', user_language)|replace('_', ' ')|title }}</h4>
                         <ul class="space-y-2">
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('terms_of_service', user_language) }}</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('privacy_policy', user_language) }}</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('licenses', user_language) }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('terms_of_service', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('privacy_policy', user_language)|replace('_', ' ')|title }}</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('licenses', user_language)|replace('_', ' ')|title }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
+                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('contact_us', user_language)|replace('_', ' ')|title }}</h4>
                         <ul class="space-y-2">
-                            <li class="text-gray-400">{{ t('email', user_language) }}: support@kasikash.co.za</li>
-                            <li class="text-gray-400">{{ t('phone', user_language) }}: +27 11 123 4567</li>
-                            <li class="text-gray-400">{{ t('address', user_language) }}: Johannesburg, South Africa</li>
+                            <li class="text-gray-400">{{ t('email', user_language)|replace('_', ' ')|title }}: support@kasikash.co.za</li>
+                            <li class="text-gray-400">{{ t('phone', user_language)|replace('_', ' ')|title }}: +27 11 123 4567</li>
+                            <li class="text-gray-400">{{ t('address', user_language)|replace('_', ' ')|title }}: Johannesburg, South Africa</li>
                         </ul>
                     </div>
                 </div>

@@ -1,122 +1,150 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
+<div class="space-y-6">
     <!-- Statement Download Section -->
-    <div class="bg-white rounded-lg shadow mb-8">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">{{ t('download_statement_heading', user_language)|replace('_', ' ')|title }}</h2>
-            <div class="flex items-end space-x-4">
-                <div class="flex-1">
-                    <label for="stokvel-select" class="block text-sm font-medium text-gray-700 mb-2">{{ t('select_stokvel_label', user_language)|replace('_', ' ')|title }}</label>
-                    <select id="stokvel-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">{{ t('select_stokvel_option', user_language)|replace('_', ' ')|title }}</option>
-                        {% for stokvel in stokvels %}
-                        <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="flex-1">
-                    <label for="period-select" class="block text-sm font-medium text-gray-700 mb-2">{{ t('select_period_label', user_language)|replace('_', ' ')|title }}</label>
-                    <select id="period-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all" selected>{{ t('all_time_option', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="30d">{{ t('last_30_days_option', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="3m">{{ t('last_3_months_option', user_language)|replace('_', ' ')|title }}</option>
-                        <option value="6m">{{ t('last_6_months_option', user_language)|replace('_', ' ')|title }}</option>
-                    </select>
-                </div>
-                <button onclick="downloadStatement()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">{{ t('download_statement_button', user_language)|replace('_', ' ')|title }}</button>
+    <div class="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+            <i class="fas fa-download mr-2 text-blue-400"></i>{{ t('download_statement_heading', user_language)|replace('_', ' ')|title }}
+        </h2>
+        <div class="flex flex-col lg:flex-row items-end gap-4">
+            <div class="flex-1">
+                <label for="stokvel-select" class="block text-sm font-medium text-gray-300 mb-2">{{ t('select_stokvel_label', user_language)|replace('_', ' ')|title }}</label>
+                <select id="stokvel-select" class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">{{ t('select_stokvel_option', user_language)|replace('_', ' ')|title }}</option>
+                    {% for stokvel in stokvels %}
+                    <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
+            <div class="flex-1">
+                <label for="period-select" class="block text-sm font-medium text-gray-300 mb-2">{{ t('select_period_label', user_language)|replace('_', ' ')|title }}</label>
+                <select id="period-select" class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="all" selected>{{ t('all_time_option', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="30d">{{ t('last_30_days_option', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="3m">{{ t('last_3_months_option', user_language)|replace('_', ' ')|title }}</option>
+                    <option value="6m">{{ t('last_6_months_option', user_language)|replace('_', ' ')|title }}</option>
+                </select>
+            </div>
+            <button onclick="downloadStatement()" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center transition-all duration-300 transform hover:-translate-y-1">
+                <i class="fas fa-download mr-2"></i>{{ t('download_statement_button', user_language)|replace('_', ' ')|title }}
+            </button>
         </div>
     </div>
 
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold mb-4">{{ t('contributions_heading', user_language)|replace('_', ' ')|title }}</h1>
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ t('contributions_heading', user_language)|replace('_', ' ')|title }}</h1>
+            <p class="text-gray-300">Track and manage your stokvel contributions</p>
+        </div>
         <button onclick="openModal()" 
-                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{ t('make_contribution', user_language)|replace('_', ' ')|title }}</button>
+                class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <i class="fas fa-plus mr-2"></i>{{ t('make_contribution', user_language)|replace('_', ' ')|title }}
+        </button>
     </div>
 
     <!-- Contributions Table -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">{{ t('my_contributions_heading', user_language)|replace('_', ' ')|title }}</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('date', user_language)|replace('_', ' ')|title }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('stokvel', user_language)|replace('_', ' ')|title }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('amount', user_language)|replace('_', ' ')|title }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('status', user_language)|replace('_', ' ')|title }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('description', user_language)|replace('_', ' ')|title }}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for contribution in contributions %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ contribution.created_at }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ contribution.stokvel_name }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                R{{ "%.2f"|format(contribution.amount) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if contribution.status == 'completed' %}
-                                        bg-green-100 text-green-800
-                                    {% elif contribution.status == 'pending' %}
-                                        bg-yellow-100 text-yellow-800
-                                    {% else %}
-                                        bg-red-100 text-red-800
-                                    {% endif %}">
-                                    {{ contribution.status }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ contribution.description }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <div class="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-list mr-2 text-green-400"></i>{{ t('my_contributions_heading', user_language)|replace('_', ' ')|title }}
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-white/10">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('date', user_language)|replace('_', ' ')|title }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('stokvel', user_language)|replace('_', ' ')|title }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('amount', user_language)|replace('_', ' ')|title }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('status', user_language)|replace('_', ' ')|title }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('description', user_language)|replace('_', ' ')|title }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/10">
+                    {% for contribution in contributions %}
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            {{ contribution.created_at }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
+                            {{ contribution.stokvel_name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-300">
+                            R{{ "%.2f"|format(contribution.amount) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if contribution.status == 'completed' %}
+                                    bg-green-500/20 text-green-300 border border-green-500/30
+                                {% elif contribution.status == 'pending' %}
+                                    bg-yellow-500/20 text-yellow-300 border border-yellow-500/30
+                                {% else %}
+                                    bg-red-500/20 text-red-300 border border-red-500/30
+                                {% endif %}">
+                                {{ contribution.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-300">
+                            {{ contribution.description }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+        
+        {% if not contributions %}
+        <div class="text-center py-12">
+            <i class="fas fa-dollar-sign text-4xl text-gray-500 mb-4"></i>
+            <p class="text-gray-400 text-lg">No contributions found.</p>
+            <p class="text-gray-500 text-sm mt-2">Make your first contribution to get started.</p>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Make Contribution Modal -->
-    <div id="makeContributionModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div id="makeContributionModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 backdrop-blur-lg border-white/10">
             <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('make_contribution_heading', user_language)|replace('_', ' ')|title }}</h3>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-white">{{ t('make_contribution_heading', user_language)|replace('_', ' ')|title }}</h3>
+                    <button onclick="closeModal()" 
+                            class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
                 <form action="{{ url_for('make_contribution') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stokvel_id">{{ t('select_stokvel_label', user_language)|replace('_', ' ')|title }}</label>
-                        <select name="stokvel_id" id="stokvel_id" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            {% for stokvel in stokvels %}
-                            <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="stokvel_id">{{ t('select_stokvel_label', user_language)|replace('_', ' ')|title }}</label>
+                            <select name="stokvel_id" id="stokvel_id" required
+                                    class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                {% for stokvel in stokvels %}
+                                <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="amount">{{ t('amount_label', user_language)|replace('_', ' ')|title }}</label>
+                            <input type="number" name="amount" id="amount" required step="0.01" min="0"
+                                   class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="description">{{ t('description_label', user_language)|replace('_', ' ')|title }}</label>
+                            <textarea name="description" id="description" required
+                                      class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">{{ t('amount_label', user_language)|replace('_', ' ')|title }}</label>
-                        <input type="number" name="amount" id="amount" required step="0.01" min="0"
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">{{ t('description_label', user_language)|replace('_', ' ')|title }}</label>
-                        <textarea name="description" id="description" required
-                                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
-                    </div>
-                    <div class="flex justify-end space-x-2">
+                    <div class="mt-6 flex justify-end space-x-3">
                         <button type="button" onclick="closeModal()"
-                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">{{ t('cancel_button', user_language)|replace('_', ' ')|title }}</button>
+                                class="px-4 py-2 bg-gray-600/50 hover:bg-gray-600/70 text-white rounded-lg transition-all duration-300">
+                            {{ t('cancel_button', user_language)|replace('_', ' ')|title }}
+                        </button>
                         <button type="submit"
-                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{ t('make_contribution_button', user_language)|replace('_', ' ')|title }}</button>
+                                class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition-all duration-300">
+                            {{ t('make_contribution_button', user_language)|replace('_', ' ')|title }}
+                        </button>
                     </div>
                 </form>
             </div>

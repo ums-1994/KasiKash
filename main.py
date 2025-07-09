@@ -18,7 +18,7 @@ import firebase_admin
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email
-from firebase_admin import credentials, auth
+from firebase_admin import credentials, auth, messaging
 from io import BytesIO
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
@@ -41,6 +41,7 @@ from werkzeug.utils import secure_filename
 import re
 from decimal import Decimal, InvalidOperation
 import calendar
+import uuid
 
 # Load environment variables
 load_dotenv()
@@ -67,9 +68,9 @@ def allowed_file(filename):
 def allowed_kyc_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_KYC_EXTENSIONS
 
-# Initialize Firebase Admin SDK
+# Initialize Firebase Admin SDK (only once)
 if not firebase_admin._apps:
-    cred = credentials.Certificate(os.getenv("FIREBASE_SERVICE_ACCOUNT_KEY_PATH", "firebase-service-account.json"))
+    cred = credentials.Certificate('firebase_service_account.json')
     firebase_admin.initialize_app(cred)
 
 # Database connection function
@@ -934,19 +935,8 @@ def test_nav():
 
 @app.route('/debug_session')
 def debug_session():
-    """Debug route to check session status"""
-    debug_info = {
-        'user_id_in_session': session.get('user_id', 'Not set'),
-        'all_session_keys': list(session.keys()),
-        'is_logged_in': 'user_id' in session
-    }
-    return f"""
-    <h1>Session Debug Info</h1>
-    <pre>{debug_info}</pre>
-    <p><a href="/login">Go to Login</a></p>
-    <p><a href="/home">Go to Home</a></p>
-    <p><a href="/test_nav">Go to Test Nav</a></p>
-    """
+    from flask import session
+    return str(dict(session))
 
 @app.route('/stokvels')
 @login_required
@@ -1024,7 +1014,30 @@ def create_stokvel():
         # Add the creator as the first member
         support.execute_query("insert", "INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)",
                               (stokvel_id, user_id, 'admin'))
-        
+
+        # --- Begin chat room auto-creation logic ---
+        # Create a chat room for this stokvel with the admin as the chat admin
+        support.execute_query(
+            "insert",
+            "INSERT INTO chat_rooms (stokvel_id, admin_user_id) VALUES (%s, %s) RETURNING id",
+            (stokvel_id, user_id)
+        )
+        # Get the chat_room_id
+        chat_room_id_result = support.execute_query(
+            "select",
+            "SELECT id FROM chat_rooms WHERE stokvel_id = %s",
+            (stokvel_id,)
+        )
+        chat_room_id = chat_room_id_result[0] if chat_room_id_result else None
+        if chat_room_id:
+            # Add the admin as the first chat member
+            support.execute_query(
+                "insert",
+                "INSERT INTO chat_members (chat_room_id, user_id) VALUES (%s, %s)",
+                (chat_room_id, user_id)
+            )
+        # --- End chat room auto-creation logic ---
+
         # Create a notification for the creator
         message = f"You successfully created the stokvel '{name}'!"
         link = url_for('view_stokvel_members', stokvel_id=stokvel_id)
@@ -2804,6 +2817,22 @@ def dashboard_calendar_data():
             'events': []  # TODO: Add real events if available
         })
     return jsonify({'calendar_days': calendar_days, 'calendar_month': calendar.month_name[month], 'calendar_year': year})
+
+@app.route('/save_device_token', methods=['POST'])
+@login_required
+def save_device_token():
+    user_id = session['user_id']
+    device_token = request.form.get('device_token')
+    platform = request.form.get('platform', 'web')
+    if not device_token:
+        return jsonify({'error': 'device_token required'}), 400
+    # Insert or update device token
+    support.execute_query(
+        "insert",
+        "INSERT INTO user_device_tokens (user_id, device_token, platform) VALUES (%s, %s, %s) ON CONFLICT (user_id, device_token) DO UPDATE SET platform = EXCLUDED.platform, created_at = CURRENT_TIMESTAMP",
+        (user_id, device_token, platform)
+    )
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
