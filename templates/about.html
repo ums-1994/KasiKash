@@ -32,55 +32,57 @@
     </nav>
     <section class="pt-32 pb-20">
         <div class="container mx-auto px-4 text-center">
-            <h1 class="text-3xl font-bold mb-4">{{ t('about_heading', user_language) }}</h1>
-            <p class="mb-6">{{ t('about_message', user_language) }}</p>
-            <h2 class="text-2xl font-semibold mb-2">{{ t('our_team', user_language) }}</h2>
+            <h1 class="text-3xl font-bold mb-4">About Us</h1>
+            <p class="mb-6">
+              KasiKash is a digital stokvel platform designed to empower communities to save, invest, and grow together. Our mission is to make group savings simple, transparent, and accessible for everyone. We provide secure tools for creating stokvels, managing contributions, tracking progress, and achieving financial goals as a community. Join us on our journey to unlock the power of collective wealth and financial inclusion in Africa and beyond.
+            </p>
+            <h2 class="text-2xl font-semibold mb-2">{{ t('our_team', user_language)|replace('_', ' ')|title }}</h2>
             <ul>
-                <li>{{ t('team_member_1', user_language) }}</li>
-                <li>{{ t('team_member_2', user_language) }}</li>
-                <li>{{ t('team_member_3', user_language) }}</li>
+                <li>{{ t('team_member_1', user_language)|replace('_', ' ')|capitalize }}</li>
+                <li>{{ t('team_member_2', user_language)|replace('_', ' ')|capitalize }}</li>
+                <li>{{ t('team_member_3', user_language)|replace('_', ' ')|capitalize }}</li>
             </ul>
 
             <!-- How It Works Section -->
             <div class="max-w-3xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
-                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('how_it_works', user_language) }}</h2>
+                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('how_it_works', user_language)|replace('_', ' ')|title }}</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
                     <div>
                         <div class="text-4xl mb-2 text-ocean-2"><i class="fas fa-users"></i></div>
-                        <h3 class="font-bold text-lg mb-2">{{ t('create_or_join_stokvel', user_language) }}</h3>
-                        <p class="text-gray-200">{{ t('create_or_join_stokvel_desc', user_language) }}</p>
+                        <h3 class="font-bold text-lg mb-2">{{ t('create_or_join_stokvel', user_language)|replace('_', ' ')|capitalize }}</h3>
+                        <p class="text-gray-200">{{ t('create_or_join_stokvel_desc', user_language)|replace('_', ' ')|capitalize }}</p>
                     </div>
                     <div>
                         <div class="text-4xl mb-2 text-ocean-3"><i class="fas fa-piggy-bank"></i></div>
-                        <h3 class="font-bold text-lg mb-2">{{ t('save_and_contribute', user_language) }}</h3>
-                        <p class="text-gray-200">{{ t('save_and_contribute_desc', user_language) }}</p>
+                        <h3 class="font-bold text-lg mb-2">{{ t('save_and_contribute', user_language)|replace('_', ' ')|capitalize }}</h3>
+                        <p class="text-gray-200">{{ t('save_and_contribute_desc', user_language)|replace('_', ' ')|capitalize }}</p>
                     </div>
                     <div>
                         <div class="text-4xl mb-2 text-ocean-5"><i class="fas fa-chart-line"></i></div>
-                        <h3 class="font-bold text-lg mb-2">{{ t('grow_together', user_language) }}</h3>
-                        <p class="text-gray-200">{{ t('grow_together_desc', user_language) }}</p>
+                        <h3 class="font-bold text-lg mb-2">{{ t('grow_together', user_language)|replace('_', ' ')|capitalize }}</h3>
+                        <p class="text-gray-200">{{ t('grow_together_desc', user_language)|replace('_', ' ')|capitalize }}</p>
                     </div>
                 </div>
             </div>
 
             <!-- Meet the Team Section -->
             <div class="max-w-3xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
-                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('meet_the_team', user_language) }}</h2>
+                <h2 class="text-3xl font-bold mb-4 text-gradient">{{ t('meet_the_team', user_language)|replace('_', ' ')|title }}</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                     <div>
                         <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Team Member" class="mx-auto rounded-full w-24 h-24 mb-2">
                         <h3 class="font-bold text-lg">Thabo Mokoena</h3>
-                        <p class="text-gray-200">{{ t('founder_ceo', user_language) }}</p>
+                        <p class="text-gray-200">{{ t('founder_ceo', user_language)|replace('_', ' ')|capitalize }}</p>
                     </div>
                     <div>
                         <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Team Member" class="mx-auto rounded-full w-24 h-24 mb-2">
                         <h3 class="font-bold text-lg">Lerato Dlamini</h3>
-                        <p class="text-gray-200">{{ t('head_of_product', user_language) }}</p>
+                        <p class="text-gray-200">{{ t('head_of_product', user_language)|replace('_', ' ')|capitalize }}</p>
                     </div>
                     <div>
                         <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="Team Member" class="mx-auto rounded-full w-24 h-24 mb-2">
                         <h3 class="font-bold text-lg">Sibusiso Nkosi</h3>
-                        <p class="text-gray-200">{{ t('lead_engineer', user_language) }}</p>
+                        <p class="text-gray-200">{{ t('lead_engineer', user_language)|replace('_', ' ')|capitalize }}</p>
                     </div>
                 </div>
             </div>
