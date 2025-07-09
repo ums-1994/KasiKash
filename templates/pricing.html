@@ -233,11 +233,11 @@
                     <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
                 </a>
                 <ul class="hidden md:flex space-x-8">
-                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
-                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
-                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('login', user_language) }}</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('pricing', user_language) }}</a></li>
+                    <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('features', user_language) }}</a></li>
                     <li class="dropdown">
-                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a>
+                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('contact_us', user_language) }}</a>
                         <div class="dropdown-content">
                             <div class="contact-info">
                                 <p class="mb-3"><i class="fas fa-envelope"></i> Email: support@kasikash.co.za</p>
@@ -246,7 +246,7 @@
                             </div>
                         </div>
                     </li>
-                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                    <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('about_us', user_language) }}</a></li>
                 </ul>
                 <button class="md:hidden text-white">
                     <i class="fas fa-bars text-2xl"></i>
@@ -259,9 +259,9 @@
             <div id="particles-js"></div>
             <div class="container mx-auto px-4">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('choose_your_plan', user_language) }}</h2>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('choose_your_plan', user_language)|replace('_', ' ')|title }}</h2>
                     <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                        {{ t('pricing_message', user_language) }}
+                        {{ t('pricing_message', user_language)|replace('_', ' ')|capitalize }}
                     </p>
                 </div>
 
@@ -270,64 +270,64 @@
                     <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-2 animate-float">🆓</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('free_plan', user_language) }}</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-2">{{ t('r0_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('free_plan', user_language)|replace('_', ' ')|title }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-2">{{ t('r0_per_month', user_language)|replace('_', ' ')|upper }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language)|replace('_', ' ')|title }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('up_to_5_members', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('up_to_5_members', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('monthly_tips_resources', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('monthly_tips_resources', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('events_pay_as_you_go', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('events_pay_as_you_go', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('marketplace_pay_as_you_go', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('marketplace_pay_as_you_go', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-2 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('savings_account_6_00_pa', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('savings_account_6_00_pa', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-2 to-ocean-2 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-3 hover:to-ocean-3">{{ t('get_started_free', user_language) }}</a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-2 to-ocean-2 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-3 hover:to-ocean-3">{{ t('get_started_free', user_language)|replace('_', ' ')|capitalize }}</a>
                         </div>
                     </div>
 
                     <!-- Silver Plan -->
                     <div class="card-hover bg-gray-900 bg-opacity-70 rounded-2xl overflow-hidden border-2 border-ocean-3 transform transition-all duration-500 hover:-translate-y-5 relative">
-                        <div class="absolute top-0 right-0 bg-ocean-3 text-black px-6 py-1 rounded-bl-lg font-bold">{{ t('most_popular', user_language) }}</div>
+                        <div class="absolute top-0 right-0 bg-ocean-3 text-black px-6 py-1 rounded-bl-lg font-bold">{{ t('most_popular', user_language)|replace('_', ' ')|title }}</div>
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-3 animate-float-reverse">🥈</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('silver_plan', user_language) }}</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-3">{{ t('r50_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('silver_plan', user_language)|replace('_', ' ')|title }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-3">{{ t('r50_per_month', user_language)|replace('_', ' ')|upper }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language)|replace('_', ' ')|title }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('up_to_10_members_r50_per_10_more', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('up_to_10_members_r50_per_10_more', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('monthly_learning_session', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('monthly_learning_session', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('events_up_to_10_discount', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('events_up_to_10_discount', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('marketplace_up_to_10_discount', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('marketplace_up_to_10_discount', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-3 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('savings_account_6_25_pa', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('savings_account_6_25_pa', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-3 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-4 hover:to-ocean-4">{{ t('choose_silver', user_language) }}</a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-3 to-ocean-3 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-4 hover:to-ocean-4">{{ t('choose_silver', user_language)|replace('_', ' ')|capitalize }}</a>
                         </div>
                     </div>
 
@@ -335,31 +335,31 @@
                     <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-5 animate-float">🥇</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('gold_plan', user_language) }}</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-5">{{ t('r100_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('gold_plan', user_language)|replace('_', ' ')|title }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-5">{{ t('r100_per_month', user_language)|replace('_', ' ')|upper }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language)|replace('_', ' ')|title }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('up_to_15_members_r75_per_10_more', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('up_to_15_members_r75_per_10_more', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('group_coach_access', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('group_coach_access', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('events_up_to_30_discount', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('events_up_to_30_discount', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('marketplace_up_to_30_discount', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('marketplace_up_to_30_discount', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-5 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('savings_account_6_75_pa', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('savings_account_6_75_pa', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-5 to-ocean-5 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-2 hover:to-ocean-2">{{ t('choose_gold', user_language) }}</a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-5 to-ocean-5 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-2 hover:to-ocean-2">{{ t('choose_gold', user_language)|replace('_', ' ')|capitalize }}</a>
                         </div>
                     </div>
 
@@ -367,39 +367,39 @@
                     <div class="card-hover bg-gray-900 bg-opacity-50 rounded-2xl overflow-hidden border border-gray-800 transform transition-all duration-500 hover:-translate-y-5">
                         <div class="p-8">
                             <div class="text-6xl mb-6 text-center text-ocean-4 animate-float-reverse">💎</div>
-                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('platinum_plan', user_language) }}</h3>
-                            <p class="text-4xl font-bold mb-6 text-center text-ocean-4">{{ t('r150_per_month', user_language) }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language) }}</span></p>
+                            <h3 class="text-2xl font-bold mb-2 text-center text-white">{{ t('platinum_plan', user_language)|replace('_', ' ')|title }}</h3>
+                            <p class="text-4xl font-bold mb-6 text-center text-ocean-4">{{ t('r150_per_month', user_language)|replace('_', ' ')|upper }}<span class="text-lg font-normal text-gray-300">{{ t('per_month', user_language)|replace('_', ' ')|title }}</span></p>
                             <ul class="space-y-4 mb-8">
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('up_to_20_members_r100_per_10_more', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('up_to_20_members_r100_per_10_more', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('executive_coach', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('executive_coach', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('0_5_hour_quarterly_check_in', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('0_5_hour_quarterly_check_in', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('events_up_to_50_discount', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('events_up_to_50_discount', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('exhibitor_stand', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('exhibitor_stand', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('marketplace_up_to_50_discount', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('marketplace_up_to_50_discount', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-ocean-4 mr-3 mt-1"></i>
-                                    <span class="text-gray-300">{{ t('savings_account_7_25_pa', user_language) }}</span>
+                                    <span class="text-gray-300">{{ t('savings_account_7_25_pa', user_language)|replace('_', ' ')|capitalize }}</span>
                                 </li>
                             </ul>
-                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-4 to-ocean-4 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-5 hover:to-ocean-5">{{ t('choose_platinum', user_language) }}</a>
+                            <a href="/register" class="block w-full bg-gradient-to-r from-ocean-4 to-ocean-4 text-black font-bold py-3 px-6 rounded-full text-center transition duration-300 hover:from-ocean-5 hover:to-ocean-5">{{ t('choose_platinum', user_language)|replace('_', ' ')|capitalize }}</a>
                         </div>
                     </div>
                 </div>

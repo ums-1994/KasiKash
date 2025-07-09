@@ -84,3 +84,17 @@ setInterval(updateNotificationBadge, 30000);
 
 // Run on page load
 document.addEventListener('DOMContentLoaded', updateNotificationBadge);
+
+function shouldShowTutorial() {
+    // Only show tutorial if showTutorialPopups is true
+    return (typeof showTutorialPopups !== 'undefined' && showTutorialPopups === true);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (shouldShowTutorial()) {
+        // Your tutorial pop-up logic here
+        if (typeof startAppTutorial === 'function') {
+            startAppTutorial();
+        }
+    }
+});

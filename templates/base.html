@@ -168,49 +168,49 @@
     <div class="h-screen w-64 bg-gray-900 flex flex-col justify-between fixed inset-y-0 left-0">
       <div>
         <div class="p-6">
-          <span class="text-2xl font-bold text-white">KasiKash</span>
+          <span class="text-2xl font-bold text-white">{{ t('kasikash', user_language) }}</span>
         </div>
         <nav class="mt-8">
           <ul class="space-y-2">
             <li>
               <a href="/home" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-home mr-3"></i> Home
+                <i class="fas fa-home mr-3"></i> {{ t('home', user_language) }}
               </a>
             </li>
             <li>
               <a href="/stokvels" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-users mr-3"></i> Stokvels
+                <i class="fas fa-users mr-3"></i> {{ t('stokvels', user_language) }}
               </a>
             </li>
             <li>
               <a href="/contributions" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-dollar-sign mr-3"></i> Contributions
+                <i class="fas fa-dollar-sign mr-3"></i> {{ t('contributions', user_language) }}
               </a>
             </li>
             <li>
               <a href="/payouts" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-wallet mr-3"></i> Payouts
+                <i class="fas fa-wallet mr-3"></i> {{ t('payouts', user_language) }}
               </a>
             </li>
             <li>
               <a href="/savings_goals" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-chart-line mr-3"></i> Savings Goals
+                <i class="fas fa-chart-line mr-3"></i> {{ t('savings_goals', user_language) }}
               </a>
             </li>
             <li>
               <a href="/payment_methods" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-credit-card mr-3"></i> Payment Methods
+                <i class="fas fa-credit-card mr-3"></i> {{ t('payment_methods', user_language) }}
               </a>
             </li>
             <li>
               <a href="/settings" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-cog mr-3"></i> Settings
+                <i class="fas fa-cog mr-3"></i> {{ t('settings', user_language) }}
               </a>
             </li>
             {% if session.role == 'admin' %}
             <li>
               <a href="/admin/dashboard" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-user-shield mr-3"></i> Admin
+                <i class="fas fa-user-shield mr-3"></i> {{ t('admin', user_language) }}
               </a>
             </li>
             {% endif %}
@@ -228,7 +228,7 @@
               U
             {% endif %}
           </span>
-          Logout
+          {{ t('logout', user_language) }}
         </a>
       </div>
     </div>
@@ -304,14 +304,20 @@
           localStorage.setItem(getTutorialKey(), 'true');
         });
       }
-      // On first visit to this page, show tutorial
+      // On first visit to this page, show tutorial ONLY if showTutorialPopups is true
       document.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem(getTutorialKey()) !== 'true') {
-          setTimeout(function() {
-            startAppTutorial();
-          }, 800);
+        if (typeof showTutorialPopups !== 'undefined' && showTutorialPopups === true) {
+          if (localStorage.getItem(getTutorialKey()) !== 'true') {
+            setTimeout(function() {
+              startAppTutorial();
+            }, 800);
+          }
         }
       });
+    </script>
+    <script>
+        var showTutorialPopups = {{ 'true' if user.show_tutorial_popups else 'false' }};
+        var isNewUser = {{ 'true' if user.is_new_user else 'false' }};
     </script>
     {% block extra_js %}{% endblock %}
 </body>

@@ -437,7 +437,7 @@ body {
   <div class="welcome-content" style="display: flex; align-items: center; justify-content: space-between;">
     <div>
       <h2 class="welcome-title" data-intro="This is your dashboard title. It shows your current section." data-step="2">{{ t('dashboard', user_language) }}</h2>
-      <div class="welcome-subtitle" data-intro="A friendly welcome message to greet you every time you log in." data-step="3">{{ t('welcome_back', user_language) }}</div>
+      <div class="welcome-subtitle" data-intro="A friendly welcome message to greet you every time you log in." data-step="3">{{ t('welcome_back', user_language) }}, {{ user.username }}!</div>
     </div>
     <div style="display: flex; align-items: center; gap: 1rem;">
       <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #fff;">
@@ -512,39 +512,37 @@ body {
       </a>
     </div>
   </div>
-  <!-- Recent Activity Card (now in grid, spans 2 columns on large screens) -->
-  <div class="glass-card activity-card" style="grid-column: span 2;" data-intro="Recent Activity: See your latest contributions, goals, and withdrawals here." data-step="6">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
-      <div style="display: flex; align-items: center;">
-        <i class="fas fa-stream accent" style="font-size: 1.25rem; margin-right: 0.75rem;"></i>
-        <span class="accent" style="font-size: 1.125rem; font-weight: bold;">{{ t('recent_activity', user_language) }}</span>
-      </div>
-      <a href="{{ url_for('activities') }}" style="background: rgba(255,255,255,0.05); color: #fff; font-size: 0.875rem; border-radius: 0.75rem; padding: 0.5rem 1rem; border: none; transition: background 0.2s; text-decoration: none;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">{{ t('view_all', user_language) }}</a>
+  <!-- Recent Activity Timeline Card -->
+  <div class="glass-card" style="min-width: 320px;" data-intro="This timeline shows your most recent transactions. New transactions will appear here as soon as they're made." data-step="6">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+      <span class="accent" style="font-size: 1.125rem; font-weight: bold;">{{ t('recent_activity', user_language) }}</span>
+      <button id="refresh-activity-btn" style="background: #7B61FF; color: #fff; border: none; border-radius: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.9rem; cursor: pointer;">{{ t('refresh', user_language) }}</button>
     </div>
-    <div class="activity-timeline">
-      {% for activity in recent_activities|default([
-        {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': '2 hours ago', 'status': 'Processed'},
-        {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': 'Yesterday', 'status': 'Achieved'},
-        {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': '3 days ago', 'status': 'Completed'}
-      ]) %}
-      <div class="timeline-item">
-        <div class="timeline-content">
-          <div class="timeline-header">
-            <span class="timeline-title">{{ activity.title }}</span>
-            <span class="timeline-date">{{ activity.date }}</span>
+    <div class="activity-timeline" id="activity-timeline">
+      {% if recent_activities and recent_activities|length > 0 %}
+        {% for activity in recent_activities %}
+        <div class="timeline-item" style="margin-bottom: 1.25rem;">
+          <div class="timeline-content">
+            <div class="timeline-header" style="display: flex; align-items: center; justify-content: space-between;">
+              <span class="timeline-title" style="font-weight: 600;">{{ activity.title }}</span>
+              <span class="timeline-date" style="font-size: 0.95rem; color: #a5b4fc;">{{ activity.date }}</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+              <span class="timeline-badge {% if activity.type == 'contribution' %}badge-contribution{% elif activity.type == 'withdrawal' %}badge-withdrawal{% elif activity.type == 'payout' %}badge-payout{% else %}badge-goal{% endif %}" style="font-size: 0.95rem;">
+                <i class="fas {% if activity.type == 'contribution' %}fa-arrow-up{% elif activity.type == 'withdrawal' %}fa-arrow-down{% elif activity.type == 'payout' %}fa-gift{% else %}fa-flag{% endif %}" style="margin-right: 0.25rem;"></i>
+                {{ activity.status }}
+              </span>
+              <span class="timeline-amount" style="font-weight: 600; color: #7B61FF;">R {{ "%.2f"|format(activity.amount) }}</span>
+            </div>
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
-            <span class="timeline-badge {% if activity.type == 'contribution' %}badge-contribution{% elif activity.type == 'withdrawal' %}badge-withdrawal{% else %}badge-goal{% endif %}">
-              <i class="fas {% if activity.type == 'contribution' %}fa-arrow-up{% elif activity.type == 'withdrawal' %}fa-arrow-down{% else %}fa-flag{% endif %}" style="margin-right: 0.25rem;"></i>
-              {{ activity.status }}
-            </span>
-            <span class="timeline-amount">R {{ "%.2f"|format(activity.amount) }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="color: #a5b4fc; text-align: center;">{{ t('no_recent_activity_yet', user_language) }}</div>
+      {% endif %}
+      <div style="margin-top: 1rem; font-size: 0.95rem; color: #a5b4fc; text-align: center;">{{ t('new_transactions_appear_here', user_language) }}</div>
     </div>
-</div>
-    </div>
-      {% endfor %}
-    </div>
-</div>
+  </div>
   <!-- Calendar Card (now in grid, spans 2 columns on large screens) -->
   <div class="glass-card calendar-card" style="grid-column: span 2;" data-intro="Calendar: Track important dates and events for your stokvels." data-step="7">
     <div class="calendar-nav">

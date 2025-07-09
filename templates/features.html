@@ -73,14 +73,14 @@
         <div class="container mx-auto flex justify-between items-center">
             <a href="/" class="flex items-center space-x-3">
                 <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto">
-                <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                <span class="text-2xl font-bold text-gradient glow">{{ t('kasikash', user_language) }}</span>
             </a>
             <ul class="hidden md:flex space-x-8">
-                <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
-                <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
-                <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
-                <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a></li>
-                <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('login', user_language) }}</a></li>
+                <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('pricing', user_language) }}</a></li>
+                <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('features', user_language) }}</a></li>
+                <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('contact_us', user_language) }}</a></li>
+                <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('about_us', user_language) }}</a></li>
             </ul>
         </div>
     </nav>
@@ -90,12 +90,11 @@
         <div class="container mx-auto px-4 text-center">
             <h1 class="text-5xl md:text-6xl font-bold mb-6 text-gradient">Our Features</h1>
             <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                Discover how KasiKash transforms traditional stokvels into powerful digital communities
+                KasiKash is trusted, secure, and built for South African stokvels. Discover what makes us different.
             </p>
         </div>
     </section>
-
-    <!-- Main Features Grid -->
+    <!-- Main Features Grid (merged) -->
     <section class="py-20">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -112,7 +111,6 @@
                         <li><i class="fas fa-check text-ocean-2 mr-2"></i> Investment recommendations</li>
                     </ul>
                 </div>
-
                 <!-- Community Management -->
                 <div class="feature-card rounded-2xl p-8">
                     <div class="text-5xl mb-6 text-ocean-3 text-center">
@@ -126,7 +124,6 @@
                         <li><i class="fas fa-check text-ocean-3 mr-2"></i> Meeting scheduling</li>
                     </ul>
                 </div>
-
                 <!-- Security -->
                 <div class="feature-card rounded-2xl p-8">
                     <div class="text-5xl mb-6 text-ocean-5 text-center">
@@ -134,13 +131,12 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">Bank-Level Security</h3>
                     <ul class="text-gray-300 space-y-3">
-                        <li><i class="fas fa-check text-ocean-5 mr-2"></i> 256-bit encryption</li>
+                        <li><i class="fas fa-check text-ocean-5 mr-2"></i> Encryption</li>
                         <li><i class="fas fa-check text-ocean-5 mr-2"></i> Multi-factor authentication</li>
-                        <li><i class="fas fa-check text-ocean-5 mr-2"></i> Regular security audits</li>
+                        <li><i class="fas fa-check text-ocean-5 mr-2"></i> Security audits</li>
                         <li><i class="fas fa-check text-ocean-5 mr-2"></i> Fraud protection</li>
                     </ul>
                 </div>
-
                 <!-- Events & Marketplace -->
                 <div class="feature-card rounded-2xl p-8">
                     <div class="text-5xl mb-6 text-ocean-4 text-center">
@@ -148,19 +144,18 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">Events & Marketplace</h3>
                     <ul class="text-gray-300 space-y-3">
-                        <li><i class="fas fa-check text-ocean-4 mr-2"></i> Exclusive member events</li>
+                        <li><i class="fas fa-check text-ocean-4 mr-2"></i> Exclusive events</li>
                         <li><i class="fas fa-check text-ocean-4 mr-2"></i> Partner discounts</li>
                         <li><i class="fas fa-check text-ocean-4 mr-2"></i> Community marketplace</li>
                         <li><i class="fas fa-check text-ocean-4 mr-2"></i> Networking opportunities</li>
                     </ul>
                 </div>
-
                 <!-- Mobile App -->
                 <div class="feature-card rounded-2xl p-8">
                     <div class="text-5xl mb-6 text-ocean-2 text-center">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">Mobile Experience</h3>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Easy-to-Use Platform</h3>
                     <ul class="text-gray-300 space-y-3">
                         <li><i class="fas fa-check text-ocean-2 mr-2"></i> iOS and Android apps</li>
                         <li><i class="fas fa-check text-ocean-2 mr-2"></i> Real-time notifications</li>
@@ -168,7 +163,6 @@
                         <li><i class="fas fa-check text-ocean-2 mr-2"></i> Offline access</li>
                     </ul>
                 </div>
-
                 <!-- Analytics -->
                 <div class="feature-card rounded-2xl p-8">
                     <div class="text-5xl mb-6 text-ocean-3 text-center">
@@ -185,66 +179,112 @@
             </div>
         </div>
     </section>
-
-    <!-- CTA Section -->
-    <section class="py-20 bg-black bg-opacity-50">
-        <div class="container mx-auto px-4 text-center">
-            <h2 class="text-4xl font-bold mb-6 text-gradient">{{ t('ready_to_get_started', user_language) }}</h2>
-            <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                {{ t('join_thousands', user_language) }}
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="/register" class="bg-gradient-to-r from-ocean-3 to-ocean-2 text-black font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">
-                    {{ t('start_free_trial', user_language) }}
-                </a>
-                <a href="/contact" class="border border-ocean-2 text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">
-                    {{ t('contact_sales', user_language) }}
-                </a>
+    <!-- Testimonials and Footer remain -->
+<section class="py-20 bg-black relative overflow-hidden">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold mb-4 text-gradient">Testimonials</h2>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">See what our users have to say about KasiKash.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800">
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-ocean-2 flex items-center justify-center text-2xl font-bold">T</div>
+                    <div class="ml-4">
+                        <h4 class="text-xl font-bold text-white">Thandi M.</h4>
+                        <p class="text-gray-400">Johannesburg Stokvel</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 italic">"KasiKash has transformed how our stokvel operates. We've grown our savings by 40% in just one year with their smart tools."</p>
+                <div class="mt-4 text-ocean-2">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800 transform transition-all duration-500 hover:scale-105">
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-ocean-3 flex items-center justify-center text-2xl font-bold">S</div>
+                    <div class="ml-4">
+                        <h4 class="text-xl font-bold text-white">Sipho K.</h4>
+                        <p class="text-gray-400">Cape Town Investment Club</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 italic">"The security features gave us peace of mind, and the interest rates are better than any bank. Our members love the transparency."</p>
+                <div class="mt-4 text-ocean-3">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800">
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-ocean-5 flex items-center justify-center text-2xl font-bold">N</div>
+                    <div class="ml-4">
+                        <h4 class="text-xl font-bold text-white">Nomvula P.</h4>
+                        <p class="text-gray-400">Durban Savings Group</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 italic">"From burial society to property investors - KasiKash helped us level up our stokvel game. The platinum coaching is worth every cent!"</p>
+                <div class="mt-4 text-ocean-5">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                </div>
             </div>
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-black text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
-                    <p class="text-gray-400 mb-4">
-                        Your digital stokvel platform for community wealth building.
-                    </p>
-                </div>
-                <div>
-                    <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="/get_started" class="text-gray-400 hover:text-white">Get Started</a></li>
-                        <li><a href="/features" class="text-gray-400 hover:text-white">Features</a></li>
-                        <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
-                        <li><a href="/about" class="text-gray-400 hover:text-white">About</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Licenses</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
-                    <ul class="space-y-2">
-                        <li class="text-gray-400">Email: support@kasikash.co.za</li>
-                        <li class="text-gray-400">Phone: +27 11 123 4567</li>
-                        <li class="text-gray-400">Address: Johannesburg, South Africa</li>
-                    </ul>
+    </div>
+</section>
+<footer class="bg-black text-white py-12">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="text-2xl font-bold mb-4 text-gradient glow">KasiKash</h4>
+                <p class="text-gray-400 mb-4">KasiKash is your digital stokvel buddy — built for Mzanzi’s vibrant communities. We make stokvel savings simple, safe, and rewarding.</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-ocean-3 transition duration-300"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-ocean-5 transition duration-300"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-ocean-4 transition duration-300"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; 2024 KasiKash. All rights reserved.</p>
+            <div>
+                <h4 class="text-xl font-bold mb-4 text-white">Quick Links</h4>
+                <ul class="space-y-2">
+                    <li><a href="/get_started" class="text-gray-400 hover:text-white">Get Started</a></li>
+                    <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
+                    <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
+                    <li><a href="#about" class="text-gray-400 hover:text-white">About</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-xl font-bold mb-4 text-white">Legal</h4>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white">Licenses</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-xl font-bold mb-4 text-white">Contact Us</h4>
+                <ul class="space-y-2">
+                    <li class="text-gray-400">Email: support@kasikash.co.za</li>
+                    <li class="text-gray-400">Phone: +27 11 123 4567</li>
+                    <li class="text-gray-400">Address: Johannesburg, South Africa</li>
+                </ul>
             </div>
         </div>
-    </footer>
+        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 KasiKash. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
 
     <script>
         // GSAP animations

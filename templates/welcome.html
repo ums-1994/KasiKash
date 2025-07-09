@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KasiKash - Digital Stokvel Platform</title>
+    <title>{{ t('welcome_title', user_language) }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -233,20 +233,20 @@
                     <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
                 </a>
                 <ul class="hidden md:flex space-x-8">
-                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
-                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
-                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('login', user_language) }}</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('pricing', user_language) }}</a></li>
+                    <li><a href="#features" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('features', user_language) }}</a></li>
                     <li class="dropdown">
-                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a>
+                        <a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('contact', user_language) }}</a>
                         <div class="dropdown-content">
                             <div class="contact-info">
-                                <p class="mb-3"><i class="fas fa-envelope"></i> Email: support@kasikash.co.za</p>
-                                <p class="mb-3"><i class="fas fa-phone"></i> Phone: +27 11 123 4567</p>
-                                <p><i class="fas fa-map-marker-alt"></i> Address: Johannesburg, South Africa</p>
+                                <p class="mb-3"><i class="fas fa-envelope"></i> {{ t('email_support', user_language) }}: support@kasikash.co.za</p>
+                                <p class="mb-3"><i class="fas fa-phone"></i> {{ t('phone_number', user_language) }}: +27 11 123 4567</p>
+                                <p><i class="fas fa-map-marker-alt"></i> {{ t('address_location', user_language) }}: Johannesburg, South Africa</p>
                             </div>
                         </div>
                     </li>
-                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                    <li><a href="#about" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('about', user_language) }}</a></li>
                 </ul>
                 <button class="md:hidden text-white">
                     <i class="fas fa-bars text-2xl"></i>
@@ -257,12 +257,13 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
             <div class="container mx-auto px-4 py-20 text-center relative z-10">
+                <span class="block text-2xl font-bold text-gradient glow mb-2">KasiKash</span>
                 <h1 class="text-5xl md:text-6xl font-extrabold text-gradient glow mb-4" style="letter-spacing: -2px;">Welcome to KasiKash</h1>
+                <h2 class="text-2xl md:text-3xl font-bold text-ocean-2 mb-4">Your Digital Stokvel Platform</h2>
                 <div class="max-w-2xl mx-auto mb-6">
                     <div class="bg-white/10 border border-white/20 rounded-2xl p-6 shadow-lg flex flex-col items-center">
-                        <h2 class="text-2xl md:text-3xl font-bold text-ocean-2 mb-2">Your Digital Stokvel Platform</h2>
-                        <p class="text-lg md:text-xl text-white/90 mb-2">KasiKash empowers you to save, grow, and manage your money together. Create stokvels, set savings goals, make contributions, request payouts, and more—all in one secure, easy-to-use app.</p>
-                        <p class="text-base text-ocean-3">Join a community of savers and unlock your financial potential!</p>
+                        <p class="text-lg md:text-xl text-white/90 mb-2">KasiKash is your digital stokvel buddy — built right here for Mzanzi’s vibrant communities. We’re on a mission to grow community wealth by making stokvel savings simple, safe, and seriously rewarding.</p>
+                        <p class="text-base text-ocean-3">Whether you’re saving for December groceries, back-to-school expenses, or a big celebration, KasiKash helps your group manage money the smart way — with less admin, more trust, and plenty of rewards.</p>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
@@ -270,260 +271,17 @@
                     <a href="/login" class="bg-black/80 text-white font-bold py-4 px-10 rounded-full text-lg shadow-lg hover:bg-ocean-1 transition duration-300 transform hover:scale-105">Login</a>
                 </div>
             </div>
-            
-            <!-- Wave Shape -->
-            <div class="wave-shape">
-                <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                    <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="shape-fill"></path>
-                    <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" class="shape-fill"></path>
-                    <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="shape-fill"></path>
-                </svg>
-            </div>
         </section>
-
-        <!-- Why Choose KasiKash Section -->
-        <section id="features" class="py-20 bg-black bg-opacity-50 relative overflow-hidden">
-            <div class="container mx-auto px-4">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient" data-intro="These are some of the reasons to choose KasiKash. Explore the features below!" data-step="6">{{ t('why_choose_heading', user_language)|replace('_', ' ')|title }}</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('why_choose_message', user_language)|replace('_', ' ')|title }}</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('sarb_regulated_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('sarb_regulated_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800 transform transition-all duration-500 hover:scale-105">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl backdrop-blur-md border border-gray-800">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_focused_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('community_focused_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
-            <div class="container mx-auto px-4">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('our_features_heading', user_language)|replace('_', ' ')|title }}</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('our_features_message', user_language)|replace('_', ' ')|title }}</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" data-intro="Explore these main features of KasiKash. Each card represents a powerful tool for your financial journey!" data-step="7">
-                    <!-- Smart Savings -->
-                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-2 transition-all duration-300">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('smart_savings_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('smart_savings_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-
-                    <!-- Community Management -->
-                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-3 transition-all duration-300">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_management_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('community_management_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-
-                    <!-- Bank-Level Security -->
-                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-5 transition-all duration-300">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-5 text-center">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('bank_level_security_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('bank_level_security_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-
-                    <!-- Community Success -->
-                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-4 transition-all duration-300">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-4 text-center">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('community_success_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('community_success_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-
-                    <!-- Easy-to-Use Platform -->
-                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-2 transition-all duration-300">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-2 text-center">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('easy_to_use_platform_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('easy_to_use_platform_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-
-                    <!-- Events & Marketplace -->
-                    <div class="feature-card bg-gray-900 bg-opacity-50 rounded-2xl p-8 border border-gray-800 hover:border-ocean-3 transition-all duration-300">
-                        <div class="feature-icon text-5xl mb-6 text-ocean-3 text-center">
-                            <i class="fas fa-store"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">{{ t('events_marketplace_heading', user_language)|replace('_', ' ')|title }}</h3>
-                        <p class="text-gray-300">{{ t('events_marketplace_message', user_language)|replace('_', ' ')|title }}</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section class="py-20 bg-black relative overflow-hidden">
-            <div class="container mx-auto px-4">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4 text-gradient">{{ t('testimonials_heading', user_language)|replace('_', ' ')|title }}</h2>
-                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">{{ t('testimonials_message', user_language)|replace('_', ' ')|title }}</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Testimonial 1 -->
-                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800">
-                        <div class="flex items-center mb-6">
-                            <div class="w-16 h-16 rounded-full bg-ocean-2 flex items-center justify-center text-2xl font-bold">T</div>
-                            <div class="ml-4">
-                                <h4 class="text-xl font-bold text-white">Thandi M.</h4>
-                                <p class="text-gray-400">Johannesburg Stokvel</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 italic">
-                            "KasiKash has transformed how our stokvel operates. We've grown our savings by 40% in just one year with their smart tools."
-                        </p>
-                        <div class="mt-4 text-ocean-2">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- Testimonial 2 -->
-                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800 transform transition-all duration-500 hover:scale-105">
-                        <div class="flex items-center mb-6">
-                            <div class="w-16 h-16 rounded-full bg-ocean-3 flex items-center justify-center text-2xl font-bold">S</div>
-                            <div class="ml-4">
-                                <h4 class="text-xl font-bold text-white">Sipho K.</h4>
-                                <p class="text-gray-400">Cape Town Investment Club</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 italic">
-                            "The security features gave us peace of mind, and the interest rates are better than any bank. Our members love the transparency."
-                        </p>
-                        <div class="mt-4 text-ocean-3">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- Testimonial 3 -->
-                    <div class="card-hover bg-gray-900 bg-opacity-50 p-8 rounded-2xl border border-gray-800">
-                        <div class="flex items-center mb-6">
-                            <div class="w-16 h-16 rounded-full bg-ocean-5 flex items-center justify-center text-2xl font-bold">N</div>
-                            <div class="ml-4">
-                                <h4 class="text-xl font-bold text-white">Nomvula P.</h4>
-                                <p class="text-gray-400">Durban Savings Group</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 italic">
-                            "From burial society to property investors - KasiKash helped us level up our stokvel game. The platinum coaching is worth every cent!"
-                        </p>
-                        <div class="mt-4 text-ocean-5">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="py-20 rainbow-gradient relative overflow-hidden" data-intro="This section encourages you to start your free trial and join the KasiKash community." data-step="8">
+        <!-- Start Your Free Trial CTA Section -->
+        <section class="py-20 rainbow-gradient relative overflow-hidden">
             <div class="container mx-auto px-4 text-center">
-                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">{{ t('cta_heading', user_language)|replace('_', ' ')|title }}</h2>
-                <p class="text-xl text-black mb-8 max-w-3xl mx-auto">{{ t('cta_message', user_language)|replace('_', ' ')|title }}</p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-black">Start Your Free Trial</h2>
+                <p class="text-xl text-black mb-8 max-w-3xl mx-auto">Join KasiKash today and experience the future of stokvel savings. No credit card required.</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="/register" class="bg-black text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90">{{ t('start_your_free_trial', user_language)|replace('_', ' ')|title }}</a>
+                    <a href="/register" class="bg-black text-white font-bold py-4 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90">Start Your Free Trial</a>
                 </div>
             </div>
         </section>
-
-        <!-- Footer -->
-        <footer class="bg-black text-white py-12" data-intro="This is the footer. Here you can find more information about KasiKash, legal links, and contact details." data-step="10">
-            <div class="container mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div>
-                        <h4 class="text-2xl font-bold mb-4 text-gradient glow">{{ t('app_name', user_language)|replace('_', ' ')|title }}</h4>
-                        <p class="text-gray-400 mb-4">
-                            {{ t('footer_about_message', user_language)|replace('_', ' ')|title }}
-                        </p>
-                        <div class="flex space-x-4">
-                            <a href="#" class="text-gray-400 hover:text-ocean-2 transition duration-300">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-ocean-3 transition duration-300">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-ocean-5 transition duration-300">
-                                <i class="fab fa-instagram"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-ocean-4 transition duration-300">
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-bold mb-4 text-white" data-intro="Quick Links: Use these shortcuts to quickly access important pages like getting started, features, contact, and about." data-step="9">{{ t('quick_links', user_language)|replace('_', ' ')|title }}</h4>
-                        <ul class="space-y-2">
-                            <li><a href="/get_started" class="text-gray-400 hover:text-white">{{ t('get_started', user_language)|replace('_', ' ')|title }}</a></li>
-                            <li><a href="#features" class="text-gray-400 hover:text-white">{{ t('features', user_language)|replace('_', ' ')|title }}</a></li>
-                            <li><a href="/contact" class="text-gray-400 hover:text-white">{{ t('contact', user_language)|replace('_', ' ')|title }}</a></li>
-                            <li><a href="#about" class="text-gray-400 hover:text-white">{{ t('about', user_language)|replace('_', ' ')|title }}</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('legal', user_language)|replace('_', ' ')|title }}</h4>
-                        <ul class="space-y-2">
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('terms_of_service', user_language)|replace('_', ' ')|title }}</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('privacy_policy', user_language)|replace('_', ' ')|title }}</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white">{{ t('licenses', user_language)|replace('_', ' ')|title }}</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-bold mb-4 text-white">{{ t('contact_us', user_language)|replace('_', ' ')|title }}</h4>
-                        <ul class="space-y-2">
-                            <li class="text-gray-400">{{ t('email', user_language)|replace('_', ' ')|title }}: support@kasikash.co.za</li>
-                            <li class="text-gray-400">{{ t('phone', user_language)|replace('_', ' ')|title }}: +27 11 123 4567</li>
-                            <li class="text-gray-400">{{ t('address', user_language)|replace('_', ' ')|title }}: Johannesburg, South Africa</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                    <p>&copy; 2024 KasiKash. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
     </div>
 
     <script>

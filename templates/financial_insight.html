@@ -2,28 +2,28 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-4">{{ t('financial_insight_heading', user_language) }}</h1>
-    <span>{{ t('no_financial_insight', user_language) }}</span>
+    <h1 class="text-3xl font-bold mb-4">{{ t('financial_insight_heading', user_language)|replace('_', ' ')|title }}</h1>
+    <span>{{ t('no_financial_insight', user_language)|replace('_', ' ')|capitalize }}</span>
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Contributions</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t('total_contributions', user_language)|replace('_', ' ')|capitalize }}</h3>
             <p class="text-2xl font-bold text-green-600">R{{ '%.2f'|format(total_contributions) }}</p>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Payouts</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t('total_payouts', user_language)|replace('_', ' ')|capitalize }}</h3>
             <p class="text-2xl font-bold text-blue-600">R{{ '%.2f'|format(total_payouts) }}</p>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Loans</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t('total_loans', user_language)|replace('_', ' ')|capitalize }}</h3>
             <p class="text-2xl font-bold text-yellow-600">R{{ '%.2f'|format(total_loans) }}</p>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Current Balance</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t('current_balance', user_language)|replace('_', ' ')|capitalize }}</h3>
             <p class="text-2xl font-bold text-purple-600">R{{ '%.2f'|format(current_balance) }}</p>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Members</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t('total_members', user_language)|replace('_', ' ')|capitalize }}</h3>
             <p class="text-2xl font-bold text-indigo-600">{{ member_count }}</p>
         </div>
     </div>
@@ -31,16 +31,16 @@
     <!-- Stokvels Table -->
     <div class="bg-white rounded-lg shadow mb-8">
         <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Your Stokvels</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">{{ t('your_stokvels', user_language)|replace('_', ' ')|title }}</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Pool</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Contribution</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('name', user_language) }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('total_pool', user_language)|replace('_', ' ')|capitalize }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('monthly_contribution', user_language)|replace('_', ' ')|capitalize }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('target_amount', user_language)|replace('_', ' ')|capitalize }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ t('target_date', user_language)|replace('_', ' ')|capitalize }}</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -53,7 +53,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stokvel[5] if stokvel[5] else 'N/A' }}</td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="5" class="text-center py-4 text-gray-400">No stokvels found.</td></tr>
+                        <tr><td colspan="5" class="text-center py-4 text-gray-400">{{ t('no_stokvels_found', user_language)|replace('_', ' ')|capitalize }}</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -64,15 +64,15 @@
     <!-- Charts Section -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Contributions Over Time</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">{{ t('contributions_over_time', user_language)|replace('_', ' ')|capitalize }}</h3>
             <div id="contributionsChart" style="height:300px;"></div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Payouts Over Time</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">{{ t('payouts_over_time', user_language)|replace('_', ' ')|capitalize }}</h3>
             <div id="payoutsChart" style="height:300px;"></div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Loans Over Time</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">{{ t('loans_over_time', user_language)|replace('_', ' ')|capitalize }}</h3>
             <div id="loansChart" style="height:300px;"></div>
         </div>
     </div>

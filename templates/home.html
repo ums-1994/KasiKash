@@ -30,8 +30,8 @@
 <div class="relative h-48 w-full bg-gradient-to-r from-green-500 to-orange-500 flex items-center p-8 rounded-lg shadow-md text-white text-xl font-semibold overflow-hidden">
     <div class="absolute inset-0 pattern-wavy pattern-green-600 pattern-opacity-20 pattern-size-6"></div>
     <div class="relative z-10">
-        <h2 class="text-3xl font-bold mb-2">Sawubona, {{ user_name }}! 👋</h2>
-        <p>You're doing great with your savings journey. Keep up the excellent work!</p>
+        <h2 class="text-3xl font-bold mb-2">{{ t('welcome_banner', user_language) }}, {{ user_name }}! 👋</h2>
+        <p>{{ t('savings_journey_message', user_language) }}</p>
     </div>
 </div>
 
@@ -39,9 +39,9 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
     <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
      <div>
-            <p class="text-gray-600">Total Saved</p>
+            <p class="text-gray-600">{{ t('total_saved', user_language) }}</p>
             <h3 class="text-2xl font-bold text-gray-800">R {{ earning + invest + saving - spend }}</h3> {# Simplified total saved calculation #}
-            <p class="text-sm text-gray-500">Across all stokvels</p>
+            <p class="text-sm text-gray-500">{{ t('across_all_stokvels', user_language) }}</p>
         </div>
         <div class="p-3 bg-gray-200 rounded-full">
             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -52,9 +52,9 @@
 
     <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
         <div>
-            <p class="text-gray-600">Monthly Contributions</p>
+            <p class="text-gray-600">{{ t('monthly_contributions', user_language) }}</p>
             <h3 class="text-2xl font-bold text-gray-800">R {{ earning }}</h3> {# Using earning as a placeholder for monthly contributions #}
-            <p class="text-sm text-gray-500">Total per month</p>
+            <p class="text-sm text-gray-500">{{ t('total_per_month', user_language) }}</p>
              </div>
         <div class="p-3 bg-gray-200 rounded-full">
             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -65,7 +65,7 @@
 
     <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
         <div>
-            <p class="text-gray-600">Active Stokvels</p>
+            <p class="text-gray-600">{{ t('active_stokvels', user_language) }}</p>
             <h3 class="text-2xl font-bold text-gray-800">{{ active_stokvels | default(0) }}</h3> {# Assuming active_stokvels is passed #}
             <p class="text-sm text-gray-500">{{ t('participating_groups', user_language) }}</p>
              </div>
@@ -78,7 +78,7 @@
 
     <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
         <div>
-            <p class="text-gray-600">Next Payout</p>
+            <p class="text-gray-600">{{ t('next_payout', user_language) }}</p>
             <h3 class="text-2xl font-bold text-gray-800">{{ next_payout_date | default("N/A") }}</h3> {# Placeholder for next payout date #}
             <p class="text-sm text-gray-500">R {{ next_payout_amount | default("0.00") }}</p> {# Placeholder for next payout amount #}
              </div>
@@ -94,8 +94,8 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
     <!-- Upcoming Payments -->
     <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Upcoming Payments</h3>
-        <p class="text-gray-600 mb-4">Your contribution schedule</p>
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">{{ t('upcoming_payments', user_language) }}</h3>
+        <p class="text-gray-600 mb-4">{{ t('contribution_schedule', user_language) }}</p>
         <ul>
              {# Loop through upcoming payments data - Placeholder #}
             {% if upcoming_payments %}
@@ -109,7 +109,7 @@
                 </li>
                 {% endfor %}
             {% else %}
-                <li class="py-3 text-gray-500">No upcoming payments.</li>
+                <li class="py-3 text-gray-500">{{ t('no_upcoming_payments', user_language) }}</li>
             {% endif %}
         </ul>
                      </div>
@@ -138,7 +138,7 @@
                               </li>
                               {% endfor %}
             {% else %}
-                <li class="py-3 text-gray-500">No recent activity.</li>
+                <li class="py-3 text-gray-500">{{ t('no_recent_activity', user_language) }}</li>
             {% endif %}
         </ul>
               </div>
@@ -148,8 +148,8 @@
 <div class="mt-8">
     <h3 class="text-xl font-semibold text-gray-800 mb-4">{{ t('your_stokvels', user_language) }}</h3>
     <p class="text-gray-600 mb-4">{{ t('overview_of_savings_groups', user_language) }}</p>
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">Your Stokvels</h3>
-    <p class="text-gray-600 mb-4">Overview of your savings groups</p>
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">{{ t('your_stokvels', user_language) }}</h3>
+    <p class="text-gray-600 mb-4">{{ t('overview_of_savings_groups', user_language) }}</p>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {# Loop through stokvels data - Placeholder #}
         {% for i in range(active_stokvels | default(0)) %} {# Displaying dummy stokvels based on active_stokvels count #}
@@ -168,7 +168,7 @@
                      {% endfor %}
         {% if (active_stokvels | default(0)) == 0 %}
              <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-3">
-                <p class="text-gray-500 text-center">No stokvels found.</p>
+                <p class="text-gray-500 text-center">{{ t('no_stokvels_found', user_language) }}</p>
              </div>
         {% endif %}
     </div>
@@ -176,39 +176,37 @@
 
 
 <!-- Add Record Modal - Using existing structure with Tailwind classes -->
-<div class="modal fade" id="add_record" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-green-500 text-white">
-                <h5 class="modal-title" id="addRecordModalLabel">Add New Expense Record</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                     </div>
-            <div class="modal-body">
-                <form method="post" action="/home/add_expense">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="e_date">Date</label>
-                        <input type="date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="e_date" name="e_date" required>
-                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="e_type">Expense Type</label>
-                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="e_type" name="e_type" required>
-                            <option value="" disabled selected>Select type...</option>
-                            <option value="Earning">Earning</option>
-                            <option value="Spend">Spend</option>
-                            <option value="Investment">Investment</option>
-                            <option value="Saving">Saving</option>
+<div id="add_record" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 border-white/10">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-6">
+                <h5 class="text-xl font-bold text-white" id="addRecordModalLabel">{{ t('add_new_expense_record', user_language) }}</h5>
+                <button type="button" onclick="document.getElementById('add_record').classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <form method="post" action="/home/add_expense">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2" for="e_date">{{ t('date', user_language) }}</label>
+                        <input type="date" class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="e_date" name="e_date" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2" for="e_type">{{ t('expense_type', user_language) }}</label>
+                        <select class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="e_type" name="e_type" required>
+                            <option value="" disabled selected>{{ t('select_type', user_language) }}</option>
+                            <option value="Earning">{{ t('earning', user_language) }}</option>
+                            <option value="Spend">{{ t('spend', user_language) }}</option>
+                            <option value="Investment">{{ t('investment', user_language) }}</option>
+                            <option value="Saving">{{ t('saving', user_language) }}</option>
                         </select>
-                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">Amount</label>
-                        <input type="number" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="amount" name="amount" placeholder="Enter amount" required>
-                 </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="notes">Note</label>
-                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="notes" name="notes" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2" for="amount">Amount</label>
+                        <input type="number" class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="amount" name="amount" placeholder="Enter amount" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2" for="notes">Note</label>
+                        <select class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="notes" name="notes" required>
                             <option value="" disabled selected>Select note...</option>
                             <option value="Salary">Salary</option>
                             <option value="Bonus">Bonus</option>
@@ -216,17 +214,16 @@
                             <option value="Bills">Bills</option>
                             <option value="Others">Others</option>
                         </select>
-                     </div>
-                    <div class="flex items-center justify-end">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Add Record
-                        </button>
-                     </div>
-                </form>
-                     </div>
-                 </div>
-             </div>
-         </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="document.getElementById('add_record').classList.add('hidden')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-300">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg transition-all duration-300">Add Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 

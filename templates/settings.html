@@ -96,6 +96,18 @@
                         <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
                     </div>
                 </label>
+                <!-- App Tutorial Pop-ups Toggle -->
+                <label for="show_tutorial_popups" class="flex items-center justify-between cursor-pointer">
+                    <div>
+                        <span class="text-white font-medium">{{ t('show_app_tutorial_popups', user_language)|replace('_', ' ')|title }}</span>
+                        <p class="text-sm text-gray-400">{{ t('show_app_tutorial_popups_help', user_language)|replace('_', ' ')|capitalize }}</p>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" id="show_tutorial_popups" name="show_tutorial_popups" class="sr-only" {% if user.show_tutorial_popups %}checked{% endif %}>
+                        <div class="block bg-gray-400 w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                    </div>
+                </label>
 
                 <!-- SMS Notifications Toggle -->
                 <label for="sms_notifications" class="flex items-center justify-between cursor-pointer">
@@ -140,15 +152,6 @@
                 <button type="submit" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300">{{ t('save_app_preferences', user_language)|replace('_', ' ')|title }}</button>
             </div>
         </form>
-    </div>
-
-    <div class="settings-section" data-intro="Here you can customize your app experience, notifications, and more." data-step="1">
-        <h2>App Settings</h2>
-        <!-- ... other settings ... -->
-    </div>
-    <div class="settings-section">
-        <h2>App Tutorial</h2>
-        <button onclick="startAppTutorial()" class="btn btn-info" style="margin-bottom: 1em;" data-intro="Click here to view the app tutorial again at any time." data-step="2">View App Tutorial</button>
     </div>
 </div>
 

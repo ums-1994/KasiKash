@@ -20,20 +20,20 @@
             <div class="container mx-auto flex justify-between items-center">
                 <a href="/" class="flex items-center space-x-3">
                     <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto">
-                    <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                    <span class="text-2xl font-bold text-gradient glow">{{ t('kasikash', user_language) }}</span>
                 </a>
                 <ul class="hidden md:flex space-x-8">
-                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
-                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
-                    <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
-                    <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a></li>
-                    <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                    <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('login', user_language) }}</a></li>
+                    <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('pricing', user_language) }}</a></li>
+                    <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('features', user_language) }}</a></li>
+                    <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('contact_us', user_language) }}</a></li>
+                    <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('about_us', user_language) }}</a></li>
                 </ul>
             </div>
         </nav>
         <section class="pt-32 pb-20">
             <div class="container mx-auto px-4 text-center">
-                <h1 class="text-3xl font-bold mb-4">Contact Us</h1>
+                <h1 class="text-3xl font-bold mb-4">{{ t('contact_us', user_language) }}</h1>
                 <p class="mb-6">{{ t('contact_message', user_language)|replace('_', ' ')|capitalize }}</p>
                 <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
                     <form action="mailto:support@kasikash.co.za" method="POST" enctype="text/plain" class="space-y-4">
@@ -62,7 +62,7 @@
         </section>
         <footer class="bg-black text-white py-12 mt-12">
             <div class="container mx-auto px-4 text-center">
-                <p class="text-gray-400">&copy; 2024 KasiKash. All rights reserved.</p>
+                <p class="text-gray-400">&copy; 2024 {{ t('kasikash', user_language) }}. {{ t('all_rights_reserved', user_language) }}</p>
             </div>
         </footer>
     </body>

@@ -7,10 +7,10 @@
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="page-title" data-intro="This is your Savings Goals page. Here you can set, track, and manage your savings goals." data-step="1">Savings Goals</h1>
-            <p class="text-gray-300">Track and manage your savings goals</p>
+            <h1 class="page-title" data-intro="This is your Savings Goals page. Here you can set, track, and manage your savings goals." data-step="1">{{ t('savings_goals', user_language)|replace('_', ' ')|title }}</h1>
+            <p class="text-gray-300">{{ t('track_and_manage_savings_goals', user_language)|replace('_', ' ')|capitalize }}</p>
         </div>
-        <button onclick="openModal('createGoalModal')" class="btn btn-primary" data-intro="Click here to add a new savings goal." data-step="2">Add Savings Goal</button>
+        <button onclick="openModal('createGoalModal')" class="btn btn-primary" data-intro="Click here to add a new savings goal." data-step="2">{{ t('add_savings_goal', user_language)|replace('_', ' ')|capitalize }}</button>
     </div>
 
     <!-- Savings Goals Table -->
@@ -19,11 +19,11 @@
             <table class="min-w-full divide-y divide-white/10">
                 <thead>
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('goal_name', user_language)|replace('_', ' ')|title }}</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('target_amount', user_language)|replace('_', ' ')|title }}</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('current_amount', user_language)|replace('_', ' ')|title }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('goal_name', user_language)|replace('_', ' ')|capitalize }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('target_amount', user_language)|replace('_', ' ')|capitalize }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('current_amount', user_language)|replace('_', ' ')|capitalize }}</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('progress', user_language)|replace('_', ' ')|title }}</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('target_date', user_language)|replace('_', ' ')|title }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('target_date', user_language)|replace('_', ' ')|capitalize }}</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('status', user_language)|replace('_', ' ')|title }}</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{{ t('actions', user_language)|replace('_', ' ')|title }}</th>
                     </tr>
@@ -70,39 +70,39 @@
         {% if not goals %}
         <div class="text-center py-12">
             <i class="fas fa-bullseye text-4xl text-gray-500 mb-4"></i>
-            <p class="text-gray-400 text-lg">No savings goals found.</p>
-            <p class="text-gray-500 text-sm mt-2">Add a goal to start saving!</p>
+            <p class="text-gray-400 text-lg">{{ t('no_savings_goals_found', user_language) }}</p>
+            <p class="text-gray-500 text-sm mt-2">{{ t('add_goal_to_start_saving', user_language) }}</p>
         </div>
         {% endif %}
     </div>
 
     <!-- Create Savings Goal Modal -->
-    <div id="createGoalModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 backdrop-blur-lg border-white/10">
+    <div id="createGoalModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 border-white/10">
             <div class="mt-3">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-white">{{ t('create_goal_heading', user_language)|replace('_', ' ')|title }}</h3>
+                    <h3 class="text-xl font-bold text-white">{{ t('create_goal_heading', user_language) }}</h3>
                     <button onclick="closeModal('createGoalModal')" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
                 </div>
                 <form action="/create_savings_goal" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2" for="name">{{ t('goal_name_label', user_language)|replace('_', ' ')|title }}</label>
-                            <input type="text" name="name" id="name" required class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="{{ t('goal_name_placeholder', user_language)|replace('_', ' ')|title }}">
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="name">{{ t('goal_name_label', user_language) }}</label>
+                            <input type="text" name="name" id="name" required class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="{{ t('goal_name_placeholder', user_language) }}">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2" for="target_amount">{{ t('target_amount_label', user_language)|replace('_', ' ')|title }}</label>
-                            <input type="number" name="target_amount" id="target_amount" required step="0.01" min="0" class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="target_amount">{{ t('target_amount_label', user_language) }}</label>
+                            <input type="number" name="target_amount" id="target_amount" required step="0.01" min="0" class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2" for="target_date">{{ t('target_date_label', user_language)|replace('_', ' ')|title }}</label>
-                            <input type="date" name="target_date" id="target_date" required class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="target_date">{{ t('target_date_label', user_language) }}</label>
+                            <input type="date" name="target_date" id="target_date" required class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
-                        <button type="button" onclick="closeModal('createGoalModal')" class="px-4 py-2 bg-gray-600/50 hover:bg-gray-600/70 text-white rounded-lg transition-all duration-300">{{ t('cancel', user_language)|replace('_', ' ')|title }}</button>
-                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition-all duration-300">{{ t('create_goal', user_language)|replace('_', ' ')|title }}</button>
+                        <button type="button" onclick="closeModal('createGoalModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-300">{{ t('cancel', user_language) }}</button>
+                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition-all duration-300">{{ t('create_goal', user_language) }}</button>
                     </div>
                 </form>
             </div>
@@ -110,11 +110,11 @@
     </div>
 
     <!-- Contribute to Goal Modal -->
-    <div id="contributeModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 backdrop-blur-lg border-white/10">
+    <div id="contributeModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 border-white/10">
             <div class="mt-3">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-white">{{ t('contribute_to_goal_heading', user_language)|replace('_', ' ')|title }} <span id="goalName"></span></h3>
+                    <h3 class="text-xl font-bold text-white">{{ t('contribute_to_goal_heading', user_language) }} <span id="goalName"></span></h3>
                     <button onclick="closeModal('contributeModal')" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
                 </div>
                 <form action="/contribute_to_goal" method="POST">
@@ -122,13 +122,13 @@
                     <input type="hidden" name="goal_id" id="goalId">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2" for="contribution_amount">{{ t('contribution_amount_label', user_language)|replace('_', ' ')|title }}</label>
-                            <input type="number" name="amount" id="contribution_amount" required step="0.01" min="0" class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="{{ t('contribution_amount_placeholder', user_language)|replace('_', ' ')|title }}">
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="contribution_amount">{{ t('contribution_amount_label', user_language) }}</label>
+                            <input type="number" name="amount" id="contribution_amount" required step="0.01" min="0" class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="{{ t('contribution_amount_placeholder', user_language) }}">
                         </div>
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
-                        <button type="button" onclick="closeModal('contributeModal')" class="px-4 py-2 bg-gray-600/50 hover:bg-gray-600/70 text-white rounded-lg transition-all duration-300">{{ t('cancel', user_language)|replace('_', ' ')|title }}</button>
-                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg transition-all duration-300">{{ t('contribute', user_language)|replace('_', ' ')|title }}</button>
+                        <button type="button" onclick="closeModal('contributeModal')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-300">{{ t('cancel', user_language) }}</button>
+                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg transition-all duration-300">{{ t('contribute', user_language) }}</button>
                     </div>
                 </form>
             </div>

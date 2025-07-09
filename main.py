@@ -624,6 +624,7 @@ def login_validation():
 
                 print("Login successful, redirecting to home")  # Debug log
                 flash("Login successful!")
+                session['is_new_user'] = True
                 return redirect('/home')
 
             except auth.UserNotFoundError as e:
@@ -900,6 +901,7 @@ def registration():
                             session['is_verified'] = True
                             session.permanent = True
                             flash("Registration successful! You can now log in.")
+                            session['is_new_user'] = True
                             return redirect('/login')
                         else:
                             flash("Registration failed: Could not retrieve local user ID.")
@@ -991,11 +993,27 @@ def stokvels():
                 """, (firebase_uid, firebase_uid))
                 created_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-        return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels)
+        # Fetch user settings for tutorial popups
+        user_settings = {}
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT show_tutorial_popups FROM user_settings WHERE user_id = %s
+                    """, (firebase_uid,))
+                    settings = cur.fetchone() or {}
+                    user_settings.update(settings)
+        except Exception as e:
+            user_settings['show_tutorial_popups'] = True
+        user_settings['is_new_user'] = session.pop('is_new_user', False)
+
+        return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels, user=user_settings)
     except Exception as e:
         flash(f"An error occurred while loading your stokvels: {e}")
         print(f"Stokvels page error: {e}")
-        return render_template('stokvels.html', stokvels=[], created_stokvels=[])
+        # Provide a default user dict to avoid template errors
+        user_settings = {'show_tutorial_popups': True, 'is_new_user': False}
+        return render_template('stokvels.html', stokvels=[], created_stokvels=[], user=user_settings)
 
 @app.route('/create_stokvel', methods=['POST'])
 @login_required
@@ -1069,7 +1087,6 @@ def contributions():
                     ORDER BY t.transaction_date DESC
                 """, (firebase_uid,))
                 contributions = cur.fetchall()
-                
                 # Fetch stokvels the user is a member of
                 cur.execute("""
                     SELECT s.id, s.name
@@ -1078,44 +1095,57 @@ def contributions():
                     WHERE sm.user_id = %s
                 """, (firebase_uid,))
                 stokvels = cur.fetchall()
-
         # Process and render as before
-                contributions_list = []
-                for row in contributions:
+        contributions_list = []
+        for row in contributions:
+            try:
+                transaction_date = row[3]
+                if transaction_date:
                     try:
-                        transaction_date = row[3]
-                        if transaction_date:
-                            try:
-                                transaction_date = transaction_date.strftime('%Y-%m-%d %H:%M')
-                            except AttributeError:
-                                transaction_date = str(transaction_date)
-                        else:
-                            transaction_date = 'N/A'
-                        contribution_dict = {
-                            'id': row[0],
-                            'amount': float(row[1]) if row[1] is not None else 0.0,
-                            'status': row[2] or 'pending',
-                            'created_at': transaction_date,
-                            'stokvel_name': row[4] or 'Unknown Stokvel',
-                            'description': row[5] or 'No description'
-                        }
-                        contributions_list.append(contribution_dict)
-                    except Exception as e:
-                        print(f"Error processing contribution row: {e}")
-                stokvels_list = []
-                for row in stokvels:
-                    try:
-                        stokvels_list.append({
-                            'id': row[0],
-                            'name': row[1]
-                        })
-                    except Exception as e:
-                        print(f"Error processing stokvel row: {e}")
-        return render_template('contributions.html', contributions=contributions_list, stokvels=stokvels_list)
+                        transaction_date = transaction_date.strftime('%Y-%m-%d %H:%M')
+                    except AttributeError:
+                        transaction_date = str(transaction_date)
+                else:
+                    transaction_date = 'N/A'
+                contribution_dict = {
+                    'id': row[0],
+                    'amount': float(row[1]) if row[1] is not None else 0.0,
+                    'status': row[2] or 'pending',
+                    'created_at': transaction_date,
+                    'stokvel_name': row[4] or 'Unknown Stokvel',
+                    'description': row[5] or 'No description'
+                }
+                contributions_list.append(contribution_dict)
+            except Exception as e:
+                print(f"Error processing contribution row: {e}")
+        stokvels_list = []
+        for row in stokvels:
+            try:
+                stokvels_list.append({
+                    'id': row[0],
+                    'name': row[1]
+                })
+            except Exception as e:
+                print(f"Error processing stokvel row: {e}")
+        # Fetch user settings for tutorial popups
+        user_settings = {}
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT show_tutorial_popups FROM user_settings WHERE user_id = %s
+                    """, (firebase_uid,))
+                    settings = cur.fetchone() or {}
+                    user_settings.update(settings)
+        except Exception as e:
+            user_settings['show_tutorial_popups'] = True
+        user_settings['is_new_user'] = session.pop('is_new_user', False)
+        return render_template('contributions.html', contributions=contributions_list, stokvels=stokvels_list, user=user_settings)
     except Exception as e:
         print(f"Error in contributions route: {e}")
         flash("An error occurred while loading your contributions.")
-        return render_template('contributions.html', contributions=[], stokvels=[])
+        user_settings = {'show_tutorial_popups': True, 'is_new_user': False}
+        return render_template('contributions.html', contributions=[], stokvels=[], user=user_settings)
 
 @app.route('/make_contribution', methods=['GET', 'POST'])
 @login_required
@@ -1245,12 +1275,25 @@ def payouts():
                     WHERE sm.user_id = %s
                 """, (firebase_uid,))
                 stokvel_options = cur.fetchall()
-
-        return render_template('payouts.html', payouts=payouts_list, stokvel_options=stokvel_options)
+        # Fetch user settings for tutorial popups
+        user_settings = {}
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT show_tutorial_popups FROM user_settings WHERE user_id = %s
+                    """, (firebase_uid,))
+                    settings = cur.fetchone() or {}
+                    user_settings.update(settings)
+        except Exception as e:
+            user_settings['show_tutorial_popups'] = True
+        user_settings['is_new_user'] = session.pop('is_new_user', False)
+        return render_template('payouts.html', payouts=payouts_list, stokvel_options=stokvel_options, user=user_settings)
     except Exception as e:
         print(f"Payouts page error: {e}")
         flash("An error occurred while loading payouts. Please try again.")
-        return redirect('/home')
+        user_settings = {'show_tutorial_popups': True, 'is_new_user': False}
+        return render_template('payouts.html', payouts=[], stokvel_options=[], user=user_settings)
 
 @app.route('/request_payout', methods=['POST'])
 @login_required
@@ -1344,12 +1387,25 @@ def savings_goals():
                 goal_keys = ['id', 'name', 'target_amount', 'current_amount', 'target_date', 'status', 'created_at']
                 for g_tuple in goals_tuples:
                     goals_list.append(dict(zip(goal_keys, g_tuple)))
-
-        return render_template('savings_goals.html', goals=goals_list)
+        # Fetch user settings for tutorial popups
+        user_settings = {}
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT show_tutorial_popups FROM user_settings WHERE user_id = %s
+                    """, (firebase_uid,))
+                    settings = cur.fetchone() or {}
+                    user_settings.update(settings)
+        except Exception as e:
+            user_settings['show_tutorial_popups'] = True
+        user_settings['is_new_user'] = session.pop('is_new_user', False)
+        return render_template('savings_goals.html', goals=goals_list, user=user_settings)
     except Exception as e:
         print(f"Savings goals page error: {e}")
         flash("An error occurred while loading your savings goals. Please try again.")
-        return redirect('/home')
+        user_settings = {'show_tutorial_popups': True, 'is_new_user': False}
+        return render_template('savings_goals.html', goals=[], user=user_settings)
 
 @app.route('/create_savings_goal', methods=['POST'])
 @login_required
@@ -1747,12 +1803,25 @@ def payment_methods():
                 payment_method_keys = ['id', 'type', 'details', 'is_default', 'created_at']
                 for pm_tuple in payment_methods_tuples:
                     payment_methods_list.append(dict(zip(payment_method_keys, pm_tuple)))
-                
-        return render_template('payment_methods.html', payment_methods=payment_methods_list)
+        # Fetch user settings for tutorial popups
+        user_settings = {}
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT show_tutorial_popups FROM user_settings WHERE user_id = %s
+                    """, (firebase_uid,))
+                    settings = cur.fetchone() or {}
+                    user_settings.update(settings)
+        except Exception as e:
+            user_settings['show_tutorial_popups'] = True
+        user_settings['is_new_user'] = session.pop('is_new_user', False)
+        return render_template('payment_methods.html', payment_methods=payment_methods_list, user=user_settings)
     except Exception as e:
         print(f"Payment methods page error: {e}")
         flash("An error occurred while loading your payment methods. Please try again.")
-        return render_template('payment_methods.html', payment_methods=[])
+        user_settings = {'show_tutorial_popups': True, 'is_new_user': False}
+        return render_template('payment_methods.html', payment_methods=[], user=user_settings)
 
 @app.route('/add_payment_method', methods=['POST'])
 @login_required
@@ -1867,7 +1936,7 @@ def settings():
 
                 # Fetch notification/app preferences from user_settings table
                 cur.execute("""
-                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions
+                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions, show_tutorial_popups
                     FROM user_settings
                     WHERE user_id = %s
                 """, (user_id,))
@@ -1878,11 +1947,15 @@ def settings():
         if 'language_preference' not in user_settings:
             user_settings['language_preference'] = session.get('language_preference', 'en')
 
+        # Step 7: Set is_new_user for template
+        user_settings['is_new_user'] = session.pop('is_new_user', False)
+
         return render_template('settings.html', user=user_settings)
     except Exception as e:
         print(f"Error loading settings: {e}")
         flash("An error occurred while loading settings.", "danger")
-        return redirect(url_for('home'))
+        user_settings = {'show_tutorial_popups': True, 'is_new_user': False}
+        return render_template('settings.html', user=user_settings)
 
 @app.route('/settings/update', methods=['POST'])
 @login_required
@@ -1905,12 +1978,13 @@ def update_settings():
         sms_notifications = 'sms_notifications' in request.form
         weekly_summary = 'weekly_summary' in request.form
         receive_promotions = 'receive_promotions' in request.form
+        show_tutorial_popups = 'show_tutorial_popups' in request.form
         query = """
             UPDATE user_settings
-            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s
+            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s, show_tutorial_popups = %s
             WHERE user_id = %s
         """
-        params = (email_notifications, sms_notifications, weekly_summary, receive_promotions, user_id)
+        params = (email_notifications, sms_notifications, weekly_summary, receive_promotions, show_tutorial_popups, user_id)
 
     elif form_section == 'security':
         two_factor_enabled = 'two_factor_enabled' in request.form

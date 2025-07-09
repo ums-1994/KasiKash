@@ -1,10 +1,10 @@
 {% extends 'admin_base.html' %}
 {% block admin_content %}
-<h1 style="color:#60efff;">Admin Notifications</h1>
-<p style="color:#eaf6fb;">Here you can send notifications to users.</p>
+<h1 style="color:#60efff;">{{ t('admin_notifications', user_language) }}</h1>
+<p style="color:#eaf6fb;">{{ t('send_notifications_to_users', user_language) }}</p>
 <!-- Search/filter bar -->
 <div class="mb-6 flex items-center gap-4 bg-[#101c2c] rounded-xl shadow-lg p-4">
-  <button class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;min-width:180px;" onclick="openSendNotificationModal()">Create Notification</button>
+  <button class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;min-width:180px;" onclick="openSendNotificationModal()">{{ t('create_notification', user_language) }}</button>
 </div>
 <table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb;">
   <thead>
@@ -35,7 +35,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="8">No notifications found.</td></tr>
+    <tr><td colspan="8">{{ t('no_notifications_found', user_language) }}</td></tr>
     {% endfor %}
   </tbody>
 </table>
@@ -43,13 +43,13 @@
 <div id="sendNotificationModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
   <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
     <button onclick="closeSendNotificationModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
-    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Send Notification</h3>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">{{ t('send_notification', user_language) }}</h3>
     <form id="sendNotificationForm" method="POST" action="{{ url_for('admin.send_notification') }}" class="space-y-3">
       {{ csrf_token() }}
       <div>
-        <label class="block font-semibold mb-1">Stokvel</label>
+        <label class="block font-semibold mb-1">{{ t('stokvel', user_language) }}</label>
         <select name="stokvel" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black" required>
-          <option value="">Select a stokvel</option>
+          <option value="">{{ t('select_a_stokvel', user_language) }}</option>
           <option>Stokvel A</option>
           <option>Stokvel B</option>
           <option>Stokvel C</option>
@@ -57,21 +57,21 @@
       </div>
       <div class="flex items-center gap-2">
         <input type="checkbox" id="urgentCheckbox" name="urgent">
-        <label for="urgentCheckbox" class="font-semibold">Urgent</label>
+        <label for="urgentCheckbox" class="font-semibold">{{ t('urgent', user_language) }}</label>
       </div>
       <div>
-        <label class="block font-semibold mb-1">Message</label>
-        <textarea name="message" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black" rows="3" required placeholder="Enter your notification message..."></textarea>
+        <label class="block font-semibold mb-1">{{ t('message', user_language) }}</label>
+        <textarea name="message" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black" rows="3" required placeholder="{{ t('enter_notification_message', user_language) }}"></textarea>
       </div>
       <div>
-        <label class="block font-semibold mb-1">Type</label>
+        <label class="block font-semibold mb-1">{{ t('type', user_language) }}</label>
         <select name="type" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black" required>
-          <option value="General">General</option>
-          <option value="Alert">Alert</option>
-          <option value="Update">Update</option>
+          <option value="General">{{ t('general', user_language) }}</option>
+          <option value="Alert">{{ t('alert', user_language) }}</option>
+          <option value="Update">{{ t('update', user_language) }}</option>
         </select>
       </div>
-      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Send</button>
+      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">{{ t('send', user_language) }}</button>
     </form>
   </div>
 </div>
@@ -79,7 +79,7 @@
 <div id="viewNotificationModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
   <div class="admin-card p-6 max-w-md w-full relative" style="background:#1b1f27;color:#eaf6fb;">
     <button onclick="closeViewNotificationModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
-    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Notification Details</h3>
+    <h3 class="text-xl font-bold mb-4" style="color:#60efff;">{{ t('notification_details', user_language) }}</h3>
     <ul id="viewNotificationDetails" class="mb-2"></ul>
   </div>
 </div>

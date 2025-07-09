@@ -19,29 +19,42 @@
         <div class="container mx-auto flex justify-between items-center">
             <a href="/" class="flex items-center space-x-3">
                 <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-12 w-auto">
-                <span class="text-2xl font-bold text-gradient glow">KasiKash</span>
+                <span class="text-2xl font-bold text-gradient glow">{{ t('kasikash', user_language) }}</span>
             </a>
             <ul class="hidden md:flex space-x-8">
-                <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">Login</a></li>
-                <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">Pricing</a></li>
-                <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">Features</a></li>
-                <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">Contact</a></li>
-                <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">About</a></li>
+                <li><a href="/login" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('login', user_language) }}</a></li>
+                <li><a href="/pricing" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('pricing', user_language) }}</a></li>
+                <li><a href="/features" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('features', user_language) }}</a></li>
+                <li><a href="/contact" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('contact_us', user_language)|replace('_', ' ')|title }}</a></li>
+                <li><a href="/about" class="nav-link text-white hover:text-cyan-300 font-medium">{{ t('about_us', user_language)|replace('_', ' ')|title }}</a></li>
             </ul>
         </div>
     </nav>
     <section class="pt-32 pb-20">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-3xl font-bold mb-4">About Us</h1>
-            <p class="mb-6">
-              KasiKash is a digital stokvel platform designed to empower communities to save, invest, and grow together. Our mission is to make group savings simple, transparent, and accessible for everyone. We provide secure tools for creating stokvels, managing contributions, tracking progress, and achieving financial goals as a community. Join us on our journey to unlock the power of collective wealth and financial inclusion in Africa and beyond.
-            </p>
-            <h2 class="text-2xl font-semibold mb-2">{{ t('our_team', user_language)|replace('_', ' ')|title }}</h2>
-            <ul>
-                <li>{{ t('team_member_1', user_language)|replace('_', ' ')|capitalize }}</li>
-                <li>{{ t('team_member_2', user_language)|replace('_', ' ')|capitalize }}</li>
-                <li>{{ t('team_member_3', user_language)|replace('_', ' ')|capitalize }}</li>
-            </ul>
+        <div class="container mx-auto max-w-3xl py-12 px-4">
+  <h1 class="text-4xl font-extrabold mb-6 text-gradient glow">About KasiKash</h1>
+  <p class="mb-6 text-lg text-gray-200">
+    KasiKash is your digital stokvel buddy — built right here for Mzanzi’s vibrant communities. We’re on a mission to grow community wealth by making stokvel savings simple, safe, and seriously rewarding.
+  </p>
+  <p class="mb-8 text-lg text-gray-200">
+    Whether you’re saving for December groceries, back-to-school expenses, or a big celebration, KasiKash helps your group manage money the smart way — with less admin, more trust, and plenty of rewards.
+  </p>
+  <hr class="my-8 border-gray-700">
+  <h2 class="text-2xl font-bold mb-4 mt-8">What Makes KasiKash Different?</h2>
+  <ul class="space-y-4 mb-8">
+    <li><span class="text-yellow-400 text-xl mr-2">💛</span><strong>For the People, by the People</strong><br>We understand stokvels — they’re part of who we are. KasiKash is made for South African groups, with tools that match our way of saving and coming together.</li>
+    <li><span class="text-green-400 text-xl mr-2">💸</span><strong>Smarter Savings, Less Hassle</strong><br>Set goals, automate contributions, and keep track of every cent — all in one place, no need for WhatsApp or messy spreadsheets.</li>
+    <li><span class="text-pink-400 text-xl mr-2">🎯</span><strong>Get Rewarded for Good Habits</strong><br>Earn points for showing up, saving on time, or bringing in your friends. Use your points for airtime, vouchers, or surprise goodies. It's savings with a twist!</li>
+    <li><span class="text-blue-400 text-xl mr-2">🔒</span><strong>Trustworthy & Safe</strong><br>We use bank-level security, and we follow the rules from the South African Reserve Bank — so your money stays safe and legit.</li>
+    <li><span class="text-cyan-400 text-xl mr-2">🤖</span><strong>Instant Help, 24/7</strong><br>Got questions? Our built-in chatbot’s got answers — from “how do I request a loan?” to “where did our last payout go?”</li>
+    <li><span class="text-purple-400 text-xl mr-2">🛠</span><strong>Power Tools for Admins</strong><br>From tracking members to sending payout notices, admins get a clean dashboard with everything they need to lead with confidence.</li>
+  </ul>
+  <hr class="my-8 border-gray-700">
+  <h2 class="text-2xl font-bold mb-4 mt-8">Our Vision</h2>
+  <p class="mb-4 text-lg text-gray-200">
+    We want every kasi, every suburb, and every rural village to feel the power of saving together. KasiKash is here to make group savings easy, transparent, and even a little fun — because when we save together, we grow together.
+  </p>
+</div>
 
             <!-- How It Works Section -->
             <div class="max-w-3xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
@@ -89,35 +102,35 @@
 
             <!-- Contact Form Section -->
             <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8 mb-8">
-                <h2 class="text-2xl font-bold mb-4 text-gradient">Contact Us</h2>
+                <h2 class="text-2xl font-bold mb-4 text-gradient">{{ t('contact_us', user_language)|replace('_', ' ')|title }}</h2>
                 <form action="mailto:support@kasikash.co.za" method="POST" enctype="text/plain" class="space-y-4">
                     <div>
-                        <label for="name" class="block text-left text-gray-200 mb-1">Name</label>
+                        <label for="name" class="block text-left text-gray-200 mb-1">{{ t('name', user_language) }}</label>
                         <input type="text" id="name" name="name" class="w-full rounded px-3 py-2 text-black" required>
                     </div>
                     <div>
-                        <label for="email" class="block text-left text-gray-200 mb-1">Email</label>
+                        <label for="email" class="block text-left text-gray-200 mb-1">{{ t('email', user_language) }}</label>
                         <input type="email" id="email" name="email" class="w-full rounded px-3 py-2 text-black" required>
                     </div>
                     <div>
-                        <label for="message" class="block text-left text-gray-200 mb-1">Message</label>
+                        <label for="message" class="block text-left text-gray-200 mb-1">{{ t('message', user_language) }}</label>
                         <textarea id="message" name="message" rows="4" class="w-full rounded px-3 py-2 text-black" required></textarea>
                     </div>
-                    <button type="submit" class="bg-ocean-2 text-black font-bold py-2 px-6 rounded-full hover:bg-ocean-3 transition">Send Message</button>
+                    <button type="submit" class="bg-ocean-2 text-black font-bold py-2 px-6 rounded-full hover:bg-ocean-3 transition">{{ t('send_message', user_language)|replace('_', ' ')|capitalize }}</button>
                 </form>
             </div>
 
             <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-xl p-8">
-                <h2 class="text-2xl font-bold mb-4 text-gradient">Contact Info</h2>
-                <p class="text-lg text-gray-200 mb-2"><i class="fas fa-envelope mr-2"></i>support@kasikash.co.za</p>
-                <p class="text-lg text-gray-200 mb-2"><i class="fas fa-phone mr-2"></i>+27 11 123 4567</p>
-                <p class="text-lg text-gray-200"><i class="fas fa-map-marker-alt mr-2"></i>Johannesburg, South Africa</p>
+                <h2 class="text-2xl font-bold mb-4 text-gradient">{{ t('contact_info', user_language)|replace('_', ' ')|title }}</h2>
+                <p class="text-lg text-gray-200 mb-2"><i class="fas fa-envelope mr-2"></i>{{ t('support_email', user_language)|replace('_', ' ')|capitalize }}</p>
+                <p class="text-lg text-gray-200 mb-2"><i class="fas fa-phone mr-2"></i>{{ t('support_phone', user_language)|replace('_', ' ')|capitalize }}</p>
+                <p class="text-lg text-gray-200"><i class="fas fa-map-marker-alt mr-2"></i>{{ t('support_address', user_language)|replace('_', ' ')|capitalize }}</p>
             </div>
         </div>
     </section>
     <footer class="bg-black text-white py-12 mt-12">
         <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-400">&copy; 2024 KasiKash. All rights reserved.</p>
+            <p class="text-gray-400">&copy; 2024 {{ t('kasikash', user_language)|replace('_', ' ')|title }}. {{ t('all_rights_reserved', user_language)|replace('_', ' ')|capitalize }}</p>
         </div>
     </footer>
 </body>

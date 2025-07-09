@@ -7,10 +7,10 @@
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="page-title" data-intro="This is your Payouts page. Here you can view and request payouts from your stokvel." data-step="1">Payouts</h1>
-            <p class="text-gray-300">View and request payouts from your stokvels</p>
+            <h1 class="page-title" data-intro="This is your Payouts page. Here you can view and request payouts from your stokvel." data-step="1">{{ t('payouts', user_language)|replace('_', ' ')|title }}</h1>
+            <p class="text-gray-300">{{ t('view_and_request_payouts', user_language)|replace('_', ' ')|capitalize }}</p>
         </div>
-        <button class="btn btn-primary" data-intro="Click here to request a new payout from your stokvel." data-step="2">Request Payout</button>
+        <button class="btn btn-primary" data-intro="Click here to request a new payout from your stokvel." data-step="2" onclick="openModal()">{{ t('request_payout', user_language)|replace('_', ' ')|capitalize }}</button>
     </div>
 
     <!-- Payouts Table -->
@@ -55,43 +55,43 @@
         {% if not payouts %}
         <div class="text-center py-12">
             <i class="fas fa-wallet text-4xl text-gray-500 mb-4"></i>
-            <p class="text-gray-400 text-lg">No payouts found.</p>
-            <p class="text-gray-500 text-sm mt-2">Request a payout to get started!</p>
+            <p class="text-gray-400 text-lg">{{ t('no_payouts_found', user_language)|replace('_', ' ')|capitalize }}</p>
+            <p class="text-gray-500 text-sm mt-2">{{ t('request_a_payout_to_get_started', user_language) }}</p>
         </div>
         {% endif %}
     </div>
 
     <!-- Request Payout Modal -->
-    <div id="requestPayoutModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 backdrop-blur-lg border-white/10">
+    <div id="requestPayoutModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="p-6 border w-full max-w-md shadow-2xl rounded-xl bg-gray-900/95 border-white/10">
             <div class="mt-3">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-white">{{ t('request_payout', user_language)|replace('_', ' ')|title }}</h3>
+                    <h3 class="text-xl font-bold text-white">{{ t('request_payout', user_language)|replace('_', ' ')|capitalize }}</h3>
                     <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
                 </div>
                 <form action="/request_payout" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2" for="stokvel_id">{{ t('stokvel', user_language)|replace('_', ' ')|title }}</label>
-                            <select name="stokvel_id" id="stokvel_id" required class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="stokvel_id">{{ t('stokvel', user_language)|replace('_', ' ')|capitalize }}</label>
+                            <select name="stokvel_id" id="stokvel_id" required class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 {% for stokvel in stokvel_options %}
                                     <option value="{{ stokvel[0] }}">{{ stokvel[1] }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2" for="amount">{{ t('amount', user_language)|replace('_', ' ')|title }} (R)</label>
-                            <input type="number" name="amount" id="amount" required step="0.01" min="0" class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="amount">{{ t('amount', user_language)|replace('_', ' ')|capitalize }}</label>
+                            <input type="number" name="amount" id="amount" required step="0.01" min="0" class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2" for="description">{{ t('description', user_language)|replace('_', ' ')|title }}</label>
-                            <textarea name="description" id="description" required rows="3" class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="{{ t('description_placeholder', user_language)|replace('_', ' ')|title }}"></textarea>
+                            <label class="block text-sm font-medium text-gray-300 mb-2" for="description">{{ t('description', user_language)|replace('_', ' ')|capitalize }}</label>
+                            <textarea name="description" id="description" required rows="3" class="w-full px-3 py-2 bg-gray-800/80 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="{{ t('description_placeholder', user_language)|replace('_', ' ')|capitalize }}"></textarea>
                         </div>
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-600/50 hover:bg-gray-600/70 text-white rounded-lg transition-all duration-300">{{ t('cancel', user_language)|replace('_', ' ')|title }}</button>
-                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition-all duration-300">{{ t('submit_request', user_language)|replace('_', ' ')|title }}</button>
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-300">{{ t('cancel', user_language)|replace('_', ' ')|capitalize }}</button>
+                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition-all duration-300">{{ t('submit_request', user_language)|replace('_', ' ')|capitalize }}</button>
                     </div>
                 </form>
             </div>
