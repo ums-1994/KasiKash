@@ -30,6 +30,7 @@ from dateutil import parser as date_parser
 from translations import get_text
 from admin import admin_bp  # Import the blueprint
 from utils import login_required
+from financial_advisor import advisor_bp
 
 # Email handling imports
 import smtplib
@@ -305,85 +306,6 @@ def home():
 
         notification_count = get_notification_count(session.get('user_id')) # Get notification count
 
-        # --- Calendar logic ---
-        import calendar
-        from datetime import date
-        today = date.today()
-        year = today.year
-        month = today.month
-        cal = calendar.Calendar()
-        month_days = cal.itermonthdays4(year, month)  # (year, month, day, weekday)
-        calendar_days = []
-        for y, m, d, wd in month_days:
-            if m == month:
-                calendar_days.append({
-                    'date': d,
-                    'is_today': (y, m, d) == (today.year, today.month, today.day),
-                    'events': []  # Add events here if needed
-                })
-        calendar_month = calendar.month_name[month]
-        calendar_year = year
-        # --- End calendar logic ---
-
-        # --- Recent Activities logic ---
-        recent_activities = []
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT t.type, t.amount, t.status, t.transaction_date, t.description, s.name as stokvel_name
-                        FROM transactions t
-                        JOIN stokvels s ON t.stokvel_id = s.id
-                        WHERE t.user_id = %s
-                        ORDER BY t.transaction_date DESC
-                        LIMIT 5
-                    """, (session['user_id'],))
-                    rows = cur.fetchall()
-                    for row in rows:
-                        t_type, amount, status, t_date, description, stokvel_name = row
-                        # Format date for display
-                        if t_date:
-                            try:
-                                from datetime import datetime, timedelta
-                                now = datetime.now()
-                                if isinstance(t_date, str):
-                                    t_date = datetime.fromisoformat(t_date)
-                                delta = now - t_date
-                                if delta.days == 0:
-                                    if delta.seconds < 3600:
-                                        date_str = f"{delta.seconds//60} minutes ago"
-                                    else:
-                                        date_str = f"{delta.seconds//3600} hours ago"
-                                elif delta.days == 1:
-                                    date_str = "Yesterday"
-                                else:
-                                    date_str = f"{delta.days} days ago"
-                            except Exception:
-                                date_str = str(t_date)
-                        else:
-                            date_str = 'N/A'
-                        # Title and badge
-                        if t_type == 'contribution':
-                            title = f"Contribution to {stokvel_name}"
-                        elif t_type == 'withdrawal':
-                            title = f"Withdrawal from {stokvel_name}"
-                        elif t_type == 'payout':
-                            title = f"Payout from {stokvel_name}"
-                        elif t_type == 'goal':
-                            title = f"Savings Goal: {description}"
-                        else:
-                            title = description or t_type.capitalize()
-                        recent_activities.append({
-                            'type': t_type,
-                            'title': title,
-                            'amount': float(amount) if amount is not None else 0.0,
-                            'date': date_str,
-                            'status': status.capitalize() if status else '',
-                        })
-        except Exception as e:
-            print(f"Error fetching recent activities: {e}")
-        # --- End Recent Activities logic ---
-
         return render_template('dashboard.html',
                             username=username,
                             current_balance=current_balance,
@@ -404,12 +326,7 @@ def home():
                             contribution_breakdown_chart_data=contribution_breakdown_chart_data,
                             loan_trends_chart_data=loan_trends_chart_data,
                             notification_count=notification_count,
-                            user=user,
-                            recent_activities=recent_activities,
-                            calendar_days=calendar_days,
-                            calendar_month=calendar_month,
-                            calendar_year=calendar_year
-                            ) # Pass user dictionary and calendar data
+                            user=user) # Pass user dictionary
     except Exception as e:
         print(f"Dashboard error: {str(e)}")
         flash("Error loading dashboard. Please try again.")
@@ -949,7 +866,10 @@ def stokvels():
                 """, (firebase_uid,))
                 user_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-                # Fetch stokvels created by the current user
+                # Combine created stokvels with joined stokvels
+                all_stokvels = {s['id']: s for s in user_stokvels}
+
+                # Fetch stokvels created by the current user and merge them in
                 cur.execute("""
                     SELECT 
                         s.id, 
@@ -962,18 +882,21 @@ def stokvels():
                         (SELECT COUNT(*) FROM stokvel_members sm2 WHERE sm2.stokvel_id = s.id) as member_count,
                         (SELECT SUM(t.amount) FROM transactions t WHERE t.stokvel_id = s.id) as total_contributions,
                         s.target_date,
-                        sm.role
+                        'admin' as role
                     FROM stokvels s
-                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                    WHERE s.created_by = %s AND sm.user_id = %s
-                """, (firebase_uid, firebase_uid))
-                created_stokvels = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+                    WHERE s.created_by = %s
+                """, (firebase_uid,))
+                created_stokvels_data = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
-        return render_template('stokvels.html', stokvels=user_stokvels, created_stokvels=created_stokvels)
+                for stokvel in created_stokvels_data:
+                    if stokvel['id'] not in all_stokvels:
+                        all_stokvels[stokvel['id']] = stokvel
+
+        return render_template('stokvels.html', stokvels=list(all_stokvels.values()))
     except Exception as e:
         flash(f"An error occurred while loading your stokvels: {e}")
         print(f"Stokvels page error: {e}")
-        return render_template('stokvels.html', stokvels=[], created_stokvels=[])
+        return render_template('stokvels.html', stokvels=[])
 
 @app.route('/create_stokvel', methods=['POST'])
 @login_required
@@ -1492,9 +1415,9 @@ def view_stokvel_members(stokvel_id):
 
                 # Get pending members (no user_id, just email)
                 cur.execute("""
-                    SELECT NULL as username, NULL as email, sm.role, sm.id as member_id
+                    SELECT NULL as username, sm.email, sm.role, sm.id as member_id
                     FROM stokvel_members sm
-                    WHERE sm.stokvel_id = %s AND sm.user_id IS NULL
+                    WHERE sm.stokvel_id = %s AND sm.user_id IS NULL AND sm.email IS NOT NULL
                 """, (stokvel_id,))
                 pending_members_tuples = cur.fetchall()
                 print(f"DEBUG: Pending members query result: {pending_members_tuples}") # Debug log
@@ -1523,108 +1446,6 @@ def view_stokvel_members(stokvel_id):
         print(f"ERROR: view_stokvel_members failed: {e}") # Enhanced error logging
         flash("An error occurred while loading stokvel members. Please try again.")
         return redirect('/stokvels')
-
-@app.route('/stokvel/<int:stokvel_id>/add_member', methods=['POST'])
-@login_required
-def add_stokvel_member(stokvel_id):
-    current_user_id = session['user_id']
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Check if current user is an admin of this stokvel
-                cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, current_user_id))
-                role_result = cur.fetchone()
-                if not role_result or role_result[0] != 'admin':
-                    flash("You do not have permission to add members to this stokvel.", "danger")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                email_to_add = request.form.get('email')
-                if not email_to_add:
-                    flash("Email is required.", "warning")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Find user by email
-                cur.execute("SELECT firebase_uid FROM users WHERE email = %s", (email_to_add,))
-                user_to_add = cur.fetchone()
-
-                if not user_to_add:
-                    flash(f"No registered user found with email {email_to_add}.", "danger")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-                
-                user_id_to_add = user_to_add[0]
-
-                # Check if user is already a member
-                cur.execute("SELECT 1 FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id_to_add))
-                if cur.fetchone():
-                    flash(f"{email_to_add} is already a member of this stokvel.", "info")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Add the new member
-                cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)", (stokvel_id, user_id_to_add, 'member'))
-                conn.commit()
-
-                # Send email notification to the new member
-                try:
-                    import sendgrid
-                    from sendgrid.helpers.mail import Mail
-                    import os
-                    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
-                    # Fetch stokvel name for the email
-                    cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
-                    stokvel_name = cur.fetchone()[0]
-                    message = Mail(
-                        from_email=os.environ.get('MAIL_SENDER_EMAIL', 'noreply@kasikash.com'),
-                        to_emails=email_to_add,
-                        subject='You have been added to a Stokvel!',
-                        html_content=f'You have been added to the stokvel "{stokvel_name}". Log in to KasiKash to view details.'
-                    )
-                    sg.send(message)
-                except Exception as e:
-                    print(f"Error sending email: {e}")
-
-                flash(f"Successfully added {email_to_add} to the stokvel.", "success")
-    except Exception as e:
-        print(f"Error adding stokvel member: {e}")
-        flash("An error occurred while adding the member.", "danger")
-    
-    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-@app.route('/stokvel/<int:stokvel_id>/remove_member', methods=['POST'])
-@login_required
-def remove_stokvel_member(stokvel_id):
-    current_user_id = session['user_id']
-    member_id = request.form.get('member_id')
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Check if current user is an admin of this stokvel
-                cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, current_user_id))
-                role_result = cur.fetchone()
-                if not role_result or role_result[0] != 'admin':
-                    flash("You do not have permission to remove members from this stokvel.", "danger")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Prevent removing the last admin
-                cur.execute("SELECT COUNT(*) FROM stokvel_members WHERE stokvel_id = %s AND role = 'admin'", (stokvel_id,))
-                admin_count = cur.fetchone()[0]
-
-                cur.execute("SELECT role FROM stokvel_members WHERE id = %s", (member_id,))
-                member_to_remove_role = cur.fetchone()
-
-                if member_to_remove_role and member_to_remove_role[0] == 'admin' and admin_count <= 1:
-                    flash("You cannot remove the last admin from the stokvel.", "warning")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Remove the member
-                cur.execute("DELETE FROM stokvel_members WHERE id = %s", (member_id,))
-                conn.commit()
-
-                flash("Member removed successfully.", "success")
-    except Exception as e:
-        print(f"Error removing stokvel member: {e}")
-        flash("An error occurred while removing the member.", "danger")
-    
-    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
 @app.route('/stokvel/<int:stokvel_id>/join', methods=['POST'])
 @login_required
@@ -2112,6 +1933,7 @@ def upload_profile_picture():
         
         # Update user profile picture path in database
         support.execute_query("update", "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s", (filename, user_id))
+        
         flash('Profile picture updated successfully!', 'success')
     else:
         flash('Invalid file type', 'danger')
@@ -2127,14 +1949,6 @@ def upload_kyc():
     if not id_doc or not address_doc:
         flash('Both ID document and proof of address are required.', 'warning')
         return redirect(url_for('profile'))
-
-    # Validate file types
-    if not (allowed_kyc_file(id_doc.filename) and allowed_kyc_file(address_doc.filename)):
-        flash('Invalid file type. Only PDF, PNG, JPG, JPEG, and GIF are allowed.', 'danger')
-        return redirect(url_for('profile'))
-
-    # Ensure upload directory exists
-    os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
 
     try:
         id_filename = secure_filename(f"{user_id}_id_{id_doc.filename}")
@@ -2156,9 +1970,7 @@ def upload_kyc():
         flash(f'An error occurred during KYC upload: {e}', 'danger')
 
     return redirect(url_for('profile'))           
-
-# Register context processor for user info and translation function
-@app.context_processor
+    
 def inject_user_name():
     username = None
     language_preference = 'en'  # Default language
@@ -2178,14 +1990,17 @@ def inject_user_name():
         if 'language_preference' in session:
             language_preference = session['language_preference']
         else:
+            # Try to get from database, but fall back to session if column doesn't exist
             try:
                 lang_query = "SELECT language_preference FROM users WHERE firebase_uid = %s"
                 lang_data = support.execute_query("search", lang_query, (session['user_id'],))
                 if lang_data and lang_data[0][0]:
                     language_preference = lang_data[0][0]
+                    # Store in session for future use
                     session['language_preference'] = language_preference
             except Exception as e:
                 print(f"Error getting language preference from database: {e}")
+                # Use session default or fallback to English
                 language_preference = session.get('language_preference', 'en')
     
     return dict(username=username, user_language=language_preference, notification_count=notification_count, t=get_text)
@@ -2536,65 +2351,16 @@ def download_stokvel_statement_pdf(stokvel_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"statement_{stokvel_id}_{period}.pdf", mimetype='application/pdf')
 
-@app.route('/activities')
-@login_required
-def activities():
-    activities = []
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT t.type, t.amount, t.status, t.transaction_date, t.description, s.name as stokvel_name
-                    FROM transactions t
-                    JOIN stokvels s ON t.stokvel_id = s.id
-                    WHERE t.user_id = %s
-                    ORDER BY t.transaction_date DESC
-                """, (session['user_id'],))
-                rows = cur.fetchall()
-                for row in rows:
-                    t_type, amount, status, t_date, description, stokvel_name = row
-                    # Format date for display
-                    if t_date:
-                        try:
-                            from datetime import datetime, timedelta
-                            now = datetime.now()
-                            if isinstance(t_date, str):
-                                t_date = datetime.fromisoformat(t_date)
-                            delta = now - t_date
-                            if delta.days == 0:
-                                if delta.seconds < 3600:
-                                    date_str = f"{delta.seconds//60} minutes ago"
-                                else:
-                                    date_str = f"{delta.seconds//3600} hours ago"
-                            elif delta.days == 1:
-                                date_str = "Yesterday"
-                            else:
-                                date_str = f"{delta.days} days ago"
-                        except Exception:
-                            date_str = str(t_date)
-                    else:
-                        date_str = 'N/A'
-                    # Title and badge
-                    if t_type == 'contribution':
-                        title = f"Contribution to {stokvel_name}"
-                    elif t_type == 'withdrawal':
-                        title = f"Withdrawal from {stokvel_name}"
-                    elif t_type == 'payout':
-                        title = f"Payout from {stokvel_name}"
-                    elif t_type == 'goal':
-                        title = f"Savings Goal: {description}"
-                    else:
-                        title = description or t_type.capitalize()
-                    activities.append({
-                        'type': t_type,
-                        'title': title,
-                        'amount': float(amount) if amount is not None else 0.0,
-                        'date': date_str,
-                        'status': status.capitalize() if status else '',
-                    })
-    except Exception as e:
-        print(f"Error fetching activities: {e}")
-    return render_template('activities.html', activities=activities)
+print("Registered endpoints:")
+for rule in app.url_map.iter_rules():
+    print(rule.endpoint, rule)
+
+# ... after app = Flask(__name__) ...
+
+from financial_advisor import advisor_bp
+app.register_blueprint(advisor_bp)
+
+# ... rest of the code ...
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
