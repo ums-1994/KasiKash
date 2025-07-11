@@ -30,7 +30,11 @@ from dateutil import parser as date_parser
 from translations import get_text
 from admin import admin_bp  # Import the blueprint
 from utils import login_required
+<<<<<<< HEAD
 from rewards import rewards_bp
+=======
+from financial_advisor import advisor_bp
+>>>>>>> 32f8306b476be7a27853392fd18c6ddbc9a8d075
 
 # Email handling imports
 import smtplib
@@ -2534,6 +2538,7 @@ def download_stokvel_statement_pdf(stokvel_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"statement_{stokvel_id}_{period}.pdf", mimetype='application/pdf')
 
+<<<<<<< HEAD
 @app.route('/virtual-rewards')
 def virtual_rewards():
     # You can add login checks or user context here if needed
@@ -2547,6 +2552,19 @@ print('Registered endpoints:')
 for rule in app.url_map.iter_rules():
     print(rule.endpoint, rule)
 
+=======
+print("Registered endpoints:")
+for rule in app.url_map.iter_rules():
+    print(rule.endpoint, rule)
+
+# ... after app = Flask(__name__) ...
+
+from financial_advisor import advisor_bp
+app.register_blueprint(advisor_bp)
+
+# ... rest of the code ...
+
+>>>>>>> 32f8306b476be7a27853392fd18c6ddbc9a8d075
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port, debug=True)

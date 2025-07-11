@@ -190,6 +190,7 @@
         </div>
         <!-- Navigation -->
         <nav class="mt-8">
+<<<<<<< HEAD
             <div class="px-4 space-y-2">
                 {% for item in [
                     {'url': url_for('home'), 'icon': 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'text': t('home', user_language)},
@@ -223,6 +224,58 @@
                     Settings
                 </a>
             </div>
+=======
+          <ul class="space-y-2">
+            <li>
+              <a href="/home" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-home mr-3"></i> Home
+              </a>
+            </li>
+            <li>
+              <a href="/stokvels" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-users mr-3"></i> Stokvels
+              </a>
+            </li>
+            <li>
+              <a href="/contributions" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-dollar-sign mr-3"></i> Contributions
+              </a>
+            </li>
+            <li>
+              <a href="/payouts" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-wallet mr-3"></i> Payouts
+              </a>
+            </li>
+            <li>
+              <a href="/savings_goals" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-chart-line mr-3"></i> Savings Goals
+              </a>
+            </li>
+            <li>
+              <a href="/payment_methods" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-credit-card mr-3"></i> Payment Methods
+              </a>
+            </li>
+            <li>
+              <a href="/settings" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-cog mr-3"></i> Settings
+              </a>
+            </li>
+            {% if session.role == 'admin' %}
+            <li>
+              <a href="/admin/dashboard" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-user-shield mr-3"></i> Admin
+              </a>
+            </li>
+            {% endif %}
+            <li>
+              <a href="{{ url_for('advisor.dashboard') }}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <svg class="h-5 w-5 text-indigo-500 mr-2" ...> <!-- icon here --> </svg>
+                Financial Advisor
+              </a>
+            </li>
+          </ul>
+>>>>>>> 32f8306b476be7a27853392fd18c6ddbc9a8d075
         </nav>
         <!-- User Section -->
         <div class="absolute bottom-0 w-full p-4 user-section">
