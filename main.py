@@ -30,6 +30,7 @@ from dateutil import parser as date_parser
 from translations import get_text
 from admin import admin_bp  # Import the blueprint
 from utils import login_required, get_notification_count, create_notification
+from financial_advisor import advisor_bp
 
 # Email handling imports
 import smtplib
@@ -162,6 +163,42 @@ try:
 except Exception as e:
     print(f"Warning: OpenRouter client not initialized. Chat features will be disabled. Error: {e}")
     openrouter_available = False
+
+# Dictionary for chatbot's rule-based feature explanations
+feature_faq = {
+    # --- User Features ---
+    'dashboard': "The User Dashboard is your main hub. It shows a summary of your balance, recent activities, and provides quick access to all major features.",
+    'stokvel': "To create a new stokvel:\n1. Click 'Stokvels' in the menu\n2. Click 'Create New Stokvel'\n3. Fill in the stokvel details\n4. Click 'Create'\n\nTo add members:\n1. Open your stokvel\n2. Click 'Manage Members'\n3. Click 'Add Member'\n4. Enter their email\n5. Set their role\n6. Click 'Add'",
+    'create stokvel': "To create a new stokvel:\n1. Click 'Stokvels' in the menu\n2. Click 'Create New Stokvel'\n3. Fill in the stokvel details\n4. Click 'Create'",
+    'add member': "To add members to your stokvel:\n1. Open your stokvel\n2. Click 'Manage Members'\n3. Click 'Add Member'\n4. Enter their email\n5. Set their role\n6. Click 'Add'",
+    'contribution': "To make a contribution:\n1. Go to the 'Contributions' page\n2. Select your stokvel\n3. Enter the amount\n4. Choose your payment method\n5. Click 'Make Contribution'",
+    'payout': "To request a payout:\n1. Go to your stokvel's page\n2. Click 'Request Payout'\n3. Enter the amount\n4. Provide a reason (optional)\n5. Submit your request",
+    'savings goal': "To set a savings goal:\n1. Go to 'Savings Goals'\n2. Click 'Create New Goal'\n3. Enter your target amount and deadline\n4. Choose a category\n5. Click 'Create Goal'",
+    'stokvel': "Stokvels are community savings groups. You can create your own, invite members, make contributions, request payouts, and view statements.",
+    'contribution': "Contributions are payments you make to your stokvels. You can track your payment history and make new contributions from the Contributions page.",
+    'payout': "Payouts are when you receive money from a stokvel. You can request a payout, which may need approval from the stokvel admin.",
+    'savings goal': "Savings Goals let you set personal financial targets. You can create goals, contribute to them, and track your progress.",
+    'payment method': "Manage your payment methods, such as bank accounts or cards, on the Payment Methods page. You can also set a default method for contributions.",
+    'notification': "Notifications keep you updated on important activities, like contributions or payout requests. You can view them by clicking the bell icon.",
+    'profile': "Your Profile page shows your personal information, total contributions, and active stokvels. You can update your details, upload a profile picture, and submit KYC documents here.",
+    'setting': "The Settings page allows you to manage account preferences, like language, notification settings, and security options like two-factor authentication.",
+    'financial analysis': "The Financial Analysis page provides charts and graphs to visualize your spending habits and understand your financial health over time.",
+    'loan': "Loans can be requested from a stokvel, depending on its rules. Loan requests are typically reviewed by the stokvel's admin.",
+    'kyc': "KYC (Know Your Customer) is a verification process. Upload your ID and proof of address on your Profile page to get verified.",
+    'membership': "KasiKash may offer different membership plans. You can view available plans and their benefits on the Pricing page.",
+    'statement': "You can download a detailed PDF statement for any of your stokvels from the stokvel's member page.",
+
+    # --- Admin Features ---
+    'admin': "The Admin Panel provides access to manage users, approve loans and KYC documents, create events, and send notifications. If you're an admin, you can access it via the admin section.",
+    'admin dashboard': "The Admin Dashboard provides a high-level overview of the platform, including total users, total stokvels, and the number of pending loan approvals.",
+    'manage users': "The Manage Users section in the admin panel allows you to view, search, and manage all users on the platform. You can also add new users manually.",
+    'loan approval': "The Loan Approvals page is where admins can review, approve, or reject payout requests made by users. You can also view the history of approved or rejected loans.",
+    'kyc approval': "The KYC Approvals page lets admins review user-submitted documents (ID and proof of address), and then approve or reject their KYC status.",
+    'admin events': "The Events page allows admins to create and manage events for specific stokvels, and send notifications about these events to all members.",
+    'admin memberships': "The Memberships section is for managing the different pricing plans or membership tiers offered on the platform.",
+    'admin notifications': "Admins can send custom broadcast notifications to all users or specific user groups from the Admin Notifications page.",
+    'admin settings': "The Admin Settings page is for configuring platform-wide settings."
+}
 
 def verification_required(f):
     @wraps(f)
@@ -445,7 +482,6 @@ def home():
                             # New data for enhanced profile card
                             user_stokvels=user_stokvels,
                             active_stokvels_count=active_stokvels_count) # Pass notification count
-                            
     except Exception as e:
         logger.error(f"Dashboard error: {str(e)}")
         flash("Error loading dashboard. Please try again.")
@@ -1069,7 +1105,7 @@ def stokvels():
     except Exception as e:
         flash(f"An error occurred while loading your stokvels: {e}")
         print(f"Stokvels page error: {e}")
-        return render_template('stokvels.html', stokvels=[], created_stokvels=[])
+        return render_template('stokvels.html', stokvels=[])
 
 @app.route('/create_stokvel', methods=['POST'])
 @login_required
@@ -1132,6 +1168,28 @@ def contributions():
                 """, (firebase_uid,))
                 stokvels = cur.fetchall()
 
+                # Fetch default payment method for display
+                cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s AND is_default = TRUE", (firebase_uid,))
+                payment_method = cur.fetchone()
+                payment_info_text = "No default payment method set. Please add one in settings."
+                if payment_method:
+                    method_type, details = payment_method
+                    if isinstance(details, str):
+                        try:
+                            details = json.loads(details)
+                        except json.JSONDecodeError:
+                            details = {}
+                    
+                    if method_type in ['credit_card', 'debit_card', 'card']:
+                        card_number = details.get('card_number', '')
+                        last4 = card_number[-4:] if len(card_number) >= 4 else card_number
+                        payment_info_text = f"Using card ending in {last4}"
+                    elif method_type == 'bank_account':
+                        bank_name = details.get('bank_name', 'bank')
+                        account_number = details.get('account_number', '')
+                        last4 = account_number[-4:] if len(account_number) >= 4 else account_number
+                        payment_info_text = f"Using {bank_name} account ending in {last4}"
+
         # Process and render as before
                 contributions_list = []
                 for row in contributions:
@@ -1164,11 +1222,11 @@ def contributions():
                         })
                     except Exception as e:
                         print(f"Error processing stokvel row: {e}")
-        return render_template('contributions.html', contributions=contributions_list, stokvels=stokvels_list)
+        return render_template('contributions.html', contributions=contributions_list, stokvels=stokvels_list, payment_info=payment_info_text)
     except Exception as e:
         print(f"Error in contributions route: {e}")
         flash("An error occurred while loading your contributions.")
-        return render_template('contributions.html', contributions=[], stokvels=[])
+        return render_template('contributions.html', contributions=[], stokvels=[], payment_info="Could not load payment info.")
 
 @app.route('/make_contribution', methods=['GET', 'POST'])
 @login_required
@@ -1183,7 +1241,7 @@ def make_contribution():
         description = request.form.get('description')
         if not all([stokvel_id, amount, description]):
             flash("Stokvel, amount, and description are required for a contribution.")
-            return redirect('/contributions')
+            return redirect(url_for('contributions'))
         try:
             amount = float(amount)
             stokvel_id = int(stokvel_id)
@@ -1228,41 +1286,32 @@ def make_contribution():
                         message = f"{user_name} made a contribution of R{amount:.2f} to '{stokvel_name}' stokvel."
                         link = url_for('contributions')
                         create_notification(admin_user_id, message, link_url=link, notification_type='contribution_made')
+
+                    # Get default payment method for flash message
+                    cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s AND is_default = TRUE", (firebase_uid,))
+                    payment_method = cur.fetchone()
+                    payment_info = ""
+                    if payment_method:
+                        method_type, details = payment_method
+                        if isinstance(details, str):
+                            details = json.loads(details)
+                        if method_type in ['credit_card', 'debit_card', 'card']:
+                            last4 = details.get('card_number', '')[-4:]
+                            payment_info = f" from your card ending in {last4}"
+                        elif method_type == 'bank_account':
+                            payment_info = f" from your {details.get('bank_name', 'bank')} account"
                         
-            flash("Contribution recorded successfully!")
-            return redirect('/contributions')
+            flash(f"Contribution of R{amount:.2f} recorded successfully{payment_info}!")
+            return redirect(url_for('contributions'))
         except ValueError:
             flash("Amount must be a number.")
-            return redirect('/contributions')
+            return redirect(url_for('contributions'))
         except Exception as e:
             print(f"Error making contribution: {e}")
             flash("An error occurred while recording your contribution. Please try again.")
-            return redirect('/contributions')
-    else: # GET request
-        firebase_uid = session.get('user_id')
-        if not firebase_uid:
-            flash("Please log in to make a contribution.", "error")
-            return redirect(url_for('login'))
-        stokvels = []
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    # Fetch stokvels where the user is a member
-                    cur.execute("""
-                        SELECT s.id, s.name 
-                        FROM stokvels s
-                        JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                        WHERE sm.user_id = %s
-                    """, (firebase_uid,))
-                    stokvels_data = cur.fetchall()
-                    for stokvel in stokvels_data:
-                        stokvels.append({'id': stokvel[0], 'name': stokvel[1]})
-            print(f"Fetched stokvels for user {firebase_uid}: {stokvels}")
-        except Exception as e:
-            print(f"Error fetching stokvels: {str(e)}")
-            flash("Error loading stokvels. Please try again.", "error")
-            stokvels = [] # Ensure stokvels is empty on error
-        return render_template("make_contribution.html", stokvels=stokvels)
+            return redirect(url_for('contributions'))
+    # For GET requests, just show the contributions page with the modal
+    return redirect(url_for('contributions'))
 
 @app.route('/payouts')
 @login_required
@@ -1498,9 +1547,23 @@ def contribute_to_goal():
                     VALUES (%s, %s, 'savings_contribution', 'Contribution to savings goal', %s)
                 """, (firebase_uid, amount, goal_id))
 
+                # Get default payment method for flash message
+                cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s AND is_default = TRUE", (firebase_uid,))
+                payment_method = cur.fetchone()
+                payment_info = ""
+                if payment_method:
+                    method_type, details = payment_method
+                    if isinstance(details, str):
+                        details = json.loads(details)
+                    if method_type in ['credit_card', 'debit_card', 'card']:
+                        last4 = details.get('card_number', '')[-4:]
+                        payment_info = f" from your card ending in {last4}"
+                    elif method_type == 'bank_account':
+                        payment_info = f" from your {details.get('bank_name', 'bank')} account"
+
                 conn.commit()
 
-        flash(f"Successfully contributed R{amount:.2f} to your savings goal!")
+        flash(f"Successfully contributed R{amount:.2f} to your savings goal{payment_info}!")
         return redirect('/savings_goals')
 
     except InvalidOperation:
@@ -1550,9 +1613,9 @@ def view_stokvel_members(stokvel_id):
 
                 # Get pending members (no user_id, just email)
                 cur.execute("""
-                    SELECT NULL as username, NULL as email, sm.role, sm.id as member_id
+                    SELECT NULL as username, sm.email, sm.role, sm.id as member_id
                     FROM stokvel_members sm
-                    WHERE sm.stokvel_id = %s AND sm.user_id IS NULL
+                    WHERE sm.stokvel_id = %s AND sm.user_id IS NULL AND sm.email IS NOT NULL
                 """, (stokvel_id,))
                 pending_members_tuples = cur.fetchall()
                 print(f"DEBUG: Pending members query result: {pending_members_tuples}") # Debug log
@@ -1581,108 +1644,6 @@ def view_stokvel_members(stokvel_id):
         print(f"ERROR: view_stokvel_members failed: {e}") # Enhanced error logging
         flash("An error occurred while loading stokvel members. Please try again.")
         return redirect('/stokvels')
-
-@app.route('/stokvel/<int:stokvel_id>/add_member', methods=['POST'])
-@login_required
-def add_stokvel_member(stokvel_id):
-    current_user_id = session['user_id']
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Check if current user is an admin of this stokvel
-                cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, current_user_id))
-                role_result = cur.fetchone()
-                if not role_result or role_result[0] != 'admin':
-                    flash("You do not have permission to add members to this stokvel.", "danger")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                email_to_add = request.form.get('email')
-                if not email_to_add:
-                    flash("Email is required.", "warning")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Find user by email
-                cur.execute("SELECT firebase_uid FROM users WHERE email = %s", (email_to_add,))
-                user_to_add = cur.fetchone()
-
-                if not user_to_add:
-                    flash(f"No registered user found with email {email_to_add}.", "danger")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-                
-                user_id_to_add = user_to_add[0]
-
-                # Check if user is already a member
-                cur.execute("SELECT 1 FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id_to_add))
-                if cur.fetchone():
-                    flash(f"{email_to_add} is already a member of this stokvel.", "info")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Add the new member
-                cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)", (stokvel_id, user_id_to_add, 'member'))
-                conn.commit()
-
-                # Send email notification to the new member
-                try:
-                    import sendgrid
-                    from sendgrid.helpers.mail import Mail
-                    import os
-                    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
-                    # Fetch stokvel name for the email
-                    cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
-                    stokvel_name = cur.fetchone()[0]
-                    message = Mail(
-                        from_email=os.environ.get('MAIL_SENDER_EMAIL', 'noreply@kasikash.com'),
-                        to_emails=email_to_add,
-                        subject='You have been added to a Stokvel!',
-                        html_content=f'You have been added to the stokvel "{stokvel_name}". Log in to KasiKash to view details.'
-                    )
-                    sg.send(message)
-                except Exception as e:
-                    print(f"Error sending email: {e}")
-
-                flash(f"Successfully added {email_to_add} to the stokvel.", "success")
-    except Exception as e:
-        print(f"Error adding stokvel member: {e}")
-        flash("An error occurred while adding the member.", "danger")
-    
-    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-@app.route('/stokvel/<int:stokvel_id>/remove_member', methods=['POST'])
-@login_required
-def remove_stokvel_member(stokvel_id):
-    current_user_id = session['user_id']
-    member_id = request.form.get('member_id')
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Check if current user is an admin of this stokvel
-                cur.execute("SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, current_user_id))
-                role_result = cur.fetchone()
-                if not role_result or role_result[0] != 'admin':
-                    flash("You do not have permission to remove members from this stokvel.", "danger")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Prevent removing the last admin
-                cur.execute("SELECT COUNT(*) FROM stokvel_members WHERE stokvel_id = %s AND role = 'admin'", (stokvel_id,))
-                admin_count = cur.fetchone()[0]
-
-                cur.execute("SELECT role FROM stokvel_members WHERE id = %s", (member_id,))
-                member_to_remove_role = cur.fetchone()
-
-                if member_to_remove_role and member_to_remove_role[0] == 'admin' and admin_count <= 1:
-                    flash("You cannot remove the last admin from the stokvel.", "warning")
-                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
-
-                # Remove the member
-                cur.execute("DELETE FROM stokvel_members WHERE id = %s", (member_id,))
-                conn.commit()
-
-                flash("Member removed successfully.", "success")
-    except Exception as e:
-        print(f"Error removing stokvel member: {e}")
-        flash("An error occurred while removing the member.", "danger")
-    
-    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
 @app.route('/stokvel/<int:stokvel_id>/join', methods=['POST'])
 @login_required
@@ -1792,6 +1753,7 @@ def notifications_count():
 @app.route('/payment_methods')
 @login_required
 def payment_methods():
+    import json
     firebase_uid = session['user_id']
     try:
         with support.db_connection() as conn:
@@ -1804,12 +1766,45 @@ def payment_methods():
                 """, (firebase_uid,))
                 payment_methods_tuples = cur.fetchall()
 
-                # Convert tuples to dictionaries for easier access in template
                 payment_methods_list = []
                 payment_method_keys = ['id', 'type', 'details', 'is_default', 'created_at']
                 for pm_tuple in payment_methods_tuples:
-                    payment_methods_list.append(dict(zip(payment_method_keys, pm_tuple)))
-                
+                    pm_dict = dict(zip(payment_method_keys, pm_tuple))
+                    # Parse details and mask sensitive info
+                    masked_details = ''
+                    try:
+                        details = pm_dict['details']
+                        if isinstance(details, str):
+                            details_json = json.loads(details)
+                        else:
+                            details_json = details
+                        if pm_dict['type'] in ['credit_card', 'debit_card', 'card']:
+                            card_number = details_json.get('card_number', '')
+                            last4 = card_number[-4:] if len(card_number) >= 4 else card_number
+                            masked_number = '**** **** **** ' + last4
+                            exp = details_json.get('expiry_date', '')
+                            card_holder = details_json.get('card_holder_name', 'N/A')
+                            masked_details = f"{masked_number}  Exp: {exp}"
+                            pm_dict['card_holder_name'] = card_holder
+                        elif pm_dict['type'] == 'bank_account':
+                            acc = details_json.get('account_number', '')
+                            last4 = acc[-4:] if len(acc) >= 4 else acc
+                            bank = details_json.get('bank_name', '')
+                            account_holder = details_json.get('account_holder_name', 'N/A')
+                            masked_details = f"Account: ****{last4}  ({bank})"
+                            pm_dict['account_holder_name'] = account_holder
+                        elif pm_dict['type'] == 'mobile_money':
+                            phone = details_json.get('phone', '')
+                            last4 = phone[-4:] if len(phone) >= 4 else phone
+                            provider = details_json.get('provider', '')
+                            masked_details = f"Mobile: ****{last4}  {provider}"
+                        else:
+                            # fallback: show only non-sensitive fields
+                            masked_details = ', '.join(f"{k}: {v}" for k, v in details_json.items() if 'number' not in k and 'card' not in k)
+                    except Exception as e:
+                        masked_details = 'Payment details unavailable'
+                    pm_dict['masked_details'] = masked_details
+                    payment_methods_list.append(pm_dict)
         return render_template('payment_methods.html', payment_methods=payment_methods_list)
     except Exception as e:
         print(f"Payment methods page error: {e}")
@@ -1821,39 +1816,60 @@ def payment_methods():
 def add_payment_method():
     user_id = session['user_id']
     payment_type = request.form.get('type')
-    details = request.form.get('details')
-    is_default = request.form.get('is_default') == 'true' # Checkbox value
+    is_default = request.form.get('is_default') == 'true'
+    details_dict = {}
+    import json
 
-    if not all([payment_type, details]):
-        flash("Payment type and details are required.")
-        return redirect('/payment_methods')
+    if payment_type in ['credit_card', 'debit_card']:
+        card_holder_name = request.form.get('card_holder_name')
+        card_number = request.form.get('card_number')
+        expiry_date = request.form.get('expiry_date')
+        cvv = request.form.get('cvv') # Note: Storing CVV is not PCI compliant. This is for demonstration.
+        if not all([card_holder_name, card_number, expiry_date, cvv]):
+            flash("All card fields are required.", "danger")
+            return redirect(url_for('payment_methods'))
+        details_dict = {
+            "card_holder_name": card_holder_name,
+            "card_number": card_number,
+            "expiry_date": expiry_date,
+            # "cvv": cvv  # Do not persist CVV
+        }
+    elif payment_type == 'bank_account':
+        account_holder_name = request.form.get('account_holder_name')
+        account_number = request.form.get('account_number')
+        bank_name = request.form.get('bank_name')
+        if not all([account_holder_name, account_number, bank_name]):
+            flash("All bank account fields are required.", "danger")
+            return redirect(url_for('payment_methods'))
+        details_dict = {
+            "account_holder_name": account_holder_name,
+            "account_number": account_number,
+            "bank_name": bank_name
+        }
+    else:
+        flash("Invalid payment type selected.", "danger")
+        return redirect(url_for('payment_methods'))
+
+    details_json = json.dumps(details_dict)
 
     try:
-        # Validate that details is valid JSON
-        import json
-        details_json = json.loads(details)
-
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # If new method is set as default, clear existing default
                 if is_default:
                     cur.execute("UPDATE payment_methods SET is_default = FALSE WHERE user_id = %s", (user_id,))
                 
                 cur.execute("""
                     INSERT INTO payment_methods (user_id, type, details, is_default)
                     VALUES (%s, %s, %s, %s)
-                """, (user_id, payment_type, details, is_default))
+                """, (user_id, payment_type, details_json, is_default))
                 conn.commit()
 
-        flash("Payment method added successfully!")
-        return redirect('/payment_methods')
-    except json.JSONDecodeError:
-        flash("Invalid payment details format. Please provide valid JSON.")
-        return redirect('/payment_methods')
+        flash("Payment method added successfully!", "success")
+        return redirect(url_for('payment_methods'))
     except Exception as e:
         print(f"Error adding payment method: {e}")
-        flash("An error occurred while adding the payment method. Please try again.")
-        return redirect('/payment_methods')
+        flash("An error occurred while adding the payment method. Please try again.", "danger")
+        return redirect(url_for('payment_methods'))
 
 @app.route('/set_default_payment_method', methods=['POST'])
 @login_required
@@ -2081,15 +2097,7 @@ def profile():
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                # Get user data - Simplified query to avoid GROUP BY issues
-                cur.execute("SELECT * FROM users WHERE firebase_uid = %s", (session['user_id'],))
-                user = cur.fetchone()
-
-                if not user:
-                    flash('User profile not found')
-                    return redirect(url_for('home'))
-
-                # Get aggregated data separately
+                # Get user data, ensuring all columns including kyc_status are selected
                 cur.execute("""
                     SELECT 
                            COUNT(DISTINCT s.id) as active_stokvels_count,
@@ -2169,6 +2177,7 @@ def upload_profile_picture():
         
         # Update user profile picture path in database
         support.execute_query("update", "UPDATE users SET profile_picture = %s WHERE firebase_uid = %s", (filename, user_id))
+        
         flash('Profile picture updated successfully!', 'success')
     else:
         flash('Invalid file type', 'danger')
@@ -2185,14 +2194,6 @@ def upload_kyc():
         flash('Both ID document and proof of address are required.', 'warning')
         return redirect(url_for('profile'))
 
-    # Validate file types
-    if not (allowed_kyc_file(id_doc.filename) and allowed_kyc_file(address_doc.filename)):
-        flash('Invalid file type. Only PDF, PNG, JPG, JPEG, and GIF are allowed.', 'danger')
-        return redirect(url_for('profile'))
-
-    # Ensure upload directory exists
-    os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
-
     try:
         id_filename = secure_filename(f"{user_id}_id_{id_doc.filename}")
         address_filename = secure_filename(f"{user_id}_address_{address_doc.filename}")
@@ -2203,18 +2204,17 @@ def upload_kyc():
         id_doc.save(id_filepath)
         address_doc.save(address_filepath)
 
-        # Update user's KYC info and set status to 'pending_review'
-        query = "UPDATE users SET id_document = %s, proof_of_address = %s, kyc_status = 'pending_review' WHERE firebase_uid = %s"
+        # Update user's KYC info in the database and set status to 'pending'
+        query = "UPDATE users SET id_document = %s, proof_of_address = %s, kyc_status = 'pending' WHERE firebase_uid = %s"
         support.execute_query("update", query, (id_filename, address_filename, user_id))
 
         flash('KYC documents uploaded successfully. They are now pending review.', 'success')
     except Exception as e:
+        print(f'An error occurred during KYC upload: {e}')
         flash(f'An error occurred during KYC upload: {e}', 'danger')
 
     return redirect(url_for('profile'))           
-
-# Register context processor for user info and translation function
-@app.context_processor
+    
 def inject_user_name():
     username = None
     language_preference = 'en'  # Default language
@@ -2234,14 +2234,17 @@ def inject_user_name():
         if 'language_preference' in session:
             language_preference = session['language_preference']
         else:
+            # Try to get from database, but fall back to session if column doesn't exist
             try:
                 lang_query = "SELECT language_preference FROM users WHERE firebase_uid = %s"
                 lang_data = support.execute_query("search", lang_query, (session['user_id'],))
                 if lang_data and lang_data[0][0]:
                     language_preference = lang_data[0][0]
+                    # Store in session for future use
                     session['language_preference'] = language_preference
             except Exception as e:
                 print(f"Error getting language preference from database: {e}")
+                # Use session default or fallback to English
                 language_preference = session.get('language_preference', 'en')
     
     return dict(username=username, user_language=language_preference, notification_count=notification_count, t=get_text)
@@ -2299,87 +2302,197 @@ def pricing():
         flash("Could not load pricing plans. Please try again later.", "error")
         return render_template('pricing.html', pricing_plans=[]) # Render with empty list on error
 
+# Add this dictionary to store temporary stokvel creation data
+stokvel_creation_state = {}
+
+def rule_based_chat(user_message, user_id, user_name):
+    user_message_lower = user_message.lower()
+    response = None
+
+    # Get or initialize user's creation state
+    creation_state = stokvel_creation_state.get(user_id, {})
+
+    # Direct Stokvel Creation Flow
+    if 'create stokvel' in user_message_lower or creation_state.get('creating_stokvel'):
+        if not creation_state.get('creating_stokvel'):
+            # Start the creation flow
+            stokvel_creation_state[user_id] = {
+                'creating_stokvel': True,
+                'step': 'name',
+                'data': {}
+            }
+            return "Let's create your stokvel! What would you like to name it?"
+
+        current_step = stokvel_creation_state[user_id]['step']
+        data = stokvel_creation_state[user_id]['data']
+
+        if current_step == 'name':
+            data['name'] = user_message.strip()
+            stokvel_creation_state[user_id]['step'] = 'monthly_contribution'
+            return "Great! How much should the monthly contribution be? (Enter amount in Rands)"
+
+        elif current_step == 'monthly_contribution':
+            try:
+                amount = float(user_message.replace('R', '').replace(',', '').strip())
+                data['monthly_contribution'] = amount
+                stokvel_creation_state[user_id]['step'] = 'target_amount'
+                return "What's the target amount for this stokvel? (Enter 0 if no specific target)"
+
+            except ValueError:
+                return "Please enter a valid amount (e.g., 500 or R500)"
+
+        elif current_step == 'target_amount':
+            try:
+                amount = float(user_message.replace('R', '').replace(',', '').strip())
+                data['target_amount'] = amount
+                stokvel_creation_state[user_id]['step'] = 'target_date'
+                return "When do you want to reach this target? (Format: YYYY-MM-DD, or type 'none' for no specific date)"
+
+            except ValueError:
+                return "Please enter a valid amount (e.g., 5000 or R5000)"
+
+        elif current_step == 'target_date':
+            if user_message_lower == 'none':
+                data['target_date'] = None
+            else:
+                try:
+                    data['target_date'] = datetime.strptime(user_message.strip(), '%Y-%m-%d')
+                except ValueError:
+                    return "Please enter a valid date (YYYY-MM-DD) or 'none'"
+
+            # Create the stokvel with all collected data
+            try:
+                description = f"Stokvel created via chat by {user_name}"
+                query = """
+                    INSERT INTO stokvels 
+                    (name, description, created_by, monthly_contribution, target_amount, target_date) 
+                    VALUES (%s, %s, %s, %s, %s, %s) 
+                    RETURNING id
+                """
+                result = support.execute_query("insert", query, (
+                    data['name'],
+                    description,
+                    user_id,
+                    data['monthly_contribution'],
+                    data.get('target_amount', 0),
+                    data.get('target_date')
+                ))
+
+                if result and result[0]:
+                    stokvel_id = result[0]
+                    # Add creator as admin
+                    support.execute_query("insert",
+                        "INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)",
+                        (stokvel_id, user_id, 'admin'))
+
+                    # Create success notification
+                    message = f"You successfully created the stokvel '{data['name']}'!"
+                    link = url_for('view_stokvel_members', stokvel_id=stokvel_id)
+                    create_notification(user_id, message, link_url=link, notification_type='stokvel_created')
+
+                    # Clear the creation state
+                    del stokvel_creation_state[user_id]
+
+                    summary = f"""✅ Perfect! I've created your stokvel with these details:
+
+Name: {data['name']}
+Monthly Contribution: R{data['monthly_contribution']:.2f}
+Target Amount: {'R{:.2f}'.format(data['target_amount']) if data.get('target_amount') else 'Not set'}
+Target Date: {data['target_date'].strftime('%Y-%m-%d') if data.get('target_date') else 'Not set'}
+
+To add members, say: add member email@example.com to '{data['name']}'"""
+                    return summary
+                else:
+                    # Clear the creation state on error
+                    if user_id in stokvel_creation_state:
+                        del stokvel_creation_state[user_id]
+                    return "Sorry, I couldn't create the stokvel. Please try again."
+
+            except Exception as e:
+                print(f"Error creating stokvel: {e}")
+                # Clear the creation state on error
+                if user_id in stokvel_creation_state:
+                    del stokvel_creation_state[user_id]
+                return "Sorry, I couldn't create the stokvel due to a system error. Please try again."
+
+    # Direct Member Addition (keep existing code)
+    if 'add member' in user_message_lower:
+        email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', user_message)
+        stokvel_match = re.search(r'to\s+["\']?([^"\']+)["\']?', user_message)
+
+        if not email_match or not stokvel_match:
+            return "Please specify both the email and stokvel name. Example: add member user@example.com to 'My Stokvel'"
+
+        email = email_match.group(0)
+        stokvel_name = stokvel_match.group(1).strip()
+
+        try:
+            # Find stokvel
+            query = "SELECT id FROM stokvels WHERE name = %s AND created_by = %s"
+            result = support.execute_query("select", query, (stokvel_name, user_id))
+
+            if result and result[0]:
+                stokvel_id = result[0][0]
+                # Add member
+                support.execute_query("insert",
+                    "INSERT INTO stokvel_members (stokvel_id, user_id, role, email) VALUES (%s, NULL, %s, %s)",
+                    (stokvel_id, 'member', email))
+                return f"✅ Added {email} to '{stokvel_name}'. They'll receive an invitation email."
+            else:
+                return "Sorry, I couldn't add the member. Please check the stokvel name and try again."
+        except Exception as e:
+            print(f"Error adding member: {e}")
+            return "Sorry, I couldn't add the member due to a system error. Please try again."
+
+
+    # Existing feature explanations
+    sorted_features = sorted(feature_faq.keys(), key=len, reverse=True)
+    for feature in sorted_features:
+        if feature in user_message_lower:
+            response = feature_faq[feature]
+            break
+
+    if response is None:
+        response = "Try these commands:\n- Create stokvel\n- Add member email@example.com to 'stokvel name'"
+
+    return response
+
 @app.route('/chat', methods=['POST'])
 @login_required
 def handle_chat():
+    """
+    Handles incoming chat messages from the frontend.
+    """
     try:
-        data = request.get_json()
-        if not data or 'message' not in data:
-            return jsonify({'error': 'No message provided'}), 400
-
-        user_message = data['message']
-        mode = data.get('mode', 'ai')  # Default to AI mode if not provided
+        data = request.json
+        user_message = data.get('message', '').strip()
+        mode = data.get('mode', 'rule')  # Default to 'rule'
         user_id = session.get('user_id')
-        if not user_id:
-            return jsonify({'error': 'User not logged in'}), 401
+        user_name = session.get('username', 'User')
+        response = ""
 
-        # Fetch user context from database (username, total_saved, stokvels, transactions)
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Get username
-                cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (user_id,))
-                user = cur.fetchone()
-                username = user[0] if user else 'User'
-                
-                # Get total savings
-                cur.execute("""
-                    SELECT SUM(amount) FROM transactions
-                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
-                """, (user_id,))
-                total_saved = cur.fetchone()[0] or 0
-                
-                # Get stokvel memberships
-                cur.execute("""
-                    SELECT s.name, s.monthly_contribution, s.target_date 
-                    FROM stokvels s 
-                    JOIN stokvel_members sm ON s.id = sm.stokvel_id 
-                    WHERE sm.user_id = %s
-                """, (user_id,))
-                stokvels = cur.fetchall()
-                
-                # Get recent transactions
-                cur.execute("""
-                    SELECT amount, type, description, transaction_date 
-                    FROM transactions 
-                    WHERE user_id = %s 
-                    ORDER BY transaction_date DESC 
-                    LIMIT 5
-                """, (user_id,))
-                transactions = cur.fetchall()
+        if not user_message:
+            return jsonify({'response': 'Empty message received.', 'mode': mode}), 400
 
         if mode == 'ai':
-            # Use OpenRouter with Google Gemma 3n 4B model
-            if openrouter_available:
+            if not openrouter_available:
+                response = "Sorry, AI Mode is currently unavailable."
+            else:
                 try:
-                    # Broader system prompt for general financial and knowledge questions
-                    system_prompt = (
-                        f"You are KasiKash AI, a helpful and knowledgeable assistant. "
-                        f"You can answer questions about stokvels, personal finance, the stock market, general financial topics, and more. "
-                        f"User: {username}, Saved: R{total_saved}, Stokvels: {len(stokvels)}. "
-                        "Be concise, accurate, and helpful. Do not use Markdown or asterisks for formatting. Respond in plain text only. "
-                        "Do not invent organization names, websites, or mix languages/scripts. If you do not know the answer, say so or suggest consulting a reputable source.\n\n"
-                    )
-                    full_message = f"{system_prompt}{user_message}"
-                    response = requests.post(
-                        "https://openrouter.ai/api/v1/chat/completions",
-                        headers={"Authorization": f"Bearer {openrouter_api_key}"},
-                        json={
-                            "model": "google/gemma-3n-e4b-it:free",
-                            "messages": [{"role": "user", "content": full_message}],
-                            "max_tokens": 300,  # Reduced for faster responses
-                            "temperature": 0.7
+                    # Using requests to call OpenRouter API
+                    api_response = requests.post(
+                        url="https://openrouter.ai/api/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {openrouter_api_key}",
+                            "Content-Type": "application/json"
                         },
-                        timeout=10  # 10 second timeout
+                        json={
+                            "model": "google/gemma-2-9b-it",
+                            "messages": [{"role": "user", "content": user_message}]
+                        }
                     )
-                    if response.status_code == 200:
-                        response_data = response.json()
-                        response = response_data['choices'][0]['message']['content']
-                    else:
-                        print(f"OpenRouter API error: {response.status_code} - {response.text}")
-                        response = "I'm having trouble connecting to my AI service right now. Please try again later."
-                except requests.exceptions.Timeout:
-                    print("OpenRouter API timeout")
-                    response = "The AI service is taking too long to respond. Please try again."
+                    api_response.raise_for_status()
+                    response = api_response.json()['choices'][0]['message']['content']
                 except Exception as e:
                     print(f"OpenRouter API error: {e}")
                     response = "I'm having trouble connecting to my AI service right now. Please try again later or contact support if the issue persists."
@@ -2574,17 +2687,19 @@ def handle_chat():
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        INSERT INTO chat_history (user_id, message, response, mode)
-                        VALUES (%s, %s, %s, %s)
-                    """, (user_id, user_message, response, mode))
+                        INSERT INTO chat_history (user_id, message, response)
+                        VALUES (%s, %s, %s)
+                    """, (user_id, user_message, response))
                     conn.commit()
         except Exception as e:
             print(f"Error saving chat history: {e}")
 
-        return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
+        # Return the response to the frontend
+        return jsonify(response=response, mode=mode, timestamp=datetime.now().strftime('%H:%M'))
+
     except Exception as e:
         print(f"Chat handler error: {e}")
-        return jsonify({'error': 'An internal error occurred.'}), 500
+        return jsonify({'response': 'An unexpected error occurred. Please try again.', 'mode': 'error'}), 500
 
 @app.route('/stokvel/<int:stokvel_id>/statement/download')
 @login_required
@@ -2663,65 +2778,16 @@ def download_stokvel_statement_pdf(stokvel_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"statement_{stokvel_id}_{period}.pdf", mimetype='application/pdf')
 
-@app.route('/activities')
-@login_required
-def activities():
-    activities = []
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT t.type, t.amount, t.status, t.transaction_date, t.description, s.name as stokvel_name
-                    FROM transactions t
-                    JOIN stokvels s ON t.stokvel_id = s.id
-                    WHERE t.user_id = %s
-                    ORDER BY t.transaction_date DESC
-                """, (session['user_id'],))
-                rows = cur.fetchall()
-                for row in rows:
-                    t_type, amount, status, t_date, description, stokvel_name = row
-                    # Format date for display
-                    if t_date:
-                        try:
-                            from datetime import datetime, timedelta
-                            now = datetime.now()
-                            if isinstance(t_date, str):
-                                t_date = datetime.fromisoformat(t_date)
-                            delta = now - t_date
-                            if delta.days == 0:
-                                if delta.seconds < 3600:
-                                    date_str = f"{delta.seconds//60} minutes ago"
-                                else:
-                                    date_str = f"{delta.seconds//3600} hours ago"
-                            elif delta.days == 1:
-                                date_str = "Yesterday"
-                            else:
-                                date_str = f"{delta.days} days ago"
-                        except Exception:
-                            date_str = str(t_date)
-                    else:
-                        date_str = 'N/A'
-                    # Title and badge
-                    if t_type == 'contribution':
-                        title = f"Contribution to {stokvel_name}"
-                    elif t_type == 'withdrawal':
-                        title = f"Withdrawal from {stokvel_name}"
-                    elif t_type == 'payout':
-                        title = f"Payout from {stokvel_name}"
-                    elif t_type == 'goal':
-                        title = f"Savings Goal: {description}"
-                    else:
-                        title = description or t_type.capitalize()
-                    activities.append({
-                        'type': t_type,
-                        'title': title,
-                        'amount': float(amount) if amount is not None else 0.0,
-                        'date': date_str,
-                        'status': status.capitalize() if status else '',
-                    })
-    except Exception as e:
-        print(f"Error fetching activities: {e}")
-    return render_template('activities.html', activities=activities)
+print("Registered endpoints:")
+for rule in app.url_map.iter_rules():
+    print(rule.endpoint, rule)
+
+# ... after app = Flask(__name__) ...
+
+from financial_advisor import advisor_bp
+app.register_blueprint(advisor_bp)
+
+# ... rest of the code ...
 
 @app.context_processor
 def inject_csrf_token():

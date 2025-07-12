@@ -209,12 +209,18 @@
               </a>
             </li>
             {% endif %}
+            <li>
+              <a href="{{ url_for('advisor.dashboard') }}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <svg class="h-5 w-5 text-indigo-500 mr-2" ...> <!-- icon here --> </svg>
+                Financial Advisor
+              </a>
+            </li>
           </ul>
         </nav>
       </div>
       <div class="p-6 border-t border-gray-800">
         <a href="/logout" class="flex items-center text-gray-200 hover:text-white">
-          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">BN</span>
+          <span class="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mr-3">{{ session.user_initials if session.user_initials else 'BN' }}</span>
           Logout
         </a>
       </div>
