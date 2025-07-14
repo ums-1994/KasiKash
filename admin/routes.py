@@ -8,7 +8,9 @@ from utils import login_required, create_notification
 import csv
 import pandas as pd
 from io import BytesIO
-from fpdf import FPDF
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -713,21 +715,33 @@ def export_members():
         return Response(output.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                         headers={"Content-Disposition": "attachment;filename=members.xlsx"})
     elif export_format == 'pdf':
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        col_width = 40
-        # Table header
-        for col in columns:
-            pdf.cell(col_width, 10, str(col), 1)
-        pdf.ln()
-        # Table rows
-        for row in rows:
-            for item in row:
-                pdf.cell(col_width, 10, str(item), 1)
-            pdf.ln()
-        pdf_bytes = pdf.output(dest='S').encode('latin1')
-        return Response(pdf_bytes, mimetype='application/pdf',
+        # Create PDF using reportlab
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+        
+        # Create table data
+        table_data = [columns] + list(rows)
+        table = Table(table_data)
+        
+        # Style the table
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ])
+        table.setStyle(style)
+        elements.append(table)
+        
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
+        return Response(buffer.getvalue(), mimetype='application/pdf',
                         headers={"Content-Disposition": "attachment;filename=members.pdf"})
     else:
         flash('Unsupported export format.', 'danger')
@@ -757,19 +771,33 @@ def export_transactions():
         return Response(output.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                         headers={"Content-Disposition": "attachment;filename=transactions.xlsx"})
     elif export_format == 'pdf':
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        col_width = 40
-        for col in columns:
-            pdf.cell(col_width, 10, str(col), 1)
-        pdf.ln()
-        for row in rows:
-            for item in row:
-                pdf.cell(col_width, 10, str(item), 1)
-            pdf.ln()
-        pdf_bytes = pdf.output(dest='S').encode('latin1')
-        return Response(pdf_bytes, mimetype='application/pdf',
+        # Create PDF using reportlab
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+        
+        # Create table data
+        table_data = [columns] + list(rows)
+        table = Table(table_data)
+        
+        # Style the table
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ])
+        table.setStyle(style)
+        elements.append(table)
+        
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
+        return Response(buffer.getvalue(), mimetype='application/pdf',
                         headers={"Content-Disposition": "attachment;filename=transactions.pdf"})
     else:
         flash('Unsupported export format.', 'danger')

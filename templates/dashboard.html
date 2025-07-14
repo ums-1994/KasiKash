@@ -510,7 +510,7 @@
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div style="background: rgba(255,255,255,0.1); border-radius: 0.5rem; height: 6px; overflow: hidden; flex: 1; margin-right: 0.5rem;">
-                <div style="background: linear-gradient(90deg, #60efff, #00ff87); height: 100%; width: {{ (stokvel.progress|default(0)) }}%; border-radius: 0.5rem; transition: width 0.3s ease;"></div>
+                <div class="stokvel-progress-bar" data-width="{{ stokvel.progress|default(0) }}"></div>
               </div>
               <span style="color: #b2f7ef; font-size: 0.75rem; margin-left: 0.5rem;">
                 <i class="fas fa-user-friends" style="margin-right: 0.2rem;"></i>{{ stokvel.member_count|default(1) }} members
@@ -658,23 +658,20 @@
 </div>
 {% endblock %}
 {% block extra_js %}
+<script id="activity-data" type="application/json">
+  {{ recent_activities|default(default_activities)|map(attribute='amount')|list|tojson }}
+</script>
+<script id="activity-labels" type="application/json">
+  {{ recent_activities|default(default_activities)|map(attribute='title')|list|tojson }}
+</script>
+<script id="activity-types" type="application/json">
+  {{ recent_activities|default(default_activities)|map(attribute='type')|list|tojson }}
+</script>
 <script>
 // Chart.js Activity Visualizer
-const activityData = [
-  {% for activity in recent_activities|default(default_activities) %}
-    {{ activity.amount }},
-  {% endfor %}
-];
-const activityLabels = [
-  {% for activity in recent_activities|default(default_activities) %}
-    '{{ activity.title }}',
-  {% endfor %}
-];
-const activityTypes = [
-  {% for activity in recent_activities|default(default_activities) %}
-    '{{ activity.type }}',
-  {% endfor %}
-];
+const activityData = JSON.parse(document.getElementById('activity-data').textContent);
+const activityLabels = JSON.parse(document.getElementById('activity-labels').textContent);
+const activityTypes = JSON.parse(document.getElementById('activity-types').textContent);
 const activityColors = activityTypes.map(type => {
   if (type === 'contribution') return '#34D399';
   if (type === 'withdrawal') return '#EF4444';
@@ -719,6 +716,15 @@ new Chart(ctx, {
     responsive: true,
     maintainAspectRatio: false,
   }
+});
+</script>
+<script>
+document.querySelectorAll('.stokvel-progress-bar').forEach(function(el) {
+  el.style.width = el.getAttribute('data-width') + '%';
+  el.style.background = 'linear-gradient(90deg, #60efff, #00ff87)';
+  el.style.height = '100%';
+  el.style.borderRadius = '0.5rem';
+  el.style.transition = 'width 0.3s ease';
 });
 </script>
 {% endblock %}

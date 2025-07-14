@@ -11,7 +11,12 @@ from functools import wraps
 import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
-import openai
+try:
+    import openai
+    openai_available = True
+except ImportError:
+    openai_available = False
+    print("Warning: OpenAI module not available. Some features may be limited.")
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 import firebase_admin
 from flask_wtf import FlaskForm
@@ -136,7 +141,8 @@ print(f"DEBUG: B2_BUCKET_NAME loaded from .env: {os.getenv('B2_BUCKET_NAME')}")
 print(f"DEBUG: B2_ENDPOINT_URL loaded from .env: {os.getenv('B2_ENDPOINT_URL')}")
 
 # Set OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+if openai_available:
+    openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app.secret_key = os.getenv('SECRET_KEY')
 csrf = CSRFProtect(app)  # Initialize CSRF protection
@@ -2496,8 +2502,6 @@ def handle_chat():
                 except Exception as e:
                     print(f"OpenRouter API error: {e}")
                     response = "I'm having trouble connecting to my AI service right now. Please try again later or contact support if the issue persists."
-            else:
-                response = "AI mode is not available right now. Please try again later or use App Mode."
         else:
             # App Mode (formerly Rule-based Mode)
             user_message_lower = user_message.lower().strip()

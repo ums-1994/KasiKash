@@ -1,21 +1,122 @@
 print("financial_advisor.py loaded")
 from flask import Blueprint, render_template, request, jsonify, current_app, session
 from utils import login_required
-import pytesseract
+try:
+    import pytesseract
+    pytesseract_available = True
+except ImportError:
+    pytesseract_available = False
+    print("Warning: pytesseract module not available. OCR features will be disabled.")
 from PIL import Image
 import io, datetime, openai, requests, os
-from models import db, ChatHistory, Transaction  # adjust import path if needed
-from pdf2image import convert_from_bytes
-import PyPDF2
+try:
+    from models import db, ChatHistory, Transaction  # adjust import path if needed
+    models_available = True
+except ImportError:
+    models_available = False
+    print("Warning: models module not available. Some database features may be limited.")
+try:
+    from pdf2image import convert_from_bytes
+    pdf2image_available = True
+except ImportError:
+    pdf2image_available = False
+    print("Warning: pdf2image module not available. PDF OCR features will be disabled.")
+try:
+    import PyPDF2
+    pypdf2_available = True
+except ImportError:
+    pypdf2_available = False
+    print("Warning: PyPDF2 module not available. PDF text extraction will be disabled.")
 from openai import OpenAI
-from support import db_connection, save_statement_analysis, get_latest_analysis, save_advisor_chat
+from support import db_connection
+import json
+
+# Stub functions for missing support functions
+def save_statement_analysis(conn, user_id, text, analysis, transactions, filename, budget_plan):
+    """Stub function for saving statement analysis"""
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO financial_statement_analysis 
+                (user_id, statement_text, analysis_text, transactions_json, filename, budget_plan, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                RETURNING id
+            """, (user_id, text, analysis, json.dumps(transactions), filename, budget_plan))
+            result = cur.fetchone()
+            conn.commit()
+            return result[0] if result else None
+    except Exception as e:
+        print(f"Error saving statement analysis: {e}")
+        return None
+
+def get_latest_analysis(conn, user_id, with_budget=False):
+    """Stub function for getting latest analysis"""
+    try:
+        with conn.cursor() as cur:
+            if with_budget:
+                cur.execute("""
+                    SELECT id, statement_text, analysis_text, transactions_json, budget_plan
+                    FROM financial_statement_analysis 
+                    WHERE user_id = %s 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                """, (user_id,))
+            else:
+                cur.execute("""
+                    SELECT id, statement_text, analysis_text, transactions_json
+                    FROM financial_statement_analysis 
+                    WHERE user_id = %s 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                """, (user_id,))
+            result = cur.fetchone()
+            if result:
+                if with_budget:
+                    return (result[0], result[1], result[2], result[3], result[4])
+                else:
+                    return (result[0], result[1], result[2], result[3])
+            return None
+    except Exception as e:
+        print(f"Error getting latest analysis: {e}")
+        return None
+
+def save_advisor_chat(conn, user_id, analysis_id, prompt, response):
+    """Stub function for saving advisor chat"""
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO financial_advisor_chat 
+                (user_id, analysis_id, prompt, response, created_at)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (user_id, analysis_id, prompt, response))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error saving advisor chat: {e}")
+        return False
 
 # Delete old financial advisor data on app startup
 try:
     with db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM financial_advisor_chat;")
-            cur.execute("DELETE FROM financial_statement_analysis;")
+            # Check if tables exist before trying to delete
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'financial_advisor_chat'
+                );
+            """)
+            if cur.fetchone()[0]:
+                cur.execute("DELETE FROM financial_advisor_chat;")
+            
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'financial_statement_analysis'
+                );
+            """)
+            if cur.fetchone()[0]:
+                cur.execute("DELETE FROM financial_statement_analysis;")
         conn.commit()
     print("[INFO] Old financial advisor data deleted on startup.")
 except Exception as e:
@@ -130,24 +231,45 @@ def upload_statement():
 
     filename = file.filename.lower()
     text = ""
+    
     if filename.endswith('.pdf'):
-        # Try to extract text directly
-        try:
-            file.seek(0)
-            reader = PyPDF2.PdfReader(file)
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
-        except Exception:
-            # If direct extraction fails, use OCR on images
-            file.seek(0)
-            images = convert_from_bytes(file.read())
-            for img in images:
-                text += pytesseract.image_to_string(img)
+        # Try to extract text directly if PyPDF2 is available
+        if pypdf2_available:
+            try:
+                file.seek(0)
+                reader = PyPDF2.PdfReader(file)
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n"
+            except Exception as e:
+                print(f"PyPDF2 extraction failed: {e}")
+                text = ""
+        
+        # If direct extraction fails or PyPDF2 not available, try OCR if available
+        if not text and pdf2image_available and pytesseract_available:
+            try:
+                file.seek(0)
+                images = convert_from_bytes(file.read())
+                for img in images:
+                    text += pytesseract.image_to_string(img)
+            except Exception as e:
+                print(f"PDF OCR failed: {e}")
+                text = ""
+        
+        if not text:
+            return jsonify({'error': 'Could not extract text from PDF. Please ensure the PDF contains text or install required dependencies (PyPDF2, pdf2image, pytesseract).'}), 400
     else:
-        img = Image.open(io.BytesIO(file.read()))
-        text = pytesseract.image_to_string(img)
+        # Handle image files
+        if pytesseract_available:
+            try:
+                img = Image.open(io.BytesIO(file.read()))
+                text = pytesseract.image_to_string(img)
+            except Exception as e:
+                print(f"Image OCR failed: {e}")
+                return jsonify({'error': 'Could not extract text from image. Please ensure the image is clear and readable.'}), 400
+        else:
+            return jsonify({'error': 'OCR not available. Please install pytesseract to process image files.'}), 400
 
     # Prompt for Google Gemma 2 9B model (analysis)
     prompt = (
