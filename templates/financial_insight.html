@@ -306,7 +306,7 @@
     <div class="glass-card mb-6">
       <h3 class="font-semibold mb-2">Community Monthly Breakdown</h3>
       <canvas id="communityBarChart"></canvas>
-    </div>
+</div>
     <!-- Goal Diversity -->
     <div class="glass-card mb-6">
       <h3 class="font-semibold mb-2">Goal Diversity</h3>
@@ -385,8 +385,8 @@ function updateInsights() {
       const trendCtx = document.getElementById('personalTrendChart').getContext('2d');
       if (data.personal_trend && data.personal_trend.length > 0) {
         personalTrendChart = new Chart(trendCtx, {
-          type: 'line',
-          data: {
+  type: 'line',
+  data: {
             labels: data.personal_trend.map(x => x[0]),
             datasets: [{
               label: 'Your Contributions',
@@ -413,8 +413,8 @@ function updateInsights() {
           type: 'bar',
           data: {
             labels: data.personal_bar_data.map(x => x.month),
-            datasets: [
-              {
+    datasets: [
+      {
                 label: 'Contributions',
                 data: data.personal_bar_data.map(x => x.contributions),
                 backgroundColor: '#7B61FF',
@@ -445,9 +445,9 @@ function updateInsights() {
       if (data.community_trend && data.community_trend.length > 0) {
         communityGrowthChart = new Chart(growthCtx, {
           type: 'line',
-          data: {
+  data: {
             labels: data.community_trend.map(x => x[0]),
-            datasets: [{
+    datasets: [{
               label: 'Community Contributions',
               data: data.community_trend.map(x => x[1]),
               borderColor: '#34D399',
