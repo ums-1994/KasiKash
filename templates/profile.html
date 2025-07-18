@@ -4,6 +4,175 @@
 
 {% block page_title %}Profile{% endblock %}
 
+{% block extra_css %}
+<style>
+.profile-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+.profile-header {
+  background: linear-gradient(135deg, #000428, #004e92);
+  color: #60efff;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  padding: 2rem 2.5rem 2rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  margin-bottom: 1.5rem;
+}
+.profile-header h1 {
+  color: #60efff;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+.profile-header p {
+  color: #eaf6fb;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 900px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+.profile-card {
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  border: 2px solid #22304a;
+  color: #eaf6fb;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #60a5fa;
+  margin-bottom: 0.5rem;
+  position: relative;
+  cursor: pointer;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-avatar img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.profile-avatar i {
+  font-size: 3rem;
+  color: #c7d2fe;
+}
+.profile-avatar .online-status {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  background: #10B981;
+  border-radius: 50%;
+  border: 2px solid #101c2c;
+}
+.profile-info {
+  flex: 1;
+  min-width: 220px;
+  margin-left: 2rem;
+}
+.profile-info .accent {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #60efff;
+}
+.profile-info .email {
+  color: #b2f7ef;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+.profile-info .dashboard-btn {
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.profile-info .verified {
+  background: rgba(0,255,135,0.2);
+  color: #00ff87;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid rgba(0,255,135,0.3);
+}
+.profile-info .not-verified {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid #EF4444;
+}
+.profile-info .last-login {
+  color: #b2f7ef;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+.profile-form label {
+  color: #b2f7ef;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+.profile-form input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-top: 0.2rem;
+  border-radius: 8px;
+  border: 1px solid #22304a;
+  background: rgba(255,255,255,0.08);
+  color: #eaf6fb;
+}
+.profile-form .dashboard-btn {
+  margin-top: 1.5rem;
+  float: right;
+}
+.kyc-status-bar {
+  background: rgba(96,239,255,0.08);
+  border-radius: 1rem;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.kyc-status-bar .dashboard-btn {
+  margin-left: 1rem;
+}
+.kyc-approved { background: #00ff87 !important; }
+.kyc-rejected { background: #EF4444 !important; }
+.kyc-pending { background: #fbbf24 !important; }
+.kyc-default { background: #b2f7ef !important; }
+@media (max-width: 700px) {
+  .profile-header, .profile-card, .profile-grid { padding: 1rem; }
+  .profile-info { margin-left: 0; }
+  .profile-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- KYC Status Toast Notification (Standardized Logic) -->
 {% if user.kyc_status in ['approved', 'rejected', 'pending'] %}
@@ -37,142 +206,139 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endif %}
 <!-- End KYC Status Toast Notification -->
-<!-- Gradient Welcome Banner (Dashboard Style) -->
-<div class="admin-dashboard-banner">
-  <div style="flex:1;">
+<!-- Profile Header -->
+<div class="profile-header">
+  <div>
     <h1>Sawubona, {{ user.username }}! <span style="font-size:1.8rem;">👋</span></h1>
     <p>Welcome to your profile page. Keep your information up to date for the best experience!</p>
   </div>
-  <div style="margin-left: 1.5rem;">
+  <div>
     {% if user.profile_picture %}
-      <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(96,239,255,0.10); border-radius: 50%; width: 54px; height: 54px; overflow: hidden;">
-        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+      <span class="profile-avatar" style="width:54px;height:54px;">
+        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile picture of {{ user.username }}" style="width:48px;height:48px;">
       </span>
     {% else %}
-      <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(96,239,255,0.10); border-radius: 50%; width: 54px; height: 54px;">
+      <span class="profile-avatar" style="width:54px;height:54px;">
         <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#60efff" fill-opacity="0.2"/><path d="M9 12.5l2 2 4-4" stroke="#60efff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
     {% endif %}
   </div>
 </div>
 
-<div class="dashboard-grid">
+<div class="profile-grid">
   <!-- Profile Card -->
-  <div class="glass-card" style="grid-column: span 2;">
-    <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
-      <!-- Profile Picture Section -->
-      <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 2px solid #60a5fa; margin-bottom: 0.5rem; position: relative; cursor:pointer;" onclick="document.getElementById('profilePicInput').click()">
-        {% if user.profile_picture %}
-          <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile Picture" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
-        {% else %}
-          <i class="fas fa-user-circle" style="font-size: 3rem; color: #c7d2fe;"></i>
-        {% endif %}
-        <div style="position: absolute; bottom: 2px; right: 2px; width: 16px; height: 16px; background: #10B981; border-radius: 50%; border: 2px solid #101c2c;"></div>
-      </div>
-      <!-- Hidden form for file upload -->
-      <form id="avatarUploadForm" method="POST" action="{{ url_for('upload_profile_picture') }}" enctype="multipart/form-data" style="display: none;">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input id="profilePicInput" type="file" name="profile_picture" accept="image/*" onchange="uploadProfilePicture()">
-      </form>
-      <!-- User Info Section -->
-      <div style="flex:1; min-width:220px;">
-        <div class="accent text-xl mb-1">{{ user.username }}</div>
-        <div class="text-white text-sm mb-3" style="opacity: 0.8;">{{ user.email }}</div>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-          <span class="dashboard-btn" style="padding: 0.3rem 1.2rem; font-size: 0.9rem;">{{ user.full_name or 'No Name' }}</span>
-          {% if user.is_verified %}
-            <span style="background: rgba(0,255,135,0.2); color: #00ff87; border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.85rem; border: 1px solid rgba(0,255,135,0.3);"><i class="fas fa-check-circle"></i> Verified</span>
-          {% else %}
-            <span style="background: rgba(239, 68, 68, 0.1); color: #EF4444; border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.85rem; border: 1px solid #EF4444;"><i class="fas fa-exclamation-circle"></i> Not Verified</span>
-            <button onclick="resendVerification()" class="dashboard-btn" style="padding: 0.3rem 1.2rem; font-size: 0.9rem; background: #EF4444; color: #fff;">Resend Verification</button>
-          {% endif %}
-        </div>
-        {% if user.last_login %}
-          <div style="color: #b2f7ef; font-size: 0.9rem; margin-top: 0.5rem;">Last active: {{ user.last_login.strftime('%B %d, %Y at %I:%M %p') }}</div>
-        {% endif %}
-      </div>
+  <div class="profile-card" style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+    <div class="profile-avatar" onclick="document.getElementById('profilePicInput').click()">
+      {% if user.profile_picture %}
+        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile Picture">
+      {% else %}
+        <i class="fas fa-user-circle"></i>
+      {% endif %}
+      <div class="online-status"></div>
     </div>
-  </div>
-
-  <!-- Personal Information Card -->
-  <div class="glass-card" style="grid-column: span 2;">
-    <h2 style="color: #60efff; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;"><i class="fas fa-user" style="margin-right:0.5rem;"></i>Personal Information</h2>
-    <form id="profileUpdateForm" method="POST" action="{{ url_for('update_profile') }}">
+    <div class="profile-info">
+      <div class="accent mb-1">{{ user.username|default('') }}</div>
+      <div class="email">{{ user.email|default('') }}</div>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <span class="dashboard-btn">{{ user.full_name|default('No Name') }}</span>
+        {% if user.is_verified %}
+          <span class="verified"><i class="fas fa-check-circle"></i> Verified</span>
+        {% else %}
+          <span class="not-verified"><i class="fas fa-exclamation-circle"></i> Not Verified</span>
+          <button onclick="resendVerification()" class="dashboard-btn" style="background: #EF4444; color: #fff;">Resend Verification</button>
+        {% endif %}
+      </div>
+      {% if user.last_login %}
+        <div class="last-login">Last active: {{ user.last_login.strftime('%B %d, %Y at %I:%M %p') }}</div>
+      {% endif %}
+    </div>
+    <!-- Hidden form for file upload -->
+    <form id="avatarUploadForm" method="POST" action="{{ url_for('upload_profile_picture') }}" enctype="multipart/form-data" style="display: none;">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem;">
-        <div>
-          <label style="color: #b2f7ef; font-size: 0.95rem;">Full Name</label>
-          <input type="text" name="full_name" value="{{ user.full_name or '' }}" class="dashboard-card" style="width:100%; padding:0.7rem; margin-top:0.2rem;">
-        </div>
-        <div>
-          <label style="color: #b2f7ef; font-size: 0.95rem;">Username</label>
-          <input type="text" name="username" value="{{ user.username or '' }}" class="dashboard-card" style="width:100%; padding:0.7rem; margin-top:0.2rem;">
-        </div>
-        <div>
-          <label style="color: #b2f7ef; font-size: 0.95rem;">Email</label>
-          <input type="email" value="{{ user.email or 'No email on file' }}" disabled class="dashboard-card" style="width:100%; padding:0.7rem; margin-top:0.2rem; background:rgba(255,255,255,0.08); color:#b2f7ef;">
-          <p style="color: #b2f7ef; font-size: 0.8rem; margin-top:0.2rem;">Email cannot be changed</p>
-        </div>
-        <div>
-          <label style="color: #b2f7ef; font-size: 0.95rem;">Phone Number</label>
-          <input type="tel" name="phone" value="{{ user.phone or '' }}" class="dashboard-card" style="width:100%; padding:0.7rem; margin-top:0.2rem;">
-        </div>
-        <div>
-          <label style="color: #b2f7ef; font-size: 0.95rem;">ID Number</label>
-          <input type="text" name="id_number" value="{{ user.id_number or '' }}" class="dashboard-card" style="width:100%; padding:0.7rem; margin-top:0.2rem;">
-        </div>
-        <div>
-          <label style="color: #b2f7ef; font-size: 0.95rem;">Date of Birth</label>
-          <input type="date" name="date_of_birth" value="{{ user.date_of_birth or '' }}" class="dashboard-card" style="width:100%; padding:0.7rem; margin-top:0.2rem;">
-        </div>
-        <div style="grid-column: span 2;">
-          <label style="color: #b2f7ef; font-size: 0.95rem;">Address</label>
-          <input type="text" name="address" value="{{ user.address or '' }}" class="dashboard-card" style="width:100%; padding:0.7rem; margin-top:0.2rem;">
-        </div>
-      </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
-        <button type="submit" class="dashboard-btn"><i class="fas fa-save" style="margin-right:0.5rem;"></i>Save Changes</button>
-      </div>
+      <input id="profilePicInput" type="file" name="profile_picture" accept="image/*" onchange="uploadProfilePicture()">
     </form>
   </div>
 
-  <!-- KYC Documents Card -->
-  <div class="glass-card" style="grid-column: span 2;">
-    <h2 style="color: #60efff; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;"><i class="fas fa-id-card" style="margin-right:0.5rem;"></i>KYC Documents</h2>
-    <div style="background: rgba(96,239,255,0.08); border-radius: 1rem; padding: 1.2rem; margin-bottom: 1rem;">
-      <span style="color: #b2f7ef; font-size: 1.1rem; font-weight: 600;">Overall KYC Status:</span>
-      {% if user.kyc_status == 'approved' %}
-        <span class="dashboard-btn kyc-approved" style="padding: 0.3rem 1.2rem; font-size: 0.9rem; margin-left: 1rem; color: #101c2c;">
-          <i class="fas fa-check-circle"></i> Approved
-        </span>
-      {% elif user.kyc_status == 'rejected' %}
-        <span class="dashboard-btn kyc-rejected" style="padding: 0.3rem 1.2rem; font-size: 0.9rem; margin-left: 1rem; color: #101c2c;">
-          <i class="fas fa-times-circle"></i> Rejected
-        </span>
-      {% elif user.kyc_status == 'pending_review' %}
-        <span class="dashboard-btn kyc-pending" style="padding: 0.3rem 1.2rem; font-size: 0.9rem; margin-left: 1rem; color: #101c2c;">
-          <i class="fas fa-hourglass-half"></i> Pending Review
-        </span>
-      {% else %}
-        <span class="dashboard-btn kyc-default" style="padding: 0.3rem 1.2rem; font-size: 0.9rem; margin-left: 1rem; color: #101c2c;">
-          <i class="fas fa-question-circle"></i> Not Submitted
-        </span>
-      {% endif %}
-    </div>
-    <style>
-    .kyc-approved { background: #00ff87 !important; }
-    .kyc-rejected { background: #EF4444 !important; }
-    .kyc-pending { background: #fbbf24 !important; }
-    .kyc-default { background: #b2f7ef !important; }
-    </style>
-    <!-- Document Upload/Status Section (keep your logic here) -->
-    <div style="background: rgba(255,255,255,0.03); border-radius: 1rem; padding: 1.2rem;">
-      {# Place your KYC document upload/status logic here #}
-    </div>
+  <!-- Personal Information Card -->
+  <div class="profile-card">
+    <h2 style="color: #60efff; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;"><i class="fas fa-user" style="margin-right:0.5rem;"></i>Personal Information</h2>
+    <form id="profileUpdateForm" class="profile-form" method="POST" action="{{ url_for('update_profile') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem;">
+        <div>
+          <label>Full Name</label>
+          <input type="text" name="full_name" value="{{ user.full_name|default('') }}">
+        </div>
+        <div>
+          <label>Username</label>
+          <input type="text" name="username" value="{{ user.username|default('') }}">
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="email" value="{{ user.email|default('No email on file') }}" disabled style="background:rgba(255,255,255,0.08); color:#b2f7ef;">
+          <p style="color: #b2f7ef; font-size: 0.8rem; margin-top:0.2rem;">Email cannot be changed</p>
+        </div>
+        <div>
+          <label>Phone Number</label>
+          <input type="tel" name="phone" value="{{ user.phone|default('') }}">
+        </div>
+        <div>
+          <label>ID Number</label>
+          <input type="text" name="id_number" value="{{ user.id_number|default('') }}">
+        </div>
+        <div>
+          <label>Date of Birth</label>
+          <input type="date" name="date_of_birth" value="{{ user.date_of_birth|default('') }}">
+        </div>
+        <div style="grid-column: span 2;">
+          <label>Address</label>
+          <input type="text" name="address" value="{{ user.address|default('') }}">
+        </div>
+        <div style="grid-column: span 2;">
+          <label>Bio</label>
+          <textarea name="bio" rows="3" style="width:100%;padding:0.7rem;border-radius:8px;border:1px solid #22304a;background:rgba(255,255,255,0.08);color:#eaf6fb;">{{ user.bio|default('') }}</textarea>
+        </div>
+      </div>
+      <button type="submit" class="dashboard-btn"><i class="fas fa-save" style="margin-right:0.5rem;"></i>Save Changes</button>
+    </form>
   </div>
 </div>
+
+<!-- KYC Documents Card -->
+<div class="profile-card">
+  <h2 style="color: #60efff; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;"><i class="fas fa-id-card" style="margin-right:0.5rem;"></i>KYC Documents</h2>
+  <div class="kyc-status-bar">
+    <span style="color: #b2f7ef; font-size: 1.1rem; font-weight: 600;">Overall KYC Status:</span>
+    {% if user.kyc_status == 'approved' %}
+      <span class="dashboard-btn kyc-approved"><i class="fas fa-check-circle"></i> Approved</span>
+    {% elif user.kyc_status == 'rejected' %}
+      <span class="dashboard-btn kyc-rejected"><i class="fas fa-times-circle"></i> Rejected</span>
+    {% elif user.kyc_status == 'pending_review' or user.kyc_status == 'pending' %}
+      <span class="dashboard-btn kyc-pending"><i class="fas fa-hourglass-half"></i> Pending Review</span>
+    {% else %}
+      <span class="dashboard-btn kyc-default"><i class="fas fa-question-circle"></i> Not Submitted</span>
+    {% endif %}
+  </div>
+  <!-- KYC Document Upload Form -->
+  <form method="POST" action="{{ url_for('upload_kyc') }}" enctype="multipart/form-data" style="margin-top:1rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div style="display:flex;gap:1.2rem;flex-wrap:wrap;align-items:center;">
+      <div>
+        <label>ID Document</label>
+        <input type="file" name="id_document" accept="image/*,application/pdf">
+      </div>
+      <div>
+        <label>Proof of Address</label>
+        <input type="file" name="address_document" accept="image/*,application/pdf">
+      </div>
+      <button type="submit" class="dashboard-btn" style="margin-top:1.5rem;"><i class="fas fa-upload" style="margin-right:0.5rem;"></i>Upload KYC Documents</button>
+    </div>
+  </form>
+  <!-- End KYC Document Upload Form -->
+</div>
+
 {% if session.role == 'admin' %}
-<div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+<div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden" style="margin-top:2rem;">
     <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
         <h3 class="text-xl font-semibold text-gray-800 flex items-center">
             <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     <div class="p-6 text-center">
         <p class="text-gray-600 mb-4">You have administrative privileges.</p>
-        <a href="{{ url_for('admin.dashboard') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+        <a href="/admin/dashboard" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
             Go to Admin Dashboard
         </a>
     </div>

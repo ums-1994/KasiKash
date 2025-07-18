@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ t('settings', user_language) }} - KasiKash{% endblock %}
+{% block title %}Settings - KasiKash{% endblock %}
 
 {% block extra_css %}
 <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
@@ -138,7 +138,7 @@
     <div class="max-w-5xl mx-auto">
         <header class="mb-12">
             <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                {{ t('settings', user_language) }}
+                Settings
             </h1>
             <p class="mt-4 text-lg text-gray-400">
                 Manage your account, notifications, and application preferences.
@@ -161,10 +161,10 @@
             <div class="flex flex-col gap-8">
                 <!-- Account Security -->
                 <form action="/settings/update" method="POST" class="glass-card">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="security">
                     <h2 class="text-2xl font-semibold text-white mb-6">
-                        <i class="fas fa-shield-alt mr-3 text-blue-400"></i>{{ t('account_security', user_language) }}
+                        <i class="fas fa-shield-alt mr-3 text-blue-400"></i>Account Security
                     </h2>
                     <label class="toggle-label">
                         <div>
@@ -178,21 +178,21 @@
                     </label>
                     <div class="mt-6 text-right">
                         <button type="submit" class="btn-primary">
-                            {{ t('save', user_language) }} Changes
+                            Save Changes
                         </button>
                     </div>
                 </form>
 
                 <!-- Language Preferences -->
                 <form action="/settings/update" method="POST" class="glass-card">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="language_preference">
                     <h2 class="text-2xl font-semibold text-white mb-6">
-                        <i class="fas fa-language mr-3 text-green-400"></i>{{ t('language_preferences', user_language) }}
+                        <i class="fas fa-language mr-3 text-green-400"></i>Language Preferences
                     </h2>
                     <div class="mb-4">
                         <label class="block text-gray-400 text-sm font-bold mb-2" for="language_preference">
-                            {{ t('preferred_language', user_language) }}
+                            Preferred Language
                         </label>
                         <select name="language_preference" id="language_preference" class="form-select">
                             <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
@@ -206,11 +206,11 @@
                             <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>Xitsonga</option>
                             <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>isiNdebele</option>
                         </select>
-                        <p class="text-sm text-gray-500 mt-2">{{ t('choose_language', user_language) }}</p>
+                        <p class="text-sm text-gray-500 mt-2">Choose your preferred language for the app interface.</p>
                     </div>
                     <div class="mt-6 text-right">
                         <button type="submit" class="btn-primary">
-                            {{ t('save_language_settings', user_language) }}
+                            Save Language Settings
                         </button>
                     </div>
                 </form>
@@ -220,7 +220,7 @@
             <div class="flex flex-col gap-8">
                 <!-- App Preferences & Notifications -->
                 <form action="/settings/update" method="POST" class="glass-card">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="app_preferences">
                     <h2 class="text-2xl font-semibold text-white mb-6">
                         <i class="fas fa-bell mr-3 text-purple-400"></i>App & Notification Preferences
@@ -296,7 +296,7 @@
 
                 <!-- Privacy Settings -->
                 <form action="/settings/update" method="POST" class="glass-card">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="privacy">
                     <h2 class="text-2xl font-semibold text-white mb-6">
                         <i class="fas fa-user-shield mr-3 text-orange-400"></i>Privacy Settings
