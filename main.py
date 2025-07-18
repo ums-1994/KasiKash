@@ -12,7 +12,7 @@ import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
 try:
-    import openai
+import openai
     openai_available = True
 except ImportError:
     openai_available = False
@@ -142,7 +142,7 @@ print(f"DEBUG: B2_ENDPOINT_URL loaded from .env: {os.getenv('B2_ENDPOINT_URL')}"
 
 # Set OpenAI API key
 if openai_available:
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app.secret_key = os.getenv('SECRET_KEY')
 csrf = CSRFProtect(app)  # Initialize CSRF protection
@@ -262,7 +262,7 @@ def feedback():
 def home():
     if 'user_id' not in session:
         return redirect('/login')
-    
+        
     try:
         from datetime import date, datetime
         # Parse month parameter with validation
@@ -310,7 +310,7 @@ def home():
         # Initialize new variables for enhanced profile card
         user_stokvels = []
         active_stokvels_count = 0
-        
+
         try:
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
@@ -455,7 +455,7 @@ def home():
                 'full_date': d.strftime('%Y-%m-%d'),
                 'is_today': (d == today)
             })
-        
+
         return render_template('dashboard.html',
                             username=username,
                             user_name=username,  # for template compatibility
@@ -558,10 +558,10 @@ def analysis():
                                          title="Transaction count Day vs Month")
                 
                 # Monthly bar chart
-                month_bar = support.month_bar(df, 280)
+            month_bar = support.month_bar(df, 280)
                 
                 # Sunburst chart
-                sun = support.meraSunburst(df, 280)
+            sun = support.meraSunburst(df, 280)
                 
             except Exception as e:
                 print(f"Error generating charts: {e}")
@@ -666,7 +666,7 @@ def login_validation():
                     from datetime import datetime
                     support.execute_query("update", "UPDATE users SET last_login = %s, email = %s WHERE firebase_uid = %s", 
                                          (datetime.utcnow(), user_record.email, user_record.uid))
-                except Exception as update_e:
+                                        except Exception as update_e:
                     logger.error(f"Error updating last_login: {update_e}")
                     # Non-critical error, continue with login
 
@@ -975,78 +975,78 @@ def registration():
             for error in validation_errors:
                 flash(error, "danger")
             return redirect('/register')
-        # Check if email already exists in PostgreSQL database
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT id FROM users WHERE email = %s", (email,))
-                    if cur.fetchone():
+            # Check if email already exists in PostgreSQL database
+            try:
+                with support.db_connection() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute("SELECT id FROM users WHERE email = %s", (email,))
+                        if cur.fetchone():
                         flash("An account with this email already exists. Please log in.", "warning")
-                        return redirect('/login')
+                            return redirect('/login')
                     # Check if username already exists
                     cur.execute("SELECT id FROM users WHERE username = %s", (username,))
                     if cur.fetchone():
                         flash("Username is already taken. Please choose a different username.", "warning")
                         return redirect('/register')
-        except Exception as db_e:
+            except Exception as db_e:
             logger.error(f"Database check error during registration: {db_e}")
             flash("An error occurred during registration. Please try again.", "danger")
-            return redirect('/register')
-        # Create user in Firebase Authentication
-        try:
-            user = auth.create_user(
-                email=email,
-                password=passwd,
-                display_name=username,
-                email_verified=True  # Set to True since we're using email/password auth
-            )
+                return redirect('/register')
+                # Create user in Firebase Authentication
+                try:
+                    user = auth.create_user(
+                        email=email,
+                        password=passwd,
+                        display_name=username,
+                        email_verified=True  # Set to True since we're using email/password auth
+                    )
             logger.info(f"Created Firebase user: {user.uid}")
             # Store Firebase UID and user data in PostgreSQL database
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
+                with support.db_connection() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
                         "INSERT INTO users (firebase_uid, username, email, password, full_name, phone, id_number, address, date_of_birth, bio, joined_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
                         (user.uid, username, email, passwd, full_name, phone, id_number, address, date_of_birth, bio, datetime.utcnow())
-                    )
-                    local_user_id = cur.fetchone()[0]
+                        )
+                        local_user_id = cur.fetchone()[0]
                     # Create default user settings
                     cur.execute("""
                         INSERT INTO user_settings (user_id, email_notifications, sms_notifications, weekly_summary, 
                                                  receive_promotions, reminders_enabled, stokvel_updates, profile_visible, activity_sharing)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (user.uid, True, False, True, False, True, True, True, False))
-                    conn.commit()
-                    if local_user_id:
+                        conn.commit()
+                        if local_user_id:
                         # Set session data
-                        session['user_id'] = user.uid
-                        session['username'] = username
-                        session['is_verified'] = True
-                        session.permanent = True
+                            session['user_id'] = user.uid
+                            session['username'] = username
+                            session['is_verified'] = True
+                            session.permanent = True
                         # Create welcome notification
                         welcome_message = f"Welcome to KasiKash, {username}! Your account has been created successfully."
                         create_notification(user.uid, welcome_message, notification_type='welcome')
                         flash("Registration successful! Welcome to KasiKash!", "success")
                         logger.info(f"User {username} registered successfully")
                         return redirect('/home')
-                    else:
+                        else:
                         flash("Registration failed: Could not retrieve local user ID.", "danger")
-                        auth.delete_user(user.uid)
-                        return redirect('/register')
-        except Exception as e:
+                            auth.delete_user(user.uid)
+                            return redirect('/register')
+            except Exception as e:
             logger.error(f"Registration error: {str(e)}")
-            if "email-already-exists" in str(e):
+                if "email-already-exists" in str(e):
                 flash("Email address is already in use. Please use a different email or log in.", "warning")
             elif "password-too-weak" in str(e):
                 flash("Password is too weak. Please choose a stronger password.", "warning")
             elif "invalid-email" in str(e):
                 flash("Please enter a valid email address.", "warning")
-            else:
+                else:
                 flash("An unexpected error occurred during registration. Please try again.", "danger")
-            return redirect('/register')
+                return redirect('/register')
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
         flash("An error occurred during registration. Please try again.", "danger")
-        return redirect('/register')
+            return redirect('/register')
 
 
 @app.route('/get_started')
@@ -1132,7 +1132,7 @@ def create_stokvel():
         # Add the creator as the first member
         support.execute_query("insert", "INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)",
                               (stokvel_id, user_id, 'admin'))
-        
+
         # Create a notification for the creator
         message = f"You successfully created the stokvel '{name}'!"
         link = url_for('view_stokvel_members', stokvel_id=stokvel_id)
@@ -1217,7 +1217,7 @@ def contributions():
                             'description': row[5] or 'No description'
                         }
                         contributions_list.append(contribution_dict)
-                    except Exception as e:
+    except Exception as e:
                         print(f"Error processing contribution row: {e}")
                 stokvels_list = []
                 for row in stokvels:
@@ -1292,7 +1292,7 @@ def make_contribution():
                         message = f"{user_name} made a contribution of R{amount:.2f} to '{stokvel_name}' stokvel."
                         link = url_for('contributions')
                         create_notification(admin_user_id, message, link_url=link, notification_type='contribution_made')
-
+                        
                     # Get default payment method for flash message
                     cur.execute("SELECT type, details FROM payment_methods WHERE user_id = %s AND is_default = TRUE", (firebase_uid,))
                     payment_method = cur.fetchone()
@@ -1784,29 +1784,29 @@ def payment_methods():
                             details_json = json.loads(details)
                         else:
                             details_json = details
-                        if pm_dict['type'] in ['credit_card', 'debit_card', 'card']:
-                            card_number = details_json.get('card_number', '')
-                            last4 = card_number[-4:] if len(card_number) >= 4 else card_number
-                            masked_number = '**** **** **** ' + last4
-                            exp = details_json.get('expiry_date', '')
-                            card_holder = details_json.get('card_holder_name', 'N/A')
-                            masked_details = f"{masked_number}  Exp: {exp}"
-                            pm_dict['card_holder_name'] = card_holder
-                        elif pm_dict['type'] == 'bank_account':
-                            acc = details_json.get('account_number', '')
-                            last4 = acc[-4:] if len(acc) >= 4 else acc
-                            bank = details_json.get('bank_name', '')
-                            account_holder = details_json.get('account_holder_name', 'N/A')
-                            masked_details = f"Account: ****{last4}  ({bank})"
-                            pm_dict['account_holder_name'] = account_holder
-                        elif pm_dict['type'] == 'mobile_money':
-                            phone = details_json.get('phone', '')
-                            last4 = phone[-4:] if len(phone) >= 4 else phone
-                            provider = details_json.get('provider', '')
-                            masked_details = f"Mobile: ****{last4}  {provider}"
-                        else:
+                    if pm_dict['type'] in ['credit_card', 'debit_card', 'card']:
+                        card_number = details_json.get('card_number', '')
+                        last4 = card_number[-4:] if len(card_number) >= 4 else card_number
+                        masked_number = '**** **** **** ' + last4
+                        exp = details_json.get('expiry_date', '')
+                        card_holder = details_json.get('card_holder_name', 'N/A')
+                        masked_details = f"{masked_number}  Exp: {exp}"
+                        pm_dict['card_holder_name'] = card_holder
+                    elif pm_dict['type'] == 'bank_account':
+                        acc = details_json.get('account_number', '')
+                        last4 = acc[-4:] if len(acc) >= 4 else acc
+                        bank = details_json.get('bank_name', '')
+                        account_holder = details_json.get('account_holder_name', 'N/A')
+                        masked_details = f"Account: ****{last4}  ({bank})"
+                        pm_dict['account_holder_name'] = account_holder
+                    elif pm_dict['type'] == 'mobile_money':
+                        phone = details_json.get('phone', '')
+                        last4 = phone[-4:] if len(phone) >= 4 else phone
+                        provider = details_json.get('provider', '')
+                        masked_details = f"Mobile: ****{last4}  {provider}"
+                    else:
                             # fallback: show only non-sensitive fields
-                            masked_details = ', '.join(f"{k}: {v}" for k, v in details_json.items() if 'number' not in k and 'card' not in k)
+                        masked_details = ', '.join(f"{k}: {v}" for k, v in details_json.items() if 'number' not in k and 'card' not in k)
                     except Exception as e:
                         masked_details = 'Payment details unavailable'
                     pm_dict['masked_details'] = masked_details
@@ -1996,19 +1996,19 @@ def update_settings():
     form_section = request.form.get('form_section')
 
     try:
-        if form_section == 'language_preference':
-            language = request.form.get('language_preference')
-            if language:
-                session['language_preference'] = language
+    if form_section == 'language_preference':
+        language = request.form.get('language_preference')
+        if language:
+            session['language_preference'] = language
                 support.execute_query("update", "UPDATE users SET language_preference = %s WHERE firebase_uid = %s", (language, user_id))
                 flash("Language preference updated successfully!", "success")
 
-        elif form_section == 'app_preferences':
+    elif form_section == 'app_preferences':
             # Get all notification preferences
-            email_notifications = 'email_notifications' in request.form
-            sms_notifications = 'sms_notifications' in request.form
-            weekly_summary = 'weekly_summary' in request.form
-            receive_promotions = 'receive_promotions' in request.form
+        email_notifications = 'email_notifications' in request.form
+        sms_notifications = 'sms_notifications' in request.form
+        weekly_summary = 'weekly_summary' in request.form
+        receive_promotions = 'receive_promotions' in request.form
             reminders_enabled = 'reminders_enabled' in request.form
             stokvel_updates = 'stokvel_updates' in request.form
             # First, ensure user_settings record exists
@@ -2045,15 +2045,15 @@ def update_settings():
                     conn.commit()
             flash("Privacy settings updated successfully!", "success")
 
-        elif form_section == 'security':
-            two_factor_enabled = 'two_factor_enabled' in request.form
+    elif form_section == 'security':
+        two_factor_enabled = 'two_factor_enabled' in request.form
             support.execute_query("update", "UPDATE users SET two_factor_enabled = %s WHERE firebase_uid = %s", (two_factor_enabled, user_id))
             flash("Security settings updated successfully!", "success")
         else:
             flash("Invalid settings update request.", "warning")
-    except Exception as e:
-        print(f"Error updating settings for section {form_section}: {e}")
-        flash("An error occurred while updating settings.", "danger")
+        except Exception as e:
+            print(f"Error updating settings for section {form_section}: {e}")
+            flash("An error occurred while updating settings.", "danger")
     return redirect(url_for('settings'))
 
 
@@ -2220,7 +2220,7 @@ def upload_kyc():
         flash(f'An error occurred during KYC upload: {e}', 'danger')
 
     return redirect(url_for('profile'))           
-    
+
 def inject_user_name():
     username = None
     language_preference = 'en'  # Default language
@@ -2547,11 +2547,11 @@ def handle_chat():
                     stokvel_data['rules'] = user_message.strip()
                     session['stokvel_data'] = stokvel_data
                     # All info collected, create stokvel
-                    try:
-                        with support.db_connection() as conn:
-                            with conn.cursor() as cur:
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
                                 # Insert into stokvels (store rules in description)
-                                cur.execute("""
+                    cur.execute("""
                                     INSERT INTO stokvels (name, monthly_contribution, target_date, description)
                                     VALUES (%s, %s, %s, %s) RETURNING id
                                 """, (
@@ -2566,19 +2566,19 @@ def handle_chat():
                                     INSERT INTO stokvel_members (stokvel_id, user_id, role)
                                     VALUES (%s, %s, 'admin')
                                 """, (stokvel_id, user_id))
-                                conn.commit()
+                    conn.commit()
                         # Instead of clearing state, go to member adding state
                         session['chat_state'] = 'adding_stokvel_members'
                         session['new_stokvel_id'] = stokvel_id
                         session.pop('stokvel_data', None)
                         response = f"Your stokvel '{stokvel_data['name']}' has been created! Would you like to add members now? (Type their email or 'no' to finish)"
-                    except Exception as e:
+        except Exception as e:
                         print(f"Error creating stokvel: {e}")
                         response = "Sorry, there was an error creating your stokvel. Please try again later."
                         session.pop('chat_state', None)
                         session.pop('stokvel_data', None)
                     return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
-                else:
+    else:
                     response = "Something went wrong. Please type 'cancel' to start over."
                 return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
 
@@ -2591,9 +2591,9 @@ def handle_chat():
                 elif re.match(r"[^@]+@[^@]+\.[^@]+", user_message.strip()):
                     member_email = user_message.strip()
                     stokvel_id = session.get('new_stokvel_id')
-                    try:
-                        with support.db_connection() as conn:
-                            with conn.cursor() as cur:
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
                                 # Try to find user by email
                                 cur.execute("SELECT firebase_uid FROM users WHERE email = %s", (member_email,))
                                 user_to_add = cur.fetchone()
@@ -2606,7 +2606,7 @@ def handle_chat():
                                     cur.execute("INSERT INTO stokvel_members (stokvel_id, user_id, email, role, status) VALUES (%s, NULL, %s, 'pending', 'pending')", (stokvel_id, member_email))
                                     conn.commit()
                                     response = f"{member_email} has been added as a pending member. They will be able to join once they register. Add another email or type 'no' to finish."
-                    except Exception as e:
+    except Exception as e:
                         print(f"Error adding member: {e}")
                         response = "Sorry, there was an error adding that member. Try again or type 'no' to finish."
                 else:
@@ -2624,10 +2624,10 @@ def handle_chat():
 
             # List user's stokvels (move this above generic Q&A)
             if any(kw in user_message_lower for kw in ["my stokvels", "which stokvels am i a part of", "which stokvels do i belong to", "list my stokvels"]):
-                try:
-                    with support.db_connection() as conn:
-                        with conn.cursor() as cur:
-                            cur.execute("""
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
                                 SELECT name, description FROM stokvels s
                                 JOIN stokvel_members sm ON s.id = sm.stokvel_id
                                 WHERE sm.user_id = %s
@@ -2638,7 +2638,7 @@ def handle_chat():
                                 response = f"You are a member of the following stokvels:\n{stokvel_list}"
                             else:
                                 response = "You are not a member of any stokvels yet."
-                except Exception as e:
+    except Exception as e:
                     print(f"Error fetching stokvels: {e}")
                     response = "Sorry, I couldn't fetch your stokvels right now."
                 return jsonify({'response': response, 'mode': mode, 'timestamp': datetime.now().strftime('%H:%M')})
@@ -2687,15 +2687,15 @@ def handle_chat():
                     response = "I'm not sure how to handle that in App Mode. Try asking me to 'create a stokvel', or switch to AI Mode for more general questions."
 
         # Save chat history (for both modes)
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
                         INSERT INTO chat_history (user_id, message, response)
                         VALUES (%s, %s, %s)
                     """, (user_id, user_message, response))
                     conn.commit()
-        except Exception as e:
+    except Exception as e:
             print(f"Error saving chat history: {e}")
 
         # Return the response to the frontend
@@ -2841,16 +2841,16 @@ def request_loan():
             return render_template('request_loan.html', stokvels=stokvels)
         try:
             amount = float(amount)
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
                         INSERT INTO loan_requests (user_id, stokvel_id, amount, reason)
                         VALUES (%s, %s, %s, %s)
                     """, (user_id, stokvel_id, amount, reason))
-                    conn.commit()
+                conn.commit()
             flash("Loan request submitted!", "success")
             return redirect(url_for('loan_requests'))
-        except Exception as e:
+    except Exception as e:
             print(f"Error submitting loan request: {e}")
             flash("Could not submit loan request.", "error")
             return render_template('request_loan.html', stokvels=stokvels)
@@ -2996,7 +2996,7 @@ def financial_insight():
                 cur.execute("""
                     SELECT name, current_amount, target_amount
                     FROM savings_goals 
-                    WHERE user_id = %s
+                    WHERE user_id = %s 
                     ORDER BY target_date ASC
                 """, (user_id,))
                 savings_goals = cur.fetchall()
@@ -3111,7 +3111,7 @@ def financial_insight():
                              date_from=date_from,
                              date_to=date_to,
                              contrib_type=contrib_type)
-
+                
     except Exception as e:
         print(f"Error in financial insight: {e}")
         flash("An error occurred while loading financial insights. Please try again.")
