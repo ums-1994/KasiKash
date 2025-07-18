@@ -1,14 +1,14 @@
-<h3 class="text-lg font-bold mb-2">Loan History for {{ username }}</h3>
+<h3 class="text-lg font-bold mb-2">{{ _('Loan History for') }} {{ username }}</h3>
 {% if history %}
     <div class="space-y-3">
         {% for item in history %}
             <div class="p-2 border rounded {{ 'bg-green-50' if item.status == 'approved' else 'bg-red-50' if item.status == 'rejected' else 'bg-yellow-50' }}">
-                <p><strong>Amount:</strong> R{{ "%.2f"|format(item.amount) }} on {{ item.transaction_date.strftime('%Y-%m-%d') if item.transaction_date }}</p>
-                <p><strong>Status:</strong> <span class="font-semibold capitalize">{{ item.status }}</span></p>
+                <p><strong>{{ _('Amount:') }}</strong> R{{ "%.2f"|format(item.amount) }} {{ _('on') }} {{ item.transaction_date.strftime('%Y-%m-%d') if item.transaction_date }}</p>
+                <p><strong>{{ _('Status:') }}</strong> <span class="font-semibold capitalize">{{ item.status }}</span></p>
                 <p class="text-xs text-gray-600">{{ item.description }}</p>
             </div>
         {% endfor %}
     </div>
 {% else %}
-    <p>No previous loan history found for this user.</p>
+    <p>{{ _('No previous loan history found for this user.') }}</p>
 {% endif %} 

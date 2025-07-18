@@ -4,7 +4,7 @@
 <p>Here you can manage all users.</p>
 <!-- Search/filter bar -->
 <form method="GET" action="{{ url_for('admin.manage_users') }}" class="mb-4 flex items-center gap-4">
-  <input type="text" name="search" class="border rounded px-3 py-2 text-black" placeholder="Search by username or email" value="{{ search_query or '' }}">
+  <input type="text" name="search" class="border rounded px-3 py-2" placeholder="Search Username or Email" value="{{ search_query or '' }}">
   <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
   <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddUserModal()">Add User</button>
 </form>
@@ -26,9 +26,9 @@
       <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
       <td>{{ user.stokvel_name|default('None') }}</td>
       <td class="flex gap-2">
-        <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewUserModal('{{ user.username|replace("'", "\\'")|e }}', '{{ user.email|replace("'", "\\'")|e }}', '{{ user.role|replace("'", "\\'")|e }}', '{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'|e }}', '{{ user.stokvel_name|default('None')|replace("'", "\\'")|e }}')">View</button>
-        <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditUserModal('{{ user.username|replace("'", "\\'")|e }}', '{{ user.email|replace("'", "\\'")|e }}', '{{ user.role|replace("'", "\\'")|e }}')">Edit</button>
-        <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="deleteUser('{{ user.email|replace("'", "\\'")|e }}')">Delete</button>
+        <button type="button" class="bg-blue-600 text-white px-2 py-1 rounded" data-view-args='{{ [user.username, user.email, user.role, (user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'), user.stokvel_name|default('None')] | tojson }}' onclick="var args = JSON.parse(this.getAttribute('data-view-args')); openViewUserModal(...args);">View</button>
+        <button type="button" class="bg-yellow-500 text-white px-2 py-1 rounded" data-edit-args='{{ [user.username, user.email, user.role] | tojson }}' onclick="var args = JSON.parse(this.getAttribute('data-edit-args')); openEditUserModal(...args);">Edit</button>
+        <button type="button" class="bg-red-600 text-white px-2 py-1 rounded" data-delete-email='{{ user.email|tojson }}' onclick="deleteUser(JSON.parse(this.getAttribute('data-delete-email')))" >Delete</button>
       </td>
     </tr>
     {% else %}
@@ -38,29 +38,29 @@
 </table>
 <!-- Add User Modal -->
 <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
-    <button onclick="closeAddUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+    <button type="button" onclick="closeAddUserModal();" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
     <h3 class="text-lg font-bold mb-2">Add User</h3>
     <form id="addUserForm" action="{{ url_for('admin.add_user') }}" method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="mb-2">
         <label class="block font-semibold mb-1">Username</label>
-        <input type="text" name="username" class="border rounded px-3 py-2 w-full text-black" required>
+        <input type="text" name="username" class="border rounded px-3 py-2 w-full" required>
       </div>
       <div class="mb-2">
         <label class="block font-semibold mb-1">Email</label>
-        <input type="email" name="email" class="border rounded px-3 py-2 w-full text-black" required>
+        <input type="email" name="email" class="border rounded px-3 py-2 w-full" required>
       </div>
       <div class="mb-2">
         <label class="block font-semibold mb-1">Role</label>
-        <select name="role" class="border rounded px-3 py-2 w-full text-black">
+        <select name="role" class="border rounded px-3 py-2 w-full">
           <option value="user" selected>User</option>
           <option value="admin">Admin</option>
         </select>
       </div>
       <div class="mb-2">
         <label class="block font-semibold mb-1">Assign to Stokvel</label>
-        <select name="stokvel_id" class="border rounded px-3 py-2 w-full text-black">
+        <select name="stokvel_id" class="border rounded px-3 py-2 w-full">
           <option value="">-- Select Stokvel --</option>
           {% for stokvel in stokvels %}
             <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
@@ -73,8 +73,8 @@
 </div>
 <!-- Edit User Modal -->
 <div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
-    <button onclick="closeEditUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+    <button type="button" onclick="closeEditUserModal();" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
     <h3 class="text-lg font-bold mb-2">Edit User</h3>
     <form>
       <div class="mb-2">
@@ -98,8 +98,8 @@
 </div>
 <!-- View User Modal -->
 <div id="viewUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative text-gray-800">
-    <button onclick="closeViewUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full relative">
+    <button type="button" onclick="closeViewUserModal();" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
     <h3 class="text-lg font-bold mb-2">User Details</h3>
     <ul id="viewUserDetails" class="mb-2"></ul>
   </div>

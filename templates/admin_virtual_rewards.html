@@ -1,0 +1,356 @@
+{% extends 'admin_base.html' %}
+{% block title %}Virtual Rewards Management{% endblock %}
+{% block admin_content %}
+{% import 'translations.html' as translations %}
+{% set t = translations.t %}
+<style>
+  body, .admin-main, .stats-grid, .stat-card, .reward-form, .user-table, .transaction-table, .export-section, .form-label, .form-input, .table-header, .table-row, .page-header, .page-description {
+    font-family: 'Inter', 'Montserrat', Arial, Helvetica, sans-serif !important;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--card-bg) !important;
+    border-radius: 15px;
+    padding: 1.5rem;
+    color: var(--text) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: 1px solid var(--border);
+  }
+  body.light-mode .stat-card {
+    background: linear-gradient(135deg, #4facfe 0%, #38f9d7 100%) !important;
+    color: #fff !important;
+  }
+  .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--text) !important;
+  }
+  .stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    color: var(--subtext) !important;
+  }
+  .reward-form {
+    background: var(--card-bg) !important;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: 1px solid var(--border);
+    color: var(--text) !important;
+  }
+  .user-table, .transaction-table, .export-section {
+    background: var(--card-bg) !important;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: 1px solid var(--border);
+    color: var(--text) !important;
+  }
+  .balance-positive { color: var(--accent) !important; }
+  .balance-zero { color: #8b9bb4; }
+  .amount-positive { color: var(--accent) !important; }
+  .amount-negative { color: var(--danger) !important; }
+  .page-header {
+    color: var(--accent) !important;
+  }
+  .page-description {
+    color: var(--subtext) !important;
+  }
+  .form-label {
+    color: var(--accent) !important;
+  }
+  .form-input {
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--text) !important;
+  }
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(96, 239, 255, 0.08);
+  }
+  .table-header {
+    background: var(--sidebar-bg) !important;
+    color: var(--accent) !important;
+  }
+  .table-row {
+    background: var(--card-bg) !important;
+    color: var(--text) !important;
+  }
+  .table-row:hover {
+    background: #eaf6fb !important;
+  }
+</style>
+
+<div class="p-6">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold page-header mb-2">{{ t('Virtual Rewards Management') }}</h1>
+    <p class="page-description">{{ t('Manage reward points, view user balances, and distribute rewards to users.') }}</p>
+    
+    <!-- Navigation Tabs -->
+    <div class="flex space-x-4 mt-4">
+      <a href="{{ url_for('admin.virtual_rewards') }}" 
+         class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-md font-medium border border-cyan-400">{{ t('Overview') }}</a>
+      <a href="{{ url_for('admin.reward_analytics') }}" 
+         class="px-4 py-2 bg-gray-700 text-gray-300 rounded-md font-medium hover:bg-gray-600 border border-gray-600">{{ t('Analytics') }}</a>
+      <a href="{{ url_for('admin.reward_analytics') }}" 
+         class="px-4 py-2 bg-gray-700 text-gray-300 rounded-md font-medium hover:bg-gray-600 border border-gray-600">{{ t('Rules') }}</a>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats[0] if stats else 0 }}</div>
+      <div class="stat-label">{{ t('Users with Reward Cards') }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">R{{ "{:,.0f}".format(stats[1] if stats else 0) }}</div>
+      <div class="stat-label">{{ t('Total Reward Balance') }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats[2] if stats else 0 }}</div>
+      <div class="stat-label">{{ t('Total Transactions') }}</div>
+    </div>
+  </div>
+
+  <!-- Reward Distribution Forms -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Individual Reward Distribution -->
+    <div class="reward-form">
+      <h2 class="text-xl font-semibold mb-4 page-header">{{ t('Individual Reward Distribution') }}</h2>
+      <form method="POST" action="{{ url_for('admin.distribute_rewards') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('User Email') }}</label>
+            <input type="email" name="email" required 
+                   class="w-full px-3 py-2 form-input rounded-md focus:outline-none"
+                   placeholder="user@example.com">
+          </div>
+          <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('Reward Type') }}</label>
+            <select name="reward_type" required 
+                    class="w-full px-3 py-2 form-input rounded-md focus:outline-none">
+              <option value="points">{{ t('Points') }}</option>
+              <option value="bonus">{{ t('Bonus') }}</option>
+              <option value="admin_reward">{{ t('Admin Reward') }}</option>
+              <option value="promotion">{{ t('Promotion') }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('Amount') }}</label>
+            <input type="number" name="amount" required min="1"
+                   class="w-full px-3 py-2 form-input rounded-md focus:outline-none"
+                   placeholder="100">
+          </div>
+        <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('Description') }}</label>
+            <input type="text" name="description" 
+                   class="w-full px-3 py-2 form-input rounded-md focus:outline-none"
+                   placeholder="Reward description">
+          </div>
+        </div>
+        <button type="submit" 
+                class="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-2 px-6 rounded-md transition duration-200 border border-cyan-400">
+          {{ t('Distribute Reward') }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Bulk Reward Distribution -->
+    <div class="reward-form">
+      <h2 class="text-xl font-semibold mb-4 page-header">{{ t('Bulk Reward Distribution') }}</h2>
+      <form method="POST" action="{{ url_for('admin.bulk_distribute_rewards') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="space-y-4">
+            <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('User Filter') }}</label>
+            <select name="user_filter" required 
+                    class="w-full px-3 py-2 form-input rounded-md focus:outline-none">
+              <option value="all">{{ t('All Users') }}</option>
+              <option value="active">{{ t('Active Users (Last 30 days)') }}</option>
+              <option value="new_users">{{ t('New Users (Last 30 days)') }}</option>
+            </select>
+            </div>
+            <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('Reward Type') }}</label>
+            <select name="reward_type" required 
+                    class="w-full px-3 py-2 form-input rounded-md focus:outline-none">
+                    <option value="points">{{ t('Points') }}</option>
+              <option value="bonus">{{ t('Bonus') }}</option>
+              <option value="admin_reward">{{ t('Admin Reward') }}</option>
+              <option value="promotion">{{ t('Promotion') }}</option>
+                </select>
+            </div>
+            <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('Amount per User') }}</label>
+            <input type="number" name="amount" required min="1"
+                   class="w-full px-3 py-2 form-input rounded-md focus:outline-none"
+                   placeholder="50">
+          </div>
+          <div>
+            <label class="block text-sm font-medium form-label mb-2">{{ t('Description') }}</label>
+            <input type="text" name="description" 
+                   class="w-full px-3 py-2 form-input rounded-md focus:outline-none"
+                   placeholder="Bulk reward description">
+          </div>
+            </div>
+        <button type="submit" 
+                class="mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 px-6 rounded-md transition duration-200 border border-green-400">
+          Bulk Distribute
+        </button>
+        </form>
+    </div>
+  </div>
+
+  <!-- Export Options -->
+  <div class="export-section mb-6">
+    <h3 class="text-lg font-semibold page-header mb-3">Export Data</h3>
+    <div class="flex flex-wrap gap-2">
+      {#
+      <a href="#" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-4 py-2 rounded-md text-sm border border-cyan-400">
+        Export Transactions (CSV)
+      </a>
+      <a href="#" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-md text-sm border border-green-400">
+        Export Transactions (Excel)
+      </a>
+      <a href="#" class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-4 py-2 rounded-md text-sm border border-purple-400">
+        Export Balances (CSV)
+      </a>
+      <a href="#" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-4 py-2 rounded-md text-sm border border-orange-400">
+        Export Balances (Excel)
+      </a>
+      #}
+      <!-- TODO: Implement export_reward_data endpoint for reward transactions and balances -->
+    </div>
+  </div>
+
+  <!-- User Balances Table -->
+  <div class="user-table">
+    <div class="px-6 py-4 table-header border-b border-gray-600">
+      <h2 class="text-xl font-semibold page-header">User Reward Balances</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-600">
+        <thead class="table-header">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">User</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Card Number</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Balance</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-600">
+          {% for user in users %}
+          <tr class="table-row hover:bg-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-white">{{ user[1] }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-300">{{ user[2] }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-300">
+                {% if user[4] %}
+                  **** **** **** {{ user[4][-4:] }}
+                {% else %}
+                  No card
+                {% endif %}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium 
+                {% if user[3] and user[3] > 0 %}balance-positive
+                {% elif user[3] == 0 %}balance-zero
+                {% else %}text-gray-400{% endif %}">
+                R{{ "{:,.0f}".format(user[3] or 0) }}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <button onclick="quickReward('{{ user[2] }}')" 
+                      class="text-cyan-400 hover:text-cyan-300 mr-3">Quick Reward</button>
+              <button onclick="viewTransactions('{{ user[0] }}')" 
+                      class="text-green-400 hover:text-green-300">View History</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="transaction-table mt-6">
+    <div class="px-6 py-4 table-header border-b border-gray-600">
+      <h2 class="text-xl font-semibold page-header">Recent Reward Transactions</h2>
+    </div>
+        <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-600">
+        <thead class="table-header">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">User</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Type</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
+                    </tr>
+                </thead>
+        <tbody class="divide-y divide-gray-600">
+          {% for tx in transactions %}
+          <tr class="table-row hover:bg-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-300">
+                {{ tx[3].strftime('%Y-%m-%d %H:%M') if tx[3] else 'N/A' }}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-white">{{ tx[4] }}</div>
+              <div class="text-sm text-gray-300">{{ tx[5] }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                {% if tx[1] == 'contribution' %}bg-green-900 text-green-300
+                {% elif tx[1] == 'admin_reward' %}bg-cyan-900 text-cyan-300
+                {% elif tx[1] == 'purchase' %}bg-purple-900 text-purple-300
+                {% else %}bg-gray-700 text-gray-300{% endif %}">
+                {{ tx[1] }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-300">{{ tx[2] }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium 
+                {% if tx[0] > 0 %}amount-positive{% else %}amount-negative{% endif %}">
+                {% if tx[0] > 0 %}+{% endif %}R{{ "{:,.0f}".format(tx[0]) }}
+              </div>
+            </td>
+                    </tr>
+          {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function quickReward(email) {
+  document.querySelector('input[name="email"]').value = email;
+  document.querySelector('input[name="amount"]').focus();
+}
+
+function viewTransactions(userId) {
+  // This could open a modal or redirect to a detailed transaction view
+  alert('Transaction history feature coming soon!');
+}
+</script>
+{% endblock %}

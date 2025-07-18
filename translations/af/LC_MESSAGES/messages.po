@@ -1,0 +1,837 @@
+# Afrikaans translations for KasiKash Admin Dashboard
+# Copyright (C) 2024 KasiKash
+# This file is distributed under the same license as the KasiKash project.
+msgid ""
+msgstr ""
+"Project-Id-Version: KasiKash Admin Dashboard 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-14 11:50+0200\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: \n"
+"Language: af\n"
+"Language-Team: af <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+# Admin Settings
+#~ msgid "admin_settings"
+#~ msgstr "Admin Instellings"
+
+#~ msgid "switch_to_user_view"
+#~ msgstr "Skakel na Gebruiker Aansig"
+
+#~ msgid "admin_settings_subtitle"
+#~ msgstr "Konfigureer stelsel instellings en toestemmings"
+
+#~ msgid "user_permissions"
+#~ msgstr "Gebruiker Toestemmings"
+
+#~ msgid "financial_controls"
+#~ msgstr "Finansiële Beheer"
+
+#~ msgid "notifications"
+#~ msgstr "Kennisgewings"
+
+#~ msgid "meetings_events"
+#~ msgstr "Vergaderings & Gebeurtenisse"
+
+#~ msgid "data_security"
+#~ msgstr "Data Sekuriteit"
+
+#~ msgid "languages"
+#~ msgstr "Tale"
+
+#~ msgid "select_admin_language"
+#~ msgstr "Kies Admin Taal"
+
+#~ msgid "english"
+#~ msgstr "Engels"
+
+#~ msgid "role_management"
+#~ msgstr "Rol Bestuur"
+
+#~ msgid "assign_roles_help"
+#~ msgstr "Ken rolle toe om toestemmings te bestuur"
+
+#~ msgid "admin_full_access"
+#~ msgstr "Admin - Volledige Toegang"
+
+#~ msgid "loan_approval_permissions"
+#~ msgstr "Lening Goedkeuring Toestemmings"
+
+#~ msgid "choose_loan_approval_roles"
+#~ msgstr "Kies rolle wat lenings kan goedkeur"
+
+#~ msgid "adminstreasurerssecretaries"
+#~ msgstr "Admins, Tesouriers, Sekretarisse"
+
+#~ msgid "audit_logs"
+#~ msgstr "Oudit Logs"
+
+#~ msgid "theme"
+#~ msgstr "Tema:"
+
+#~ msgid "view_audit_logs_help"
+#~ msgstr "Bekyk stelsel aktiwiteit en veranderinge"
+
+#~ msgid "action"
+#~ msgstr "Aksie"
+
+#~ msgid "performed_by"
+#~ msgstr "Uitgevoer Deur"
+
+#~ msgid "target"
+#~ msgstr "Teiken"
+
+#~ msgid "amount"
+#~ msgstr "Bedrag"
+
+#~ msgid "date"
+#~ msgstr "Datum"
+
+#~ msgid "cancel"
+#~ msgstr "Kanselleer"
+
+#~ msgid "save_settings"
+#~ msgstr "Stoor Instellings"
+
+#~ msgid "contribution_rules"
+#~ msgstr "Bydrae Reëls"
+
+#~ msgid "set_contribution_rules_help"
+#~ msgstr "Stel reëls vir lidmaat bydraes"
+
+#~ msgid "monthly_amount"
+#~ msgstr "Maandelikse Bedrag:"
+
+#~ msgid "R"
+#~ msgstr "R"
+
+#~ msgid "100"
+#~ msgstr "100"
+
+#~ msgid "late_penalty"
+#~ msgstr "Laat Boete:"
+
+#~ msgid "10%"
+#~ msgstr "10%"
+
+#~ msgid "grace_period"
+#~ msgstr "Genade Tydperk:"
+
+#~ msgid "7"
+#~ msgstr "7"
+
+#~ msgid "days"
+#~ msgstr "Dae"
+
+#~ msgid "loan_settings"
+#~ msgstr "Lening Instellings"
+
+#~ msgid "configure_loan_settings_help"
+#~ msgstr "Konfigureer lening parameters en reëls"
+
+#~ msgid "max_loan_percent"
+#~ msgstr "Maksimum Lening Persentasie:"
+
+#~ msgid "50%"
+#~ msgstr "50%"
+
+#~ msgid "interest_rate"
+#~ msgstr "Rente Koers:"
+
+#~ msgid "5%"
+#~ msgstr "5%"
+
+#~ msgid "repayment_period"
+#~ msgstr "Terugbetaling Tydperk:"
+
+#~ msgid "6 months"
+#~ msgstr "6 Maande"
+
+#~ msgid "withdrawal_approvals"
+#~ msgstr "Onttrekking Goedkeurings"
+
+#~ msgid "require_dual_approval_help"
+#~ msgstr "Vereis twee goedkeurings vir onttrekkings"
+
+#~ msgid "enable_dual_approval_for_withdrawals"
+#~ msgstr "Aktiveer Dubbele Goedkeuring vir Onttrekkings"
+
+#~ msgid "recurring_meetings"
+#~ msgstr "Herhalende Vergaderings"
+
+#~ msgid "schedule_meetings_help"
+#~ msgstr "Skeduleer gereelde vergaderings"
+
+#~ msgid "meeting_frequency"
+#~ msgstr "Vergadering Frekwensie:"
+
+#~ msgid "monthly"
+#~ msgstr "Maandeliks"
+
+#~ msgid "day_of_week"
+#~ msgstr "Dag van die Week:"
+
+#~ msgid "monday"
+#~ msgstr "Maandag"
+
+#~ msgid "time"
+#~ msgstr "Tyd:"
+
+#~ msgid "14:00"
+#~ msgstr "14:00"
+
+#~ msgid "send_automatic_reminders"
+#~ msgstr "Stuur Outomatiese Herinnerings"
+
+#~ msgid "attendance_tracking"
+#~ msgstr "Bywoning Opvolging"
+
+#~ msgid "record_attendance_help"
+#~ msgstr "Registreer lidmaat bywoning by vergaderings"
+
+#~ msgid "enable_attendance_tracking"
+#~ msgstr "Aktiveer Bywoning Opvolging"
+
+#~ msgid "absence_penalty"
+#~ msgstr "Afwesigheid Boete:"
+
+#~ msgid "5after"
+#~ msgstr "5% Na"
+
+#~ msgid "missed_meetings"
+#~ msgstr "Gemiste Vergaderings"
+
+#~ msgid "meeting"
+#~ msgstr "Vergadering"
+
+#~ msgid "present"
+#~ msgstr "Tegenwoordig"
+
+#~ msgid "absent"
+#~ msgstr "Afwesig"
+
+# Dashboard Header
+#~ msgid "Welcome, Admin 👋"
+#~ msgstr "Welkom, Admin 👋"
+
+#~ msgid "Stokvel Admin Dashboard"
+#~ msgstr "Stokvel Admin Dashboard"
+
+# Dashboard Stats
+#~ msgid "Total Members"
+#~ msgstr "Totale Lede"
+
+#~ msgid "from last month"
+#~ msgstr "van verlede maand"
+
+#~ msgid "Active Loans"
+#~ msgstr "Aktiewe Lenings"
+
+#~ msgid "pending approval"
+#~ msgstr "wag op goedkeuring"
+
+#~ msgid "Total Contributions"
+#~ msgstr "Totale Bydraes"
+
+#~ msgid "KYC Pending"
+#~ msgstr "KYC Hangend"
+
+#~ msgid "urgent reviews"
+#~ msgstr "dringende hersienings"
+
+# Quick Actions
+#~ msgid "Quick Actions"
+#~ msgstr "Vinnige Aksies"
+
+#~ msgid "Manage Users"
+#~ msgstr "Bestuur Gebruikers"
+
+# Loan Approvals
+#~ msgid "Loan Approvals"
+#~ msgstr "Leningsgoedkeurings"
+
+#~ msgid "Virtual Rewards"
+#~ msgstr "Virtuele Belonings"
+
+#~ msgid "Generate Reports"
+#~ msgstr "Genereer Verslae"
+
+# Charts
+#~ msgid "Financial Chart"
+#~ msgstr "Finansiële Grafiek"
+
+#~ msgid "User Growth Chart"
+#~ msgstr "Gebruikersgroei Grafiek"
+
+# User Management
+#~ msgid "User Management"
+#~ msgstr "Gebruikersbestuur"
+
+#~ msgid ""
+#~ "View, add, edit, or suspend user "
+#~ "accounts with advanced filtering and "
+#~ "bulk operations."
+#~ msgstr ""
+#~ "Beskou, voeg by, wysig of skors "
+#~ "gebruikersrekeninge met gevorderde filter en"
+#~ " grootmaataksies."
+
+#~ msgid "Bulk Operations"
+#~ msgstr "Grootmaataksies"
+
+#~ msgid ""
+#~ "Review and approve loan applications "
+#~ "with detailed financial analysis and "
+#~ "risk assessment."
+#~ msgstr ""
+#~ "Hersien en keur lening aansoeke goed "
+#~ "met gedetailleerde finansiële analise en "
+#~ "risikobepaling."
+
+#~ msgid "Review Applications"
+#~ msgstr "Hersien Aansoeke"
+
+#~ msgid "Approval History"
+#~ msgstr "Goedkeuringsgeskiedenis"
+
+# Financial Reports
+#~ msgid ""
+#~ "Generate comprehensive financial reports with"
+#~ " advanced analytics and export "
+#~ "capabilities."
+#~ msgstr ""
+#~ "Genereer omvattende finansiële verslae met "
+#~ "gevorderde analise en uitvoer vermoëns."
+
+#~ msgid "Export Data"
+#~ msgstr "Voer Data Uit"
+
+# Error Messages
+#~ msgid "Could not load users or stokvels."
+#~ msgstr "Kon nie gebruikers of stokvels laai nie."
+
+#~ msgid "manage_users"
+#~ msgstr "bestuur_gebruikers"
+
+#~ msgid "Here you can manage all users."
+#~ msgstr "Hier kan jy alle gebruikers bestuur."
+
+#~ msgid "search username or email"
+#~ msgstr "soek gebruikersnaam of e-pos"
+
+#~ msgid "search"
+#~ msgstr "soek"
+
+#~ msgid "add_user"
+#~ msgstr "voeg_gebruiker_by"
+
+#~ msgid "email"
+#~ msgstr "e-pos"
+
+#~ msgid "role"
+#~ msgstr "rol"
+
+#~ msgid "created_at"
+#~ msgstr "geskep_op"
+
+#~ msgid "stokvel"
+#~ msgstr "stokvel"
+
+#~ msgid "actions"
+#~ msgstr "aksies"
+
+#~ msgid "No users found."
+#~ msgstr "Geen gebruikers gevind nie."
+
+#~ msgid "Here you can approve or reject loan applications."
+#~ msgstr "Hier kan jy lening aansoeke goedkeur of verwerp."
+
+#~ msgid "Filter by status:"
+#~ msgstr "Filter volgens status:"
+
+#~ msgid "Pending"
+#~ msgstr "Hangend"
+
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "Username"
+#~ msgstr "Gebruikersnaam"
+
+#~ msgid "Amount"
+#~ msgstr "Bedrag"
+
+#~ msgid "Status"
+#~ msgstr "Status"
+
+#~ msgid "Transaction Date"
+#~ msgstr "Transaksiedatum"
+
+#~ msgid "Comment"
+#~ msgstr "Kommentaar"
+
+#~ msgid "Actions"
+#~ msgstr "Aksies"
+
+#~ msgid "No loans found for this status."
+#~ msgstr "Geen lenings vir hierdie status gevind nie."
+
+#~ msgid ""
+#~ "View and export detailed financial "
+#~ "reports for your stokvel, including "
+#~ "transactions, balances, and summaries. Use "
+#~ "the filters below to customize your "
+#~ "report."
+#~ msgstr ""
+#~ "Bekyk en voer gedetailleerde finansiële "
+#~ "verslae vir jou stokvel uit, insluitend"
+#~ " transaksies, balanse en opsommings. "
+#~ "Gebruik die filters hieronder om jou "
+#~ "verslag aan te pas."
+
+#~ msgid "From"
+#~ msgstr "Van"
+
+#~ msgid "To"
+#~ msgstr "Tot"
+
+#~ msgid "Type"
+#~ msgstr "Tipe"
+
+#~ msgid "All"
+#~ msgstr "Alles"
+
+#~ msgid "Deposits"
+#~ msgstr "Deposito's"
+
+#~ msgid "Payouts"
+#~ msgstr "Uitbetalings"
+
+#~ msgid "Fees"
+#~ msgstr "Fooie"
+
+#~ msgid "Filter"
+#~ msgstr "Filter"
+
+# Events Management
+#~ msgid "Events"
+#~ msgstr "Gebeurtenisse"
+
+#~ msgid "Here you can manage events."
+#~ msgstr "Hier kan jy gebeurtenisse bestuur."
+
+#~ msgid "Select a Stokvel"
+#~ msgstr "Kies 'n Stokvel"
+
+#~ msgid "Name"
+#~ msgstr "Naam"
+
+#~ msgid "Target Date"
+#~ msgstr "Teikendatum"
+
+#~ msgid "Description"
+#~ msgstr "Beskrywing"
+
+#~ msgid "Send notification to all members of this stokvel"
+#~ msgstr "Stuur kennisgewing aan alle lede van hierdie stokvel"
+
+#~ msgid "Create Event"
+#~ msgstr "Skep Gebeurtenis"
+
+#~ msgid "No events found."
+#~ msgstr "Geen gebeurtenisse gevind nie."
+
+# Membership Plans
+#~ msgid "Membership Plans"
+#~ msgstr "Lidmaatskap Planne"
+
+#~ msgid "Here you can manage membership plans."
+#~ msgstr "Hier kan jy lidmaatskap planne bestuur."
+
+#~ msgid "Search by plan name"
+#~ msgstr "Soek volgens plannaam"
+
+#~ msgid "Add Plan"
+#~ msgstr "Voeg Plan By"
+
+#~ msgid "Monthly Contribution"
+#~ msgstr "Maandelikse Bydrae"
+
+#~ msgid "Target Amount"
+#~ msgstr "Teikenbedrag"
+
+#~ msgid "Total Pool"
+#~ msgstr "Totale Poel"
+
+#~ msgid "No membership plans found."
+#~ msgstr "Geen lidmaatskap planne gevind nie."
+
+# Admin Notifications
+#~ msgid "send_notification"
+#~ msgstr "stuur_kennisgewing"
+
+#~ msgid "Notification Type"
+#~ msgstr "Kennisgewing Tipe"
+
+#~ msgid "Send to Stokvel Members"
+#~ msgstr "Stuur na Stokvel Lede"
+
+#~ msgid "urgent"
+#~ msgstr "dringend"
+
+#~ msgid "message"
+#~ msgstr "boodskap"
+
+#~ msgid "Enter your notification message..."
+#~ msgstr "Voer jou kennisgewing boodskap in..."
+
+#~ msgid "type"
+#~ msgstr "tipe"
+
+#~ msgid "Admin Notification"
+#~ msgstr "Admin Kennisgewing"
+
+#~ msgid "Send"
+#~ msgstr "Stuur"
+
+#~ msgid "Admin Notifications"
+#~ msgstr "Admin Kennisgewings"
+
+#~ msgid "Here you can send notifications to users."
+#~ msgstr "Hier kan jy kennisgewings aan gebruikers stuur."
+
+#~ msgid "Create Notification"
+#~ msgstr "Skep Kennisgewing"
+
+#~ msgid "User ID"
+#~ msgstr "Gebruiker ID"
+
+#~ msgid "No notifications found."
+#~ msgstr "Geen kennisgewings gevind nie."
+
+# KYC Approvals
+#~ msgid "kyc_approvals"
+#~ msgstr "kyc_goedkeurings"
+
+#~ msgid "Here you can approve or reject KYC submissions."
+#~ msgstr "Hier kan jy KYC indienings goedkeur of verwerp."
+
+#~ msgid "id_document"
+#~ msgstr "id_dokument"
+
+#~ msgid "proof_of_address"
+#~ msgstr "bewys_van_adres"
+
+#~ msgid "ID Document Status"
+#~ msgstr "ID Dokument Status"
+
+#~ msgid "Proof of Address Status"
+#~ msgstr "Bewys van Adres Status"
+
+#~ msgid "view"
+#~ msgstr "kyk"
+
+#~ msgid "approve"
+#~ msgstr "goedkeur"
+
+#~ msgid "reject"
+#~ msgstr "verwerp"
+
+# Virtual Rewards Management
+#~ msgid "Virtual Rewards Management"
+#~ msgstr "Virtuele Belonings Bestuur"
+
+#~ msgid ""
+#~ "Manage reward points, view user "
+#~ "balances, and distribute rewards to "
+#~ "users."
+#~ msgstr ""
+#~ "Bestuur beloningspunte, kyk gebruikersaldo's, "
+#~ "en versprei belonings aan gebruikers."
+
+#~ msgid "Overview"
+#~ msgstr "Oorsig"
+
+#~ msgid "Analytics"
+#~ msgstr "Ontleding"
+
+#~ msgid "Rules"
+#~ msgstr "Reëls"
+
+#~ msgid "Users with Reward Cards"
+#~ msgstr "Gebruikers met Beloningskaarte"
+
+#~ msgid "Total Reward Balance"
+#~ msgstr "Totale Beloningsaldo"
+
+#~ msgid "Total Transactions"
+#~ msgstr "Totale Transaksies"
+
+#~ msgid "Individual Reward Distribution"
+#~ msgstr "Individuele Beloningsverspreiding"
+
+#~ msgid "User Email"
+#~ msgstr "Gebruiker E-pos"
+
+#~ msgid "Reward Type"
+#~ msgstr "Beloningstipe"
+
+#~ msgid "Points"
+#~ msgstr "Punte"
+
+#~ msgid "Reward description"
+#~ msgstr "Beloningsbeskrywing"
+
+#~ msgid "Distribute Reward"
+#~ msgstr "Versprei Beloning"
+
+#~ msgid "Bulk Reward Distribution"
+#~ msgstr "Grootmaat Beloningsverspreiding"
+
+#~ msgid "User Filter"
+#~ msgstr "Gebruiker Filter"
+
+#~ msgid "All Users"
+#~ msgstr "Alle Gebruikers"
+
+#~ msgid "Amount per User"
+#~ msgstr "Bedrag per Gebruiker"
+
+#~ msgid "Bulk reward description"
+#~ msgstr "Grootmaat beloningsbeskrywing"
+
+#~ msgid "Bulk Distribute"
+#~ msgstr "Grootmaat Versprei"
+
+#~ msgid "Export Transactions (CSV)"
+#~ msgstr "Eksporteer Transaksies (CSV)"
+
+#~ msgid "Export Transactions (Excel)"
+#~ msgstr "Eksporteer Transaksies (Excel)"
+
+#~ msgid "Export Balances (CSV)"
+#~ msgstr "Eksporteer Saldo's (CSV)"
+
+#~ msgid "Export Balances (Excel)"
+#~ msgstr "Eksporteer Saldo's (Excel)"
+
+#~ msgid "User Reward Balances"
+#~ msgstr "Gebruiker Beloningsaldo's"
+
+#~ msgid "User"
+#~ msgstr "Gebruiker"
+
+#~ msgid "Card Number"
+#~ msgstr "Kaartnommer"
+
+#~ msgid "Balance"
+#~ msgstr "Saldo"
+
+#~ msgid "Recent Reward Transactions"
+#~ msgstr "Onlangse Beloningstransaksies"
+
+#~ msgid "Date"
+#~ msgstr "Datum"
+
+#~ msgid "Reward Analytics"
+#~ msgstr "Beloningsontleding"
+
+#~ msgid "Comprehensive analytics and insights for your reward system."
+#~ msgstr "Omvattende ontleding en insigte vir jou beloningsstelsel."
+
+#~ msgid "Months of Data"
+#~ msgstr "Maande van Data"
+
+#~ msgid "Top Earners Tracked"
+#~ msgstr "Top Verdieners Dopgehou"
+
+#~ msgid "Reward Types"
+#~ msgstr "Beloningstipes"
+
+#~ msgid "Monthly Reward Distribution"
+#~ msgstr "Maandelikse Beloningsverspreiding"
+
+#~ msgid "Top Reward Earners"
+#~ msgstr "Top Beloningsverdieners"
+
+#~ msgid "Rank"
+#~ msgstr "Rang"
+
+#~ msgid "Total Earned"
+#~ msgstr "Totaal Verdien"
+
+#~ msgid "Reward Type Distribution"
+#~ msgstr "Beloningstipe Verspreiding"
+
+#~ msgid "Reward Rules Configuration"
+#~ msgstr "Beloningsreëls Konfigurasie"
+
+#~ msgid ""
+#~ "Configure automatic reward triggers and "
+#~ "multipliers for your reward system."
+#~ msgstr ""
+#~ "Konfigureer outomatiese beloningstriggers en "
+#~ "vermenigvuldigers vir jou beloningsstelsel."
+
+#~ msgid "Automatic Reward Rules"
+#~ msgstr "Outomatiese Beloningsreëls"
+
+#~ msgid "Contribution Multiplier"
+#~ msgstr "Bydrae Vermenigvuldiger"
+
+#~ msgid "How many reward points users earn per R1 contributed to stokvels."
+#~ msgstr "Hoeveel beloningspunte gebruikers verdien per R1 bygedra tot stokvels."
+
+#~ msgid "Welcome Bonus"
+#~ msgstr "Welkombonus"
+
+#~ msgid "Reward points given to new users when they join the platform."
+#~ msgstr ""
+#~ "Beloningspunte gegee aan nuwe gebruikers "
+#~ "wanneer hulle by die platform aansluit."
+
+#~ msgid "Referral Bonus"
+#~ msgstr "Verwysingsbonus"
+
+#~ msgid "Reward points given when a user successfully refers another user."
+#~ msgstr ""
+#~ "Beloningspunte gegee wanneer 'n gebruiker "
+#~ "suksesvol 'n ander gebruiker verwys."
+
+#~ msgid "Monthly Bonus"
+#~ msgstr "Maandelikse Bonus"
+
+#~ msgid "Monthly reward points given to active users who made contributions."
+#~ msgstr ""
+#~ "Maandelikse beloningspunte gegee aan aktiewe"
+#~ " gebruikers wat bydraes gemaak het."
+
+#~ msgid "Event Attendance Bonus"
+#~ msgstr "Gebeurtenisbywoning Bonus"
+
+#~ msgid "Reward points given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Beloningspunte gegee vir bywoning van "
+#~ "stokvel gebeurtenisse en vergaderings."
+
+#~ msgid "Loan Payment Bonus"
+#~ msgstr "Leningbetaling Bonus"
+
+#~ msgid "Reward points given for on-time loan payments."
+#~ msgstr "Beloningspunte gegee vir betydse leningbetalings."
+
+#~ msgid "Save Reward Rules"
+#~ msgstr "Stoor Beloningsreëls"
+
+#~ msgid "How Reward Rules Work"
+#~ msgstr "Hoe Beloningsreëls Werk"
+
+#~ msgid ""
+#~ "Contribution Multiplier: Users earn this "
+#~ "many points per R1 contributed. Set "
+#~ "to 1 for 1:1 ratio."
+#~ msgstr ""
+#~ "Bydrae Vermenigvuldiger: Gebruikers verdien "
+#~ "soveel punte per R1 bygedra. Stel "
+#~ "op 1 vir 1:1 verhouding."
+
+#~ msgid "Welcome Bonus: Automatically given to new users upon registration."
+#~ msgstr "Welkombonus: Outomaties gegee aan nuwe gebruikers by registrasie."
+
+#~ msgid ""
+#~ "Referral Bonus: Given when a user "
+#~ "successfully refers another user to the"
+#~ " platform."
+#~ msgstr ""
+#~ "Verwysingsbonus: Gegee wanneer 'n gebruiker"
+#~ " suksesvol 'n ander gebruiker na die"
+#~ " platform verwys."
+
+#~ msgid ""
+#~ "Monthly Bonus: Given monthly to users"
+#~ " who made contributions in the "
+#~ "previous month."
+#~ msgstr ""
+#~ "Maandelikse Bonus: Maandeliks gegee aan "
+#~ "gebruikers wat bydraes in die vorige "
+#~ "maand gemaak het."
+
+#~ msgid "Event Attendance: Given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Gebeurtenisbywoning: Gegee vir bywoning van"
+#~ " stokvel gebeurtenisse en vergaderings."
+
+#~ msgid ""
+#~ "Loan Payment: Given for on-time "
+#~ "loan payments and good financial "
+#~ "behavior."
+#~ msgstr ""
+#~ "Leningbetaling: Gegee vir betydse "
+#~ "leningbetalings en goeie finansiële gedrag."
+
+# Nuwe admin instellings terme
+#~ msgid "data_export"
+#~ msgstr "Data Uitvoer"
+
+#~ msgid "download_data_help"
+#~ msgstr "Laai jou data af as 'n CSV-lêer"
+
+#~ msgid "CSV"
+#~ msgstr "CSV"
+
+#~ msgid "two_factor_auth"
+#~ msgstr "Twee-Faktor Verifikasie (2FA)"
+
+#~ msgid "enable_2fa_help"
+#~ msgstr "Aktiveer twee-faktor verifikasie om jou rekening te beveilig"
+
+#~ msgid "require_2fa_for_admins"
+#~ msgstr "Vereis 2FA vir admins"
+
+#~ msgid "data_retention"
+#~ msgstr "Data Bewaring"
+
+#~ msgid "configure_data_retention_help"
+#~ msgstr "Stel in hoe lank transaksiegeskiedenis gehou moet word"
+
+#~ msgid "keep_transaction_history_for:"
+#~ msgstr "Hou transaksiegeskiedenis vir:"
+
+msgid "Add New Payment Method"
+msgstr "Voeg Nuwe Betaalmetode By"
+
+msgid "Payment Type"
+msgstr "Betalingstipe"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Manage Users"
+msgstr "Bestuur Gebruikers"
+
+msgid "Loan Approvals"
+msgstr "Leningsgoedkeurings"
+
+msgid "Events"
+msgstr "Gebeure"
+
+msgid "Membership Plans"
+msgstr "Lidmaatskapplanne"
+
+msgid "Notifications"
+msgstr "Kennisgewings"
+
+msgid "KYC Approvals"
+msgstr "KYC Goedkeurings"
+
+msgid "Virtual Rewards"
+msgstr "Virtuele Belonings"
+
+msgid "Logout"
+msgstr "Teken uit"
+

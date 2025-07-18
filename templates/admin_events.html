@@ -5,6 +5,8 @@
 <!-- Event creation form -->
 <div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
   <form id="createEventForm" method="POST" action="{{ url_for('admin.events') }}" class="flex flex-col gap-3 flex-1 min-w-[250px]">
+    {{ csrf_token() }}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="flex flex-wrap gap-3">
       <div class="flex-1 min-w-[180px]">
         <label class="block font-semibold mb-1" style="color:#60efff;">Stokvel</label>
@@ -15,18 +17,26 @@
             {% endfor %}
         </select>
       </div>
-      <div class="flex-1 min-w-[180px]">
-        <label class="block font-semibold mb-1" style="color:#60efff;">Name</label>
-        <input type="text" name="name" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
-      </div>
+      <!-- Remove the Name field -->
       <div class="flex-1 min-w-[180px]">
         <label class="block font-semibold mb-1" style="color:#60efff;">Target Date</label>
         <input type="date" name="target_date" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
       </div>
+      <div class="flex-1 min-w-[180px]">
+        <label class="block font-semibold mb-1" style="color:#60efff;">Event Type</label>
+        <select name="event_type" class="w-full border border-[#22304a] rounded-lg px-4 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
+          <option value="" disabled selected>Select Event Type</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Celebration">Celebration</option>
+          <option value="Fundraiser">Fundraiser</option>
+          <option value="Christmas">Christmas</option>
+          <option value="General">General</option>
+        </select>
+      </div>
     </div>
     <div>
-      <label class="block font-semibold mb-1" style="color:#60efff;">Description</label>
-      <textarea name="description" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" rows="2" required></textarea>
+      <label class="block font-semibold mb-1" style="color:#60efff;">{{ t('Description') }}</label>
+      <textarea name="description" class="w-full border border-[#22304a] rounded-lg px-4 py-2" style="color:#eaf6fb; background:#232347;" rows="2" required></textarea>
     </div>
     <div class="mb-2 flex items-center">
       <input type="checkbox" id="sendNotification" name="send_notification" class="mr-2">
@@ -122,17 +132,17 @@ function openEditEventModal(id, name, description, date) {
 function closeEditEventModal() {
   document.getElementById('editEventModal').classList.add('hidden');
 }
-function openViewEventModal(id, name, description, date, createdAt, stokvelName) {
-  var html = '';
-  html += `<li><strong>ID:</strong> ${id}</li>`;
-  html += `<li><strong>Stokvel:</strong> ${stokvelName}</li>`;
-  html += `<li><strong>Name:</strong> ${name}</li>`;
-  html += `<li><strong>Description:</strong> ${description}</li>`;
-  html += `<li><strong>Target Date:</strong> ${date}</li>`;
-  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
-  document.getElementById('viewEventDetails').innerHTML = html;
-  document.getElementById('viewEventModal').classList.remove('hidden');
-}
+  function openViewEventModal(id, name, description, date, createdAt, stokvelName) {
+    var html = '';
+    html += `<li><strong>ID:</strong> ${id}</li>`;
+    html += `<li><strong>Stokvel:</strong> ${stokvelName}</li>`;
+    html += `<li><strong>Name:</strong> ${name}</li>`;
+    html += `<li><strong>Description:</strong> ${description}</li>`;
+    html += `<li><strong>Target Date:</strong> ${date}</li>`;
+    html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+    document.getElementById('viewEventDetails').innerHTML = html;
+    document.getElementById('viewEventModal').classList.remove('hidden');
+  }
 function closeViewEventModal() {
   document.getElementById('viewEventModal').classList.add('hidden');
 }

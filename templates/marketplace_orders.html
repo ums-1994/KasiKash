@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>My Marketplace Orders</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Item</th>
+        <th>Quantity</th>
+        <th>Total Points</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.item_name }}</td>
+        <td>{{ order.quantity }}</td>
+        <td>{{ order.total_points }}</td>
+        <td>{{ order.status }}</td>
+        <td>{{ order.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{{ url_for('rewards.marketplace') }}" class="btn btn-secondary mt-3">Back to Marketplace</a>
+</div>
+{% endblock %} 

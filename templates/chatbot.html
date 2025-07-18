@@ -2,10 +2,19 @@
     <section id="chatbot-main">
         <header id="chatbot-header">
             <div class="assistant-info">
-                <div class="avatar" aria-hidden="true">💬</div>
+                <div class="avatar">
+                  <img src="{{ url_for('static', filename='ChatbotImage.png') }}" alt="Chatbot Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #fff;" />
+                </div>
                 <div class="assistant-meta">
                     <span class="assistant-name">KasiKash Assistant</span>
                     <span class="status">Online • Financial Expert</span>
+                    <div class="ai-mode-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="ai-mode-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="mode-label">App Mode</span>
+                    </div>
                 </div>
             </div>
             <nav class="chat-controls" aria-label="Chatbot controls">
@@ -68,7 +77,6 @@
     function updateFabVisibility() {
         var fab = document.getElementById('chatbot-fab');
         var container = document.getElementById('chatbot-container');
-        
         // Show FAB when chatbot is minimized or on mobile
         if (container.classList.contains('minimized') || window.innerWidth <= 768) {
             fab.style.display = 'flex';
@@ -78,11 +86,9 @@
             fab.style.display = 'none';
         }
     }
-    
     // Update on load, resize, and when chatbot state changes
     window.addEventListener('resize', updateFabVisibility);
     document.addEventListener('DOMContentLoaded', updateFabVisibility);
-    
     // Observe chatbot container for class changes
     const observer = new MutationObserver(updateFabVisibility);
     const container = document.getElementById('chatbot-container');
@@ -106,4 +112,4 @@
     margin: 0 0 0 0;
     width: 100%;
 }
-</style> 
+</style>

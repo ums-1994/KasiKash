@@ -167,7 +167,7 @@ tbody tr:hover {
 <div class="glass-card">
   <h2 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 1rem;">Add New Member</h2>
   <form action="{{ url_for('add_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" style="margin-bottom: 2rem;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div style="margin-bottom: 1rem;">
       <label for="email">Member Email</label>
       <input type="email" name="email" id="email" required>
@@ -199,7 +199,7 @@ tbody tr:hover {
           <td>
             {% if member.role != 'admin' or (member.role == 'admin' and members|selectattr('role', 'equalto', 'admin')|list|length > 1) %}
             <form action="{{ url_for('remove_stokvel_member', stokvel_id=stokvel.id) }}" method="POST" style="display:inline;">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="member_id" value="{{ member.member_id }}">
               <button type="submit" onclick="return confirm('Are you sure you want to remove this member?')" class="remove-btn">Remove</button>
             </form>
@@ -214,4 +214,88 @@ tbody tr:hover {
   <p style="color: #a5b4fc; text-align: center; padding: 1.5rem 0;">No members found.</p>
   {% endif %}
 </div>
+
+<!-- Floating Chat Button (top right, SVG icon) -->
+<button id="open-chat-btn" style="position: fixed; top: 32px; right: 32px; z-index: 1000; background: #2563eb; color: white; border: none; border-radius: 50%; width: 56px; height: 56px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+  <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="white">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8L3 21l1.8-4A8.96 8.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+  </svg>
+</button>
+
+<!-- Chat Modal -->
+<div id="chat-modal" style="display:none; position: fixed; bottom: 100px; right: 32px; z-index: 1100; background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.18); width: 350px; max-width: 95vw;">
+  <div style="padding: 16px 16px 0 16px; display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-weight: bold; font-size: 1.1rem; color: #222;">Stokvel Chat</span>
+    <button id="close-chat-btn" style="background: none; border: none; font-size: 1.5rem; color: #333; cursor: pointer;">&times;</button>
+  </div>
+  <div id="chat-messages" style="height: 220px; overflow-y: auto; background: #f3f4f6; margin: 12px 16px; border-radius: 8px; padding: 8px;"></div>
+  <form id="chat-form" style="display: flex; gap: 8px; padding: 0 16px 16px 16px;">
+    <input id="chat-input" type="text" placeholder="Type your message..." style="flex:1; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 8px;" autocomplete="off" required />
+    <button type="submit" style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 6px 16px;">Send</button>
+  </form>
+</div>
+
+<!-- Hidden div to store stokvel_id for JS (avoids linter errors) -->
+<div id="stokvel-data" data-stokvel-id="{{ stokvel_id }}" style="display:none;"></div>
+
+<!-- Socket.IO Client and Chat Logic -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script type="text/javascript">
+  var stokvelId = document.getElementById('stokvel-data').getAttribute('data-stokvel-id');
+  const socket = io();
+
+  // Modal logic
+  const openChatBtn = document.getElementById('open-chat-btn');
+  const chatModal = document.getElementById('chat-modal');
+  const closeChatBtn = document.getElementById('close-chat-btn');
+
+  openChatBtn.addEventListener('click', function() {
+    chatModal.style.display = 'block';
+    // Fetch chat history every time modal opens
+    socket.emit('fetch_messages', { stokvel_id: stokvelId });
+  });
+  closeChatBtn.addEventListener('click', function() {
+    chatModal.style.display = 'none';
+  });
+
+  // Join the stokvel chat room (once)
+  socket.emit('join_stokvel_room', { stokvel_id: stokvelId });
+
+  // Display chat history
+  socket.on('chat_history', function(data) {
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.innerHTML = '';
+    data.messages.forEach(function(msg) {
+      appendMessage(msg);
+    });
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
+
+  // Display new incoming messages
+  socket.on('receive_message', function(msg) {
+    appendMessage(msg);
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
+
+  // Helper to append a message
+  function appendMessage(msg) {
+    const chatMessages = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'mb-1';
+    div.innerHTML = '<span style="font-weight:600; color:#222;">' + (msg.username || 'User') + ':</span> <span style="color:#222;">' + msg.message + '</span> <span style="font-size:0.9em;color:#555; margin-left:8px;">' + (msg.timestamp ? new Date(msg.timestamp).toLocaleString() : '') + '</span>';
+    chatMessages.appendChild(div);
+  }
+
+  // Send message
+  document.getElementById('chat-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (message) {
+      socket.emit('send_message', { stokvel_id: stokvelId, message: message });
+      input.value = '';
+    }
+  });
+</script>
 {% endblock %} 

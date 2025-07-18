@@ -1,0 +1,826 @@
+# Translation of messages for tn
+msgid ""
+msgstr ""
+"Project-Id-Version: KasiKash Admin Dashboard\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-14 11:50+0200\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language: tn\n"
+"Language-Team: tn <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+# Admin Settings
+#~ msgid "admin_settings"
+#~ msgstr "Dikgetho tsa Molaodi"
+
+#~ msgid "switch_to_user_view"
+#~ msgstr "Fetola go Ponelo ya Mosebelisi"
+
+#~ msgid "admin_settings_subtitle"
+#~ msgstr "Bea dikgetho tsa sisteme le tumello"
+
+#~ msgid "user_permissions"
+#~ msgstr "Tumello ya Basebelisi"
+
+#~ msgid "financial_controls"
+#~ msgstr "Taolo ya Tshelete"
+
+#~ msgid "notifications"
+#~ msgstr "Ditsebiso"
+
+#~ msgid "meetings_events"
+#~ msgstr "Dikopano & Ditiragalo"
+
+#~ msgid "data_security"
+#~ msgstr "Tshireletso ya Data"
+
+#~ msgid "languages"
+#~ msgstr "Maleme"
+
+#~ msgid "select_admin_language"
+#~ msgstr "Kgetha Leleme la Molaodi"
+
+#~ msgid "english"
+#~ msgstr "Senyesemane"
+
+#~ msgid "role_management"
+#~ msgstr "Taolo ya Sebopeho"
+
+#~ msgid "assign_roles_help"
+#~ msgstr "Nea dibopeho tsa taolo ya tumello"
+
+#~ msgid "admin_full_access"
+#~ msgstr "Molaodi - Kena ka Motheo"
+
+#~ msgid "loan_approval_permissions"
+#~ msgstr "Tumello ya Tumello ya Maletso"
+
+#~ msgid "choose_loan_approval_roles"
+#~ msgstr "Kgetha dibopeho tseo di kgonang go dumelela maletso"
+
+#~ msgid "adminstreasurerssecretaries"
+#~ msgstr "Balaodi, Baphethe Tshelete, Bangwadi"
+
+#~ msgid "audit_logs"
+#~ msgstr "Di-Log tsa Tekolo"
+
+#~ msgid "theme"
+#~ msgstr "Sehlogo:"
+
+#~ msgid "view_audit_logs_help"
+#~ msgstr "Bona mosebetsi wa sisteme le phetoho"
+
+#~ msgid "action"
+#~ msgstr "Tiro"
+
+#~ msgid "performed_by"
+#~ msgstr "E Dirilwe ke"
+
+#~ msgid "target"
+#~ msgstr "Mokgatho"
+
+#~ msgid "amount"
+#~ msgstr "Tekanyo"
+
+#~ msgid "date"
+#~ msgstr "Letsatsi"
+
+#~ msgid "cancel"
+#~ msgstr "Khansela"
+
+#~ msgid "save_settings"
+#~ msgstr "Boloka Dikgetho"
+
+#~ msgid "contribution_rules"
+#~ msgstr "Melao ya Ditlhabollo"
+
+#~ msgid "set_contribution_rules_help"
+#~ msgstr "Bea melao ya ditlhabollo tsa maloko"
+
+#~ msgid "monthly_amount"
+#~ msgstr "Tekanyo ya Kgwedi:"
+
+#~ msgid "R"
+#~ msgstr "R"
+
+#~ msgid "100"
+#~ msgstr "100"
+
+#~ msgid "late_penalty"
+#~ msgstr "Kotlo ya Go Bili:"
+
+#~ msgid "10%"
+#~ msgstr "10%"
+
+#~ msgid "grace_period"
+#~ msgstr "Nako ya Kgetho:"
+
+#~ msgid "7"
+#~ msgstr "7"
+
+#~ msgid "days"
+#~ msgstr "Matsatsi"
+
+#~ msgid "loan_settings"
+#~ msgstr "Dikgetho tsa Maletso"
+
+#~ msgid "configure_loan_settings_help"
+#~ msgstr "Bea dikgetho tsa maletso le melao"
+
+#~ msgid "max_loan_percent"
+#~ msgstr "Pesente ya Maletso a Motheo:"
+
+#~ msgid "50%"
+#~ msgstr "50%"
+
+#~ msgid "interest_rate"
+#~ msgstr "Tekanyo ya Tshelete:"
+
+#~ msgid "5%"
+#~ msgstr "5%"
+
+#~ msgid "repayment_period"
+#~ msgstr "Nako ya Go Busetsa:"
+
+#~ msgid "6 months"
+#~ msgstr "Dikgwedi tse 6"
+
+#~ msgid "withdrawal_approvals"
+#~ msgstr "Tumello ya Go Tshosa"
+
+#~ msgid "require_dual_approval_help"
+#~ msgstr "Nyaka tumello e mebedi ya go tshosa"
+
+#~ msgid "enable_dual_approval_for_withdrawals"
+#~ msgstr "Dumelela Tumello e Mebedi ya Go Tshosa"
+
+#~ msgid "recurring_meetings"
+#~ msgstr "Dikopano tsa Go Boela"
+
+#~ msgid "schedule_meetings_help"
+#~ msgstr "Bea dikopano tsa mehla"
+
+#~ msgid "meeting_frequency"
+#~ msgstr "Go Tswalana ga Dikopano:"
+
+#~ msgid "monthly"
+#~ msgstr "Ka kgwedi"
+
+#~ msgid "day_of_week"
+#~ msgstr "Letsatsi la Beke:"
+
+#~ msgid "monday"
+#~ msgstr "Mosupologo"
+
+#~ msgid "time"
+#~ msgstr "Nako:"
+
+#~ msgid "14:00"
+#~ msgstr "14:00"
+
+#~ msgid "send_automatic_reminders"
+#~ msgstr "Roma Ditsebiso tsa Boitsebiso"
+
+#~ msgid "attendance_tracking"
+#~ msgstr "Go Landa Go Ba Teng"
+
+#~ msgid "record_attendance_help"
+#~ msgstr "Ngwala go ba teng ga maloko dikopanong"
+
+#~ msgid "enable_attendance_tracking"
+#~ msgstr "Dumelela Go Landa Go Ba Teng"
+
+#~ msgid "absence_penalty"
+#~ msgstr "Kotlo ya Go Se Ba Teng:"
+
+#~ msgid "5after"
+#~ msgstr "5% Morago"
+
+#~ msgid "missed_meetings"
+#~ msgstr "Dikopano tse di Se Teng"
+
+#~ msgid "meeting"
+#~ msgstr "Kopano"
+
+#~ msgid "present"
+#~ msgstr "Teng"
+
+#~ msgid "absent"
+#~ msgstr "Ga a Teng"
+
+# Dashboard Header
+#~ msgid "Welcome, Admin 👋"
+#~ msgstr "Re a go amogela, Admin 👋"
+
+#~ msgid "Stokvel Admin Dashboard"
+#~ msgstr "Dashboard ya Botsamaisi ya Stokvel"
+
+# Dashboard Stats
+#~ msgid "Total Members"
+#~ msgstr "Maloko otlhe"
+
+#~ msgid "from last month"
+#~ msgstr "go tswa kgweding e e fetileng"
+
+#~ msgid "Active Loans"
+#~ msgstr "Dikadimo tse di tshelang"
+
+#~ msgid "pending approval"
+#~ msgstr "emetse tetlelelo"
+
+#~ msgid "Total Contributions"
+#~ msgstr "Dineelo tsotlhe"
+
+#~ msgid "KYC Pending"
+#~ msgstr "KYC e emetse"
+
+#~ msgid "urgent reviews"
+#~ msgstr "ditshekatsheko tse di potlakileng"
+
+# Quick Actions
+#~ msgid "Quick Actions"
+#~ msgstr "Ditiro tse di Potlakileng"
+
+#~ msgid "Manage Users"
+#~ msgstr "Laola Basebedisi"
+
+# Loan Approvals
+#~ msgid "Loan Approvals"
+#~ msgstr "Tetlelelo ya Dikadimo"
+
+#~ msgid "Virtual Rewards"
+#~ msgstr "Dikgaisano tsa Marangrang"
+
+#~ msgid "Generate Reports"
+#~ msgstr "Dira Dipego"
+
+# Charts
+#~ msgid "Financial Chart"
+#~ msgstr "Chate ya Ditsholego"
+
+#~ msgid "User Growth Chart"
+#~ msgstr "Chate ya Kgolo ya Basebedisi"
+
+# User Management
+#~ msgid "User Management"
+#~ msgstr "Botsamaisi jwa Basebedisi"
+
+#~ msgid ""
+#~ "View, add, edit, or suspend user "
+#~ "accounts with advanced filtering and "
+#~ "bulk operations."
+#~ msgstr ""
+#~ "Bona, tsenya, fetola kgotsa emisa "
+#~ "diakhaonto tsa basebedisi ka go sefa "
+#~ "go tseneletseng le ditiro tse dintsi."
+
+#~ msgid "Bulk Operations"
+#~ msgstr "Ditiro tse dintsi"
+
+#~ msgid ""
+#~ "Review and approve loan applications "
+#~ "with detailed financial analysis and "
+#~ "risk assessment."
+#~ msgstr ""
+#~ "Lekola le go amogela dikopo tsa "
+#~ "dikadimo ka tshekatsheko ya madi e "
+#~ "e tseneletseng le kotsi."
+
+#~ msgid "Review Applications"
+#~ msgstr "Lekola Dikopo"
+
+#~ msgid "Approval History"
+#~ msgstr "Hisitori ya Tetlelelo"
+
+# Financial Reports
+#~ msgid ""
+#~ "Generate comprehensive financial reports with"
+#~ " advanced analytics and export "
+#~ "capabilities."
+#~ msgstr ""
+#~ "Dira dipego tse di feletseng tsa "
+#~ "madi ka tshekatsheko e e tseneletseng"
+#~ " le bokgoni jwa go romela kwa "
+#~ "ntle."
+
+#~ msgid "Export Data"
+#~ msgstr "Romela Data"
+
+# Error Messages
+#~ msgid "Could not load users or stokvels."
+#~ msgstr "Ga e kgone go laisa basebedisi kgotsa stokvels."
+
+#~ msgid "manage_users"
+#~ msgstr "laola_basebedisi"
+
+#~ msgid "Here you can manage all users."
+#~ msgstr "Fano o ka laola basebedisi botlhe."
+
+#~ msgid "search username or email"
+#~ msgstr "batla leina la modirisi kgotsa imeile"
+
+#~ msgid "search"
+#~ msgstr "batla"
+
+#~ msgid "add_user"
+#~ msgstr "tsenya_modirisi"
+
+#~ msgid "email"
+#~ msgstr "imeile"
+
+#~ msgid "role"
+#~ msgstr "maikarabelo"
+
+#~ msgid "created_at"
+#~ msgstr "tlhamilwe_ka"
+
+#~ msgid "stokvel"
+#~ msgstr "stokvel"
+
+#~ msgid "actions"
+#~ msgstr "ditiro"
+
+#~ msgid "No users found."
+#~ msgstr "Ga go na basebedisi ba ba fitlhetsweng."
+
+#~ msgid "Here you can approve or reject loan applications."
+#~ msgstr "Fano o ka amogela kgotsa gana dikopo tsa dikadimo."
+
+#~ msgid "Filter by status:"
+#~ msgstr "Sefa ka seemo:"
+
+#~ msgid "Pending"
+#~ msgstr "E emetse"
+
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "Username"
+#~ msgstr "Leina la Modirisi"
+
+#~ msgid "Amount"
+#~ msgstr "Madi"
+
+#~ msgid "Status"
+#~ msgstr "Seemo"
+
+#~ msgid "Transaction Date"
+#~ msgstr "Letsatsi la Phetoho"
+
+#~ msgid "Comment"
+#~ msgstr "Tshwantsho"
+
+#~ msgid "Actions"
+#~ msgstr "Ditshwantsho"
+
+#~ msgid "No loans found for this status."
+#~ msgstr "Ga go na dikadimo tse di fitlhetsweng mo seemong seno."
+
+#~ msgid "Filter"
+#~ msgstr "Hlase"
+
+# Events Management
+#~ msgid "Events"
+#~ msgstr "Ditiro"
+
+#~ msgid "Here you can manage events."
+#~ msgstr "Mona o ka laola ditiro."
+
+#~ msgid "Select a Stokvel"
+#~ msgstr "Kgetha Stokvel"
+
+#~ msgid "Name"
+#~ msgstr "Leina"
+
+#~ msgid "Target Date"
+#~ msgstr "Letsatsi la Morero"
+
+#~ msgid "Description"
+#~ msgstr "Tlhaloso"
+
+#~ msgid "Send notification to all members of this stokvel"
+#~ msgstr "Romela tsebiso go maloko ka moka a stokvel ye"
+
+#~ msgid "Create Event"
+#~ msgstr "Hlama Tiro"
+
+#~ msgid "No events found."
+#~ msgstr "Ga go na ditiro tse di hweditsego."
+
+# Membership Plans
+#~ msgid "Membership Plans"
+#~ msgstr "Maano a Botshwaro"
+
+#~ msgid "Here you can manage membership plans."
+#~ msgstr "Mona o ka laola maano a botshwaro."
+
+#~ msgid "Search by plan name"
+#~ msgstr "Nyaka ka leina la morero"
+
+#~ msgid "Add Plan"
+#~ msgstr "Oketsa Morero"
+
+#~ msgid "Monthly Contribution"
+#~ msgstr "Tshepediso ya Kgwedi"
+
+#~ msgid "Target Amount"
+#~ msgstr "Tekanyo ya Morero"
+
+#~ msgid "Total Pool"
+#~ msgstr "Mokgatlho wa Motho"
+
+#~ msgid "No membership plans found."
+#~ msgstr "Ga go na maano a botshwaro a a hweditsego."
+
+# Admin Notifications
+#~ msgid "send_notification"
+#~ msgstr "romela_tebiso"
+
+#~ msgid "Notification Type"
+#~ msgstr "Mofuta wa Tebiso"
+
+#~ msgid "Send to Stokvel Members"
+#~ msgstr "Romela go Maloko a Stokvel"
+
+#~ msgid "urgent"
+#~ msgstr "ka pela"
+
+#~ msgid "message"
+#~ msgstr "molaetša"
+
+#~ msgid "Enter your notification message..."
+#~ msgstr "Tsenya molaetša wa gago wa tebiso..."
+
+#~ msgid "type"
+#~ msgstr "mofuta"
+
+#~ msgid "Admin Notification"
+#~ msgstr "Tebiso ya Taolo"
+
+#~ msgid "Send"
+#~ msgstr "Romela"
+
+#~ msgid "Admin Notifications"
+#~ msgstr "Ditsebiso tsa Taolo"
+
+#~ msgid "Here you can send notifications to users."
+#~ msgstr "Mona o ka romela ditsebiso go basebedisi."
+
+#~ msgid "Create Notification"
+#~ msgstr "Hlama Tebiso"
+
+#~ msgid "User ID"
+#~ msgstr "ID ya Mosebedisi"
+
+#~ msgid "No notifications found."
+#~ msgstr "Ga go na ditsebiso tse di hweditsego."
+
+# KYC Approvals
+#~ msgid "kyc_approvals"
+#~ msgstr "dumela_kyc"
+
+#~ msgid "Here you can approve or reject KYC submissions."
+#~ msgstr "Mona o ka dumela kgotsa gana ditlhaeletso tsa KYC."
+
+#~ msgid "id_document"
+#~ msgstr "tokomane_ya_identity"
+
+#~ msgid "proof_of_address"
+#~ msgstr "ponahalo_ya_adrese"
+
+#~ msgid "ID Document Status"
+#~ msgstr "Maemo a Tokomane ya Identity"
+
+#~ msgid "Proof of Address Status"
+#~ msgstr "Maemo a Ponahalo ya Adrese"
+
+#~ msgid "view"
+#~ msgstr "bona"
+
+#~ msgid "approve"
+#~ msgstr "dumela"
+
+#~ msgid "reject"
+#~ msgstr "gana"
+
+# Virtual Rewards Management
+#~ msgid "Virtual Rewards Management"
+#~ msgstr "Taolo ya Dikgetho tsa Virtual"
+
+#~ msgid ""
+#~ "Manage reward points, view user "
+#~ "balances, and distribute rewards to "
+#~ "users."
+#~ msgstr ""
+#~ "Laola dikgetho tsa dikgetho, bona dipalo"
+#~ " tsa basebedisi, le abela dikgetho go"
+#~ " basebedisi."
+
+#~ msgid "Overview"
+#~ msgstr "Kakaretso"
+
+#~ msgid "Analytics"
+#~ msgstr "Dinyakisiso"
+
+#~ msgid "Rules"
+#~ msgstr "Melao"
+
+#~ msgid "Users with Reward Cards"
+#~ msgstr "Basebedisi ba Dikarata tsa Dikgetho"
+
+#~ msgid "Total Reward Balance"
+#~ msgstr "Kakaretso ya Dipalo tsa Dikgetho"
+
+#~ msgid "Total Transactions"
+#~ msgstr "Kakaretso ya Dikgwebo"
+
+#~ msgid "Individual Reward Distribution"
+#~ msgstr "Kabo ya Dikgetho ya Mongwe le Mongwe"
+
+#~ msgid "User Email"
+#~ msgstr "Imeile ya Mosebedisi"
+
+#~ msgid "Reward Type"
+#~ msgstr "Mofuta wa Dikgetho"
+
+#~ msgid "Points"
+#~ msgstr "Dikgetho"
+
+#~ msgid "Reward description"
+#~ msgstr "Tlhaloso ya dikgetho"
+
+#~ msgid "Distribute Reward"
+#~ msgstr "Aba Dikgetho"
+
+#~ msgid "Bulk Reward Distribution"
+#~ msgstr "Kabo ya Dikgetho ka Kgolo"
+
+#~ msgid "User Filter"
+#~ msgstr "Sehlasehi sa Mosebedisi"
+
+#~ msgid "All Users"
+#~ msgstr "Basebedisi Ka moka"
+
+#~ msgid "Amount per User"
+#~ msgstr "Tekanyo ka Mosebedisi"
+
+#~ msgid "Bulk reward description"
+#~ msgstr "Tlhaloso ya dikgetho ka kgolo"
+
+#~ msgid "Bulk Distribute"
+#~ msgstr "Aba ka Kgolo"
+
+#~ msgid "Export Transactions (CSV)"
+#~ msgstr "Tswelletsa Dikgwebo (CSV)"
+
+#~ msgid "Export Transactions (Excel)"
+#~ msgstr "Tswelletsa Dikgwebo (Excel)"
+
+#~ msgid "Export Balances (CSV)"
+#~ msgstr "Tswelletsa Dipalo (CSV)"
+
+#~ msgid "Export Balances (Excel)"
+#~ msgstr "Tswelletsa Dipalo (Excel)"
+
+#~ msgid "User Reward Balances"
+#~ msgstr "Dipalo tsa Dikgetho tsa Basebedisi"
+
+#~ msgid "User"
+#~ msgstr "Mosebedisi"
+
+#~ msgid "Card Number"
+#~ msgstr "Nomoro ya Karete"
+
+#~ msgid "Balance"
+#~ msgstr "Palo"
+
+#~ msgid "Recent Reward Transactions"
+#~ msgstr "Dikgwebo tsa Dikgetho tsa Muva"
+
+#~ msgid "Date"
+#~ msgstr "Letsatsi"
+
+#~ msgid "Type"
+#~ msgstr "Mofuta"
+
+#~ msgid "Reward Analytics"
+#~ msgstr "Dinyakisiso tsa Dikgetho"
+
+#~ msgid "Comprehensive analytics and insights for your reward system."
+#~ msgstr ""
+#~ "Dinyakisiso tse kgolo le kutlwisiso "
+#~ "bakeng sa sisteme ya gago ya "
+#~ "dikgetho."
+
+#~ msgid "Months of Data"
+#~ msgstr "Dikgwedi tsa Data"
+
+#~ msgid "Top Earners Tracked"
+#~ msgstr "Ba Fumang Kgalo ba Latelwa"
+
+#~ msgid "Reward Types"
+#~ msgstr "Mefuta ya Dikgetho"
+
+#~ msgid "Monthly Reward Distribution"
+#~ msgstr "Kabo ya Dikgetho ya Kgwedi"
+
+#~ msgid "Top Reward Earners"
+#~ msgstr "Ba Fumang Dikgetho Kgalo"
+
+#~ msgid "Rank"
+#~ msgstr "Boemo"
+
+#~ msgid "Total Earned"
+#~ msgstr "Kakaretso ya Fumang"
+
+#~ msgid "Reward Type Distribution"
+#~ msgstr "Kabo ya Mofuta wa Dikgetho"
+
+#~ msgid "Reward Rules Configuration"
+#~ msgstr "Peakanyo ya Melao ya Dikgetho"
+
+#~ msgid ""
+#~ "Configure automatic reward triggers and "
+#~ "multipliers for your reward system."
+#~ msgstr ""
+#~ "Peaka dikgetho tsa go tswela ka "
+#~ "boyona le dikgetho bakeng sa sisteme "
+#~ "ya gago ya dikgetho."
+
+#~ msgid "Automatic Reward Rules"
+#~ msgstr "Melao ya Dikgetho ya go Tswela ka Boyona"
+
+#~ msgid "Contribution Multiplier"
+#~ msgstr "Kgetho ya Tshepediso"
+
+#~ msgid "How many reward points users earn per R1 contributed to stokvels."
+#~ msgstr ""
+#~ "Dikgetho tse kae tsa dikgetho tseo "
+#~ "basebedisi ba di fumang ka R1 e"
+#~ " nngwe le e nngwe eo ba e "
+#~ "tshepedisang go ma-stokvel."
+
+#~ msgid "Welcome Bonus"
+#~ msgstr "Kgetho ya Kamogelo"
+
+#~ msgid "Reward points given to new users when they join the platform."
+#~ msgstr ""
+#~ "Dikgetho tsa dikgetho tseo di abelwang"
+#~ " basebedisi ba mpsha fa ba kena "
+#~ "platformeng."
+
+#~ msgid "Referral Bonus"
+#~ msgstr "Kgetho ya Kgokagano"
+
+#~ msgid "Reward points given when a user successfully refers another user."
+#~ msgstr ""
+#~ "Dikgetho tsa dikgetho tseo di abelwang"
+#~ " fa mosebedisi a kgokaganya mosebedisi "
+#~ "yo mong ka katlego."
+
+#~ msgid "Monthly Bonus"
+#~ msgstr "Kgetho ya Kgwedi"
+
+#~ msgid "Monthly reward points given to active users who made contributions."
+#~ msgstr ""
+#~ "Dikgetho tsa dikgetho tsa kgwedi tseo"
+#~ " di abelwang basebedisi ba somago bao"
+#~ " ba dirileng tshepediso."
+
+#~ msgid "Event Attendance Bonus"
+#~ msgstr "Kgetho ya Tseno ya Ditiro"
+
+#~ msgid "Reward points given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Dikgetho tsa dikgetho tseo di abelwang"
+#~ " ka go tsenela ditiro tsa ma-"
+#~ "stokvel le dikopano."
+
+#~ msgid "Loan Payment Bonus"
+#~ msgstr "Kgetho ya Tefo ya Madi"
+
+#~ msgid "Reward points given for on-time loan payments."
+#~ msgstr "Dikgetho tsa dikgetho tseo di abelwang ka tefo ya madi ka nako."
+
+#~ msgid "Save Reward Rules"
+#~ msgstr "Boloka Melao ya Dikgetho"
+
+#~ msgid "How Reward Rules Work"
+#~ msgstr "Melao ya Dikgetho e Somaga jang"
+
+#~ msgid ""
+#~ "Contribution Multiplier: Users earn this "
+#~ "many points per R1 contributed. Set "
+#~ "to 1 for 1:1 ratio."
+#~ msgstr ""
+#~ "Kgetho ya Tshepediso: Basebedisi ba "
+#~ "fumana dikgetho tse ka tse ka R1"
+#~ " e nngwe le e nngwe eo ba "
+#~ "e tshepedisang. Beakanya go 1 bakeng "
+#~ "sa tekanyo ya 1:1."
+
+#~ msgid "Welcome Bonus: Automatically given to new users upon registration."
+#~ msgstr ""
+#~ "Kgetho ya Kamogelo: E abelwa ka "
+#~ "boyona basebedisi ba mpsha fa ba "
+#~ "ngodisa."
+
+#~ msgid ""
+#~ "Referral Bonus: Given when a user "
+#~ "successfully refers another user to the"
+#~ " platform."
+#~ msgstr ""
+#~ "Kgetho ya Kgokagano: E abelwa fa "
+#~ "mosebedisi a kgokaganya mosebedisi yo "
+#~ "mong platformeng ka katlego."
+
+#~ msgid ""
+#~ "Monthly Bonus: Given monthly to users"
+#~ " who made contributions in the "
+#~ "previous month."
+#~ msgstr ""
+#~ "Kgetho ya Kgwedi: E abelwa kgwedi "
+#~ "ka kgwedi go basebedisi bao ba "
+#~ "dirileng tshepediso kgweding e fetileng."
+
+#~ msgid "Event Attendance: Given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Tseno ya Ditiro: E abelwa ka go"
+#~ " tsenela ditiro tsa ma-stokvel le "
+#~ "dikopano."
+
+#~ msgid ""
+#~ "Loan Payment: Given for on-time "
+#~ "loan payments and good financial "
+#~ "behavior."
+#~ msgstr ""
+#~ "Tefo ya Madi: E abelwa ka tefo "
+#~ "ya madi ka nako le boitshwaro jo"
+#~ " botse jwa tsa tshelete."
+
+# Mafoko a masha a dikgetho tsa molaodi
+#~ msgid "data_export"
+#~ msgstr "Romela Data"
+
+#~ msgid "download_data_help"
+#~ msgstr "Laolla data ya gago jaaka faele ya CSV"
+
+#~ msgid "CSV"
+#~ msgstr "CSV"
+
+#~ msgid "two_factor_auth"
+#~ msgstr "Netefatso ya Dintlha tse Pedi (2FA)"
+
+#~ msgid "enable_2fa_help"
+#~ msgstr "Dumela netefatso ya dintlha tse pedi go sireletsa akhaonto ya gago"
+
+#~ msgid "require_2fa_for_admins"
+#~ msgstr "Batla 2FA go balaodi"
+
+#~ msgid "data_retention"
+#~ msgstr "Polokelo ya Data"
+
+#~ msgid "configure_data_retention_help"
+#~ msgstr "Bea nako ya go boloka histori ya ditransekšene"
+
+#~ msgid "keep_transaction_history_for:"
+#~ msgstr "Boloka histori ya ditransekšene bakeng sa:"
+
+msgid "Add New Payment Method"
+msgstr "Tsenya Mokgwa o Mosha wa Tefo"
+
+msgid "Payment Type"
+msgstr "Mofuta wa Tefo"
+
+msgid "Dashboard"
+msgstr "Letlapa la Taolo"
+
+msgid "Manage Users"
+msgstr "Laola Basebedisi"
+
+msgid "Loan Approvals"
+msgstr "Tumelelo ya Dikoloto"
+
+msgid "Events"
+msgstr "Ditiragalo"
+
+msgid "Membership Plans"
+msgstr "Dikgopolo tsa Botho"
+
+msgid "Notifications"
+msgstr "Ditshebetso"
+
+msgid "KYC Approvals"
+msgstr "Tumelelo ya KYC"
+
+msgid "Virtual Rewards"
+msgstr "Dikgothatso tsa Marang-rang"
+
+msgid "Logout"
+msgstr "Tswa"
+

@@ -1,20 +1,26 @@
 :root {
-    --primary-color: #00A651;  /* StokFella's green */
-    --secondary-color: #333333;
-    --accent-color: #00A651;
-    --background-color: #ffffff;
-    --text-color: #333333;
-    --border-color: #e0e0e0;
-    --success-color: #00A651;
-    --error-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
-    --light-gray: #f8f9fa;
-    --dark-gray: #343a40;
+    --primary-color: #60efff;  /* Admin blue */
+    --secondary-color: #22304a;  /* Admin dark blue */
+    --accent-color: #00ff87;  /* Admin green accent */
+    --background-color: #101c2c;  /* Admin dark background */
+    --text-color: #eaf6fb;  /* Admin light text */
+    --border-color: #3a4a6a;  /* Admin border color */
+    --success-color: #00ff87;  /* Admin green */
+    --error-color: #ff4e50;  /* Admin red */
+    --warning-color: #f9d423;  /* Admin yellow */
+    --info-color: #60efff;  /* Admin blue */
+    --light-gray: #1e3357;  /* Admin light gray */
+    --dark-gray: #101c2c;  /* Admin dark gray */
     --white: #ffffff;
     --black: #000000;
     --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
+    
+    /* Admin color variables */
+    --sb-lightblue: #e6f0fa;
+    --sb-white: #ffffff;
+    --sb-sidebar: #b3d4fc;
+    --sb-text: #222e3c;
 }
 
 body {
@@ -27,32 +33,32 @@ body {
 }
 
 .bg-nav{
-    background: var(--primary-color);  /* StokFella's green */
-    background: linear-gradient(to right, var(--primary-color), #008c45); /* Darker shade of green */
+    background: var(--primary-color);  /* Admin blue */
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color)); /* Admin gradient */
 }
 .body{
-    background: var(--white);
+    background: var(--background-color);
 }
 .page-bg{
-    background: var(--white);
+    background: var(--background-color);
 }
 
 .deep-purple{
     background: var(--primary-color);
-    background: linear-gradient(to right, var(--primary-color), #008c45);
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
 }
 
 .alive{
     background: var(--primary-color);
-    background: linear-gradient(to right, var(--primary-color), #008c45);
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
 }
 .citrus{
     background: var(--primary-color);
-    background: linear-gradient(to right, var(--primary-color), #008c45);
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
 }
 .green{
     background: var(--primary-color);
-    background: linear-gradient(to right, var(--primary-color), #008c45);
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
 }
 
 
@@ -113,6 +119,7 @@ input {
     margin: 10px 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     word-wrap: break-word;
+    color: var(--text-color);
 }
 
 .contact-sec .contact-ul i {
@@ -122,12 +129,12 @@ input {
   border-radius: 50%;
 }
 .contact-detail a {
-  color: #000;
+  color: var(--text-color);
   text-decoration: none;
 }
 
 .contact-sec .contact-ul li b:hover {
-  color: #f93;
+  color: var(--accent-color);
 }
 
 .contact-sec .contact-ul li .fa-location-dot {
@@ -153,7 +160,7 @@ input {
 .contact-detail span a {
   font-size: 20px;
   padding: 6px 12px;
-  color: #000;
+  color: var(--text-color);
   border-radius: 50%;
   margin: 0px 5px;
 }
@@ -162,7 +169,7 @@ input {
   border: 3px solid var(--primary-color);
 }
 .contact-detail span .fb:hover {
-  color: var(--white);
+  color: var(--background-color);
   background-color: var(--primary-color);
 }
 
@@ -171,7 +178,7 @@ input {
   border: 3px solid var(--primary-color);
 }
 .contact-detail span .insta:hover {
-  color: var(--white);
+  color: var(--background-color);
   background-color: var(--primary-color);
 }
 
@@ -180,7 +187,7 @@ input {
   border: 3px solid var(--primary-color);
 }
 .contact-detail span .twitter:hover {
-  color: var(--white);
+  color: var(--background-color);
   background-color: var(--primary-color);
 }
 
@@ -198,38 +205,39 @@ form.contFrm {
     padding: 0 20px;
     font-size: 16px;
     color: var(--text-color);
-    transition: var(--transition);
+    background-color: var(--secondary-color);
 }
 
 .inptFld:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.1);
+    box-shadow: 0 0 0 2px rgba(96, 239, 255, 0.2);
 }
 
 .contFrm textarea {
-  height: 75px;
-  padding-top: 5px;
+    height: 120px;
+    resize: vertical;
 }
+
 .inptBtn {
-    height: 50px;
-    border: 0;
-    background: var(--primary-color);
-    font-size: 14px;
-    color: var(--white);
-    margin: auto;
-    letter-spacing: 1px;
-    cursor: pointer;
     width: 100%;
-    max-width: 200px;
+    height: 50px;
+    background: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    border: none;
     border-radius: 8px;
+    color: var(--background-color);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
     transition: var(--transition);
 }
 
 .inptBtn:hover {
-    background: #008c45;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    background: var(--accent-color);
+    background: linear-gradient(to right, var(--accent-color), var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 255, 135, 0.3);
 }
 
 /* Responcive css Start */
@@ -443,104 +451,104 @@ form.contFrm {
 
 .btn {
     display: inline-block;
-    padding: 0.5rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    background-color: var(--primary-color);
-    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    color: var(--background-color);
     text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
-    font-weight: 500;
     text-align: center;
 }
 
 .btn:hover {
-    background-color: #008c45;  /* Darker shade of StokFella green */
-    transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    background: var(--accent-color);
+    background: linear-gradient(to right, var(--accent-color), var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 255, 135, 0.3);
+    color: var(--background-color);
+    text-decoration: none;
 }
 
 .btn-secondary {
-    background-color: var(--secondary-color);
-    color: var(--white);
-}
-
-.btn-secondary:hover {
-    background-color: #1a1a1a;
-}
-
-.card {
-    background: var(--white);
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    background: var(--secondary-color);
+    color: var(--text-color);
     border: 1px solid var(--border-color);
 }
 
+.btn-secondary:hover {
+    background: var(--light-gray);
+    color: var(--text-color);
+}
+
+.card {
+    background: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    color: var(--text-color);
+}
+
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: var(--text-color);
     font-weight: 500;
+    color: var(--text-color);
 }
 
 .form-control {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 1rem;
+    border-radius: 8px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
     transition: var(--transition);
 }
 
 .form-control:focus {
-    border-color: var(--primary-color);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(96, 239, 255, 0.2);
 }
 
 .navbar {
-    background-color: var(--white);
+    background: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
     box-shadow: var(--shadow);
-    padding: 1rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
 }
 
 .navbar-brand {
-    color: var(--primary-color);
+    color: var(--primary-color) !important;
+    font-weight: 700;
     font-size: 1.5rem;
-    font-weight: 600;
-    text-decoration: none;
 }
 
 .navbar-nav {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
+    margin-left: auto;
 }
 
 .nav-link {
-    color: var(--text-color);
-    text-decoration: none;
+    color: var(--text-color) !important;
     font-weight: 500;
     transition: var(--transition);
 }
 
 .nav-link:hover {
-    color: var(--primary-color);
+    color: var(--primary-color) !important;
 }
 
 .nav-link.active {
-    color: var(--primary-color);
-    font-weight: 600;
+    color: var(--primary-color) !important;
+    background-color: rgba(96, 239, 255, 0.1);
+    border-radius: 8px;
 }
 
 /* Pricing Section Styles */
@@ -619,4 +627,134 @@ form.contFrm {
     font-weight: 500;
     border-radius: 5px;
     margin-top: 20px;
+}
+
+select, .filter-select, .dropdown {
+    color: #222;
+    font-weight: 500;
+}
+
+/* Make dropdowns and autocomplete menus readable */
+select, .dropdown, .filter-select, .dropdown-menu, .autocomplete-menu, input[type='text'] {
+    background: #fff !important;
+    color: #111 !important;
+    font-weight: 500;
+}
+
+/* Light mode support for user interface */
+body.light-mode {
+    background: var(--sb-lightblue) !important;
+    color: var(--sb-text) !important;
+}
+
+.light-mode .card,
+.light-mode .form-control,
+.light-mode .btn,
+.light-mode .navbar {
+    background: var(--sb-white) !important;
+    color: var(--sb-text) !important;
+    border-color: var(--sb-sidebar) !important;
+}
+
+.light-mode .btn {
+    background: var(--sb-sidebar) !important;
+    color: var(--sb-text) !important;
+}
+
+.light-mode .btn:hover {
+    background: var(--sb-lightblue) !important;
+    color: var(--sb-text) !important;
+}
+
+.light-mode .navbar {
+    background: var(--sb-sidebar) !important;
+    color: var(--sb-text) !important;
+    border-bottom-color: var(--sb-lightblue) !important;
+}
+
+.light-mode .nav-link {
+    color: var(--sb-text) !important;
+}
+
+.light-mode .nav-link:hover,
+.light-mode .nav-link.active {
+    color: var(--sb-text) !important;
+    background-color: var(--sb-lightblue) !important;
+}
+
+.light-mode .navbar-brand {
+    color: var(--sb-text) !important;
+}
+
+/* Dark mode styling for all form elements */
+.dark-mode input[type="text"],
+.dark-mode input[type="email"],
+.dark-mode input[type="password"],
+.dark-mode input[type="number"],
+.dark-mode input[type="tel"],
+.dark-mode input[type="url"],
+.dark-mode input[type="search"],
+.dark-mode input[type="date"],
+.dark-mode input[type="time"],
+.dark-mode input[type="datetime-local"],
+.dark-mode textarea,
+.dark-mode select {
+    background: #22304a !important;
+    color: #fff !important;
+    border: 1px solid #3a4a6a !important;
+    border-radius: 8px;
+}
+
+/* Dark mode styling for dropdowns/selects */
+.dark-mode select {
+    background: #22304a !important;
+    color: #fff !important;
+}
+
+.dark-mode select option {
+    background: #22304a !important;
+    color: #fff !important;
+}
+
+/* Dark mode styling for textarea */
+.dark-mode textarea {
+    background: #22304a !important;
+    color: #fff !important;
+}
+
+/* Dark mode styling for input placeholders */
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+    color: #ccc !important;
+}
+
+/* Dark mode styling for focused elements */
+.dark-mode input:focus,
+.dark-mode textarea:focus,
+.dark-mode select:focus {
+    background: #2a3a5a !important;
+    color: #fff !important;
+    border-color: #4a6a9a !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 106, 154, 0.3);
+}
+
+/* For Chrome, Edge, Safari: force color of the time fields */
+.dark-mode input[type="time"]::-webkit-datetime-edit,
+.dark-mode input[type="time"]::-webkit-datetime-edit-hour-field,
+.dark-mode input[type="time"]::-webkit-datetime-edit-minute-field,
+.dark-mode input[type="time"]::-webkit-datetime-edit-second-field,
+.dark-mode input[type="time"]::-webkit-datetime-edit-ampm-field {
+    color: #fff !important;
+    background: #22304a !important;
+}
+
+/* For the clock icon (Chrome/Edge) */
+.dark-mode input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+/* For Firefox */
+.dark-mode input[type="time"] {
+    color-scheme: dark;
 }

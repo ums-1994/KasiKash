@@ -31,8 +31,9 @@ var layout = {
 
 var config = {responsive: true}
 
-Plotly.newPlot('myDiv', data, layout, config );
-
+document.addEventListener('DOMContentLoaded', function() {
+    Plotly.newPlot('myDiv', data, layout, config );
+});
 
 
 $(document).ready(function(){
@@ -49,15 +50,22 @@ function updateNotificationBadge() {
     const currentCount = badge ? parseInt(badge.textContent, 10) || 0 : 0;
 
     fetch('/notifications/count')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            const newCount = data.count;
+            const newCount = data.count || 0;
 
             if (badge) {
                 if (newCount > 0) {
                     badge.textContent = newCount;
+                    badge.classList.remove('hidden');
                     badge.style.display = 'flex';
                 } else {
+                    badge.classList.add('hidden');
                     badge.style.display = 'none';
                 }
             }
@@ -76,8 +84,17 @@ function updateNotificationBadge() {
         });
 }
 
-// Poll every 30 seconds
-setInterval(updateNotificationBadge, 30000);
+// Poll every 10 seconds instead of 30 for more responsive updates
+setInterval(updateNotificationBadge, 10000);
 
 // Run on page load
-document.addEventListener('DOMContentLoaded', updateNotificationBadge);
+document.addEventListener('DOMContentLoaded', function() {
+    updateNotificationBadge();
+    
+    // Also update when the page becomes visible (user switches back to tab)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            updateNotificationBadge();
+        }
+    });
+});

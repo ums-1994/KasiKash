@@ -48,3 +48,8 @@ body.lightmode, .lightmode .admin-main {
 .lightmode p[style*="#eaf6fb"], .lightmode p[style*='rgb(234,246,251)'] {
     color: #eaf6fb !important;
 }
+.lightmode select, .lightmode .filter-select, .lightmode .dropdown {
+    color: #222 !important;
+    font-weight: 600 !important;
+    background: #fff !important;
+}

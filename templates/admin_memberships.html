@@ -35,9 +35,9 @@
         <td>{{ plan[5] }}</td>
         <td class="flex gap-2 justify-center">
           <select class="border border-[#22304a] rounded-lg px-2 py-1 plan-dropdown" title="Preview only: No changes will be saved." data-current="{{ plan[1] }}">
-            <option {% if plan[1] == 'Silver' %}selected{% endif %}>Silver</option>
-            <option {% if plan[1] == 'Gold' %}selected{% endif %}>Gold</option>
-            <option {% if plan[1] == 'Platinum' %}selected{% endif %}>Platinum</option>
+            <option selected>Silver</option>
+            <option>Gold</option>
+            <option>Platinum</option>
           </select>
         </td>
       </tr>
@@ -52,6 +52,7 @@
       <button onclick="closeAddPlanModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-200 text-2xl">&times;</button>
       <h3 class="text-xl font-bold mb-4" style="color:#60efff;">Add Membership Plan</h3>
       <form method="POST" action="{{ url_for('admin.add_membership_plan') }}" class="space-y-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
           <label class="block font-semibold mb-1">Name</label>
           <input type="text" name="name" class="border border-[#22304a] rounded-lg px-4 py-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required placeholder="e.g. Gold, Silver, Platinum">
@@ -117,25 +118,25 @@ function openEditPlanModal(id, name, monthly, target, pool, createdAt) {
 function closeEditPlanModal() {
   document.getElementById('editPlanModal').classList.add('hidden');
 }
-function openViewPlanModal(id, name, monthly, target, pool, createdAt) {
-  var html = '';
-  html += `<li><strong>ID:</strong> ${id}</li>`;
-  html += `<li><strong>Name:</strong> ${name}</li>`;
-  html += `<li><strong>Monthly Contribution:</strong> ${monthly}</li>`;
-  html += `<li><strong>Target Amount:</strong> ${target}</li>`;
-  html += `<li><strong>Total Pool:</strong> ${pool}</li>`;
-  html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
-  document.getElementById('viewPlanDetails').innerHTML = html;
-  document.getElementById('viewPlanModal').classList.remove('hidden');
-}
+  function openViewPlanModal(id, name, monthly, target, pool, createdAt) {
+    var html = '';
+    html += `<li><strong>ID:</strong> ${id}</li>`;
+    html += `<li><strong>Name:</strong> ${name}</li>`;
+    html += `<li><strong>Monthly Contribution:</strong> ${monthly}</li>`;
+    html += `<li><strong>Target Amount:</strong> ${target}</li>`;
+    html += `<li><strong>Total Pool:</strong> ${pool}</li>`;
+    html += `<li><strong>Created At:</strong> ${createdAt}</li>`;
+    document.getElementById('viewPlanDetails').innerHTML = html;
+    document.getElementById('viewPlanModal').classList.remove('hidden');
+  }
 function closeViewPlanModal() {
   document.getElementById('viewPlanModal').classList.add('hidden');
 }
-document.querySelectorAll('.plan-dropdown').forEach(function(drop) {
-  drop.addEventListener('change', function() {
-    alert('Preview only: No changes will be saved.');
-    this.value = this.getAttribute('data-current') || this.value;
+  document.querySelectorAll('.plan-dropdown').forEach(function(drop) {
+    drop.addEventListener('change', function() {
+      alert('Preview only: No changes will be saved.');
+      this.value = this.getAttribute('data-current') || this.value;
+    });
   });
-});
 </script>
 {% endblock %}

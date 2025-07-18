@@ -90,8 +90,8 @@
     <!-- Make Contribution Modal -->
     <div id="makeContributionModal" class="hidden modal-backdrop" style="background-color: rgba(10, 10, 20, 0.8); backdrop-filter: blur(8px);">
         <div class="glass-card" style="width: 100%; max-width: 420px; margin: 2rem auto;">
-            <form action="{{ url_for('make_contribution') }}" method="POST" style="display: flex; flex-direction: column;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <form id="contributionForm" action="{{ url_for('make_contribution') }}" method="POST" style="display: flex; flex-direction: column;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <h3 class="accent" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">Make a Contribution</h3>
                 <div style="display: flex; flex-direction: column; gap: 1.2rem;">
                     <div>
@@ -113,7 +113,7 @@
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
                     <button type="button" onclick="closeModal('makeContributionModal')" class="btn-secondary">Cancel</button>
-                    <button type="submit" class="btn-primary">Submit Contribution</button>
+                    <button type="submit" id="submitBtn" class="btn-primary" onclick="this.disabled=true; this.textContent='Processing...';">Submit Contribution</button>
                 </div>
             </form>
         </div>
@@ -155,6 +155,27 @@
                 });
             }
         });
+
+        // Prevent double form submission
+        const form = document.getElementById('contributionForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = document.getElementById('submitBtn');
+                if (submitBtn.disabled) {
+                    e.preventDefault();
+                    return false;
+                }
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing...';
+            });
+        }
+
+        // Update notification count after form submission
+        if (form) {
+            form.addEventListener('submit', function() {
+                setTimeout(updateNotificationCount, 1000);
+            });
+        }
     });
 
     function downloadStatement() {
@@ -165,6 +186,26 @@
             return;
         }
         window.location.href = `/stokvel/${stokvelId}/statement/download?period=${period}`;
+    }
+
+    // Update notification count after successful contribution
+    function updateNotificationCount() {
+        fetch('/notifications/count')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notification-badge');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.classList.remove('hidden');
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.classList.add('hidden');
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(err => console.error('Error updating notification count:', err));
     }
 </script>
 {% endblock %} 

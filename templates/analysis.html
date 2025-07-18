@@ -12,6 +12,16 @@
         <title>Expense Tracker - Analysis</title>
     </head>
     <body class="body">
+     <div class="bg-nav d-flex flex-column flex-md-row align-items-center pb-0 mb-0 border-bottom">
+      <h5 class="m-3 mr-md-auto font-weight-normal"><a href="/" style="text-decoration : none">Expense Tracker - {{ user_name }}</a></h5>
+      <nav class="m-2 my-md-0 mr-md-3">
+        <a class="py-2 m-2 text-dark" href="/home">Home</a>
+        <a class="py-2 m-2 text-dark" href="/analysis">Analysis</a>
+        <a class="py-2 m-2 text-dark" href="/profile">Profile</a>
+        <a class="py-2 m-2 text-dark" href="/contact">Contact Us</a>
+      </nav>
+         <a class="btn m-2 btn-outline-warning" href="/logout">Logout</a>
+    </div>
      <div class="container mt-4">
        <a href="{{ url_for('home') }}" class="btn btn-link text-primary mb-3"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</a>
          <div class="row my-3">
@@ -48,7 +58,6 @@
          </div>
      </div>
 
-
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -57,26 +66,22 @@
      <script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
      <script src='https://cdn.plot.ly/plotly-latest.min.js'></script> <!-- Plotly CDN -->
      <script src="{{ url_for('static', filename='js/script.js') }}"></script> <!-- Local JS -->
-     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
      <script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag/dist/js/multi-select-tag.js"></script>
+      <script type='text/javascript'>
+        var bar = {{bar | safe}};
+        var pie = {{pie | safe}};
+        var line_graph = {{line | safe}};
+        var scatter_graph = {{scatter | safe}};
+        var heat_graph = {{heat | safe}};
+        var month_graph = {{month_bar | safe}};
+        var sun_graph = {{sun | safe}};
+        Plotly.plot('pie',pie,{});
+        Plotly.plot('stack_bar',bar,{});
+        Plotly.plot('line',line_graph,{});
+        Plotly.plot('scatter',scatter_graph,{});
+        Plotly.plot('heat',heat_graph,{});
+        Plotly.plot('month_bar',month_graph,{});
+        Plotly.plot('sun',sun_graph,{});
+      </script>
     </body>
-    <script type='text/javascript'>
-      var bar = {{bar | safe}};
-      var pie = {{pie | safe}};
-      var line_graph = {{line | safe}};
-      var scatter_graph = {{scatter | safe}};
-      var heat_graph = {{heat | safe}};
-      var month_graph = {{month_bar | safe}};
-      var sun_graph = {{sun | safe}};
-
-<!--Plotly.plot('div_id',data,{});-->
-      Plotly.plot('pie',pie,{});
-      Plotly.plot('stack_bar',bar,{});
-      Plotly.plot('line',line_graph,{});
-      Plotly.plot('scatter',scatter_graph,{});
-      Plotly.plot('heat',heat_graph,{});
-      Plotly.plot('month_bar',month_graph,{});
-      Plotly.plot('sun',sun_graph,{});
-
-    </script>
 </html>

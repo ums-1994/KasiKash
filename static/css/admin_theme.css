@@ -1,69 +1,161 @@
-/* admin_theme.css: Shared admin color theme */
-body.lightmode {
-  background: #F9FAFB !important;
-  color: #1F2937 !important;
+:root {
+  --sb-lightblue: #e6f0fa;
+  --sb-white: #ffffff;
+  --sb-sidebar: #b3d4fc;
+  --sb-text: #222e3c;
 }
-.lightmode .sidebar {
-  background: #F0F4F8 !important;
-  color: #4B5563 !important;
+
+/* Simple light mode: just light blue and white */
+body.light-mode, .light-mode {
+  background: var(--sb-lightblue) !important;
+  color: var(--sb-text) !important;
 }
-.lightmode .admin-banner,
-.lightmode .admin-dashboard-banner {
-  background: #FFFFFF !important;
-  color: #111827 !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  border: 1px solid #E5E7EB !important;
+
+.light-mode .admin-card,
+.light-mode .settings-section,
+.light-mode .settings-card,
+.light-mode .dashboard-charts,
+.light-mode .quick-actions-panel,
+.light-mode .stat-card,
+.light-mode .chart-card {
+  background: #b3d4fc !important;
+  color: var(--sb-text) !important;
+  border-radius: 12px !important;
+  border: 1px solid #e3eaf2 !important;
+  box-shadow: none !important;
 }
-.lightmode .admin-banner h1,
-.lightmode .admin-dashboard-banner h1 {
-  color: #111827 !important;
+
+.light-mode .form-control,
+.light-mode input,
+.light-mode select,
+.light-mode textarea {
+  background: var(--sb-white) !important;
+  color: var(--sb-text) !important;
+  border-color: #b3d4fc !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
 }
-.lightmode .admin-banner p,
-.lightmode .admin-dashboard-banner p {
-  color: #6B7280 !important;
+
+.light-mode .btn,
+.light-mode button {
+  background: #b3d4fc !important;
+  color: var(--sb-text) !important;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: background 0.2s;
 }
-.lightmode .admin-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2.5rem;
-  margin-top: 0.5rem;
+.light-mode .btn:hover,
+.light-mode button:hover {
+  background: #e6f0fa !important;
 }
-.lightmode .admin-card {
-  background: #FFFFFF !important;
-  color: #1F2937 !important;
-  border: 1px solid #E5E7EB !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
-  padding: 2.2rem 1.7rem 1.7rem 1.7rem;
-  text-align: center;
-  transition: transform 0.18s, box-shadow 0.18s, border 0.18s, background 0.18s;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
+
+.light-mode .sidebar,
+.light-mode nav {
+  background: var(--sb-sidebar) !important;
+  color: var(--sb-text) !important;
+  border-right: 1.5px solid #e6f0fa !important;
 }
-.lightmode .admin-card:hover {
-  transform: translateY(-8px) scale(1.04);
-  box-shadow: 0 8px 32px rgba(35,41,70,0.16);
-  border: 2px solid #60efff;
-  background: linear-gradient(120deg, #22304a 0%, #60efff 100%);
+
+.light-mode .settings-tab.active {
+  background: #b3d4fc !important;
+  color: var(--sb-text) !important;
+  border-bottom-color: #b3d4fc !important;
 }
-.lightmode .admin-card i {
-  font-size: 2.7rem;
-  color: #60efff;
-  margin-bottom: 1.2rem;
+
+.light-mode .input-group-text {
+  background: var(--sb-white) !important;
+  color: var(--sb-text) !important;
+  border-color: #b3d4fc !important;
 }
-.lightmode .admin-card h5 {
-  color: #111827 !important;
+
+.light-mode input[type="range"],
+.light-mode .form-range {
+  background: var(--sb-white) !important;
 }
-.lightmode .admin-card p {
-  color: #6B7280 !important;
+.light-mode input[type="range"]::-webkit-slider-thumb, .light-mode .form-range::-webkit-slider-thumb {
+  background: #b3d4fc !important;
+  border: 2px solid #b3d4fc !important;
 }
-.lightmode .btn, .lightmode .admin-card > .btn {
-  background: #3B82F6 !important;
+.light-mode input[type="range"]::-moz-range-thumb, .light-mode .form-range::-moz-range-thumb {
+  background: #b3d4fc !important;
+  border: 2px solid #b3d4fc !important;
+}
+.light-mode input[type="range"]::-ms-thumb, .light-mode .form-range::-ms-thumb {
+  background: #b3d4fc !important;
+  border: 2px solid #b3d4fc !important;
+}
+
+.light-mode, .light-mode .admin-main, .light-mode .bg-white, .light-mode .rounded-lg, .light-mode .shadow-lg, .light-mode .p-4, .light-mode .w-full, .light-mode .relative, .light-mode .mb-2, .light-mode label, .light-mode th, .light-mode td, .light-mode h1, .light-mode h3, .light-mode p, .light-mode ul, .light-mode li, .light-mode input, .light-mode select, .light-mode textarea, .light-mode button {
+  color: var(--sb-text) !important;
+}
+
+select, .form-select, .plan-dropdown, option {
+  background-color: #222e3c !important;
+  color: #fff !important;
+  border-color: #22304a !important;
+}
+select:focus, .form-select:focus, .plan-dropdown:focus {
+  background-color: #2a3b4d !important;
   color: #fff !important;
 }
-.lightmode .btn:hover {
-  background: #2563EB !important;
+option {
+  background-color: #222e3c !important;
+  color: #fff !important;
 }
-.lightmode .highlight {
-  background: #93C5FD !important;
+
+input[type="number"], input[type="text"], textarea, .form-control[type="number"], .form-control[type="text"], textarea.form-control {
+  background-color: #222e3c !important;
+  color: #fff !important;
+  border-color: #22304a !important;
+}
+input[type="number"]:focus, input[type="text"]:focus, textarea:focus, .form-control[type="number"]:focus, .form-control[type="text"]:focus, textarea.form-control:focus {
+  background-color: #2a3b4d !important;
+  color: #fff !important;
+}
+input[type="range"], .form-range {
+  background: #222e3c !important;
+  border-radius: 8px;
+  height: 6px;
+}
+input[type="range"]::-webkit-slider-thumb, .form-range::-webkit-slider-thumb {
+  background: #60efff !important;
+  border: 2px solid #22304a !important;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb, .form-range::-moz-range-thumb {
+  background: #60efff !important;
+  border: 2px solid #22304a !important;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+input[type="range"]::-ms-thumb, .form-range::-ms-thumb {
+  background: #60efff !important;
+  border: 2px solid #22304a !important;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+input[type="range"]:focus, .form-range:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #60efff44;
+}
+input[type="range"]::-webkit-slider-runnable-track, .form-range::-webkit-slider-runnable-track {
+  background: #2a3b4d !important;
+  height: 6px;
+  border-radius: 8px;
+}
+input[type="range"]::-ms-fill-lower, input[type="range"]::-ms-fill-upper {
+  background: #2a3b4d !important;
+}
+input[type="range"]::-moz-range-track, .form-range::-moz-range-track {
+  background: #2a3b4d !important;
+  height: 6px;
+  border-radius: 8px;
 }

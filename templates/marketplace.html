@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+  <div class="container mx-auto py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+      <!-- Header Section -->
+      <div class="text-center mb-12">
+        <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-4 tracking-tight">
+          Rewards Marketplace
+        </h1>
+        <p class="text-xl text-gray-300 font-light">Redeem your points for amazing rewards</p>
+        <div class="mt-6 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 inline-block">
+          <span class="text-sm text-gray-300">Your Balance:</span>
+          <span class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 ml-3">{{ balance }} points</span>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-8">
+            {% for category, message in messages %}
+              <div class="p-6 rounded-2xl backdrop-blur-sm border border-white/10 {% if category == 'success' %}bg-emerald-500/20 text-emerald-200{% elif category == 'danger' %}bg-red-500/20 text-red-200{% else %}bg-blue-500/20 text-blue-200{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <!-- Voucher Section -->
+      <div class="mb-12">
+        <div class="flex items-center mb-8">
+          <div class="w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-white mb-2">Instant Vouchers</h2>
+            <p class="text-lg text-gray-300">Get your voucher codes immediately after purchase!</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {% for item in items %}
+            {% if 'voucher' in item.name.lower() or 'airtime' in item.name.lower() or 'electricity' in item.name.lower() or 'data' in item.name.lower() %}
+              <div class="group bg-white/5 backdrop-blur-sm rounded-2xl shadow-xl border border-white/10 hover:scale-105 transition-all duration-300 overflow-hidden">
+                <div class="bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 p-6 text-white relative">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-pulse"></div>
+                  <div class="flex items-center justify-between relative z-10">
+                    <div class="flex items-center">
+                      <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-xl font-bold drop-shadow-lg">{{ item.name }}</h3>
+                        <p class="text-sm opacity-90 font-medium">{{ item.description }}</p>
+                      </div>
+                    </div>
+                    <span class="px-4 py-2 bg-emerald-500 text-white text-sm font-bold rounded-full shadow-lg">Instant</span>
+                  </div>
+                </div>
+                
+                <div class="p-6">
+                  <div class="flex items-center justify-between mb-6">
+                    <span class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">{{ item.price }} pts</span>
+                  </div>
+                  
+                  <form method="post" action="/rewards/marketplace/buy/{{ item.id }}" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="flex items-center space-x-3">
+                      <label for="quantity-{{ item.id }}" class="text-sm font-bold text-white">Quantity:</label>
+                      <input type="number" id="quantity-{{ item.id }}" name="quantity" value="1" min="1" max="10" 
+                             class="w-20 px-3 py-2 text-sm bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    {% if 'airtime' in item.name.lower() or 'data' in item.name.lower() %}
+                    <div class="space-y-3">
+                      <label for="network-{{ item.id }}" class="block text-sm font-bold text-white">Network:</label>
+                      <select id="network-{{ item.id }}" name="network" required 
+                              class="w-full px-4 py-3 text-sm bg-white border border-white/20 rounded-xl text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="" class="bg-white text-black">Select Network</option>
+                        <option value="vodacom" class="bg-white text-black">Vodacom</option>
+                        <option value="mtn" class="bg-white text-black">MTN</option>
+                        <option value="cell_c" class="bg-white text-black">Cell C</option>
+                        <option value="telkom" class="bg-white text-black">Telkom</option>
+                        <option value="rain" class="bg-white text-black">Rain</option>
+                      </select>
+                    </div>
+                    {% endif %}
+                    
+                    {% if 'transport' in item.name.lower() %}
+                    <div class="space-y-4">
+                      <div>
+                        <label for="transport-company-{{ item.id }}" class="block text-sm font-bold text-white">Transport Company:</label>
+                        <select id="transport-company-{{ item.id }}" name="transport_company" required 
+                                class="w-full px-4 py-3 text-sm bg-white border border-white/20 rounded-xl text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                          <option value="" class="bg-white text-black">Select Company</option>
+                          <option value="metrobus" class="bg-white text-black">Metrobus</option>
+                          <option value="putco" class="bg-white text-black">Putco</option>
+                          <option value="rea_vaya" class="bg-white text-black">Rea Vaya</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="card-number-{{ item.id }}" class="block text-sm font-bold text-white">Card Number:</label>
+                        <input type="text" id="card-number-{{ item.id }}" name="card_number" required
+                               class="w-full px-4 py-3 text-sm bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter your transport card number">
+                      </div>
+                      <div>
+                        <label for="amount-{{ item.id }}" class="block text-sm font-bold text-white">Amount (R):</label>
+                        <input type="number" id="amount-{{ item.id }}" name="custom_amount" min="50" step="10" required
+                               class="w-full px-4 py-3 text-sm bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter amount (min R50)">
+                        <p class="text-xs text-gray-400 mt-2">Minimum amount: R50</p>
+                      </div>
+                    </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 flex items-center justify-center font-bold shadow-lg hover:scale-105">
+                      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                      </svg>
+                      Get Voucher Now
+                    </button>
+                  </form>
+                  
+                  <div class="mt-4 p-4 bg-blue-500/20 backdrop-blur-sm rounded-xl border border-blue-500/30">
+                    <p class="text-xs text-blue-200 flex items-center">
+                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Voucher code will be shown immediately after purchase
+                    </p>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Other Items Section -->
+      <div class="mb-12">
+        <div class="flex items-center mb-8">
+          <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-white mb-2">Other Rewards</h2>
+            <p class="text-lg text-gray-300">Physical rewards and special offers</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {% for item in items %}
+            {% if 'voucher' not in item.name.lower() and 'airtime' not in item.name.lower() and 'electricity' not in item.name.lower() and 'data' not in item.name.lower() %}
+              <div class="group bg-white/5 backdrop-blur-sm rounded-2xl shadow-xl border border-white/10 hover:scale-105 transition-all duration-300 overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-6 text-white relative">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-pulse"></div>
+                  <div class="flex items-center justify-between relative z-10">
+                    <div class="flex items-center">
+                      <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-xl font-bold drop-shadow-lg">{{ item.name }}</h3>
+                        <p class="text-sm opacity-90 font-medium">{{ item.description }}</p>
+                      </div>
+                    </div>
+                    <span class="px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-full shadow-lg">Pending</span>
+                  </div>
+                </div>
+                
+                <div class="p-6">
+                  <div class="flex items-center justify-between mb-6">
+                    <span class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">{{ item.price }} pts</span>
+                  </div>
+                  
+                  <form method="post" action="/rewards/marketplace/buy/{{ item.id }}" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="flex items-center space-x-3">
+                      <label for="quantity-{{ item.id }}" class="text-sm font-bold text-white">Quantity:</label>
+                      <input type="number" id="quantity-{{ item.id }}" name="quantity" value="1" min="1" max="10" 
+                             class="w-20 px-3 py-2 text-sm bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+                    
+                    <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all duration-300 flex items-center justify-center font-bold shadow-lg hover:scale-105">
+                      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
+                      </svg>
+                      Purchase
+                    </button>
+          </form>
+                  
+                  <div class="mt-4 p-4 bg-amber-500/20 backdrop-blur-sm rounded-xl border border-amber-500/30">
+                    <p class="text-xs text-amber-200 flex items-center">
+                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Order will be processed within 24 hours
+                    </p>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="text-center space-x-6">
+        <a href="{{ url_for('rewards.marketplace_orders') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:scale-105">
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+          View My Orders
+        </a>
+        <a href="{{ url_for('rewards.view_vouchers') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 shadow-lg hover:scale-105">
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+          </svg>
+          My Vouchers
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

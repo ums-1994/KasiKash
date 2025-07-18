@@ -1,0 +1,65 @@
+{% extends 'admin_base.html' %}
+{% block title %}{{ _('Financial Reports') }}{% endblock %}
+{% block admin_content %}
+<div class="p-8">
+    <!-- Header Card -->
+    <div class="bg-gradient-to-r from-green-400 to-cyan-400 rounded-xl p-6 flex items-center justify-between mb-8 shadow-lg" style="min-height: 90px;">
+        <div>
+            <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                {{ _('Financial Reports') }}
+                <span class="inline-block align-middle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M4 4.75A.75.75 0 0 1 4.75 4h14.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 4.75Zm0 4A.75.75 0 0 1 4.75 8h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 8.75Zm0 4A.75.75 0 0 1 4.75 12h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 4 12.75Zm0 4A.75.75 0 0 1 4.75 16h3.5a.75.75 0 0 1 0 1.5h-3.5A.75.75 0 0 1 4 16.75Z"/></svg>
+                </span>
+            </h1>
+            <p class="text-lg text-white mt-2">{{ _('Generate comprehensive financial reports with advanced analytics and export options.') }}</p>
+        </div>
+    </div>
+    <!-- Financial Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-xl p-6 shadow text-white">
+        <div class="text-lg font-semibold mb-2">{{ _('Total Contributions') }}</div>
+        <div class="text-2xl font-bold">R {{ '{:,.2f}'.format(financial_data.total_contributions or 0) }}</div>
+      </div>
+      <div class="bg-gradient-to-r from-pink-500 to-yellow-400 rounded-xl p-6 shadow text-white">
+        <div class="text-lg font-semibold mb-2">{{ _('Total Payouts') }}</div>
+        <div class="text-2xl font-bold">R {{ '{:,.2f}'.format(financial_data.total_withdrawals or 0) }}</div>
+      </div>
+      <div class="bg-gradient-to-r from-green-500 to-blue-400 rounded-xl p-6 shadow text-white">
+        <div class="text-lg font-semibold mb-2">{{ _('Current Balance') }}</div>
+        <div class="text-2xl font-bold">R {{ '{:,.2f}'.format(financial_data.current_balance or 0) }}</div>
+      </div>
+    </div>
+    <!-- Stokvel Balances Table -->
+    <div class="bg-white bg-opacity-10 rounded-xl shadow-lg p-6 mb-8" style="backdrop-filter: blur(8px);">
+      <h2 class="text-xl font-semibold mb-4 text-blue-200">{{ _('Stokvel Balances') }}</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left text-blue-100">
+          <thead>
+            <tr class="bg-blue-900 bg-opacity-60">
+              <th class="py-2 px-4">{{ _('Stokvel') }}</th>
+              <th class="py-2 px-4">{{ _('Balance') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for stokvel in financial_data.stokvel_balances %}
+            <tr class="hover:bg-blue-800 bg-opacity-30 transition">
+              <td class="py-2 px-4">{{ stokvel[0] }}</td>
+              <td class="py-2 px-4">R {{ '{:,.2f}'.format(stokvel[1] or 0) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="2" class="py-2 px-4 text-center">{{ _('No stokvels found.') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="mt-6 flex gap-4">
+        <a href="{{ url_for('admin.export_financial_report_pdf') }}" class="bg-gradient-to-r from-yellow-400 to-pink-400 text-white font-semibold px-6 py-2 rounded shadow hover:scale-105 transition-transform">
+            {{ _('Export PDF') }}
+        </a>
+    </div>
+    <!-- Remove the chart section and Chart.js code -->
+</div>
+{% endblock %}

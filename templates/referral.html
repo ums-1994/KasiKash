@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container mt-5">
+    <h2>Refer a Friend</h2>
+    <p>Share your referral link and earn rewards when your friends join!</p>
+    <input type="text" class="form-control mb-3" value="{{ referral_link }}" readonly onclick="this.select();document.execCommand('copy');">
+    <small>Click the box to copy your referral link.</small>
+    <hr>
+    <h4>Or invite by email</h4>
+    {% if message %}
+      <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+    <form method="post" action="{{ url_for('referral') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group mb-2">
+        <label for="email">Friend's Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+      </div>
+      <div class="form-group mb-2">
+        <label for="stokvel_id">Select Stokvel</label>
+        <select class="form-control" id="stokvel_id" name="stokvel_id" required>
+          <option value="">-- Select a Stokvel --</option>
+          {% for stokvel in stokvels %}
+            <option value="{{ stokvel[0] }}" {% if selected_stokvel_id and selected_stokvel_id|string == stokvel[0]|string %}selected{% endif %}>{{ stokvel[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Send Invite</button>
+    </form>
+  </div>
+{% endblock %} 

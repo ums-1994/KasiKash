@@ -4,13 +4,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <style>
     .admin-settings-title {
-        color: #00e0ff !important; /* Neon blue */
+        color: var(--accent) !important;
         font-weight: 700;
         letter-spacing: 0.5px;
         text-shadow: 0 2px 8px rgba(0,224,255,0.10);
     }
     .admin-settings-subtitle {
-        color: #00e0ff !important;
+        color: var(--accent) !important;
         font-size: 1.08rem;
         font-weight: 500;
         text-shadow: 0 1px 6px rgba(0,224,255,0.10);
@@ -19,14 +19,14 @@
         max-width: 1200px;
         margin: 30px auto;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #eaf6fb !important;
-        background: #181c2f;
+        color: var(--text) !important;
+        background: var(--card-bg) !important;
         border-radius: 12px;
         box-shadow: 0 2px 16px rgba(0,224,255,0.04);
     }
     .settings-tabs {
-        border-bottom: 1px solid #222b3a;
-        background: #181c2f;
+        border-bottom: 1px solid var(--border);
+        background: var(--card-bg) !important;
     }
     .settings-tab {
         padding: 12px 20px;
@@ -34,27 +34,27 @@
         border-bottom: 3px solid transparent;
         transition: all 0.3s;
         font-weight: 500;
-        color: #00e0ff !important;
+        color: var(--accent) !important;
         background: transparent;
         border-radius: 8px 8px 0 0;
         margin-right: 6px;
     }
     .settings-tab.active {
-        color: #181c2f !important;
-        background: #00e0ff !important;
-        border-bottom-color: #00e0ff;
+        color: var(--card-bg) !important;
+        background: var(--accent) !important;
+        border-bottom-color: var(--accent);
         box-shadow: 0 2px 8px rgba(0,224,255,0.10);
     }
     .settings-tab:hover {
-        color: #181c2f !important;
-        background: #00e0ff !important;
-        border-bottom-color: #00e0ff;
+        color: var(--card-bg) !important;
+        background: var(--accent) !important;
+        border-bottom-color: var(--accent);
     }
     .settings-section, .settings-card {
-        color: #eaf6fb !important; /* Ensure card text is light */
+        color: var(--text) !important;
     }
     .settings-section {
-        background: #222b3a;
+        background: var(--card-bg) !important;
         padding: 25px;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -63,25 +63,25 @@
     .setting-item {
         margin-bottom: 25px;
         padding-bottom: 15px;
-        border-bottom: 1px dashed #333;
+        border-bottom: 1px dashed var(--border);
     }
     .setting-label {
         font-weight: 500;
         margin-bottom: 10px;
-        color: #eaf6fb !important;
+        color: var(--text) !important;
     }
     .setting-controls {
         display: flex;
         flex-wrap: wrap;
         gap: 15px;
         align-items: center;
-        color: #eaf6fb !important;
+        color: var(--text) !important;
     }
     .control-group {
         display: flex;
         align-items: center;
         gap: 8px;
-        color: #eaf6fb !important;
+        color: var(--text) !important;
     }
     .form-range {
         width: 200px;
@@ -93,17 +93,17 @@
     }
     .audit-log-table th {
         font-weight: 500;
-        background-color: #2c2f3f;
-        color: #eaf6fb !important;
+        background-color: var(--sidebar-bg) !important;
+        color: var(--text) !important;
     }
     .settings-card {
-        border: 1px solid #2c2f3f;
+        border: 1px solid var(--border);
         border-radius: 8px;
         margin-bottom: 24px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.03);
         padding: 18px 22px 10px 22px;
-        background: #222b3a;
-        color: #eaf6fb !important;
+        background: var(--card-bg) !important;
+        color: var(--text) !important;
     }
     .settings-card h4 {
         font-size: 1.15rem;
@@ -111,24 +111,24 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        color: #00e0ff !important;
+        color: var(--accent) !important;
     }
     .settings-card .help-text {
         font-size: 0.97rem;
-        color: #b0c4de !important;
+        color: var(--subtext) !important;
         margin-bottom: 12px;
     }
     .form-select, .form-control, .input-group-text {
-        color: #222 !important;
+        color: var(--text) !important;
         background: #fff;
     }
     .form-check-label {
-        color: #eaf6fb !important;
+        color: var(--text) !important;
     }
     .switch-user-label {
-        background: #181c2f;
-        color: #00e0ff !important;
-        border: 2px solid #00e0ff;
+        background: var(--card-bg) !important;
+        color: var(--accent) !important;
+        border: 2px solid var(--accent);
         border-radius: 20px;
         padding: 6px 18px 6px 12px;
         font-weight: 600;
@@ -140,12 +140,12 @@
         transition: background 0.2s, color 0.2s, border 0.2s;
     }
     #switchToUserView:checked + .switch-user-label {
-        background: #00e0ff;
-        color: #181c2f !important;
-        border-color: #00e0ff;
+        background: var(--accent) !important;
+        color: var(--card-bg) !important;
+        border-color: var(--accent);
     }
     #switchToUserView {
-        accent-color: #00e0ff;
+        accent-color: var(--accent);
         width: 2.2em;
         height: 1.2em;
     }
@@ -179,10 +179,10 @@
             </div>
         </div>
     </div>
-    <p class="admin-settings-subtitle">Configure the most important controls for your stokvel platform below.</p>
+    <p class="admin-settings-subtitle">Configure your admin settings below.</p>
     <div class="d-flex settings-tabs mb-4">
         <div class="settings-tab active" data-tab="user-permissions">
-            <i class="bi bi-people"></i> User & Permissions
+            <i class="bi bi-people"></i> User Permissions
         </div>
         <div class="settings-tab" data-tab="financial">
             <i class="bi bi-cash-coin"></i> Financial Controls
@@ -194,7 +194,7 @@
             <i class="bi bi-calendar-event"></i> Meetings & Events
         </div>
         <div class="settings-tab" data-tab="security">
-            <i class="bi bi-lock"></i> Data & Security
+            <i class="bi bi-lock"></i> Data Security
         </div>
     </div>
     <div id="settings-content">
@@ -202,37 +202,38 @@
         <div class="settings-section" id="user-permissions">
             <div class="settings-card mb-3">
                 <h4><i class="bi bi-translate"></i> Languages</h4>
-                <div class="help-text">Select your preferred language for the admin dashboard.</div>
+                <div class="help-text">Select the admin interface language.</div>
                 <div class="setting-controls">
-                    <select class="form-select" name="language" style="width: 220px;">
+                    <select class="form-select" id="admin-language-select" name="language" style="width: 220px; color: #000;">
                         <option value="en" {% if default_settings.language == 'en' %}selected{% endif %}>English</option>
-                        <option value="zu" {% if default_settings.language == 'zu' %}selected{% endif %}>isiZulu</option>
-                        <option value="xh" {% if default_settings.language == 'xh' %}selected{% endif %}>isiXhosa</option>
+                        <option value="zu" {% if default_settings.language == 'zu' %}selected{% endif %}>Zulu</option>
+                        <option value="xh" {% if default_settings.language == 'xh' %}selected{% endif %}>Xhosa</option>
                         <option value="af" {% if default_settings.language == 'af' %}selected{% endif %}>Afrikaans</option>
                         <option value="st" {% if default_settings.language == 'st' %}selected{% endif %}>Sesotho</option>
                         <option value="ts" {% if default_settings.language == 'ts' %}selected{% endif %}>Xitsonga</option>
                         <option value="tn" {% if default_settings.language == 'tn' %}selected{% endif %}>Setswana</option>
-                        <option value="ss" {% if default_settings.language == 'ss' %}selected{% endif %}>siSwati</option>
+                        <option value="ss" {% if default_settings.language == 'ss' %}selected{% endif %}>Siswati</option>
                         <option value="ve" {% if default_settings.language == 've' %}selected{% endif %}>Tshivenda</option>
-                        <option value="nr" {% if default_settings.language == 'nr' %}selected{% endif %}>isiNdebele</option>
+                        <option value="nr" {% if default_settings.language == 'nr' %}selected{% endif %}>Ndebele</option>
+                        <option value="nso" {% if default_settings.language == 'nso' %}selected{% endif %}>Northern Sotho</option>
                     </select>
                 </div>
             </div>
             <div class="settings-card">
                 <h4><i class="bi bi-person-badge"></i> Role Management</h4>
-                <div class="help-text">Assign roles (Admin, Treasurer, Secretary, Member) with specific permissions for each user.</div>
+                <div class="help-text">Assign roles to users to control their access.</div>
                 <div class="setting-controls">
                     <select class="form-select" name="role_management" style="width: 250px;">
-                        <option value="admin" {% if default_settings.role_management == 'admin' %}selected{% endif %}>Admin (Full access)</option>
-                        <option value="treasurer" {% if default_settings.role_management == 'treasurer' %}selected{% endif %}>Treasurer (Financial access)</option>
-                        <option value="secretary" {% if default_settings.role_management == 'secretary' %}selected{% endif %}>Secretary (Meeting management)</option>
-                        <option value="member" {% if default_settings.role_management == 'member' %}selected{% endif %}>Member (Limited access)</option>
+                        <option value="admin" {% if default_settings.role_management == 'admin' %}selected{% endif %}>Admin Full Access</option>
+                        <option value="treasurer" {% if default_settings.role_management == 'treasurer' %}selected{% endif %}>Treasurer Financial Access</option>
+                        <option value="secretary" {% if default_settings.role_management == 'secretary' %}selected{% endif %}>Secretary Meeting Management</option>
+                        <option value="member" {% if default_settings.role_management == 'member' %}selected{% endif %}>Member Limited Access</option>
                     </select>
                 </div>
             </div>
             <div class="settings-card">
                 <h4><i class="bi bi-hand-thumbs-up"></i> Loan Approval Permissions</h4>
-                <div class="help-text">Choose which roles can approve or reject loan requests.</div>
+                <div class="help-text">Choose which roles have permission to approve loans.</div>
                 <div class="setting-controls">
                     <select class="form-select" name="loan_approval_roles" multiple style="width: 100%;">
                         <option value="admin" {% if 'admin' in default_settings.loan_approval_roles %}selected{% endif %}>Admins</option>
@@ -242,8 +243,16 @@
                 </div>
             </div>
             <div class="settings-card">
-                <h4><i class="bi bi-journal-text"></i> Audit Logs</h4>
-                <div class="help-text">View a log of key admin actions for transparency and accountability.</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4><i class="bi bi-journal-text"></i> Audit Logs</h4>
+                    <div class="theme-toggle-settings" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.9rem; color: #6b7280;">Theme:</span>
+                        <button class="btn btn-outline-primary btn-sm" id="settingsThemeToggle" title="Toggle Light/Dark Mode">
+                            <i class="fas fa-moon" id="settingsThemeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="help-text">View and manage system audit logs.</div>
                 <div class="table-responsive">
                     <table class="table audit-log-table">
                         <thead>
@@ -274,7 +283,7 @@
         <div class="settings-section d-none" id="financial">
             <div class="settings-card">
                 <h4><i class="bi bi-cash-stack"></i> Contribution Rules</h4>
-                <div class="help-text">Set monthly contribution amounts and late payment penalties for all members.</div>
+                <div class="help-text">Set rules for member contributions.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="control-group">
                         <label>Monthly Amount:</label>
@@ -297,10 +306,10 @@
             </div>
             <div class="settings-card">
                 <h4><i class="bi bi-currency-exchange"></i> Loan Settings</h4>
-                <div class="help-text">Configure max loan amount, interest rate, and repayment period for members.</div>
+                <div class="help-text">Configure loan interest rates and repayment periods.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="control-group">
-                        <label>Max Loan (% of contributions):</label>
+                        <label>Max Loan Percent:</label>
                         <input type="range" class="form-range" name="max_loan_percent" min="10" max="100" value="{{ default_settings.max_loan_percent }}">
                         <span>{{ default_settings.max_loan_percent }}%</span>
                     </div>
@@ -318,11 +327,11 @@
             </div>
             <div class="settings-card">
                 <h4><i class="bi bi-shield-check"></i> Withdrawal Approvals</h4>
-                <div class="help-text">Require two or more admins to approve large withdrawals for extra security.</div>
+                <div class="help-text">Require dual approval for member withdrawals.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="withdrawalApproval" checked>
-                        <label class="form-check-label" for="withdrawalApproval">Enable dual approval for withdrawals over</label>
+                        <label class="form-check-label" for="withdrawalApproval">Enable Dual Approval for Withdrawals</label>
                     </div>
                     <div class="input-group" style="width: 150px;">
                         <span class="input-group-text">R</span>
@@ -335,13 +344,13 @@
         <div class="settings-section d-none" id="meetings">
             <div class="settings-card">
                 <h4><i class="bi bi-calendar-week"></i> Recurring Meetings</h4>
-                <div class="help-text">Schedule regular meetings and send reminders to all members.</div>
+                <div class="help-text">Schedule and manage recurring meetings.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="control-group">
                         <label>Meeting Frequency:</label>
                         <select class="form-select" name="meeting_frequency" style="width: 150px;">
                             <option value="weekly" {% if default_settings.meeting_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
-                            <option value="biweekly" {% if default_settings.meeting_frequency == 'biweekly' %}selected{% endif %}>Bi-weekly</option>
+                            <option value="biweekly" {% if default_settings.meeting_frequency == 'biweekly' %}selected{% endif %}>Biweekly</option>
                             <option value="monthly" {% if default_settings.meeting_frequency == 'monthly' %}selected{% endif %}>Monthly</option>
                         </select>
                     </div>
@@ -363,17 +372,17 @@
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="meeting_reminders" id="meetingReminders" {% if default_settings.meeting_reminders %}checked{% endif %}>
-                        <label class="form-check-label" for="meetingReminders">Send automatic reminders</label>
+                        <label class="form-check-label" for="meetingReminders">Send Automatic Reminders</label>
                     </div>
                 </div>
             </div>
             <div class="settings-card">
                 <h4><i class="bi bi-person-check"></i> Attendance Tracking</h4>
-                <div class="help-text">Record meeting attendance and apply penalties for absences.</div>
+                <div class="help-text">Record and manage member attendance.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="attendanceTracking" checked>
-                        <label class="form-check-label" for="attendanceTracking">Enable attendance tracking</label>
+                        <label class="form-check-label" for="attendanceTracking">Enable Attendance Tracking</label>
                     </div>
                     <div class="control-group">
                         <label>Absence Penalty:</label>
@@ -383,7 +392,7 @@
                         </div>
                         <span>after</span>
                         <input type="number" class="form-control" style="width: 70px;" value="3">
-                        <span>missed meetings</span>
+                        <span>missed_meetings</span>
                     </div>
                 </div>
                 <div class="mt-3">
@@ -414,7 +423,7 @@
         <div class="settings-section d-none" id="security">
             <div class="settings-card">
                 <h4><i class="bi bi-download"></i> Data Export</h4>
-                <div class="help-text">Download member lists and transaction history for backup or reporting.</div>
+                <div class="help-text">Download member and transaction data.</div>
                 <div class="setting-controls">
                     <form id="member-export-form" method="GET" action="{{ url_for('admin.export_members') }}" style="display:inline;">
                         <input type="hidden" name="format" value="csv">
@@ -432,12 +441,12 @@
                 </div>
             </div>
             <div class="settings-card">
-                <h4><i class="bi bi-shield-lock"></i> Two-Factor Authentication (2FA)</h4>
-                <div class="help-text">Enable 2FA for admin accounts to enhance security.</div>
+                <h4><i class="bi bi-shield-lock"></i> Two Factor Authentication</h4>
+                <div class="help-text">Enable two-factor authentication for admin users.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="enable_2fa" id="enable2FA" {% if default_settings.enable_2fa %}checked{% endif %}>
-                        <label class="form-check-label" for="enable2FA">Require 2FA for all admin logins</label>
+                        <label class="form-check-label" for="enable2FA">Require 2FA for Admins</label>
                     </div>
                     {% if default_settings.enable_2fa %}
                     <div class="mt-2">
@@ -452,14 +461,14 @@
             </div>
             <div class="settings-card">
                 <h4><i class="bi bi-archive"></i> Data Retention</h4>
-                <div class="help-text">Configure how long to keep historical records for compliance and reporting.</div>
+                <div class="help-text">Configure how long data is kept.</div>
                 <div class="setting-controls flex-column align-items-start">
                     <div class="control-group">
-                        <label>Keep transaction history for:</label>
+                        <label>Keep Transaction History For:</label>
                         <select class="form-select" name="data_retention" style="width: 150px;">
-                            <option value="1" {% if default_settings.data_retention == '1' %}selected{% endif %}>1 year</option>
-                            <option value="3" {% if default_settings.data_retention == '3' %}selected{% endif %}>3 years</option>
-                            <option value="5" {% if default_settings.data_retention == '5' %}selected{% endif %}>5 years</option>
+                            <option value="1" {% if default_settings.data_retention == '1' %}selected{% endif %}>1 Year</option>
+                            <option value="3" {% if default_settings.data_retention == '3' %}selected{% endif %}>3 Years</option>
+                            <option value="5" {% if default_settings.data_retention == '5' %}selected{% endif %}>5 Years</option>
                             <option value="forever" {% if default_settings.data_retention == 'forever' %}selected{% endif %}>Indefinitely</option>
                         </select>
                     </div>
@@ -511,5 +520,53 @@
             });
         });
     });
+        // Settings page theme toggle functionality
+        const settingsThemeToggle = document.getElementById('settingsThemeToggle');
+        const settingsThemeIcon = document.getElementById('settingsThemeIcon');
+        
+        // Sync with global theme
+        function updateSettingsThemeIcon() {
+            const isLightMode = document.body.classList.contains('light-mode');
+            settingsThemeIcon.className = isLightMode ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        // Initialize settings theme icon
+        updateSettingsThemeIcon();
+        
+        // Settings theme toggle
+        settingsThemeToggle.addEventListener('click', function() {
+            const body = document.body;
+            const globalThemeToggle = document.getElementById('themeToggle');
+            const globalThemeIcon = document.getElementById('themeIcon');
+            
+            if (body.classList.contains('light-mode')) {
+                // Switch to dark mode
+                body.classList.remove('light-mode');
+                localStorage.setItem('adminTheme', 'dark');
+                if (globalThemeIcon) {
+                    globalThemeIcon.className = 'fas fa-moon';
+                }
+            } else {
+                // Switch to light mode
+                body.classList.add('light-mode');
+                localStorage.setItem('adminTheme', 'light');
+                if (globalThemeIcon) {
+                    globalThemeIcon.className = 'fas fa-sun';
+                }
+            }
+            
+            updateSettingsThemeIcon();
+        });
+        
+        // Listen for global theme changes
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'adminTheme') {
+                updateSettingsThemeIcon();
+            }
+        });
+    function changeAdminLanguage() {
+        var lang = document.getElementById('admin-language-select').value;
+        window.location.href = '/admin/set_language?lang=' + lang;
+    }
 </script>
 {% endblock %}

@@ -1,0 +1,810 @@
+# Translation of messages for ss
+msgid ""
+msgstr ""
+"Project-Id-Version: KasiKash Admin Dashboard\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-14 11:50+0200\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language: ss\n"
+"Language-Team: ss <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+# Admin Settings
+#~ msgid "admin_settings"
+#~ msgstr "Tinhlelo ta Mlawuli"
+
+#~ msgid "switch_to_user_view"
+#~ msgstr "Shintsha Ekuboneni Komsebenti"
+
+#~ msgid "admin_settings_subtitle"
+#~ msgstr "Hlela tinhlelo tesistimu nemvume"
+
+#~ msgid "user_permissions"
+#~ msgstr "Imvume Yabasebenti"
+
+#~ msgid "financial_controls"
+#~ msgstr "Kulawula Imali"
+
+#~ msgid "notifications"
+#~ msgstr "Tindzaba"
+
+#~ msgid "meetings_events"
+#~ msgstr "Tihlangano & Tintfo"
+
+#~ msgid "data_security"
+#~ msgstr "Kuvikela Data"
+
+#~ msgid "languages"
+#~ msgstr "Tilwimi"
+
+#~ msgid "select_admin_language"
+#~ msgstr "Khetsa Lulwimi Lwemlawuli"
+
+#~ msgid "english"
+#~ msgstr "SiNgisi"
+
+#~ msgid "role_management"
+#~ msgstr "Kulawula Indima"
+
+#~ msgid "assign_roles_help"
+#~ msgstr "Nika indima kulawula imvume"
+
+#~ msgid "admin_full_access"
+#~ msgstr "Mlawuli - Kufinyelela Lokuphelele"
+
+#~ msgid "loan_approval_permissions"
+#~ msgstr "Imvume Yekugunyazwa Kwemalimboleko"
+
+#~ msgid "choose_loan_approval_roles"
+#~ msgstr "Khetsa indima lengagunyaza imalimboleko"
+
+#~ msgid "adminstreasurerssecretaries"
+#~ msgstr "Balamlawuli, Baphethe Imali, Bangcweti"
+
+#~ msgid "audit_logs"
+#~ msgstr "Ama-Log Ekuhlola"
+
+#~ msgid "theme"
+#~ msgstr "Indikimba:"
+
+#~ msgid "view_audit_logs_help"
+#~ msgstr "Bheka umsebenti wesistimu nekushintja"
+
+#~ msgid "action"
+#~ msgstr "Sento"
+
+#~ msgid "performed_by"
+#~ msgstr "Kwenziwe Ngu"
+
+#~ msgid "target"
+#~ msgstr "Ithagethi"
+
+#~ msgid "amount"
+#~ msgstr "Inani"
+
+#~ msgid "date"
+#~ msgstr "Lilanga"
+
+#~ msgid "cancel"
+#~ msgstr "Khansela"
+
+#~ msgid "save_settings"
+#~ msgstr "Londoloza Tinhlelo"
+
+#~ msgid "contribution_rules"
+#~ msgstr "Imitsetfo Yekunikela"
+
+#~ msgid "set_contribution_rules_help"
+#~ msgstr "Seta imitsetfo yekunikela kwemalunga"
+
+#~ msgid "monthly_amount"
+#~ msgstr "Inani Lenyanga:"
+
+#~ msgid "R"
+#~ msgstr "R"
+
+#~ msgid "100"
+#~ msgstr "100"
+
+#~ msgid "late_penalty"
+#~ msgstr "Inhlawulo Yekubili:"
+
+#~ msgid "10%"
+#~ msgstr "10%"
+
+#~ msgid "grace_period"
+#~ msgstr "Sikhatsi Sothando:"
+
+#~ msgid "7"
+#~ msgstr "7"
+
+#~ msgid "days"
+#~ msgstr "Emalanga"
+
+#~ msgid "loan_settings"
+#~ msgstr "Tinhlelo Temalimboleko"
+
+#~ msgid "configure_loan_settings_help"
+#~ msgstr "Hlela emapharamitha emalimboleko nemitsetfo"
+
+#~ msgid "max_loan_percent"
+#~ msgstr "Ipesenti Leliphezulu Lemalimboleko:"
+
+#~ msgid "50%"
+#~ msgstr "50%"
+
+#~ msgid "interest_rate"
+#~ msgstr "Ilinga Lemali:"
+
+#~ msgid "5%"
+#~ msgstr "5%"
+
+#~ msgid "repayment_period"
+#~ msgstr "Sikhatsi Sekubuyisela:"
+
+#~ msgid "6 months"
+#~ msgstr "Tinyanga Leti-6"
+
+#~ msgid "withdrawal_approvals"
+#~ msgstr "Kuvumela Kukhipha"
+
+#~ msgid "require_dual_approval_help"
+#~ msgstr "Kudinga kuvumela lokubili kukhipha"
+
+#~ msgid "enable_dual_approval_for_withdrawals"
+#~ msgstr "Vumela Kuvumela Lokubili Kukhipha"
+
+#~ msgid "recurring_meetings"
+#~ msgstr "Tihlangano Letiphindaphindako"
+
+#~ msgid "schedule_meetings_help"
+#~ msgstr "Hlela tihlangano letivamile"
+
+#~ msgid "meeting_frequency"
+#~ msgstr "Kuvama Kwetihlangano:"
+
+#~ msgid "monthly"
+#~ msgstr "Ngenyanga"
+
+#~ msgid "day_of_week"
+#~ msgstr "Lilanga Lesonto:"
+
+#~ msgid "monday"
+#~ msgstr "UMsombuluko"
+
+#~ msgid "time"
+#~ msgstr "Sikhatsi:"
+
+#~ msgid "14:00"
+#~ msgstr "14:00"
+
+#~ msgid "send_automatic_reminders"
+#~ msgstr "Thumela Ema-Log Ekuzenzakalela"
+
+#~ msgid "attendance_tracking"
+#~ msgstr "Kulandela Kuba Khona"
+
+#~ msgid "record_attendance_help"
+#~ msgstr "Bhalisa kuba khona kwemalunga etihlanganweni"
+
+#~ msgid "enable_attendance_tracking"
+#~ msgstr "Vumela Kulandela Kuba Khona"
+
+#~ msgid "absence_penalty"
+#~ msgstr "Inhlawulo Yekungabi Khona:"
+
+#~ msgid "5after"
+#~ msgstr "5% Ngemuva"
+
+#~ msgid "missed_meetings"
+#~ msgstr "Tihlangano Letikhonakele"
+
+#~ msgid "meeting"
+#~ msgstr "Tihlangano"
+
+#~ msgid "present"
+#~ msgstr "Kuba Khona"
+
+#~ msgid "absent"
+#~ msgstr "Akekho"
+
+# Dashboard Header
+#~ msgid "Welcome, Admin 👋"
+#~ msgstr "Sawubona, Admin 👋"
+
+#~ msgid "Stokvel Admin Dashboard"
+#~ msgstr "Dashboard ya Botsamaisi ya Stokvel"
+
+# Dashboard Stats
+#~ msgid "Total Members"
+#~ msgstr "Malunga lonkhe"
+
+#~ msgid "from last month"
+#~ msgstr "kusukela inyanga ledlule"
+
+#~ msgid "Active Loans"
+#~ msgstr "Timali letibolekako letisebentako"
+
+#~ msgid "pending approval"
+#~ msgstr "elindzele kuvunywa"
+
+#~ msgid "Total Contributions"
+#~ msgstr "Timali letifakako tonkhe"
+
+#~ msgid "KYC Pending"
+#~ msgstr "KYC Ilindzele"
+
+#~ msgid "urgent reviews"
+#~ msgstr "kubuyeketwa lokubalulekile"
+
+# Quick Actions
+#~ msgid "Quick Actions"
+#~ msgstr "Tentfo Letikhawuleza"
+
+#~ msgid "Manage Users"
+#~ msgstr "Lawula Basebenti"
+
+# Loan Approvals
+#~ msgid "Loan Approvals"
+#~ msgstr "Kuvunywa Kwetimali Letibolekako"
+
+#~ msgid "Virtual Rewards"
+#~ msgstr "Imivuzo Yedijithali"
+
+#~ msgid "Generate Reports"
+#~ msgstr "Dala Imibiko"
+
+# Charts
+#~ msgid "Financial Chart"
+#~ msgstr "Ishadi Letimali"
+
+#~ msgid "User Growth Chart"
+#~ msgstr "Ishadi Lokukhula Kwabasebenti"
+
+# User Management
+#~ msgid "User Management"
+#~ msgstr "Kulawula Basebenti"
+
+#~ msgid ""
+#~ "View, add, edit, or suspend user "
+#~ "accounts with advanced filtering and "
+#~ "bulk operations."
+#~ msgstr ""
+#~ "Bona, engeza, hlela, noma misa ema-"
+#~ "akhawunti abasebenti ngokuhlunga lokuthuthukile "
+#~ "nokusebenta lokubanzi."
+
+#~ msgid "Bulk Operations"
+#~ msgstr "Tentfo Tebanzi"
+
+#~ msgid ""
+#~ "Review and approve loan applications "
+#~ "with detailed financial analysis and "
+#~ "risk assessment."
+#~ msgstr ""
+#~ "Buyekeza futsi uvumele ticelo tetimali "
+#~ "letibolekako ngokuhlaziya kwetimali lokuningiliziwe"
+#~ " nekuhlola bungoti."
+
+#~ msgid "Review Applications"
+#~ msgstr "Buyekeza Ticelo"
+
+#~ msgid "Approval History"
+#~ msgstr "Umlando Wokuvunywa"
+
+# Financial Reports
+#~ msgid ""
+#~ "Generate comprehensive financial reports with"
+#~ " advanced analytics and export "
+#~ "capabilities."
+#~ msgstr ""
+#~ "Dala imibiko yetimali lephelele ngokuhlaziya"
+#~ " lokuthuthukile nemandla ekukhipha."
+
+#~ msgid "Export Data"
+#~ msgstr "Khipha Idatha"
+
+# Error Messages
+#~ msgid "Could not load users or stokvels."
+#~ msgstr "Ayikwazanga kulayisha basebenti noma stokvels."
+
+#~ msgid "manage_users"
+#~ msgstr "lawula_basebenti"
+
+#~ msgid "Here you can manage all users."
+#~ msgstr "Lapha ungakwazi kulawula bonkhe basebenti."
+
+#~ msgid "search username or email"
+#~ msgstr "sesha libito lomsebenti noma i-imeyili"
+
+#~ msgid "search"
+#~ msgstr "sesha"
+
+#~ msgid "add_user"
+#~ msgstr "engeza_umsebenti"
+
+#~ msgid "email"
+#~ msgstr "i-imeyili"
+
+#~ msgid "role"
+#~ msgstr "indima"
+
+#~ msgid "created_at"
+#~ msgstr "kwenziwe_nga"
+
+#~ msgid "stokvel"
+#~ msgstr "stokvel"
+
+#~ msgid "actions"
+#~ msgstr "tentfo"
+
+#~ msgid "No users found."
+#~ msgstr "Akukho basebenti labatholakale."
+
+#~ msgid "Here you can approve or reject loan applications."
+#~ msgstr "Lapha ungakwazi ukuvumela noma ukwenqaba ticelo tetimali letibolekako."
+
+#~ msgid "Filter by status:"
+#~ msgstr "Hlunga ngesimo:"
+
+#~ msgid "Pending"
+#~ msgstr "Ilindzele"
+
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "Username"
+#~ msgstr "Libito Lomsebenti"
+
+#~ msgid "Amount"
+#~ msgstr "Inani"
+
+#~ msgid "Status"
+#~ msgstr "Simo"
+
+#~ msgid "Transaction Date"
+#~ msgstr "Lilanga Lokwenziwa"
+
+#~ msgid "Comment"
+#~ msgstr "Ukuphawula"
+
+#~ msgid "Actions"
+#~ msgstr "Tentfo"
+
+#~ msgid "No loans found for this status."
+#~ msgstr "Akukho mali ebolekako etholakale kulesi simo."
+
+#~ msgid "Filter"
+#~ msgstr "Hlunga"
+
+# Events Management
+#~ msgid "Events"
+#~ msgstr "Imicimbi"
+
+#~ msgid "Here you can manage events."
+#~ msgstr "Lapha ungaphatha imicimbi."
+
+#~ msgid "Select a Stokvel"
+#~ msgstr "Khetha i-Stokvel"
+
+#~ msgid "Name"
+#~ msgstr "Libito"
+
+#~ msgid "Target Date"
+#~ msgstr "Lilanga Lelihlosiwe"
+
+#~ msgid "Description"
+#~ msgstr "Incazelo"
+
+#~ msgid "Send notification to all members of this stokvel"
+#~ msgstr "Thumela isaziso kubo bonke emalunga ale stokvel"
+
+#~ msgid "Create Event"
+#~ msgstr "Dala Umcimbi"
+
+#~ msgid "No events found."
+#~ msgstr "Ayikho imicimbi etholakele."
+
+# Membership Plans
+#~ msgid "Membership Plans"
+#~ msgstr "Amacebo Ebulungu"
+
+#~ msgid "Here you can manage membership plans."
+#~ msgstr "Lapha ungaphatha amacebo ebulungu."
+
+#~ msgid "Search by plan name"
+#~ msgstr "Sesha ngegama lecebo"
+
+#~ msgid "Add Plan"
+#~ msgstr "Engeza Icebo"
+
+#~ msgid "Monthly Contribution"
+#~ msgstr "Umnikelo Wenyanga"
+
+#~ msgid "Target Amount"
+#~ msgstr "Inani Lelihlosiwe"
+
+#~ msgid "Total Pool"
+#~ msgstr "Isigcawu Esiphelele"
+
+#~ msgid "No membership plans found."
+#~ msgstr "Ayikho amacebo ebulungu atholakele."
+
+# Admin Notifications
+#~ msgid "send_notification"
+#~ msgstr "thumela_isaziso"
+
+#~ msgid "Notification Type"
+#~ msgstr "Luhlobo Lwesaziso"
+
+#~ msgid "Send to Stokvel Members"
+#~ msgstr "Thumela Emalungeni E-Stokvel"
+
+#~ msgid "urgent"
+#~ msgstr "okusheshayo"
+
+#~ msgid "message"
+#~ msgstr "umyalezo"
+
+#~ msgid "Enter your notification message..."
+#~ msgstr "Faka umyalezo wakho wesaziso..."
+
+#~ msgid "type"
+#~ msgstr "luhlobo"
+
+#~ msgid "Admin Notification"
+#~ msgstr "Isaziso Lokuphatha"
+
+#~ msgid "Send"
+#~ msgstr "Thumela"
+
+#~ msgid "Admin Notifications"
+#~ msgstr "Izaziso Zokuphatha"
+
+#~ msgid "Here you can send notifications to users."
+#~ msgstr "Lapha ungathumela izaziso kubasebenzisi."
+
+#~ msgid "Create Notification"
+#~ msgstr "Dala Isaziso"
+
+#~ msgid "User ID"
+#~ msgstr "ID Yomsebenzisi"
+
+#~ msgid "No notifications found."
+#~ msgstr "Ayikho izaziso ezitholakele."
+
+# KYC Approvals
+#~ msgid "kyc_approvals"
+#~ msgstr "ukuvuma_kyc"
+
+#~ msgid "Here you can approve or reject KYC submissions."
+#~ msgstr "Lapha ungavuma noma wenqabe ukuthunyelwa kwe-KYC."
+
+#~ msgid "id_document"
+#~ msgstr "idokumenti_yekuzazisa"
+
+#~ msgid "proof_of_address"
+#~ msgstr "bufakazi_bekheli"
+
+#~ msgid "ID Document Status"
+#~ msgstr "Simo Sedokumenti Sekuzazisa"
+
+#~ msgid "Proof of Address Status"
+#~ msgstr "Simo Sobufakazi Bekheli"
+
+#~ msgid "view"
+#~ msgstr "bona"
+
+#~ msgid "approve"
+#~ msgstr "vuma"
+
+#~ msgid "reject"
+#~ msgstr "nqaba"
+
+# Virtual Rewards Management
+#~ msgid "Virtual Rewards Management"
+#~ msgstr "Ukuphatha Amarewardi Angempela"
+
+#~ msgid ""
+#~ "Manage reward points, view user "
+#~ "balances, and distribute rewards to "
+#~ "users."
+#~ msgstr ""
+#~ "Phatha amaphuzu amarewardi, bheka amabalansi"
+#~ " abasebenzisi, futhi sasazela amarewardi "
+#~ "kubasebenzisi."
+
+#~ msgid "Overview"
+#~ msgstr "Ukuqapha"
+
+#~ msgid "Analytics"
+#~ msgstr "Ukuhlaziya"
+
+#~ msgid "Rules"
+#~ msgstr "Imithetho"
+
+#~ msgid "Users with Reward Cards"
+#~ msgstr "Abasebenzisi Abanekhadi Lamarewardi"
+
+#~ msgid "Total Reward Balance"
+#~ msgstr "Ibhalansi Yonke Yamarewardi"
+
+#~ msgid "Total Transactions"
+#~ msgstr "Zonke Izinkokhelo"
+
+#~ msgid "Individual Reward Distribution"
+#~ msgstr "Ukusasazela Kwemarewardi Ngamunye"
+
+#~ msgid "User Email"
+#~ msgstr "I-imeyili Yomsebenzisi"
+
+#~ msgid "Reward Type"
+#~ msgstr "Uhlobo Lwemarewardi"
+
+#~ msgid "Points"
+#~ msgstr "Amaphuzu"
+
+#~ msgid "Reward description"
+#~ msgstr "Incazelo yemarewardi"
+
+#~ msgid "Distribute Reward"
+#~ msgstr "Sasazela Imarewardi"
+
+#~ msgid "Bulk Reward Distribution"
+#~ msgstr "Ukusasazela Kwemarewardi Ngobuningi"
+
+#~ msgid "User Filter"
+#~ msgstr "Isihlungi Somsebenzisi"
+
+#~ msgid "All Users"
+#~ msgstr "Bonke Abasebenzisi"
+
+#~ msgid "Amount per User"
+#~ msgstr "Inani Ngomsebenzisi Ngamunye"
+
+#~ msgid "Bulk reward description"
+#~ msgstr "Incazelo yemarewardi ngobuningi"
+
+#~ msgid "Bulk Distribute"
+#~ msgstr "Sasazela Ngobuningi"
+
+#~ msgid "Export Transactions (CSV)"
+#~ msgstr "Khipha Izinkokhelo (CSV)"
+
+#~ msgid "Export Transactions (Excel)"
+#~ msgstr "Khipha Izinkokhelo (Excel)"
+
+#~ msgid "Export Balances (CSV)"
+#~ msgstr "Khipha Amabalansi (CSV)"
+
+#~ msgid "Export Balances (Excel)"
+#~ msgstr "Khipha Amabalansi (Excel)"
+
+#~ msgid "User Reward Balances"
+#~ msgstr "Amabalansi Amarewardi Abasebenzisi"
+
+#~ msgid "User"
+#~ msgstr "Umsebenzisi"
+
+#~ msgid "Card Number"
+#~ msgstr "Inombolo Yekhadi"
+
+#~ msgid "Balance"
+#~ msgstr "Ibhalansi"
+
+#~ msgid "Recent Reward Transactions"
+#~ msgstr "Izinkokhelo Zamarewardi Zamuva"
+
+#~ msgid "Date"
+#~ msgstr "Usuku"
+
+#~ msgid "Type"
+#~ msgstr "Uhlobo"
+
+#~ msgid "Reward Analytics"
+#~ msgstr "Ukuhlaziya Amarewardi"
+
+#~ msgid "Comprehensive analytics and insights for your reward system."
+#~ msgstr "Ukuhlaziya okuphelele kanye nokuqonda uhlelo lwakho lwemarewardi."
+
+#~ msgid "Months of Data"
+#~ msgstr "Izinyanga Zedatha"
+
+#~ msgid "Top Earners Tracked"
+#~ msgstr "Abathola Kakhulu Abalandelwa"
+
+#~ msgid "Reward Types"
+#~ msgstr "Izinhlobo Zamarewardi"
+
+#~ msgid "Monthly Reward Distribution"
+#~ msgstr "Ukusasazela Kwemarewardi Kwenyanga"
+
+#~ msgid "Top Reward Earners"
+#~ msgstr "Abathola Kakhulu Amarewardi"
+
+#~ msgid "Rank"
+#~ msgstr "Isikhundla"
+
+#~ msgid "Total Earned"
+#~ msgstr "Inani Elitholakele"
+
+#~ msgid "Reward Type Distribution"
+#~ msgstr "Ukusasazela Kwemarewardi Ngohlobo"
+
+#~ msgid "Reward Rules Configuration"
+#~ msgstr "Ukuhlela Imithetho Yamarewardi"
+
+#~ msgid ""
+#~ "Configure automatic reward triggers and "
+#~ "multipliers for your reward system."
+#~ msgstr ""
+#~ "Hlela izinto ezivusa amarewardi "
+#~ "okuzenzakalelayo kanye nokubanekisa uhlelo "
+#~ "lwakho lwemarewardi."
+
+#~ msgid "Automatic Reward Rules"
+#~ msgstr "Imithetho Yamarewardi Ezenzakalelayo"
+
+#~ msgid "Contribution Multiplier"
+#~ msgstr "Isibambisi Sokunikelela"
+
+#~ msgid "How many reward points users earn per R1 contributed to stokvels."
+#~ msgstr ""
+#~ "Mangaki amaphuzu amarewardi abasebenzisi "
+#~ "abathola ngayinye R1 enikelwe kuma-"
+#~ "stokvel."
+
+#~ msgid "Welcome Bonus"
+#~ msgstr "Ibhonasi Yokwamukela"
+
+#~ msgid "Reward points given to new users when they join the platform."
+#~ msgstr ""
+#~ "Amaphuzu amarewardi anikezwa abasebenzisi "
+#~ "abasha lapho bejoyina ipulatifomu."
+
+#~ msgid "Referral Bonus"
+#~ msgstr "Ibhonasi Yokudlulisa"
+
+#~ msgid "Reward points given when a user successfully refers another user."
+#~ msgstr ""
+#~ "Amaphuzu amarewardi anikezwa lapho umsebenzisi"
+#~ " edlulisa omunye umsebenzisi ngempumelelo."
+
+#~ msgid "Monthly Bonus"
+#~ msgstr "Ibhonasi Yenyanga"
+
+#~ msgid "Monthly reward points given to active users who made contributions."
+#~ msgstr "Amaphuzu amarewardi anyanga anikezwa abasebenzisi abasebenza abanikele."
+
+#~ msgid "Event Attendance Bonus"
+#~ msgstr "Ibhonasi Yokuba Khona Emicimbini"
+
+#~ msgid "Reward points given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Amaphuzu amarewardi anikezwa ngokuba khona "
+#~ "emicimbini yama-stokvel kanye nemihlangano."
+
+#~ msgid "Loan Payment Bonus"
+#~ msgstr "Ibhonasi Yokukhokha Imali"
+
+#~ msgid "Reward points given for on-time loan payments."
+#~ msgstr "Amaphuzu amarewardi anikezwa ngokukhokha imali ngesikhathi."
+
+#~ msgid "Save Reward Rules"
+#~ msgstr "Gcina Imithetho Yamarewardi"
+
+#~ msgid "How Reward Rules Work"
+#~ msgstr "Imisebenzi Yemithetho Yamarewardi"
+
+#~ msgid ""
+#~ "Contribution Multiplier: Users earn this "
+#~ "many points per R1 contributed. Set "
+#~ "to 1 for 1:1 ratio."
+#~ msgstr ""
+#~ "Isibambisi Sokunikelela: Abasebenzisi bathola "
+#~ "amaphuzu amaningi ngayinye R1 enikelwe. "
+#~ "Beka ku-1 ukuze ube nokulingana kwe-1:1."
+
+#~ msgid "Welcome Bonus: Automatically given to new users upon registration."
+#~ msgstr ""
+#~ "Ibhonasi Yokwamukela: Inikezwa okuzenzakalelayo "
+#~ "kubasebenzisi abasha lapho bebhalisa."
+
+#~ msgid ""
+#~ "Referral Bonus: Given when a user "
+#~ "successfully refers another user to the"
+#~ " platform."
+#~ msgstr ""
+#~ "Ibhonasi Yokudlulisa: Inikezwa lapho "
+#~ "umsebenzisi edlulisa omunye umsebenzisi "
+#~ "epulatifomu ngempumelelo."
+
+#~ msgid ""
+#~ "Monthly Bonus: Given monthly to users"
+#~ " who made contributions in the "
+#~ "previous month."
+#~ msgstr ""
+#~ "Ibhonasi Yenyanga: Inikezwa nyanga zonke "
+#~ "kubasebenzisi abanikele enyangeni edlule."
+
+#~ msgid "Event Attendance: Given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Ukuba Khona Emicimbini: Inikezwa ngokuba "
+#~ "khona emicimbini yama-stokvel kanye "
+#~ "nemihlangano."
+
+#~ msgid ""
+#~ "Loan Payment: Given for on-time "
+#~ "loan payments and good financial "
+#~ "behavior."
+#~ msgstr ""
+#~ "Ukukhokha Imali: Inikezwa ngokukhokha imali"
+#~ " ngesikhathi kanye nokuziphatha okuhle "
+#~ "kwezezimali."
+
+# Emagama lamasha etinhlelo temlawuli
+#~ msgid "data_export"
+#~ msgstr "Kutfumela Idatha"
+
+#~ msgid "download_data_help"
+#~ msgstr "Landa idatha yakho njengefayela le-CSV"
+
+#~ msgid "CSV"
+#~ msgstr "CSV"
+
+#~ msgid "two_factor_auth"
+#~ msgstr "Kucinisekisa Lokubili (2FA)"
+
+#~ msgid "enable_2fa_help"
+#~ msgstr "Vumela kucinisekisa lokubili kuvikele i-akhawunti yakho"
+
+#~ msgid "require_2fa_for_admins"
+#~ msgstr "Dinga 2FA kubaphatsi"
+
+#~ msgid "data_retention"
+#~ msgstr "Kugcinwa Kwedatha"
+
+#~ msgid "configure_data_retention_help"
+#~ msgstr "Hlela sikhatsi sekugcina umlando wetintfo tekutitsengiselana"
+
+#~ msgid "keep_transaction_history_for:"
+#~ msgstr "Gcina umlando wetintfo tekutitsengiselana sikhatsi lesingakanani:"
+
+msgid "Add New Payment Method"
+msgstr "Faka Indlela Lensha Yekukhokha"
+
+msgid "Payment Type"
+msgstr "Luhlobo Lwekukhokha"
+
+msgid "Dashboard"
+msgstr "Liphaneli"
+
+msgid "Manage Users"
+msgstr "Phatha Basebenzisi"
+
+msgid "Loan Approvals"
+msgstr "Kuvunyelwa Kwemalimboleko"
+
+msgid "Events"
+msgstr "Imicimbi"
+
+msgid "Membership Plans"
+msgstr "Tihlelo Tebulunga"
+
+msgid "Notifications"
+msgstr "Taziso"
+
+msgid "KYC Approvals"
+msgstr "Kuvunyelwa kwe-KYC"
+
+msgid "Virtual Rewards"
+msgstr "Imivuzo Yedijithali"
+
+msgid "Logout"
+msgstr "Phuma"
+

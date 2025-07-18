@@ -1,3 +1,5 @@
+{% import 'translations.html' as translations %}
+{% set t = translations.t %}
 <h3 class="text-lg font-bold mb-2">Loan Details (ID: {{ loan.id }})</h3>
 <div class="space-y-2 text-sm">
     <p><strong>User:</strong> {{ loan.username }} ({{ loan.email }})</p>

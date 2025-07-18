@@ -23,7 +23,6 @@
 </span>
 {% endblock %}
 
-
 {% block content %}
 
 <!-- Welcome Banner -->
@@ -185,7 +184,7 @@
                      </div>
             <div class="modal-body">
                 <form method="post" action="/home/add_expense">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="e_date">Date</label>
                         <input type="date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="e_date" name="e_date" required>
@@ -252,9 +251,9 @@
     }, 3000);
 
     // Get chart data from data attributes and initialize charts
-    const chartDataElement = document.getElementById('chart-data');
+    var chartDataElement = document.getElementById('chart-data');
     if (chartDataElement) { // Check if the element exists
-        const chartData = {
+        var chartData = {
             bar: safeJSONParse(chartDataElement.dataset.bar),
             stack_bar: safeJSONParse(chartDataElement.dataset.stackBar),
             pie1: safeJSONParse(chartDataElement.dataset.pie1),

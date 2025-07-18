@@ -1,0 +1,826 @@
+# Translation of messages for ts
+msgid ""
+msgstr ""
+"Project-Id-Version: KasiKash Admin Dashboard\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-14 11:50+0200\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language: ts\n"
+"Language-Team: ts <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+# Admin Settings
+#~ msgid "admin_settings"
+#~ msgstr "Vuhlayeleli bya Mufambisi"
+
+#~ msgid "switch_to_user_view"
+#~ msgstr "Sintshula eka Vona ka Muxavisi"
+
+#~ msgid "admin_settings_subtitle"
+#~ msgstr "Lulamisa vuhlayeleli bya sisteme na vume"
+
+#~ msgid "user_permissions"
+#~ msgstr "Vume ya Vaxavisi"
+
+#~ msgid "financial_controls"
+#~ msgstr "Ku Laya Mari"
+
+#~ msgid "notifications"
+#~ msgstr "Tindzavisiso"
+
+#~ msgid "meetings_events"
+#~ msgstr "Tihlangano & Tintshungulo"
+
+#~ msgid "data_security"
+#~ msgstr "Ku Sirhelela Data"
+
+#~ msgid "languages"
+#~ msgstr "Tindzimi"
+
+#~ msgid "select_admin_language"
+#~ msgstr "Hlanganisa Ririmi ra Mufambisi"
+
+#~ msgid "english"
+#~ msgstr "Xinghezi"
+
+#~ msgid "role_management"
+#~ msgstr "Ku Laya Nkateko"
+
+#~ msgid "assign_roles_help"
+#~ msgstr "Nyika nkateko ku laya vume"
+
+#~ msgid "admin_full_access"
+#~ msgstr "Mufambisi - Ku Ngena ka Nkateko"
+
+#~ msgid "loan_approval_permissions"
+#~ msgstr "Vume ya Ku Pfumelela Malambadzo"
+
+#~ msgid "choose_loan_approval_roles"
+#~ msgstr "Hlanganisa nkateko leyi nga pfumelela malambadzo"
+
+#~ msgid "adminstreasurerssecretaries"
+#~ msgstr "Vafambisi, Vaphethe Mari, Vangori"
+
+#~ msgid "audit_logs"
+#~ msgstr "Di-Log ta Ku Hlaya"
+
+#~ msgid "theme"
+#~ msgstr "Xikongomelo:"
+
+#~ msgid "view_audit_logs_help"
+#~ msgstr "Vona ntirho wa sisteme na ku cinca"
+
+#~ msgid "action"
+#~ msgstr "Ntirho"
+
+#~ msgid "performed_by"
+#~ msgstr "Ku Endliwa hi"
+
+#~ msgid "target"
+#~ msgstr "Xikongomelo"
+
+#~ msgid "amount"
+#~ msgstr "Nhlayo"
+
+#~ msgid "date"
+#~ msgstr "Siku"
+
+#~ msgid "cancel"
+#~ msgstr "Khansela"
+
+#~ msgid "save_settings"
+#~ msgstr "Hlayisa Vuhlayeleli"
+
+#~ msgid "contribution_rules"
+#~ msgstr "Milawu ya Ku Nyika"
+
+#~ msgid "set_contribution_rules_help"
+#~ msgstr "Beha milawu ya ku nyika ka vanhu"
+
+#~ msgid "monthly_amount"
+#~ msgstr "Nhlayo ya N'weti:"
+
+#~ msgid "R"
+#~ msgstr "R"
+
+#~ msgid "100"
+#~ msgstr "100"
+
+#~ msgid "late_penalty"
+#~ msgstr "Muhlolo wa Ku Bili:"
+
+#~ msgid "10%"
+#~ msgstr "10%"
+
+#~ msgid "grace_period"
+#~ msgstr "Nkarhi wa Ku Pfumelela:"
+
+#~ msgid "7"
+#~ msgstr "7"
+
+#~ msgid "days"
+#~ msgstr "Masiku"
+
+#~ msgid "loan_settings"
+#~ msgstr "Vuhlayeleli bya Malambadzo"
+
+#~ msgid "configure_loan_settings_help"
+#~ msgstr "Lulamisa vuhlayeleli bya malambadzo na milawu"
+
+#~ msgid "max_loan_percent"
+#~ msgstr "Phesente ya Malambadzo ya Nkateko:"
+
+#~ msgid "50%"
+#~ msgstr "50%"
+
+#~ msgid "interest_rate"
+#~ msgstr "Nhlayo ya Mari:"
+
+#~ msgid "5%"
+#~ msgstr "5%"
+
+#~ msgid "repayment_period"
+#~ msgstr "Nkarhi wa Ku Buyisela:"
+
+#~ msgid "6 months"
+#~ msgstr "Tin'weti ta 6"
+
+#~ msgid "withdrawal_approvals"
+#~ msgstr "Ku Pfumelela Ku Kuma"
+
+#~ msgid "require_dual_approval_help"
+#~ msgstr "Lava ku pfumelela mbirhi ka ku kuma"
+
+#~ msgid "enable_dual_approval_for_withdrawals"
+#~ msgstr "Pfumelela Ku Pfumelela Mbirhi ka Ku Kuma"
+
+#~ msgid "recurring_meetings"
+#~ msgstr "Tihlangano ta Ku Vuyela"
+
+#~ msgid "schedule_meetings_help"
+#~ msgstr "Beha tihlangano ta siku ni siku"
+
+#~ msgid "meeting_frequency"
+#~ msgstr "Ku Vana ka Tihlangano:"
+
+#~ msgid "monthly"
+#~ msgstr "Hi n'weti"
+
+#~ msgid "day_of_week"
+#~ msgstr "Siku ra Vhiki:"
+
+#~ msgid "monday"
+#~ msgstr "Musumbhunuku"
+
+#~ msgid "time"
+#~ msgstr "Nkarhi:"
+
+#~ msgid "14:00"
+#~ msgstr "14:00"
+
+#~ msgid "send_automatic_reminders"
+#~ msgstr "Rhumela Tindzavisiso ta Ku Ti Endla"
+
+#~ msgid "attendance_tracking"
+#~ msgstr "Ku Laya Ku Va Kona"
+
+#~ msgid "record_attendance_help"
+#~ msgstr "Tsala ku va kona ka vanhu tihlanganweni"
+
+#~ msgid "enable_attendance_tracking"
+#~ msgstr "Pfumelela Ku Laya Ku Va Kona"
+
+#~ msgid "absence_penalty"
+#~ msgstr "Muhlolo wa Ku Si Va Kona:"
+
+#~ msgid "5after"
+#~ msgstr "5% Endzhaku"
+
+#~ msgid "missed_meetings"
+#~ msgstr "Tihlangano ta Ku Si Va Kona"
+
+#~ msgid "meeting"
+#~ msgstr "Tihlangano"
+
+#~ msgid "present"
+#~ msgstr "Va Kona"
+
+#~ msgid "absent"
+#~ msgstr "Va Si Va Kona"
+
+# Dashboard Header
+#~ msgid "Welcome, Admin 👋"
+#~ msgstr "Avuxeni, Admin 👋"
+
+#~ msgid "Stokvel Admin Dashboard"
+#~ msgstr "Dashboard ya Vutshami bya Stokvel"
+
+# Dashboard Stats
+#~ msgid "Total Members"
+#~ msgstr "Vamemba Hinkwavo"
+
+#~ msgid "from last month"
+#~ msgstr "ku suka hi n'weti wo hundza"
+
+#~ msgid "Active Loans"
+#~ msgstr "Mali yo Boleka leyi Tirhaka"
+
+#~ msgid "pending approval"
+#~ msgstr "yi lindza ku pfumelela"
+
+#~ msgid "Total Contributions"
+#~ msgstr "Mali yo Nyika Hinkwavo"
+
+#~ msgid "KYC Pending"
+#~ msgstr "KYC yi lindza"
+
+#~ msgid "urgent reviews"
+#~ msgstr "ku hlaya ka xikongomelo"
+
+# Quick Actions
+#~ msgid "Quick Actions"
+#~ msgstr "Ntirho wo Hatlisa"
+
+#~ msgid "Manage Users"
+#~ msgstr "Lawula Vatirhi"
+
+# Loan Approvals
+#~ msgid "Loan Approvals"
+#~ msgstr "Ku Pfumelela ka Mali yo Boleka"
+
+#~ msgid "Virtual Rewards"
+#~ msgstr "Mivuyo ya Marangrang"
+
+#~ msgid "Generate Reports"
+#~ msgstr "Vumba Mibiko"
+
+# Charts
+#~ msgid "Financial Chart"
+#~ msgstr "Chate ya Mali"
+
+#~ msgid "User Growth Chart"
+#~ msgstr "Chate ya Ku Kula ka Vatirhi"
+
+# User Management
+#~ msgid "User Management"
+#~ msgstr "Vutshami bya Vatirhi"
+
+#~ msgid ""
+#~ "View, add, edit, or suspend user "
+#~ "accounts with advanced filtering and "
+#~ "bulk operations."
+#~ msgstr ""
+#~ "Vona, engeta, lulamisa, kumbe emisa "
+#~ "ma-akhawunti ya vatirhi hi ku sefa"
+#~ " ka le henhla na ntirho wo "
+#~ "tala."
+
+#~ msgid "Bulk Operations"
+#~ msgstr "Ntirho wo Tala"
+
+#~ msgid ""
+#~ "Review and approve loan applications "
+#~ "with detailed financial analysis and "
+#~ "risk assessment."
+#~ msgstr ""
+#~ "Hlaya na ku pfumelela swikombelo swa "
+#~ "mali yo boleka hi ku hlaya ka "
+#~ "mali ka le henhla na ku kambela"
+#~ " vuxinji."
+
+#~ msgid "Review Applications"
+#~ msgstr "Hlaya Swikombelo"
+
+#~ msgid "Approval History"
+#~ msgstr "Matimu ya Ku Pfumelela"
+
+# Financial Reports
+#~ msgid ""
+#~ "Generate comprehensive financial reports with"
+#~ " advanced analytics and export "
+#~ "capabilities."
+#~ msgstr ""
+#~ "Vumba mibiko ya mali yo hetelela "
+#~ "hi ku hlaya ka le henhla na "
+#~ "vutihlamuleri byo humesa."
+
+#~ msgid "Export Data"
+#~ msgstr "Humesa Data"
+
+# Error Messages
+#~ msgid "Could not load users or stokvels."
+#~ msgstr "A yi nga koti ku layisha vatirhi kumbe stokvels."
+
+#~ msgid "manage_users"
+#~ msgstr "lawula_vatirhi"
+
+#~ msgid "Here you can manage all users."
+#~ msgstr "Laha u nga lawula vatirhi hinkwavo."
+
+#~ msgid "search username or email"
+#~ msgstr "lava vito ra mutirhi kumbe imeile"
+
+#~ msgid "search"
+#~ msgstr "lava"
+
+#~ msgid "add_user"
+#~ msgstr "engeta_mutirhi"
+
+#~ msgid "email"
+#~ msgstr "imeile"
+
+#~ msgid "role"
+#~ msgstr "nhloko"
+
+#~ msgid "created_at"
+#~ msgstr "yi vumbiwa_hi"
+
+#~ msgid "stokvel"
+#~ msgstr "stokvel"
+
+#~ msgid "actions"
+#~ msgstr "ntirho"
+
+#~ msgid "No users found."
+#~ msgstr "A ku na vatirhi va kumeka."
+
+#~ msgid "Here you can approve or reject loan applications."
+#~ msgstr "Laha u nga pfumelela kumbe hanana na swikombelo swa mali yo boleka."
+
+#~ msgid "Filter by status:"
+#~ msgstr "Sefa hi xiyimo:"
+
+#~ msgid "Pending"
+#~ msgstr "Yi lindza"
+
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "Username"
+#~ msgstr "Vito ra Mutirhi"
+
+#~ msgid "Amount"
+#~ msgstr "Mali"
+
+#~ msgid "Status"
+#~ msgstr "Xiyimo"
+
+#~ msgid "Transaction Date"
+#~ msgstr "Siku ra Ntirho"
+
+#~ msgid "Comment"
+#~ msgstr "Ndzavisiso"
+
+#~ msgid "Actions"
+#~ msgstr "Ntirho"
+
+#~ msgid "No loans found for this status."
+#~ msgstr "A ku na mali yo boleka yi kumeka eka xiyimo xin'wana."
+
+#~ msgid "Filter"
+#~ msgstr "Hlunga"
+
+# Events Management
+#~ msgid "Events"
+#~ msgstr "Switirhisiwa"
+
+#~ msgid "Here you can manage events."
+#~ msgstr "Laha u nga lawula switirhisiwa."
+
+#~ msgid "Select a Stokvel"
+#~ msgstr "Hlanganisa Stokvel"
+
+#~ msgid "Name"
+#~ msgstr "Vito"
+
+#~ msgid "Target Date"
+#~ msgstr "Siku ra Nhluvuko"
+
+#~ msgid "Description"
+#~ msgstr "Nhlamuselo"
+
+#~ msgid "Send notification to all members of this stokvel"
+#~ msgstr "Rhumela xivhudzo eka vamatsi hinkwavo va stokvel leyi"
+
+#~ msgid "Create Event"
+#~ msgstr "Vumba Switirhisiwa"
+
+#~ msgid "No events found."
+#~ msgstr "A ku na switirhisiwa leswi kumekaka."
+
+# Membership Plans
+#~ msgid "Membership Plans"
+#~ msgstr "Maendlelo ya Vumatsi"
+
+#~ msgid "Here you can manage membership plans."
+#~ msgstr "Laha u nga lawula maendlelo ya vumatsi."
+
+#~ msgid "Search by plan name"
+#~ msgstr "Kota hi vito ra maendlelo"
+
+#~ msgid "Add Plan"
+#~ msgstr "Engeza Maendlelo"
+
+#~ msgid "Monthly Contribution"
+#~ msgstr "Mphikizano wa N'weti"
+
+#~ msgid "Target Amount"
+#~ msgstr "Nhlayo ya Nhluvuko"
+
+#~ msgid "Total Pool"
+#~ msgstr "Nhlayo ya Muthu"
+
+#~ msgid "No membership plans found."
+#~ msgstr "A ku na maendlelo ya vumatsi ya kumekaka."
+
+# Admin Notifications
+#~ msgid "send_notification"
+#~ msgstr "rhumela_xivhudzo"
+
+#~ msgid "Notification Type"
+#~ msgstr "Xirhendzevutana xa Xivhudzo"
+
+#~ msgid "Send to Stokvel Members"
+#~ msgstr "Rhumela eka Vamatsi va Stokvel"
+
+#~ msgid "urgent"
+#~ msgstr "ka nkarhi"
+
+#~ msgid "message"
+#~ msgstr "ndziviso"
+
+#~ msgid "Enter your notification message..."
+#~ msgstr "Nwela ndziviso wa wena wa xivhudzo..."
+
+#~ msgid "type"
+#~ msgstr "xirhendzevutana"
+
+#~ msgid "Admin Notification"
+#~ msgstr "Xivhudzo xa Vufambisi"
+
+#~ msgid "Send"
+#~ msgstr "Rhumela"
+
+#~ msgid "Admin Notifications"
+#~ msgstr "Swivhudzo swa Vufambisi"
+
+#~ msgid "Here you can send notifications to users."
+#~ msgstr "Laha u nga rhumela swivhudzo eka vashumisi."
+
+#~ msgid "Create Notification"
+#~ msgstr "Vumba Xivhudzo"
+
+#~ msgid "User ID"
+#~ msgstr "ID ya Muthumeli"
+
+#~ msgid "No notifications found."
+#~ msgstr "A ku na swivhudzo leswi kumekaka."
+
+# KYC Approvals
+#~ msgid "kyc_approvals"
+#~ msgstr "vuma_kyc"
+
+#~ msgid "Here you can approve or reject KYC submissions."
+#~ msgstr "Laha u nga vuma kumbe hana swiendliwa swa KYC."
+
+#~ msgid "id_document"
+#~ msgstr "tokomane_ya_identity"
+
+#~ msgid "proof_of_address"
+#~ msgstr "vumbhoni_bya_adrese"
+
+#~ msgid "ID Document Status"
+#~ msgstr "Xiyimo xa Tokomane ya Identity"
+
+#~ msgid "Proof of Address Status"
+#~ msgstr "Xiyimo xa Vumbhoni bya Adrese"
+
+#~ msgid "view"
+#~ msgstr "vona"
+
+#~ msgid "approve"
+#~ msgstr "vuma"
+
+#~ msgid "reject"
+#~ msgstr "hana"
+
+# Virtual Rewards Management
+#~ msgid "Virtual Rewards Management"
+#~ msgstr "Vufambisi bya Swikgetho swa Virtual"
+
+#~ msgid ""
+#~ "Manage reward points, view user "
+#~ "balances, and distribute rewards to "
+#~ "users."
+#~ msgstr ""
+#~ "Lawula swikgetho swa swikgetho, vona "
+#~ "dipalo ta vashumisi, na ku abela "
+#~ "swikgetho eka vashumisi."
+
+#~ msgid "Overview"
+#~ msgstr "Kakaretso"
+
+#~ msgid "Analytics"
+#~ msgstr "Dinyakisiso"
+
+#~ msgid "Rules"
+#~ msgstr "Milawu"
+
+#~ msgid "Users with Reward Cards"
+#~ msgstr "Vashumisi va Dikarata ta Swikgetho"
+
+#~ msgid "Total Reward Balance"
+#~ msgstr "Kakaretso ya Dipalo ta Swikgetho"
+
+#~ msgid "Total Transactions"
+#~ msgstr "Kakaretso ya Dikgwebo"
+
+#~ msgid "Individual Reward Distribution"
+#~ msgstr "Kabo ya Swikgetho ya Muthu na Muthu"
+
+#~ msgid "User Email"
+#~ msgstr "Imeile ya Muthumeli"
+
+#~ msgid "Reward Type"
+#~ msgstr "Xirhendzevutana xa Swikgetho"
+
+#~ msgid "Points"
+#~ msgstr "Swikgetho"
+
+#~ msgid "Reward description"
+#~ msgstr "Nhlahuselo wa swikgetho"
+
+#~ msgid "Distribute Reward"
+#~ msgstr "Aba Swikgetho"
+
+#~ msgid "Bulk Reward Distribution"
+#~ msgstr "Kabo ya Swikgetho ka Ngoho"
+
+#~ msgid "User Filter"
+#~ msgstr "Sehlasehi sa Muthumeli"
+
+#~ msgid "All Users"
+#~ msgstr "Vashumisi Hinkwavo"
+
+#~ msgid "Amount per User"
+#~ msgstr "Tekanyo ka Muthumeli"
+
+#~ msgid "Bulk reward description"
+#~ msgstr "Nhlahuselo wa swikgetho ka ngoho"
+
+#~ msgid "Bulk Distribute"
+#~ msgstr "Aba ka Ngoho"
+
+#~ msgid "Export Transactions (CSV)"
+#~ msgstr "Tswelletsa Dikgwebo (CSV)"
+
+#~ msgid "Export Transactions (Excel)"
+#~ msgstr "Tswelletsa Dikgwebo (Excel)"
+
+#~ msgid "Export Balances (CSV)"
+#~ msgstr "Tswelletsa Dipalo (CSV)"
+
+#~ msgid "Export Balances (Excel)"
+#~ msgstr "Tswelletsa Dipalo (Excel)"
+
+#~ msgid "User Reward Balances"
+#~ msgstr "Dipalo ta Swikgetho ta Vashumisi"
+
+#~ msgid "User"
+#~ msgstr "Muthumeli"
+
+#~ msgid "Card Number"
+#~ msgstr "Nomoro ya Karete"
+
+#~ msgid "Balance"
+#~ msgstr "Palo"
+
+#~ msgid "Recent Reward Transactions"
+#~ msgstr "Dikgwebo ta Swikgetho ta Muva"
+
+#~ msgid "Date"
+#~ msgstr "Duvha"
+
+#~ msgid "Type"
+#~ msgstr "Xirhendzevutana"
+
+#~ msgid "Reward Analytics"
+#~ msgstr "Dinyakisiso ta Swikgetho"
+
+#~ msgid "Comprehensive analytics and insights for your reward system."
+#~ msgstr "Dinyakisiso dza ngoho na kutlwisiso kha sisteme ya wena ya swikgetho."
+
+#~ msgid "Months of Data"
+#~ msgstr "Dikgwedi ta Data"
+
+#~ msgid "Top Earners Tracked"
+#~ msgstr "Va Fumaho Kgalo va Latelwa"
+
+#~ msgid "Reward Types"
+#~ msgstr "Swirhendzevutana swa Swikgetho"
+
+#~ msgid "Monthly Reward Distribution"
+#~ msgstr "Kabo ya Swikgetho ya Kgwedi"
+
+#~ msgid "Top Reward Earners"
+#~ msgstr "Va Fumaho Swikgetho Kgalo"
+
+#~ msgid "Rank"
+#~ msgstr "Boemo"
+
+#~ msgid "Total Earned"
+#~ msgstr "Kakaretso ya Fumaho"
+
+#~ msgid "Reward Type Distribution"
+#~ msgstr "Kabo ya Xirhendzevutana xa Swikgetho"
+
+#~ msgid "Reward Rules Configuration"
+#~ msgstr "Peakanyo ya Milawu ya Swikgetho"
+
+#~ msgid ""
+#~ "Configure automatic reward triggers and "
+#~ "multipliers for your reward system."
+#~ msgstr ""
+#~ "Peaka swikgetho swa ku tswela ka "
+#~ "boyona na swikgetho kha sisteme ya "
+#~ "wena ya swikgetho."
+
+#~ msgid "Automatic Reward Rules"
+#~ msgstr "Milawu ya Swikgetho ya ku Tswela ka Boyona"
+
+#~ msgid "Contribution Multiplier"
+#~ msgstr "Sikgetho sa Tshepediso"
+
+#~ msgid "How many reward points users earn per R1 contributed to stokvels."
+#~ msgstr ""
+#~ "Sikgetho swa ngafhi swa swikgetho swo"
+#~ " vashumisi va swi fumaho ka R1 "
+#~ "e n'we na e n'we leo va e"
+#~ " tshepedisaka eka ma-stokvel."
+
+#~ msgid "Welcome Bonus"
+#~ msgstr "Sikgetho sa Kamogelo"
+
+#~ msgid "Reward points given to new users when they join the platform."
+#~ msgstr ""
+#~ "Sikgetho swa swikgetho swo abelwa "
+#~ "vashumisi va mpsha loko va kena "
+#~ "platformeng."
+
+#~ msgid "Referral Bonus"
+#~ msgstr "Sikgetho sa Kgokagano"
+
+#~ msgid "Reward points given when a user successfully refers another user."
+#~ msgstr ""
+#~ "Sikgetho swa swikgetho swo abelwa loko"
+#~ " muthumeli a kgokaganya muthumeli wo "
+#~ "the na ka katleho."
+
+#~ msgid "Monthly Bonus"
+#~ msgstr "Sikgetho sa Kgwedi"
+
+#~ msgid "Monthly reward points given to active users who made contributions."
+#~ msgstr ""
+#~ "Sikgetho swa swikgetho swa kgwedi swo"
+#~ " abelwa vashumisi va shumaka vo va"
+#~ " tshepedisaka."
+
+#~ msgid "Event Attendance Bonus"
+#~ msgstr "Sikgetho sa Tseno ya Ditiro"
+
+#~ msgid "Reward points given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Sikgetho swa swikgetho swo abelwa ka "
+#~ "ku tsenela ditiro ta ma-stokvel na"
+#~ " dikopano."
+
+#~ msgid "Loan Payment Bonus"
+#~ msgstr "Sikgetho sa Tefo ya Madi"
+
+#~ msgid "Reward points given for on-time loan payments."
+#~ msgstr "Sikgetho swa swikgetho swo abelwa ka tefo ya madi ka nkarhi."
+
+#~ msgid "Save Reward Rules"
+#~ msgstr "Boloka Milawu ya Swikgetho"
+
+#~ msgid "How Reward Rules Work"
+#~ msgstr "Milawu ya Swikgetho yi Shuma njhani"
+
+#~ msgid ""
+#~ "Contribution Multiplier: Users earn this "
+#~ "many points per R1 contributed. Set "
+#~ "to 1 for 1:1 ratio."
+#~ msgstr ""
+#~ "Sikgetho sa Tshepediso: Vashumisi va "
+#~ "fumaho sikgetho swa ngafhi ka R1 e"
+#~ " n'we na e n'we leo va e "
+#~ "tshepedisaka. Beakanya eka 1 kha tekanyo"
+#~ " ya 1:1."
+
+#~ msgid "Welcome Bonus: Automatically given to new users upon registration."
+#~ msgstr ""
+#~ "Sikgetho sa Kamogelo: Si abelwa ka "
+#~ "boyona vashumisi va mpsha loko va "
+#~ "ngodisa."
+
+#~ msgid ""
+#~ "Referral Bonus: Given when a user "
+#~ "successfully refers another user to the"
+#~ " platform."
+#~ msgstr ""
+#~ "Sikgetho sa Kgokagano: Si abelwa loko"
+#~ " muthumeli a kgokaganya muthumeli wo "
+#~ "the na platformeng ka katleho."
+
+#~ msgid ""
+#~ "Monthly Bonus: Given monthly to users"
+#~ " who made contributions in the "
+#~ "previous month."
+#~ msgstr ""
+#~ "Sikgetho sa Kgwedi: Si abelwa kgwedi "
+#~ "ka kgwedi eka vashumisi vo va "
+#~ "tshepedisaka kgwedini le fhulaka."
+
+#~ msgid "Event Attendance: Given for attending stokvel events and meetings."
+#~ msgstr ""
+#~ "Tseno ya Ditiro: Si abelwa ka ku"
+#~ " tsenela ditiro ta ma-stokvel na "
+#~ "dikopano."
+
+#~ msgid ""
+#~ "Loan Payment: Given for on-time "
+#~ "loan payments and good financial "
+#~ "behavior."
+#~ msgstr ""
+#~ "Tefo ya Madi: Si abelwa ka tefo"
+#~ " ya madi ka nkarhi na boitshwaro "
+#~ "bo botse bya tsha tshelete."
+
+# Marito lamantshwa ya vuhlayeleli bya mufambisi
+#~ msgid "data_export"
+#~ msgstr "Tshumela Data"
+
+#~ msgid "download_data_help"
+#~ msgstr "Dawuniloda data ya wena tanihi fayili ya CSV"
+
+#~ msgid "CSV"
+#~ msgstr "CSV"
+
+#~ msgid "two_factor_auth"
+#~ msgstr "Ku tiyisisa ka switirho swimbirhi (2FA)"
+
+#~ msgid "enable_2fa_help"
+#~ msgstr ""
+#~ "Pfumelela ku tiyisisa ka switirho "
+#~ "swimbirhi ku sirhelela akhawunti ya wena"
+
+#~ msgid "require_2fa_for_admins"
+#~ msgstr "Lava 2FA eka vafambisi"
+
+#~ msgid "data_retention"
+#~ msgstr "Ku Hlayisa Data"
+
+#~ msgid "configure_data_retention_help"
+#~ msgstr "Lulamisa nkarhi wa ku hlayisa matimu ya mintirho"
+
+#~ msgid "keep_transaction_history_for:"
+#~ msgstr "Hlayisa matimu ya mintirho nkarhi wihi:"
+
+msgid "Add New Payment Method"
+msgstr "Engetela Ndlela Leyintshwa Yo Hlawula"
+
+msgid "Payment Type"
+msgstr "Mufambisi wa Mbofho"
+
+msgid "Dashboard"
+msgstr "Xiphephana xa Taolo"
+
+msgid "Manage Users"
+msgstr "Lawula Vaxumi"
+
+msgid "Loan Approvals"
+msgstr "Ku Amukeriwa ka Mikweleti"
+
+msgid "Events"
+msgstr "Swikombiso"
+
+msgid "Membership Plans"
+msgstr "Matsongo ya Vuxaka"
+
+msgid "Notifications"
+msgstr "Switiviso"
+
+msgid "KYC Approvals"
+msgstr "Ku Amukeriwa ka KYC"
+
+msgid "Virtual Rewards"
+msgstr "Mivuyelo ya Marang-rang"
+
+msgid "Logout"
+msgstr "Huma"
+
