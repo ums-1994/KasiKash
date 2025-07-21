@@ -7,6 +7,85 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/payouts.css') }}">
+<style>
+.glass-card {
+    background: rgba(45, 45, 68, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+.form-input, .form-select, .form-textarea {
+    background: rgba(30, 30, 46, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #E2E2F0;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    background: rgba(30, 30, 46, 0.9);
+    border-color: #7B61FF;
+    box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
+    outline: none;
+}
+.btn-primary {
+    background: linear-gradient(90deg, #7B61FF, #61DAFB);
+    color: #FFF;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(123, 97, 255, 0.2);
+}
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #E2E2F0;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+.status-completed {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.status-pending {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.status-failed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -39,7 +118,11 @@
                     {% for payout in payouts %}
                     <tr>
                         <td>
-                            {{ payout.transaction_date.strftime('%d %b %Y') if payout.transaction_date else 'N/A' }}
+                            {% if payout.transaction_date is not none %}
+                                {{ payout.transaction_date.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
                         </td>
                         <td>{{ payout.stokvel_name }}</td>
                         <td>R{{ "%.2f"|format(payout.amount) }}</td>
@@ -73,7 +156,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-gray-400 text-sm font-bold mb-2" for="stokvel_id">Stokvel</label>
-                        <select name="stokvel_id" id="stokvel_id" required class="form-input">
+                        <select name="stokvel_id" id="stokvel_id" required class="form-select">
                             {% for stokvel in stokvel_options %}
                                 <option value="{{ stokvel[0] }}">{{ stokvel[1] }}</option>
                             {% endfor %}
@@ -85,7 +168,7 @@
                     </div>
                     <div>
                         <label class="block text-gray-400 text-sm font-bold mb-2" for="description">Reason for Payout</label>
-                        <textarea name="description" id="description" required rows="3" class="form-input" placeholder="e.g., Monthly payout for June"></textarea>
+                        <textarea name="description" id="description" required rows="3" class="form-textarea" placeholder="e.g., Monthly payout for June"></textarea>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-4 mt-8">

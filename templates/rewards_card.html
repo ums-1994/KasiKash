@@ -13,7 +13,7 @@
 
       <!-- Virtual Card - Enhanced Design -->
       <div class="w-full max-w-md mx-auto mb-12">
-        <div class="relative rounded-3xl shadow-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 flex flex-col justify-between h-72 text-white overflow-hidden border border-white/20 backdrop-blur-sm">
+        <div class="animated-border relative rounded-3xl shadow-2xl p-8 flex flex-col justify-between h-72" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 3px solid; border-image-slice: 1; border-width: 3px; border-image-source: linear-gradient(45deg, #60efff, #00ff87, #7B61FF, #60efff);">
           <!-- Shimmer Effect -->
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-pulse"></div>
           
@@ -55,7 +55,7 @@
 
       <!-- Enhanced Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div class="group relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 shadow-xl border border-blue-500/20 hover:scale-105 transition-all duration-300">
+        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div class="relative z-10 flex items-center justify-between">
         <div>
@@ -68,7 +68,7 @@
       </div>
     </div>
 
-        <div class="group relative bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-6 shadow-xl border border-emerald-500/20 hover:scale-105 transition-all duration-300">
+        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div class="relative z-10 flex items-center justify-between">
         <div>
@@ -81,7 +81,7 @@
           </div>
         </div>
         
-        <div class="group relative bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-6 shadow-xl border border-purple-500/20 hover:scale-105 transition-all duration-300">
+        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div class="relative z-10 flex items-center justify-between">
             <div>
@@ -94,7 +94,7 @@
       </div>
         </div>
         
-        <div class="group relative bg-gradient-to-br from-amber-600 to-amber-800 rounded-2xl p-6 shadow-xl border border-amber-500/20 hover:scale-105 transition-all duration-300">
+        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div class="relative z-10 flex items-center justify-between">
             <div>
@@ -109,7 +109,7 @@
       </div>
 
       <!-- Enhanced Tabs -->
-      <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-2 mb-8 border border-white/10">
+      <div class="rounded-2xl p-2 mb-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
         <div class="flex space-x-2" id="reward-tabs">
           <button id="tab-activity" class="flex-1 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold focus:outline-none transition-all duration-300 shadow-lg">
             <i class="fas fa-chart-line mr-3"></i>Recent Activity
@@ -126,14 +126,14 @@
     <!-- Tab Content -->
     <div id="tab-content-activity">
       <!-- Recent Transactions -->
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/10">
+        <div class="rounded-2xl shadow-xl p-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
           <h3 class="text-2xl font-bold mb-6 text-white flex items-center">
             <i class="fas fa-chart-line mr-3 text-blue-400"></i>Recent Transactions
           </h3>
         {% if transactions %}
           <div class="space-y-4">
           {% for tx in transactions %}
-            <div class="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
+            <div class="rounded-xl p-4 border hover:bg-white/10 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
               <div class="flex items-center">
                 <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center {% if tx.amount > 0 %}bg-gradient-to-br from-emerald-500 to-emerald-600{% else %}bg-gradient-to-br from-red-500 to-red-600{% endif %} shadow-lg">
               {% if tx.amount > 0 %}
@@ -170,13 +170,13 @@
 
     <div id="tab-content-rewards" style="display:none;">
       <!-- Reward Programs Section -->
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/10">
+        <div class="rounded-2xl shadow-xl p-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
           <h3 class="text-2xl font-bold mb-8 text-white flex items-center">
             <i class="fas fa-gift mr-3 text-purple-400"></i>Reward Programs
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Welcome Bonus -->
-            <div class="group bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 border border-blue-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
+            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
               <div class="flex items-center justify-between mb-4">
                 <div class="text-xl font-bold text-white">Welcome Bonus</div>
                 <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R15</span>
@@ -188,7 +188,7 @@
             </div>
             
             <!-- Friend Referral -->
-            <div class="group bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-6 border border-purple-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
+            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
               <div class="flex items-center justify-between mb-4">
                 <div class="text-xl font-bold text-white">Friend Referral</div>
                 <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R10</span>
@@ -200,7 +200,7 @@
             </div>
             
             <!-- Monthly Contributor -->
-            <div class="group bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-6 border border-emerald-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
+            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
               <div class="flex items-center justify-between mb-4">
                 <div class="text-xl font-bold text-white">Monthly Contributor</div>
                 <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R5</span>
@@ -212,7 +212,7 @@
             </div>
             
             <!-- Event Attendance -->
-            <div class="group bg-gradient-to-br from-pink-600 to-pink-800 rounded-2xl p-6 border border-pink-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
+            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
               <div class="flex items-center justify-between mb-4">
                 <div class="text-xl font-bold text-white">Event Attendance</div>
                 <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R5</span>
@@ -224,7 +224,7 @@
             </div>
             
             <!-- Loan Payment Bonus -->
-            <div class="group bg-gradient-to-br from-orange-600 to-orange-800 rounded-2xl p-6 border border-orange-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
+            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
               <div class="flex items-center justify-between mb-4">
                 <div class="text-xl font-bold text-white">Loan Payment Bonus</div>
                 <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R10</span>
@@ -240,13 +240,13 @@
 
     <div id="tab-content-marketplace" style="display:none;">
       <!-- Marketplace Section -->
-        <div class="bg-white/5 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/10">
+        <div class="rounded-2xl shadow-xl p-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
           <h3 class="text-2xl font-bold text-white mb-8 flex items-center">
             <i class="fas fa-ticket-alt mr-3 text-emerald-400"></i>My Vouchers
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- My Vouchers Section -->
-            <div class="group bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-8 border border-emerald-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
+            <div class="group rewards-stats-card rounded-2xl p-8 border border-emerald-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
               <div class="flex items-center justify-between mb-6">
                 <div class="text-2xl font-bold text-white">My Vouchers</div>
                 <div class="text-emerald-300 text-3xl">

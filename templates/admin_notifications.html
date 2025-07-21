@@ -5,6 +5,16 @@
 <!-- Search/filter bar -->
 <div class="mb-6 flex items-center gap-4 bg-[#101c2c] rounded-xl shadow-lg p-4">
   <button class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;min-width:180px;" onclick="openSendNotificationModal()">Create Notification</button>
+  <form method="get" action="" class="ml-4">
+    <label for="type_filter" class="mr-2 font-semibold">Type:</label>
+    <select name="type" id="type_filter" class="border border-[#22304a] rounded-lg px-4 py-2 text-black" onchange="this.form.submit()">
+      <option value="all" {% if request.args.get('type', 'all') == 'all' %}selected{% endif %}>All Types</option>
+      <option value="admin_notification" {% if request.args.get('type') == 'admin_notification' %}selected{% endif %}>Admin Notification</option>
+      <option value="General" {% if request.args.get('type') == 'General' %}selected{% endif %}>General</option>
+      <option value="Alert" {% if request.args.get('type') == 'Alert' %}selected{% endif %}>Alert</option>
+      <option value="Update" {% if request.args.get('type') == 'Update' %}selected{% endif %}>Update</option>
+    </select>
+  </form>
 </div>
 <table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb;">
   <thead>

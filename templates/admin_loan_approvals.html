@@ -39,24 +39,24 @@
       <td class="flex gap-2 justify-center">
         {% if current_status == 'pending' %}
         <form method="POST" action="{{ url_for('admin.approve_loan') }}" style="display:inline;">
-          {{ csrf_token() }}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
           <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;">Approve</button>
         </form>
         <form method="POST" action="{{ url_for('admin.reject_loan') }}" style="display:inline;">
-          {{ csrf_token() }}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
           <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#ff4e50 0%,#f9d423 100%);color:#101c2c;">Reject</button>
         </form>
         {% elif current_status in ['approved', 'rejected'] %}
         <form method="POST" action="{{ url_for('admin.undo_loan') }}" style="display:inline;">
-          {{ csrf_token() }}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
           <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Undo</button>
         </form>
-        {% endif %}
         <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" data-loan-id="{{ loan[0] }}">View</button>
         <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#22304a 0%,#60efff 100%);color:#eaf6fb;" data-user-email="{{ loan[2] }}">History</button>
+        {% endif %}
       </td>
     </tr>
     {% else %}

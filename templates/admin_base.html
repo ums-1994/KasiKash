@@ -239,7 +239,7 @@
         <nav class="sidebar" id="adminSidebar">
             <div class="sidebar-header">
                 <img src="{{ url_for('static', filename='logo_admin.png') }}" alt="KasiKash Admin Logo" style="height:48px;width:48px;border-radius:50%;box-shadow:0 0 16px #60efff;">
-                <span style="font-size:1.5rem;font-weight:bold;background:linear-gradient(90deg,#60efff,#00ff87);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 8px #60efff;margin-left:8px;">KasiKash</span>
+                <span style="font-size:1.5rem;font-weight:bold;background:linear-gradient(90deg,#60efff,#00ff87);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 8px #60efff;margin-left:8px;">KasiKash</span>
             </div>
             <div class="nav flex-column">
                 <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -257,14 +257,18 @@
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         <div class="mb-4">
+                        {% set seen = [] %}
                         {% for category, message in messages %}
-                            <div class="p-4 rounded-md 
-                                {% if category == 'success' %}bg-green-100 border border-green-400 text-green-700
-                                {% elif category == 'danger' %}bg-red-100 border border-red-400 text-red-700
-                                {% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}"
-                                role="alert">
-                                {{ message }}
-                            </div>
+                            {% if message not in seen %}
+                                <div class="p-4 rounded-md 
+                                    {% if category == 'success' %}bg-green-100 border border-green-400 text-green-700
+                                    {% elif category == 'danger' %}bg-red-100 border border-red-400 text-red-700
+                                    {% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}"
+                                    role="alert">
+                                    {{ message }}
+                                </div>
+                                {% set _ = seen.append(message) %}
+                            {% endif %}
                         {% endfor %}
                         </div>
                     {% endif %}

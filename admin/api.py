@@ -330,3 +330,20 @@ def dashboard_notifications():
             'alerts': [],
             'timestamp': datetime.now().isoformat()
         })
+
+@api_bp.route('/api/diary/events')
+@login_required
+def get_diary_events():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'events': []})
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT event_date, event_name, description FROM diary WHERE user_id = %s ORDER BY event_date", (user_id,))
+                events = [
+                    {'date': row[0].isoformat(), 'name': row[1], 'description': row[2]} for row in cur.fetchall()
+                ]
+        return jsonify({'events': events})
+    except Exception as e:
+        return jsonify({'events': [], 'error': str(e)})

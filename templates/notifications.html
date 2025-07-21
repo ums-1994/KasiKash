@@ -3,71 +3,242 @@
 {% block title %}Notifications - KasiKash{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 <style>
-    .notification-list-item:hover {
-        background-color: #f7fafc; /* gray-100 */
-    }
-    .notification-unread {
-        background-color: #ebf8ff; /* blue-100 */
-        border-left: 4px solid #4299e1; /* blue-500 */
-    }
+.glass-card {
+    background: rgba(45, 45, 68, 0.4);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+}
+.notification-item {
+    background: rgba(30, 30, 46, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+.notification-item:hover {
+    background: rgba(30, 30, 46, 0.9);
+    border-color: rgba(123, 97, 255, 0.3);
+    transform: translateY(-2px);
+}
+.notification-unread {
+    border-left: 4px solid #7B61FF;
+    background: rgba(123, 97, 255, 0.1);
+}
+.btn-primary {
+    background: linear-gradient(90deg, #7B61FF, #61DAFB);
+    color: #FFF; font-weight: 600; padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem; border: none; cursor: pointer; transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(123, 97, 255, 0.2);
+}
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1); color: #E2E2F0;
+    font-weight: 600; padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer; transition: all 0.3s ease;
+}
+.form-select {
+    background: rgba(30, 30, 46, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #E2E2F0; border-radius: 0.75rem; padding: 0.5rem 1rem;
+    transition: all 0.2s ease-in-out;
+}
+.form-select:focus {
+    background: rgba(30, 30, 46, 0.9); border-color: #7B61FF;
+    box-shadow: 0 0 15px rgba(123, 97, 255, 0.2); outline: none;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Notifications</h1>
-            {% if notifications %}
-            <form action="{{ url_for('clear_notifications') }}" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button type="submit" class="text-sm text-blue-600 hover:underline focus:outline-none">Mark all as read</button>
-            </form>
-            {% endif %}
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Notifications</h1>
+            <p class="mt-3 text-lg text-gray-400">Stay updated with your latest notifications and messages.</p>
+        </header>
+
+        <!-- Controls -->
+        <div class="glass-card mb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex gap-2">
+                    <button onclick="markAllAsRead()" class="btn-secondary text-sm">
+                        <i class="fas fa-check-double mr-2"></i>Mark All as Read
+                    </button>
+                    <button onclick="markAllAsUnread()" class="btn-secondary text-sm">
+                        <i class="fas fa-eye-slash mr-2"></i>Mark All as Unread
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <select id="typeFilter" class="form-select text-sm" onchange="filterNotifications()">
+                        <option value="">All Types</option>
+                        <option value="loan">Loan</option>
+                        <option value="contribution">Contribution</option>
+                        <option value="payout">Payout</option>
+                        <option value="system">System</option>
+                    </select>
+                    <select id="statusFilter" class="form-select text-sm" onchange="filterNotifications()">
+                        <option value="">All Status</option>
+                        <option value="unread">Unread</option>
+                        <option value="read">Read</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <ul class="divide-y divide-gray-200">
-                {% if notifications %}
+        <!-- Notifications List -->
+        <div class="glass-card">
+            <h2 class="text-2xl font-semibold mb-6 text-white">
+                <i class="fas fa-bell mr-3 text-blue-400"></i>Your Notifications
+            </h2>
+            
+            {% if notifications %}
+                <div id="notificationsList" class="space-y-4">
                     {% for notification in notifications %}
-                    <li class="p-4 transition notification-list-item {% if not notification.is_read %}notification-unread{% endif %}">
-                        <a href="{{ notification.link_url or '#' }}" class="block">
-                            <div class="flex items-start space-x-4">
-                                <div class="flex-shrink-0">
-                                    <span class="h-10 w-10 rounded-full flex items-center justify-center {% if not notification.is_read %}bg-blue-500{% else %}bg-gray-400{% endif %} text-white">
-                                        <i class="fas fa-bell"></i>
-                                    </span>
+                    <div class="notification-item {{ 'notification-unread' if not notification.is_read else '' }}" data-type="{{ notification.type|lower }}" data-status="{{ 'unread' if not notification.is_read else 'read' }}">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                    <i class="fas fa-bell text-white"></i>
                                 </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm text-gray-800">{{ notification.message }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-3 mb-2">
+                                    {% if notification.type %}
+                                    <span class="px-3 py-1 text-xs font-semibold bg-blue-900/50 text-blue-300 rounded-full">
+                                        {{ notification.type|title }}
+                                    </span>
+                                    {% endif %}
+                                    {% if not notification.is_read %}
+                                    <span class="px-2 py-1 text-xs font-semibold bg-green-500 text-white rounded-full">
+                                        New
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-white font-medium mb-2">{{ notification.message }}</p>
+                                <div class="flex items-center gap-4 text-sm text-gray-400">
+                                    <span>
                                         <i class="far fa-clock mr-1"></i>
                                         {% if notification.created_at %}
-                                            {{ notification.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            {{ notification.created_at.strftime('%b %d, %Y at %I:%M %p') }}
+                                        {% else %}
+                                            Recently
                                         {% endif %}
-                                    </p>
+                                    </span>
+                                    {% if notification.link_url %}
+                                    <a href="{{ notification.link_url }}" class="text-blue-400 hover:text-blue-300 transition-colors">
+                                        <i class="fas fa-external-link-alt mr-1"></i>View Details
+                                    </a>
+                                    {% endif %}
                                 </div>
-                                {% if not notification.is_read %}
-                                <div class="flex-shrink-0 self-center">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                </div>
-                                {% endif %}
                             </div>
-                        </a>
-                    </li>
-                    {% endfor %}
-                {% else %}
-                    <li class="p-8 text-center text-gray-500">
-                        <div class="mb-4">
-                             <i class="fas fa-envelope-open-text fa-3x text-gray-300"></i>
+                            <div class="flex flex-col items-end gap-2">
+                                {% if not notification.is_read %}
+                                <button onclick="markAsRead('{{ notification.id }}')" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                                    <i class="fas fa-check mr-1"></i>Mark as Read
+                                </button>
+                                {% endif %}
+                                <button onclick="deleteNotification('{{ notification.id }}')" class="text-red-400 hover:text-red-300 transition-colors">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
-                        <h3 class="font-semibold">No notifications yet</h3>
-                        <p class="text-sm">We'll let you know when something important happens.</p>
-                    </li>
-                {% endif %}
-            </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-16">
+                    <div class="mb-4">
+                        <i class="fas fa-envelope-open-text text-6xl text-gray-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-2">No notifications yet</h3>
+                    <p class="text-gray-400">We'll let you know when something important happens.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+function markAllAsRead() {
+    if (confirm('Mark all notifications as read?')) {
+        fetch('/clear_notifications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function markAllAsUnread() {
+    if (confirm('Mark all notifications as unread?')) {
+        // Implementation for marking all as unread
+        console.log('Mark all as unread');
+    }
+}
+
+function markAsRead(notificationId) {
+    fetch(`/mark_notification_read/${notificationId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        }
+    });
+}
+
+function deleteNotification(notificationId) {
+    if (confirm('Delete this notification?')) {
+        fetch(`/delete_notification/${notificationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function filterNotifications() {
+    const typeFilter = document.getElementById('typeFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const notifications = document.querySelectorAll('.notification-item');
+    
+    notifications.forEach(notification => {
+        const type = notification.dataset.type;
+        const status = notification.dataset.status;
+        
+        const typeMatch = !typeFilter || type === typeFilter;
+        const statusMatch = !statusFilter || status === statusFilter;
+        
+        if (typeMatch && statusMatch) {
+            notification.style.display = 'block';
+        } else {
+            notification.style.display = 'none';
+        }
+    });
+}
+</script>
 {% endblock %} 

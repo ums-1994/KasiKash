@@ -758,3 +758,41 @@ body.light-mode {
 .dark-mode input[type="time"] {
     color-scheme: dark;
 }
+
+/* Force all user-facing cards and their content to use dashboard colors */
+.card, .main-content .card, .dashboard-main .card, .admin-main .card, .card * {
+  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
+  color: #eaf6fb !important;
+  border: 1px solid #22304a !important;
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
+}
+body.light-mode .card, body.light-mode .main-content .card, body.light-mode .dashboard-main .card, body.light-mode .admin-main .card, body.light-mode .card * {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+/* Force only user-facing cards (not admin) to use dashboard colors */
+.card:not(.admin-card):not(.admin-content-card):not(.pricing-card),
+.card:not(.admin-card):not(.admin-content-card):not(.pricing-card) * {
+  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
+  color: #eaf6fb !important;
+  border: 1px solid #22304a !important;
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
+}
+body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card),
+body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) * {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+.stokvel-card {
+  transition: transform 0.25s cubic-bezier(.4,2,.3,1), box-shadow 0.25s cubic-bezier(.4,2,.3,1);
+  will-change: transform, box-shadow;
+}
+.stokvel-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 32px 0 rgba(96,239,255,0.18), 0 2px 12px rgba(67,233,123,0.10);
+  z-index: 2;
+}

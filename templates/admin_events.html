@@ -5,7 +5,6 @@
 <!-- Event creation form -->
 <div class="flex flex-wrap items-center gap-4 mb-6 bg-[#101c2c] rounded-xl shadow-lg p-4">
   <form id="createEventForm" method="POST" action="{{ url_for('admin.events') }}" class="flex flex-col gap-3 flex-1 min-w-[250px]">
-    {{ csrf_token() }}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="flex flex-wrap gap-3">
       <div class="flex-1 min-w-[180px]">

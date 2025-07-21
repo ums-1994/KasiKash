@@ -150,23 +150,6 @@
         height: 1.2em;
     }
 </style>
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div id="settings-flash-popup" style="position:fixed;top:30px;right:30px;z-index:9999;">
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category|default('success') }}" style="background:#22c55e;color:white;padding:18px 32px;border-radius:12px;margin-bottom:10px;min-width:250px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-size:1.2rem;">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-    <script>
-      setTimeout(function() {
-        var popup = document.getElementById('settings-flash-popup');
-        if (popup) popup.style.display = 'none';
-      }, 3000);
-    </script>
-  {% endif %}
-{% endwith %}
 <form action="{{ url_for('admin.settings') }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="settings-container">

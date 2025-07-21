@@ -11,6 +11,21 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
+from fpdf import FPDF
+from extensions import csrf
+from translations import get_text
+from datetime import datetime
+import os
+from flask import g
+from flask import send_file
+
+# Add this context processor to make 't' available in all templates
+@admin_bp.app_context_processor
+def inject_t():
+    return dict(t=get_text, _=get_text)
+
+def get_user_language():
+    return session.get('language_preference', 'en')
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -197,7 +212,18 @@ def approve_loan():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
+                # Update loan status
                 cur.execute("UPDATE transactions SET status = 'approved', description = CONCAT(description, ' | Admin Comment: ', %s) WHERE id = %s", (comment, loan_id,))
+                # Fetch user firebase_uid for notification
+                cur.execute("SELECT user_id FROM transactions WHERE id = %s", (loan_id,))
+                user_id_row = cur.fetchone()
+                if user_id_row and user_id_row[0]:
+                    cur.execute("SELECT firebase_uid FROM users WHERE firebase_uid = %s", (user_id_row[0],))
+                    firebase_row = cur.fetchone()
+                    if firebase_row and firebase_row[0]:
+                        message = "Your loan request has been approved."
+                        link = url_for('profile')
+                        create_notification(firebase_row[0], message, link_url=link, notification_type='loan_approved')
                 conn.commit()
         flash('Loan approved successfully.', 'success')
     except Exception as e:
@@ -217,9 +243,23 @@ def reject_loan():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
+                # Update loan status
                 cur.execute("UPDATE transactions SET status = 'rejected', description = CONCAT(description, ' | Admin Comment: ', %s) WHERE id = %s", (comment, loan_id,))
+                # Fetch user firebase_uid for notification
+                cur.execute("SELECT user_id FROM transactions WHERE id = %s", (loan_id,))
+                user_id_row = cur.fetchone()
+                if user_id_row and user_id_row[0]:
+                    cur.execute("SELECT firebase_uid FROM users WHERE firebase_uid = %s", (user_id_row[0],))
+                    firebase_row = cur.fetchone()
+                    if firebase_row and firebase_row[0]:
+                        message = "Your loan request has been rejected."
+                        link = url_for('profile')
+                        create_notification(firebase_row[0], message, link_url=link, notification_type='loan_rejected')
+                if cur.rowcount == 0:
+                    flash('No loan was updated. Please check the loan ID.', 'danger')
+                else:
+                    flash('Loan rejected successfully.', 'success')
                 conn.commit()
-        flash('Loan rejected successfully.', 'success')
     except Exception as e:
         print(f"Error rejecting loan: {e}")
         flash('Failed to reject loan.', 'danger')
@@ -304,26 +344,49 @@ def events():
         stokvel_id = request.form.get('stokvel')
         name = request.form.get('name')
         description = request.form.get('description')
+        event_type = request.form.get('event_type')
         target_date = request.form.get('target_date')
         send_notification = 'send_notification' in request.form
         try:
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(
-                        "INSERT INTO events (stokvel_id, name, description, target_date) VALUES (%s, %s, %s, %s)",
-                        (stokvel_id, name, description, target_date)
+                        "INSERT INTO events (stokvel_id, name, description, event_type, target_date) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                        (stokvel_id, name, description, event_type, target_date)
                     )
+                    event_id = cur.fetchone()[0]
+                    # Fetch all members of the stokvel
+                    cur.execute("SELECT user_id FROM stokvel_members WHERE stokvel_id = %s", (stokvel_id,))
+                    members = cur.fetchall()
+                    # Add event to each member's diary (calendar)
+                    if not members:
+                        print(f"No members found for stokvel {stokvel_id}, event {event_id}")
+                    for member in members:
+                        user_id = member[0]
+                        if user_id:
+                            try:
+                                cur.execute("INSERT INTO diary (user_id, event_id, event_name, event_date, description) VALUES (%s, %s, %s, %s, %s)",
+                                    (user_id, event_id, event_type, target_date, description))
+                            except Exception as diary_e:
+                                print(f"Could not add to diary for user {user_id}: {diary_e}")
                     conn.commit()
+                    # Notify all members and the creator
                     if send_notification:
                         cur.execute("SELECT user_id FROM stokvel_members WHERE stokvel_id = %s", (stokvel_id,))
                         members = cur.fetchall()
                         for member in members:
                             user_id = member[0]
                             if user_id:
-                                message = f"New event '{name}' has been scheduled for your stokvel."
+                                message = f"New event of type '{event_type}' has been scheduled for your stokvel."
                                 link = url_for('home')
                                 create_notification(user_id, message, link_url=link, notification_type='event')
-            flash('Event created successfully!', 'success')
+                        # Also notify the creator (admin)
+                        creator_id = session.get('user_id')
+                        if creator_id:
+                            message = f"You have created a new event '{event_type}' for your stokvel."
+                            link = url_for('admin.events')
+                            create_notification(creator_id, message, link_url=link, notification_type='event')
+            flash('Event created and notifications sent!', 'success')
         except Exception as e:
             print(f"Error creating event: {e}")
             flash('Failed to create event.', 'danger')
@@ -389,7 +452,39 @@ def notifications():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
-    return render_template('admin_notifications.html')
+    
+    notif_type = request.args.get('type', 'all')
+    notifications = []
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                if notif_type == 'all':
+                    cur.execute("""
+                        SELECT n.id, n.user_id, n.message, n.type, n.created_at, u.username, u.email, s.name as stokvel_name
+                        FROM notifications n
+                        LEFT JOIN users u ON n.user_id = u.firebase_uid
+                        LEFT JOIN stokvel_members sm ON sm.user_id = u.firebase_uid
+                        LEFT JOIN stokvels s ON sm.stokvel_id = s.id
+                        ORDER BY n.created_at DESC
+                        LIMIT 100
+                    """)
+                else:
+                    cur.execute("""
+                        SELECT n.id, n.user_id, n.message, n.type, n.created_at, u.username, u.email, s.name as stokvel_name
+                        FROM notifications n
+                        LEFT JOIN users u ON n.user_id = u.firebase_uid
+                        LEFT JOIN stokvel_members sm ON sm.user_id = u.firebase_uid
+                        LEFT JOIN stokvels s ON sm.stokvel_id = s.id
+                        WHERE n.type = %s
+                        ORDER BY n.created_at DESC
+                        LIMIT 100
+                    """, (notif_type,))
+                notifications = cur.fetchall()
+    except Exception as e:
+        print(f"Error fetching notifications: {e}")
+        flash('Could not load notifications.', 'danger')
+    
+    return render_template('admin_notifications.html', notifications=notifications, user_language=get_user_language())
 
 @admin_bp.route('/notifications/send', methods=['POST'])
 @login_required
@@ -416,6 +511,27 @@ def send_notification():
         print(f"Error sending notification: {e}")
         flash('Failed to send notification.', 'danger')
     return redirect(url_for('admin.notifications'))
+
+@admin_bp.route('/api/notifications/<int:notification_id>/delete', methods=['POST'])
+@login_required
+def api_delete_notification(notification_id):
+    user_id = session.get('user_id')
+    user_role = session.get('role')
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Only allow delete if user owns the notification or is admin
+                if user_role == 'admin':
+                    cur.execute("DELETE FROM notifications WHERE id = %s", (notification_id,))
+                else:
+                    cur.execute("DELETE FROM notifications WHERE id = %s AND user_id = %s", (notification_id, user_id))
+                if cur.rowcount == 0:
+                    return jsonify({'success': False, 'message': 'Notification not found or not authorized.'}), 404
+                conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error deleting notification via API: {e}")
+        return jsonify({'success': False, 'message': 'Could not delete notification.'}), 500
 
 @admin_bp.route('/kyc-approvals')
 @login_required
@@ -633,10 +749,16 @@ def settings():
                             data_retention, enable_2fa, meeting_day
                         ))
                 conn.commit()
-            flash('Settings saved successfully!', 'success')
+            session['language_preference'] = language  # Ensure session is updated for immediate effect
+            if '_settings_updated' not in session:
+                flash('Settings updated successfully!', 'success')
+                session['_settings_updated'] = True
         except Exception as e:
             flash(f'Error saving settings: {e}', 'danger')
         return redirect(url_for('admin.settings'))
+
+    # Remove the flag after redirect
+    session.pop('_settings_updated', None)
 
     # Load settings for display
     default_settings = {
@@ -807,3 +929,526 @@ def export_transactions():
     else:
         flash('Unsupported export format.', 'danger')
         return redirect(url_for('admin.settings'))
+
+@admin_bp.route('/admin/add_attendance', methods=['POST'])
+@login_required
+def add_attendance():
+    print('add_attendance route called')
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('admin.settings'))
+    meeting_name = request.form.get('meeting_name')
+    meeting_date = request.form.get('meeting_date')
+    present_count = request.form.get('present_count', type=int)
+    absent_count = request.form.get('absent_count', type=int)
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    INSERT INTO meeting_attendance (meeting_name, meeting_date, present_count, absent_count)
+                    VALUES (%s, %s, %s, %s)
+                ''', (meeting_name, meeting_date, present_count, absent_count))
+            conn.commit()
+        flash('Attendance record added.', 'success')
+    except Exception as e:
+        flash(f'Error adding attendance record: {e}', 'danger')
+    return redirect(url_for('admin.settings'))
+
+@admin_bp.route('/admin/edit_attendance/<int:attendance_id>', methods=['POST'])
+@login_required
+def edit_attendance(attendance_id):
+    print(f'edit_attendance route called for id={attendance_id}')
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('admin.settings'))
+    meeting_name = request.form.get('meeting_name')
+    meeting_date = request.form.get('meeting_date')
+    present_count = request.form.get('present_count', type=int)
+    absent_count = request.form.get('absent_count', type=int)
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    UPDATE meeting_attendance
+                    SET meeting_name=%s, meeting_date=%s, present_count=%s, absent_count=%s
+                    WHERE id=%s
+                ''', (meeting_name, meeting_date, present_count, absent_count, attendance_id))
+            conn.commit()
+        flash('Attendance record updated.', 'success')
+    except Exception as e:
+        print(f"Error updating attendance record: {e}")
+        flash(f'Error updating attendance record: {e}', 'danger')
+    return redirect(url_for('admin.settings'))
+
+@admin_bp.route('/admin/delete_attendance/<int:attendance_id>', methods=['POST'])
+@login_required
+def delete_attendance(attendance_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('admin.settings'))
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('DELETE FROM meeting_attendance WHERE id=%s', (attendance_id,))
+            conn.commit()
+        flash('Attendance record deleted.', 'success')
+    except Exception as e:
+        flash(f'Error deleting attendance record: {e}', 'danger')
+    return redirect(url_for('admin.settings'))
+
+@admin_bp.route('/set-language', methods=['POST'])
+def set_language():
+    """
+    Allows the user to switch to any language. Stores the selected language in the session.
+    Expects a 'language' field in the POST form data.
+    Redirects back to the referring page or dashboard.
+    """
+    language = request.form.get('language')
+    valid_codes = ['en', 'zu', 'xh', 'af', 'st', 'ts', 'tn', 'ss', 've', 'nr', 'nso']
+    if language not in valid_codes:
+        language = 'en'
+    session['language_preference'] = language
+    flash('Language updated successfully!', 'success')
+    return redirect(request.referrer or url_for('admin.dashboard'))
+csrf.exempt(set_language)
+
+@admin_bp.route('/set_language')
+def admin_set_language():
+    lang = request.args.get('lang')
+    from flask import current_app, make_response, request, url_for
+    supported = current_app.config.get('BABEL_SUPPORTED_LOCALES', ['en'])
+    resp = make_response(redirect(request.referrer or url_for('dashboard')))
+    if lang and lang in supported:
+        resp.set_cookie('language_preference', lang, max_age=60*60*24*30)  # 30 days
+        flash(f"Admin language changed to {lang}", "success")
+    else:
+        flash("Invalid language selected.", "error")
+    return resp
+
+@admin_bp.route('/financial-reports')
+@login_required
+def financial_reports():
+    user_language = get_user_language()
+    financial_data = {}
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Total contributions
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE LOWER(type) = 'contribution'")
+                total_contributions = cur.fetchone()[0]
+                # Total withdrawals
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE LOWER(type) = 'payout'")
+                total_withdrawals = cur.fetchone()[0]
+                # Current balance
+                cur.execute("""
+                    SELECT COALESCE(SUM(
+                        CASE 
+                            WHEN LOWER(type) = 'contribution' THEN amount
+                            WHEN LOWER(type) = 'payout' THEN -amount
+                            ELSE 0
+                        END
+                    ), 0) FROM transactions
+                """)
+                current_balance = cur.fetchone()[0]
+                # Breakdown by stokvel
+                cur.execute("""
+                    SELECT s.name, 
+                        COALESCE(SUM(
+                            CASE 
+                                WHEN LOWER(t.type) = 'contribution' THEN t.amount
+                                WHEN LOWER(t.type) = 'payout' THEN -t.amount
+                                ELSE 0
+                            END
+                        ), 0) as balance
+                    FROM stokvels s
+                    LEFT JOIN transactions t ON s.id = t.stokvel_id
+                    GROUP BY s.name
+                    ORDER BY s.name
+                """)
+                stokvel_balances = cur.fetchall()
+                # Fetch latest 100 transactions for the report table (fix type mismatch)
+                cur.execute("""
+                    SELECT t.transaction_date, t.type, t.amount, u.username, t.status
+                    FROM transactions t
+                    LEFT JOIN users u ON t.user_id = CAST(u.id AS VARCHAR)
+                    ORDER BY t.transaction_date DESC
+                    LIMIT 100
+                """)
+                transactions = cur.fetchall()
+                financial_data['transactions'] = transactions
+                # Monthly contributions and payouts for the last 6 months
+                cur.execute("""
+                    SELECT 
+                        TO_CHAR(DATE_TRUNC('month', transaction_date), 'YYYY-MM') AS month,
+                        SUM(CASE WHEN LOWER(type) = 'contribution' THEN amount ELSE 0 END) AS contributions,
+                        SUM(CASE WHEN LOWER(type) = 'payout' THEN amount ELSE 0 END) AS payouts
+                    FROM transactions
+                    GROUP BY month
+                    ORDER BY month
+                    LIMIT 6
+                """)
+                monthly_data = []
+                for row in cur.fetchall():
+                    month = row[0] if row[0] is not None else ""
+                    contrib = row[1] if row[1] is not None else 0
+                    payout = row[2] if row[2] is not None else 0
+                    monthly_data.append([month, contrib, payout])
+                financial_data['monthly_data'] = monthly_data
+                # Cumulative balance over time (by month)
+                cur.execute("""
+                    SELECT 
+                        TO_CHAR(DATE_TRUNC('month', transaction_date), 'YYYY-MM') AS month,
+                        SUM(CASE WHEN LOWER(type) = 'contribution' THEN amount ELSE -amount END) AS net
+                    FROM transactions
+                    GROUP BY month
+                    ORDER BY month
+                """)
+                rows = cur.fetchall()
+                cumulative = []
+                total = 0
+                for row in rows:
+                    month = row[0] if row[0] is not None else ""
+                    net = row[1] if row[1] is not None else 0
+                    total += net
+                    cumulative.append({'month': month, 'balance': total})
+                financial_data['cumulative'] = cumulative
+        financial_data = {
+            'total_contributions': total_contributions,
+            'total_withdrawals': total_withdrawals,
+            'current_balance': current_balance,
+            'stokvel_balances': stokvel_balances
+        }
+        # Guarantee chart data is always present and serializable
+        if 'monthly_data' not in financial_data or not financial_data['monthly_data']:
+            financial_data['monthly_data'] = []
+        if 'cumulative' not in financial_data or not financial_data['cumulative']:
+            financial_data['cumulative'] = []
+    except Exception as e:
+        print(f"Error fetching financial report data: {e}")
+        flash('Could not load financial report data.', 'danger')
+    return render_template('admin_financial_reports.html', financial_data=financial_data, user_language=user_language)
+
+class PDF(FPDF):
+    def header(self):
+        logo_path = os.path.join('static', 'logo.png.png')
+        if os.path.exists(logo_path):
+            self.image(logo_path, 10, 8, 25)
+        self.set_font('Arial', 'B', 16)
+        self.cell(0, 10, 'KasiKash Financial Report', ln=True, align='C')
+        self.set_draw_color(34, 211, 238)
+        self.set_line_width(1)
+        self.line(40, 25, 200, 25)
+        self.ln(10)
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(128)
+        self.cell(0, 10, f'Page {self.page_no()} | Powered by KasiKash', 0, 0, 'C')
+
+@admin_bp.route('/financial-reports/export/pdf')
+@login_required
+def export_financial_report_pdf():
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE LOWER(type) = 'contribution'")
+                total_contributions = cur.fetchone()[0]
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE LOWER(type) = 'payout'")
+                total_withdrawals = cur.fetchone()[0]
+                cur.execute("""
+                    SELECT COALESCE(SUM(
+                        CASE 
+                            WHEN LOWER(type) = 'contribution' THEN amount
+                            WHEN LOWER(type) = 'payout' THEN -amount
+                            ELSE 0
+                        END
+                    ), 0) FROM transactions
+                """)
+                current_balance = cur.fetchone()[0]
+                cur.execute("""
+                    SELECT s.name, 
+                        COALESCE(SUM(
+                            CASE 
+                                WHEN LOWER(t.type) = 'contribution' THEN t.amount
+                                WHEN LOWER(t.type) = 'payout' THEN -t.amount
+                                ELSE 0
+                            END
+                        ), 0) as balance
+                    FROM stokvels s
+                    LEFT JOIN transactions t ON s.id = t.stokvel_id
+                    GROUP BY s.name
+                    ORDER BY s.name
+                """)
+                stokvel_balances = cur.fetchall()
+    except Exception as e:
+        flash('Could not generate PDF.', 'danger')
+        return redirect(url_for('admin.financial_reports'))
+
+    pdf = PDF()
+    pdf.add_page()
+
+    # Timestamp and generated by
+    pdf.set_font("Arial", '', 10)
+    pdf.set_text_color(100)
+    pdf.cell(0, 8, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} by KasiKash", ln=True, align='R')
+    pdf.ln(5)
+
+    # Summary Table
+    pdf.set_text_color(0)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, "Summary", ln=True)
+    pdf.set_font("Arial", '', 12)
+    pdf.set_fill_color(240, 248, 255)
+    pdf.cell(60, 10, "Total Contributions", 1, 0, 'L', True)
+    pdf.cell(60, 10, "Total Payouts", 1, 0, 'L', True)
+    pdf.cell(60, 10, "Current Balance", 1, 1, 'L', True)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.set_fill_color(255, 255, 255)
+    pdf.cell(60, 10, f"R {total_contributions:,.2f}", 1, 0, 'L', True)
+    pdf.cell(60, 10, f"R {total_withdrawals:,.2f}", 1, 0, 'L', True)
+    pdf.cell(60, 10, f"R {current_balance:,.2f}", 1, 1, 'L', True)
+    pdf.ln(10)
+
+    # Stokvel Balances Table
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, "Stokvel Balances", ln=True)
+    pdf.set_font("Arial", 'B', 11)
+    pdf.set_fill_color(34, 211, 238)
+    pdf.set_text_color(255)
+    pdf.cell(90, 8, "Stokvel", 1, 0, 'C', True)
+    pdf.cell(90, 8, "Balance", 1, 1, 'C', True)
+    pdf.set_font("Arial", '', 11)
+    pdf.set_text_color(0)
+    fill = False
+    for stokvel in stokvel_balances:
+        if fill:
+            pdf.set_fill_color(240, 248, 255)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        pdf.cell(90, 8, str(stokvel[0]), 1, 0, 'L', True)
+        pdf.cell(90, 8, f"R {stokvel[1]:,.2f}", 1, 1, 'R', True)
+        fill = not fill
+
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    pdf_output = BytesIO(pdf_bytes)
+    pdf_output.seek(0)
+    return send_file(pdf_output, as_attachment=True, download_name='financial_report.pdf', mimetype='application/pdf')
+
+@admin_bp.route('/virtual-rewards')
+@login_required
+def virtual_rewards():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('home'))
+    
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get all users with their reward card balances
+                cur.execute("""
+                    SELECT u.id, u.username, u.email, vrc.balance, vrc.card_number
+                    FROM users u
+                    LEFT JOIN virtual_reward_cards vrc ON u.id = vrc.user_id
+                    ORDER BY u.username
+                """)
+                users = cur.fetchall()
+                
+                # Get recent reward transactions
+                cur.execute("""
+                    SELECT rt.amount, rt.transaction_type, rt.description, rt.created_at, u.username, u.email
+                    FROM reward_transactions rt
+                    JOIN users u ON rt.user_id = u.id
+                    ORDER BY rt.created_at DESC
+                    LIMIT 20
+                """)
+                transactions = cur.fetchall()
+                
+                # Get total reward statistics
+                cur.execute("""
+                    SELECT 
+                        COUNT(DISTINCT vrc.user_id) as total_users_with_cards,
+                        COALESCE(SUM(vrc.balance), 0) as total_balance,
+                        COUNT(rt.id) as total_transactions
+                    FROM virtual_reward_cards vrc
+                    LEFT JOIN reward_transactions rt ON vrc.user_id = rt.user_id
+                """)
+                stats = cur.fetchone()
+                
+    except Exception as e:
+        print(f"Error fetching virtual rewards data: {e}")
+        users = []
+        transactions = []
+        stats = (0, 0, 0)
+    
+    return render_template('admin_virtual_rewards.html', 
+                         users=users, 
+                         transactions=transactions, 
+                         stats=stats)
+
+@admin_bp.route('/virtual-rewards/distribute', methods=['POST'])
+@login_required
+def distribute_rewards():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    email = request.form.get('email')
+    reward_type = request.form.get('reward_type')
+    amount = request.form.get('amount')
+    description = request.form.get('description', 'Admin reward distribution')
+    
+    if not all([email, reward_type, amount]):
+        flash('Email, reward type, and amount are required.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    try:
+        amount = int(amount)
+        if amount <= 0:
+            flash('Amount must be positive.', 'danger')
+            return redirect(url_for('admin.virtual_rewards'))
+            
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Get user by email
+                cur.execute("SELECT firebase_uid FROM users WHERE email = %s", (email,))
+                user = cur.fetchone()
+                
+                if not user:
+                    flash('User not found.', 'danger')
+                    return redirect(url_for('admin.virtual_rewards'))
+                
+                firebase_uid = user[0]
+                
+                # Import and use the add_reward function from rewards module
+                from rewards import add_reward
+                success = add_reward(firebase_uid, amount, reward_type, description)
+                
+                if success:
+                    flash('Rewards distributed successfully!', 'success')
+                else:
+                    flash('Failed to distribute reward. User may not have a reward card.', 'danger')
+                    
+    except ValueError:
+        flash('Amount must be a valid number.', 'danger')
+    except Exception as e:
+        print(f"Error distributing reward: {e}")
+        flash('Could not distribute rewards.', 'danger')
+
+    return redirect(url_for('admin.virtual_rewards'))
+
+@admin_bp.route('/virtual-rewards/bulk-distribute', methods=['POST'])
+@login_required
+def bulk_distribute_rewards():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    reward_type = request.form.get('reward_type')
+    amount = request.form.get('amount')
+    description = request.form.get('description', 'Bulk admin reward distribution')
+    user_filter = request.form.get('user_filter', 'all')  # all, active, new_users
+    
+    if not all([reward_type, amount]):
+        flash('Reward type and amount are required.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+    
+    try:
+        amount = int(amount)
+        if amount <= 0:
+            flash('Amount must be positive.', 'danger')
+            return redirect(url_for('admin.virtual_rewards'))
+            
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Build query based on filter
+                if user_filter == 'active':
+                    # Users with recent activity (last 30 days)
+                    cur.execute("""
+                        SELECT DISTINCT u.id 
+                        FROM users u
+                        JOIN reward_transactions rt ON u.id = rt.user_id
+                        WHERE rt.created_at >= CURRENT_DATE - INTERVAL '30 days'
+                    """)
+                elif user_filter == 'new_users':
+                    # Users who joined in last 30 days
+                    cur.execute("""
+                        SELECT id FROM users 
+                        WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+                    """)
+                else:
+                    # All users
+                    cur.execute("SELECT id FROM users")
+                
+                users = cur.fetchall()
+                success_count = 0
+                
+                from rewards import add_reward
+                for user in users:
+                    # Get firebase_uid for the user
+                    cur.execute("SELECT firebase_uid FROM users WHERE id = %s", (user[0],))
+                    firebase_uid_result = cur.fetchone()
+                    if firebase_uid_result and firebase_uid_result[0]:
+                        if add_reward(firebase_uid_result[0], amount, reward_type, description):
+                            success_count += 1
+                
+                flash(f'Bulk rewards distributed successfully!', 'success')
+                    
+    except ValueError:
+        flash('Amount must be a valid number.', 'danger')
+    except Exception as e:
+        print(f"Error bulk distributing rewards: {e}")
+        flash('Could not bulk distribute rewards.', 'danger')
+    
+    return redirect(url_for('admin.virtual_rewards'))
+
+@admin_bp.route('/virtual-rewards/analytics')
+@login_required
+def reward_analytics():
+    if session.get('role') != 'admin':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('admin.virtual_rewards'))
+
+    monthly_data = []
+    top_earners = []
+    type_distribution = []
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Monthly reward distribution (last 6 months)
+                cur.execute("""
+                    SELECT DATE_TRUNC('month', created_at) AS month, SUM(amount)
+                    FROM reward_transactions
+                    GROUP BY month
+                    ORDER BY month DESC
+                    LIMIT 6
+                """)
+                monthly_data = cur.fetchall()
+
+                # Top reward earners
+                cur.execute("""
+                    SELECT u.username, u.email, SUM(rt.amount) as total_earned
+                    FROM reward_transactions rt
+                    JOIN users u ON rt.user_id = u.id
+                    GROUP BY u.username, u.email
+                    ORDER BY total_earned DESC
+                    LIMIT 10
+                """)
+                top_earners = cur.fetchall()
+
+                # Reward type distribution
+                cur.execute("""
+                    SELECT rt.transaction_type, COUNT(*), SUM(rt.amount)
+                    FROM reward_transactions rt
+                    GROUP BY rt.transaction_type
+                """)
+                type_distribution = cur.fetchall()
+    except Exception as e:
+        print(f"Error fetching analytics data: {e}")
+
+    return render_template(
+        'admin_reward_analytics.html',
+        monthly_data=monthly_data,
+        top_earners=top_earners,
+        type_distribution=type_distribution
+    )

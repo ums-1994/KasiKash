@@ -7,6 +7,39 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/savings_goals.css') }}">
+<style>
+    .progress-container {
+        width: 100%;
+        background: rgba(0,0,0,0.2);
+        border-radius: 9999px;
+        height: 0.75rem;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, #7B61FF, #61DAFB);
+        transition: width 0.3s ease;
+        width: var(--progress-width);
+    }
+    .progress-text {
+        color: #fff;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        text-align: right;
+    }
+    .progress-label {
+        color: #a0aec0;
+        font-size: 1rem;
+    }
+    .progress-text-alt {
+        color: #b2f7ef;
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+        text-align: right;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -21,6 +54,7 @@
             <i class="fas fa-plus"></i>Create New Goal
         </button>
     </header>
+
     <!-- Banner -->
     {% if banner_stats %}
     <div class="glass-card" style="margin-bottom: 2.5rem;">
@@ -38,15 +72,17 @@
                 <p style="font-size: 2rem; font-weight: 700; color: #fff;">R{{ "%.2f"|format(banner_stats.total_saved) }}</p>
             </div>
             <div style="display: flex; flex-direction: column; justify-content: center;">
-                <p style="color: #a0aec0; font-size: 1rem;">Overall Progress</p>
-                <div style="width: 100%; background: rgba(0,0,0,0.2); border-radius: 9999px; height: 0.75rem; margin-top: 0.5rem;">
-                    <div class="progress-bar" style="height: 100%; border-radius: 9999px; width: {{ banner_stats.overall_progress|round|int }}%"></div>
+                <p class="progress-label">Overall Progress</p>
+                <div class="progress-container">
+                    {% set overall_progress = banner_stats.overall_progress|round|int %}
+                    <div class="progress-bar" style="--progress-width: {{ overall_progress }}%"></div>
                 </div>
-                <p style="color: #fff; font-size: 1rem; margin-top: 0.5rem;">{{ banner_stats.overall_progress|round|int }}%</p>
+                <p class="progress-text">{{ overall_progress }}%</p>
             </div>
         </div>
     </div>
     {% endif %}
+
     <!-- Savings Goals Grid -->
     <div class="glass-card">
         <div class="goal-grid">
@@ -67,10 +103,11 @@
                         <span style="font-size: 1rem; font-weight: 600; color: #b2f7ef;">R{{ "%.2f"|format(goal.target_amount) }}</span>
                     </div>
                     {% set progress = (goal.current_amount / goal.target_amount * 100) if goal.target_amount and goal.target_amount > 0 else 0 %}
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar" style="width: {{ progress|round|int }}%"></div>
+                    {% set progress_int = progress|round|int %}
+                    <div class="progress-container">
+                        <div class="progress-bar" style="--progress-width: {{ progress_int }}%"></div>
                     </div>
-                    <p style="text-align: right; font-size: 0.95rem; color: #b2f7ef; margin-top: 0.5rem;">{{ progress|round|int }}% complete</p>
+                    <p class="progress-text-alt">{{ progress_int }}% complete</p>
                 </div>
                 <div style="margin-top: 1.2rem; display: flex; justify-content: flex-end;">
                     <button onclick="openContributionModal('{{ goal.id }}', '{{ goal.name }}')" class="btn-secondary" style="font-size: 0.98rem;">
@@ -87,11 +124,12 @@
             {% endfor %}
         </div>
     </div>
+
     <!-- Create/Edit Savings Goal Modal -->
     <div id="createGoalModal" class="hidden modal-backdrop" style="background-color: rgba(10, 10, 20, 0.8); backdrop-filter: blur(8px);">
         <div class="glass-card" style="width: 100%; max-width: 420px; margin: 2rem auto;">
             <form id="createGoalForm" style="display: flex; flex-direction: column;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <h3 class="accent" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">Create a New Savings Goal</h3>
                 <div id="modalMessage" class="hidden text-center p-3 mb-4 rounded-lg"></div>
                 <div style="display: flex; flex-direction: column; gap: 1.2rem;">
@@ -115,11 +153,12 @@
             </form>
         </div>
     </div>
+
     <!-- Contribute to Goal Modal -->
     <div id="contributeModal" class="hidden modal-backdrop" style="background-color: rgba(10, 10, 20, 0.8); backdrop-filter: blur(8px);">
         <div class="glass-card" style="width: 100%; max-width: 420px; margin: 2rem auto;">
-            <form action="/contribute_to_goal" method="POST" style="display: flex; flex-direction: column;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <form id="contributeGoalForm" action="/contribute_to_goal" method="POST" style="display: flex; flex-direction: column;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <h3 class="accent" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">Contribute to Goal: <span id="goalName" style="color: #60efff;"></span></h3>
                 <input type="hidden" name="goal_id" id="goalId">
                 <div style="display: flex; flex-direction: column; gap: 1.2rem;">
@@ -127,12 +166,43 @@
                         <label style="color: #a0aec0; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; display: block;" for="contribution_amount">Contribution Amount (R)</label>
                         <input type="number" name="amount" id="contribution_amount" required step="0.01" min="0" class="form-input" placeholder="Enter amount">
                     </div>
+                    <!-- Display payment method -->
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); padding: 1rem;">
+                        <p style="color: #fff; font-size: 0.9rem;">
+                            Payment from: <strong>{{ payment_info or 'No default method set' }}</strong>
+                        </p>
+                        <p style="color: #b2f7ef; font-size: 0.8rem; margin-top: 0.5rem;">
+                            You can change your default payment method in the 
+                            <a href="{{ url_for('payment_methods') }}" style="color: #60efff; text-decoration: underline;">Payment Methods</a> page.
+                        </p>
+                    </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
                     <button type="button" onclick="closeModal('contributeModal')" class="btn-secondary">Cancel</button>
-                    <button type="submit" class="btn-primary">Contribute</button>
+                    <button type="button" id="showGoalConfirmModalBtn" class="btn-primary">Contribute</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Payment Confirmation Modal -->
+    <div id="goalPaymentConfirmModal" class="hidden modal-backdrop" style="background-color: rgba(10, 10, 20, 0.8); backdrop-filter: blur(8px);">
+        <div class="glass-card" style="width: 100%; max-width: 420px; margin: 2rem auto;">
+            <h3 class="accent" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">Confirm Payment</h3>
+            <div style="margin-bottom: 1.5rem;">
+                <div style="margin-bottom: 0.8rem;">
+                    <span style="color: #a0aec0;">Goal:</span> 
+                    <span id="confirmGoalName" style="color: #fff; font-weight: 600;"></span>
+                </div>
+                <div style="margin-bottom: 0.8rem;">
+                    <span style="color: #a0aec0;">Amount:</span> 
+                    R<span id="confirmGoalAmount" style="color: #fff; font-weight: 600;"></span>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" onclick="closeGoalConfirmModal()" class="btn-secondary">Cancel</button>
+                <button type="button" onclick="submitGoalContributionForm()" class="btn-primary">Confirm Payment</button>
+            </div>
         </div>
     </div>
 </div>
@@ -165,6 +235,14 @@
         document.getElementById('goalId').value = goalId;
         document.getElementById('goalName').textContent = goalName;
         openModal('contributeModal');
+    }
+
+    function closeGoalConfirmModal() {
+        document.getElementById('goalPaymentConfirmModal').classList.add('hidden');
+    }
+
+    function submitGoalContributionForm() {
+        document.getElementById('contributeGoalForm').submit();
     }
 
     async function handleFormSubmit(event) {
@@ -209,6 +287,22 @@
         if (createForm) {
             createForm.addEventListener('submit', handleFormSubmit);
         }
+
+        const showGoalConfirmModalBtn = document.getElementById('showGoalConfirmModalBtn');
+        const goalNameSpan = document.getElementById('goalName');
+        const contributionAmountInput = document.getElementById('contribution_amount');
+
+        showGoalConfirmModalBtn.addEventListener('click', function() {
+            const goalName = goalNameSpan.textContent;
+            const amount = contributionAmountInput.value;
+            if (!goalName || !amount) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            document.getElementById('confirmGoalName').textContent = goalName;
+            document.getElementById('confirmGoalAmount').textContent = amount;
+            openModal('goalPaymentConfirmModal');
+        });
 
         document.querySelectorAll('.modal-backdrop').forEach(modal => {
             modal.addEventListener('click', (event) => {

@@ -351,9 +351,10 @@
   <div class="quick-actions-panel">
     <div class="quick-actions-title"><i class="fas fa-bolt"></i> Quick Actions</div>
     <div class="quick-actions-row">
-      <a href="{{ url_for('admin.manage_users') }}" class="quick-action-btn users"><i class="fas fa-user-friends"></i> Manage Users</a>
-      <a href="{{ url_for('admin.loan_approvals') }}" class="quick-action-btn loans"><i class="fas fa-hand-holding-usd"></i> Loan Approvals</a>
-      <a href="/virtual-rewards" class="quick-action-btn rewards"><i class="fas fa-gift"></i> Virtual Rewards</a>
+      <a href="{{ url_for('admin.manage_users') }}" class="quick-action-btn users"><i class="fas fa-user-friends"></i> {{ t('Manage Users') }}</a>
+      <a href="{{ url_for('admin.loan_approvals') }}" class="quick-action-btn loans"><i class="fas fa-hand-holding-usd"></i> {{ t('Loan Approvals') }}</a>
+      <a href="{{ url_for('admin.virtual_rewards') }}" class="quick-action-btn rewards"><i class="fas fa-gift"></i> {{ t('Virtual Rewards') }}</a>
+      <a href="{{ url_for('admin.financial_reports') }}" class="quick-action-btn reports"><i class="fas fa-chart-bar"></i> {{ t('Generate Reports') }}</a>
     </div>
   </div>
 

@@ -138,10 +138,10 @@
     <div class="max-w-5xl mx-auto">
         <header class="mb-12">
             <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                Settings
+                {{ t('settings', user_language) }}
             </h1>
             <p class="mt-4 text-lg text-gray-400">
-                Manage your account, notifications, and application preferences.
+                {{ t('settings_description', user_language) }}
             </p>
         </header>
 
@@ -164,12 +164,12 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="security">
                     <h2 class="text-2xl font-semibold text-white mb-6">
-                        <i class="fas fa-shield-alt mr-3 text-blue-400"></i>Account Security
+                        <i class="fas fa-shield-alt mr-3 text-blue-400"></i>{{ t('account_security', user_language) }}
                     </h2>
                     <label class="toggle-label">
                         <div>
-                            <span class="font-medium text-white">Two-Factor Authentication</span>
-                            <p class="text-sm text-gray-400 mt-1">Add an extra layer of security to your account.</p>
+                            <span class="font-medium text-white">{{ t('two_factor_auth', user_language) }}</span>
+                            <p class="text-sm text-gray-400 mt-1">{{ t('two_factor_description', user_language) }}</p>
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" name="two_factor_enabled" {% if user.two_factor_enabled %}checked{% endif %}>
@@ -178,7 +178,7 @@
                     </label>
                     <div class="mt-6 text-right">
                         <button type="submit" class="btn-primary">
-                            Save Changes
+                            {{ t('save_changes', user_language) }}
                         </button>
                     </div>
                 </form>
@@ -188,11 +188,11 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="language_preference">
                     <h2 class="text-2xl font-semibold text-white mb-6">
-                        <i class="fas fa-language mr-3 text-green-400"></i>Language Preferences
+                        <i class="fas fa-language mr-3 text-green-400"></i>{{ t('language_preferences', user_language) }}
                     </h2>
                     <div class="mb-4">
                         <label class="block text-gray-400 text-sm font-bold mb-2" for="language_preference">
-                            Preferred Language
+                            {{ t('preferred_language', user_language) }}
                         </label>
                         <select name="language_preference" id="language_preference" class="form-select">
                             <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
@@ -206,11 +206,11 @@
                             <option value="ts" {% if user.language_preference == 'ts' %}selected{% endif %}>Xitsonga</option>
                             <option value="nr" {% if user.language_preference == 'nr' %}selected{% endif %}>isiNdebele</option>
                         </select>
-                        <p class="text-sm text-gray-500 mt-2">Choose your preferred language for the app interface.</p>
+                        <p class="text-sm text-gray-500 mt-2">{{ t('choose_language_description', user_language) }}</p>
                     </div>
                     <div class="mt-6 text-right">
                         <button type="submit" class="btn-primary">
-                            Save Language Settings
+                            {{ t('save_language_settings', user_language) }}
                         </button>
                     </div>
                 </form>
@@ -223,13 +223,13 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="app_preferences">
                     <h2 class="text-2xl font-semibold text-white mb-6">
-                        <i class="fas fa-bell mr-3 text-purple-400"></i>App & Notification Preferences
+                        <i class="fas fa-bell mr-3 text-purple-400"></i>{{ t('app_notification_preferences', user_language) }}
                     </h2>
                     <div class="space-y-4">
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">Email Notifications</span>
-                                <p class="text-sm text-gray-400 mt-1">Receive updates and alerts via email.</p>
+                                <span class="font-medium text-white">{{ t('email_notifications', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('email_notifications_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="email_notifications" {% if user.email_notifications %}checked{% endif %}>
@@ -238,8 +238,8 @@
                         </label>
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">SMS Notifications</span>
-                                <p class="text-sm text-gray-400 mt-1">Get important updates via SMS.</p>
+                                <span class="font-medium text-white">{{ t('sms_notifications', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('sms_notifications_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="sms_notifications" {% if user.sms_notifications %}checked{% endif %}>
@@ -248,8 +248,8 @@
                         </label>
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">Weekly Summary</span>
-                                <p class="text-sm text-gray-400 mt-1">Get a weekly overview of your activities.</p>
+                                <span class="font-medium text-white">{{ t('weekly_summary', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('weekly_summary_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="weekly_summary" {% if user.weekly_summary %}checked{% endif %}>
@@ -258,8 +258,8 @@
                         </label>
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">Promotional Emails</span>
-                                <p class="text-sm text-gray-400 mt-1">Receive promotional offers and updates.</p>
+                                <span class="font-medium text-white">{{ t('promotional_emails', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('promotional_emails_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="receive_promotions" {% if user.receive_promotions %}checked{% endif %}>
@@ -268,8 +268,8 @@
                         </label>
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">Contribution Reminders</span>
-                                <p class="text-sm text-gray-400 mt-1">Get notified before a contribution is due.</p>
+                                <span class="font-medium text-white">{{ t('contribution_reminders', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('contribution_reminders_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="reminders_enabled" {% if user.reminders_enabled %}checked{% endif %}>
@@ -278,8 +278,8 @@
                         </label>
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">Stokvel Updates</span>
-                                <p class="text-sm text-gray-400 mt-1">Get notified about stokvel activities.</p>
+                                <span class="font-medium text-white">{{ t('stokvel_updates', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('stokvel_updates_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="stokvel_updates" {% if user.stokvel_updates %}checked{% endif %}>
@@ -289,7 +289,7 @@
                     </div>
                     <div class="mt-6 text-right">
                         <button type="submit" class="btn-primary">
-                            Save App Preferences
+                            {{ t('save_app_preferences', user_language) }}
                         </button>
                     </div>
                 </form>
@@ -299,13 +299,13 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="form_section" value="privacy">
                     <h2 class="text-2xl font-semibold text-white mb-6">
-                        <i class="fas fa-user-shield mr-3 text-orange-400"></i>Privacy Settings
+                        <i class="fas fa-user-shield mr-3 text-orange-400"></i>{{ t('privacy_settings', user_language) }}
                     </h2>
                     <div class="space-y-4">
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">Profile Visibility</span>
-                                <p class="text-sm text-gray-400 mt-1">Allow other members to see your profile.</p>
+                                <span class="font-medium text-white">{{ t('profile_visibility', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('profile_visibility_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="profile_visible" {% if user.profile_visible %}checked{% endif %}>
@@ -314,8 +314,8 @@
                         </label>
                         <label class="toggle-label">
                             <div>
-                                <span class="font-medium text-white">Activity Sharing</span>
-                                <p class="text-sm text-gray-400 mt-1">Share your activity with stokvel members.</p>
+                                <span class="font-medium text-white">{{ t('activity_sharing', user_language) }}</span>
+                                <p class="text-sm text-gray-400 mt-1">{{ t('activity_sharing_description', user_language) }}</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" name="activity_sharing" {% if user.activity_sharing %}checked{% endif %}>
@@ -325,10 +325,31 @@
                     </div>
                     <div class="mt-6 text-right">
                         <button type="submit" class="btn-primary">
-                            Save Privacy Settings
+                            {{ t('save_privacy_settings', user_language) }}
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="glass-card mt-8">
+            <h2 class="text-2xl font-semibold text-white mb-6">
+                <i class="fas fa-bolt mr-3 text-yellow-400"></i>{{ t('quick_actions', user_language) }}
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="/payment_methods" class="btn-primary text-center">
+                    {{ t('manage_payment_methods', user_language) }}
+                </a>
+                <a href="/profile" class="btn-primary text-center">
+                    {{ t('edit_profile', user_language) }}
+                </a>
+                <a href="/savings_goals" class="btn-primary text-center">
+                    {{ t('savings_goals', user_language) }}
+                </a>
+                <a href="/stokvels" class="btn-primary text-center">
+                    {{ t('view_stokvels', user_language) }}
+                </a>
             </div>
         </div>
     </div>

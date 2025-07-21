@@ -2,31 +2,260 @@
 
 {% block title %}Request Loan{% endblock %}
 
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+    .glass-card {
+        background: rgba(45, 45, 68, 0.4);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1.5rem;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+    .form-input, .form-select, .form-textarea {
+        background: rgba(30, 30, 46, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #E2E2F0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease-in-out;
+        width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        background: rgba(30, 30, 46, 0.9);
+        border-color: #7B61FF;
+        box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
+        outline: none;
+    }
+    .btn-primary {
+        background: linear-gradient(90deg, #7B61FF, #61DAFB);
+        color: #FFF;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(123, 97, 255, 0.2);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="glass-card" style="max-width: 500px; margin: 2.5rem auto; padding: 2.5rem 2rem; box-shadow: 0 8px 32px 0 rgba(60, 60, 90, 0.10), 0 2px 8px rgba(60, 60, 90, 0.08); border-radius: 2rem; background: rgba(255,255,255,0.10); backdrop-filter: blur(16px);">
-    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
-        <i class="fas fa-hand-holding-usd" style="font-size: 2rem; color: #7B61FF;"></i>
-        <h1 style="font-size: 2rem; font-weight: 700; margin: 0; color: #222;">Request Loan</h1>
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-4" style="background: linear-gradient(135deg, #60efff 0%, #00ff87 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Request a Loan
+        </h1>
+        <p class="text-lg" style="color: #b6c2e2;">
+            Apply for a loan from your stokvel
+        </p>
     </div>
-    <form method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <div style="margin-bottom: 1.2rem;">
-            <label for="stokvel_id" style="display: block; color: #7B61FF; font-weight: 600; margin-bottom: 0.5rem;">Stokvel</label>
-            <select name="stokvel_id" id="stokvel_id" required style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 1.2rem; border: 1.5px solid #e3e6ee; background: rgba(255,255,255,0.7); color: #222; font-size: 1.05rem; font-weight: 500; outline: none; box-shadow: 0 2px 8px rgba(123,97,255,0.04);">
-                {% for stokvel in stokvels %}
-                    <option value="{{ stokvel.id }}">{{ stokvel.name }}</option>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6 max-w-4xl mx-auto">
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded-lg shadow-md glass-card" style="border-color: #60efff;">
+                        {{ message }}
+                    </div>
                 {% endfor %}
-            </select>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Loan Request Form -->
+    <div class="max-w-4xl mx-auto">
+        <div class="glass-card p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center text-white">
+                <i class="fas fa-hand-holding-usd mr-2" style="color: #00ff87;"></i>
+                Apply for a Loan
+            </h2>
+
+            {% if stokvel_options %}
+                <form method="POST" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <!-- Stokvel Selection -->
+                    <div>
+                        <label for="stokvel_id" class="block text-sm font-medium mb-2 text-gray-300">
+                            Select Stokvel
+                        </label>
+                        <select name="stokvel_id" id="stokvel_id" required class="form-select">
+                            <option value="">Choose a stokvel...</option>
+                            {% for stokvel in stokvel_options %}
+                                <option value="{{ stokvel[0] }}" data-monthly="{{ stokvel[3] }}" data-target="{{ stokvel[2] }}">
+                                    {{ stokvel[1] }} - Monthly: R{{ "%.2f"|format(stokvel[3]) if stokvel[3] else '0.00' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Loan Amount -->
+                    <div>
+                        <label for="amount" class="block text-sm font-medium mb-2 text-gray-300">
+                            Loan Amount (R)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">R</span>
+                            <input type="number" name="amount" id="amount" 
+                                   step="0.01" min="0.01" required
+                                   class="form-input pl-8"
+                                   placeholder="0.00">
+                        </div>
+                        <p class="text-sm mt-1 text-gray-400">Enter the amount you need to borrow</p>
+                    </div>
+
+                    <!-- Loan Description -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium mb-2 text-gray-300">
+                            Purpose of Loan
+                        </label>
+                        <textarea name="description" id="description" rows="4" required
+                                  class="form-textarea"
+                                  placeholder="Please describe why you need this loan..."></textarea>
+                        <p class="text-sm mt-1 text-gray-400">Be specific about how you plan to use the loan</p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit" class="btn-primary w-full">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Submit Loan Request
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <!-- No Stokvels Available -->
+                <div class="text-center py-12">
+                    <div class="mb-4">
+                        <i class="fas fa-users text-6xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-white">
+                        No Stokvels Available
+                    </h3>
+                    <p class="mb-6 text-gray-300">
+                        You need to be a member of a stokvel to request a loan.
+                    </p>
+                    <a href="{{ url_for('stokvels') }}" class="btn-primary">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Join a Stokvel
+                    </a>
+                </div>
+            {% endif %}
         </div>
-        <div style="margin-bottom: 1.2rem;">
-            <label for="amount" style="display: block; color: #7B61FF; font-weight: 600; margin-bottom: 0.5rem;">Amount (R)</label>
-            <input type="number" name="amount" id="amount" required step="0.01" min="0" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 1.2rem; border: 1.5px solid #e3e6ee; background: rgba(255,255,255,0.7); color: #222; font-size: 1.05rem; font-weight: 500; outline: none; box-shadow: 0 2px 8px rgba(123,97,255,0.04);">
-        </div>
-        <div style="margin-bottom: 1.2rem;">
-            <label for="reason" style="display: block; color: #7B61FF; font-weight: 600; margin-bottom: 0.5rem;">Reason</label>
-            <textarea name="reason" id="reason" required rows="3" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 1.2rem; border: 1.5px solid #e3e6ee; background: rgba(255,255,255,0.7); color: #222; font-size: 1.05rem; font-weight: 500; outline: none; box-shadow: 0 2px 8px rgba(123,97,255,0.04);" placeholder="e.g., School fees, medical emergency"></textarea>
-        </div>
-        <button type="submit" style="background: linear-gradient(90deg, #7B61FF, #34d399); color: #fff; font-weight: 700; padding: 0.95rem 2.2rem; border: none; border-radius: 1.2rem; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(123,97,255,0.10); transition: background 0.2s, transform 0.18s; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; cursor: pointer;"><i class="fas fa-paper-plane"></i> Request Loan</button>
-    </form>
+
+        <!-- Loan History Section -->
+        {% if loan_requests %}
+            <div class="glass-card p-6 mt-8">
+                <h3 class="text-xl font-semibold mb-4 flex items-center text-white">
+                    <i class="fas fa-history mr-2 text-gray-300"></i>
+                    Your Loan History
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left py-3 px-4 font-semibold">Stokvel</th>
+                                <th class="text-left py-3 px-4 font-semibold">Amount</th>
+                                <th class="text-left py-3 px-4 font-semibold">Date</th>
+                                <th class="text-left py-3 px-4 font-semibold">Status</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loan_requests %}
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4">
+                                        <span class="font-medium">{{ loan[5] or 'N/A' }}</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="font-semibold text-green-400">
+                                            R{{ "%.2f"|format(loan[1]) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-gray-400">
+                                        {{ loan[3].strftime('%Y-%m-%d') if loan[3] else 'N/A' }}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        {% if loan[4] == 'pending' %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-black">Pending</span>
+                                        {% elif loan[4] == 'approved' %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-500 text-black">Approved</span>
+                                        {% elif loan[4] == 'rejected' %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-500 text-white">Rejected</span>
+                                        {% else %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-600 text-white">{{ loan[4]|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4 text-gray-400">
+                                        {{ loan[2] or 'No description' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
 </div>
+
+<!-- JavaScript for form interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stokvelSelect = document.getElementById('stokvel_id');
+    const amountInput = document.getElementById('amount');
+    
+    if (stokvelSelect && amountInput) {
+        stokvelSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const monthlyContribution = selectedOption.getAttribute('data-monthly');
+            const targetAmount = selectedOption.getAttribute('data-target');
+            
+            if (monthlyContribution) {
+                const suggestedAmount = parseFloat(monthlyContribution) * 3;
+                amountInput.placeholder = suggestedAmount.toFixed(2);
+                amountInput.max = targetAmount || '';
+            }
+        });
+    }
+    
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const amount = parseFloat(amountInput.value);
+            const selectedStokvel = stokvelSelect.value;
+            const description = document.getElementById('description').value.trim();
+            
+            if (!selectedStokvel) {
+                e.preventDefault();
+                alert('Please select a stokvel.');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid loan amount.');
+                return;
+            }
+            
+            if (!description) {
+                e.preventDefault();
+                alert('Please provide a description for your loan request.');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to submit this loan request?')) {
+                e.preventDefault();
+                return;
+            }
+        });
+    }
+});
+</script>
 {% endblock %} 

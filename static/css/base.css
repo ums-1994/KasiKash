@@ -1,23 +1,44 @@
 /* === THEME VARIABLES === */
 :root {
-  --bg: #101c2c;
-  --text: #ffffff;
+  --primary-blue: #60efff;
+  --secondary-dark-blue: #22304a;
+  --accent-green: #00ff87;
+  --background-dark: #101c2c;
+  --text-light: #eaf6fb;
+  --bg: var(--background-dark);
+  --text: var(--text-light);
   --subtext: #b6c2e2;
   --card-bg: #1e3357;
-  --sidebar-bg: #101c2c;
-  --border: #22304a;
-  --accent: #60efff;
+  --sidebar-bg: var(--background-dark);
+  --border: #3a4a6a;
+  --accent: var(--primary-blue);
   --accent-gradient: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-  --success: #1edb8a;
-  --warning: #f59e42;
-  --danger: #ff4d6d;
+  --main-gradient: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  --accent-gradient-2: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
+  --accent-gradient-reverse: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
+  --purple-gradient: linear-gradient(90deg, #7B61FF, #61DAFB);
+  --hover-gradient: linear-gradient(120deg, #22304a 0%, #60efff 100%);
+  --success: #00ff87;
+  --danger: #ff4e50;
+  --warning: #f9d423;
+  --info: #60efff;
+  --main-background: #101c2c;
+  --card-background: #1e3357;
+  --light-gray: #1e3357;
+  --dark-gray: #101c2c;
+  --border-color: #3a4a6a;
   --icon-users: #232b47;
   --icon-loans: #f59e42;
   --icon-deposits: #1edb8a;
   --icon-kyc: #b13be0;
+  --notification-badge: #ef4444;
+  --text-gradient: linear-gradient(90deg, #059669, #10b981);
+  --white: #ffffff;
+  --black: #000000;
 }
+
 body {
-  background-color: var(--bg) !important;
+  background: linear-gradient(180deg, #22304a 0%, #101c2c 100%) !important;
   color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
@@ -26,20 +47,6 @@ body {
 
 body.light-mode {
   --bg: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%);
-  --text: #222b45;
-  --subtext: #4a4a4a;
-  --card-bg: #fafdff;
-  --sidebar-bg: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%);
-  --border: #e1e8f0;
-  --accent: #2bb7a9;
-  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #43e97b 100%);
-  --success: #28c76f;
-  --warning: #ff9f43;
-  --danger: #ea5455;
-  --icon-users: #e6f4ff;
-  --icon-loans: #fdf2e9;
-  --icon-deposits: #eafaf1;
-  --icon-kyc: #f3e8fd;
   background: var(--bg) !important;
   color: var(--text);
 }
@@ -52,14 +59,24 @@ body.light-mode {
 /* Sidebar styles */
 .sidebar {
   width: 64px;
-  background-color: var(--sidebar-bg);
+  background: linear-gradient(180deg, #22304a 0%, #101c2c 100%) !important;
   height: 100vh;
   position: fixed;
   left: 0;
   top: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-right: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(34, 48, 74, 0.15);
+  border-radius: 18px 18px 0 0;
+  border-right: 1px solid var(--border-color);
   color: var(--text);
+}
+
+.sidebar * {
+  color: #60efff !important; /* Bright cyan for all sidebar children */
+}
+
+body.light-mode .sidebar {
+  background: #b3d4fc !important;
+  border-radius: 18px 18px 0 0;
 }
 
 /* Main content area */
@@ -115,7 +132,7 @@ body.light-mode {
     position: absolute;
     top: -2px;
     right: -2px;
-    background-color: #ef4444;
+    background-color: var(--notification-badge);
     color: white;
     border-radius: 9999px;
     padding: 2px 6px;
@@ -137,7 +154,7 @@ body.light-mode {
 .quick-actions-panel, .chart-card, .activity-section, .notifications-section, .glass-card, .stat-card, .card {
   background: var(--card-bg) !important;
   color: var(--text) !important;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06);
 }
 
@@ -238,7 +255,7 @@ body.light-mode .management-card.card-reports {
 }
 
 .text-gradient {
-    background: linear-gradient(45deg, #059669, #10b981);
+    background: var(--text-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -315,4 +332,124 @@ body.light-mode .management-card.card-reports {
 }
 .financial-advisor-dark .text-indigo-600, .financial-advisor-dark .text-indigo-700 {
     color: #3deaff !important;
+} 
+
+/* Status colors */
+.status-success {
+  color: var(--success);
+}
+.status-danger {
+  color: var(--danger);
+}
+.status-warning {
+  color: var(--warning);
+}
+.status-info {
+  color: var(--info);
+}
+
+/* Icon backgrounds */
+.icon-users {
+  background: var(--icon-users);
+}
+.icon-loans {
+  background: var(--icon-loans);
+}
+.icon-deposits {
+  background: var(--icon-deposits);
+}
+.icon-kyc {
+  background: var(--icon-kyc);
+}
+
+/* Utility classes for backgrounds */
+.bg-main-gradient {
+  background: var(--main-gradient);
+}
+.bg-accent-gradient {
+  background: var(--accent-gradient-2);
+}
+.bg-accent-gradient-reverse {
+  background: var(--accent-gradient-reverse);
+}
+.bg-purple-gradient {
+  background: var(--purple-gradient);
+}
+.bg-hover-gradient:hover {
+  background: var(--hover-gradient);
+}
+
+/* Gradients for buttons, cards, etc. */
+.btn-primary, .btn-accent {
+    background: var(--accent-gradient-2);
+    color: var(--white);
+    border: none;
+}
+.btn-primary:hover, .btn-accent:hover {
+    background: var(--hover-gradient);
+    color: var(--white);
+} 
+
+/* Force user-facing cards to use dashboard card gradient */
+.main-content .card,
+.dashboard-main .card,
+.admin-main .card,
+.card:not(.admin-card):not(.admin-content-card):not(.pricing-card) {
+  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
+}
+body.light-mode .main-content .card,
+body.light-mode .dashboard-main .card,
+body.light-mode .admin-main .card,
+body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+} 
+
+/* Force all user-facing cards and their content to use dashboard colors */
+.card, .main-content .card, .dashboard-main .card, .admin-main .card, .card * {
+  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
+  color: #eaf6fb !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
+}
+body.light-mode .card, body.light-mode .main-content .card, body.light-mode .dashboard-main .card, body.light-mode .admin-main .card, body.light-mode .card * {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+} 
+
+/* Force notifications dark theme */
+.notifications-section, .notifications-section *,
+.notification-list-item, .notification-list-item *,
+.notification-unread, .notification-unread * {
+  background: #22304a !important;
+  color: #60efff !important;
+  border-color: #60efff !important;
+}
+
+/* Remove any box-shadow that may look like a white border */
+.notifications-section, .notification-list-item, .notification-unread {
+  box-shadow: none !important;
+} 
+
+/* Remove any remaining white backgrounds globally */
+* {
+  background-color: transparent !important;
+}
+
+html, body {
+  background: #101c2c !important;
+  color: #60efff !important;
+}
+main, .container, .max-w-4xl, .shadow-md, .rounded-lg, .p-6, .mb-4 {
+  background: #22304a !important;
+  color: #60efff !important;
+  border-color: #60efff !important;
+}
+main *, .container *, .max-w-4xl *, .shadow-md *, .rounded-lg *, .p-6 *, .mb-4 * {
+  color: #60efff !important;
 } 

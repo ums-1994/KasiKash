@@ -70,6 +70,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
+}
+.profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(96, 239, 255, 0.3);
 }
 .profile-avatar img {
   width: 100px;
@@ -136,7 +141,7 @@
   font-size: 0.95rem;
   margin-bottom: 0.2rem;
 }
-.profile-form input {
+.profile-form input, .profile-form textarea {
   width: 100%;
   padding: 0.7rem;
   margin-top: 0.2rem;
@@ -144,6 +149,12 @@
   border: 1px solid #22304a;
   background: rgba(255,255,255,0.08);
   color: #eaf6fb;
+  transition: all 0.2s ease;
+}
+.profile-form input:focus, .profile-form textarea:focus {
+  border-color: #60efff;
+  box-shadow: 0 0 10px rgba(96, 239, 255, 0.2);
+  outline: none;
 }
 .profile-form .dashboard-btn {
   margin-top: 1.5rem;
@@ -206,10 +217,21 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endif %}
 <!-- End KYC Status Toast Notification -->
+
 <!-- Profile Header -->
 <div class="profile-header">
   <div>
-    <h1>Sawubona, {{ user.username }}! <span style="font-size:1.8rem;">👋</span></h1>
+    {% set hour = current_time.hour %}
+    <h1>
+      {% if hour < 12 %}
+        Good morning,
+      {% elif hour < 18 %}
+        Good afternoon,
+      {% else %}
+        Good evening,
+      {% endif %}
+      {{ (user.full_name if user.full_name else (user.username if user.username else 'User')) }}! <span style="font-size:1.8rem;">👋</span>
+    </h1>
     <p>Welcome to your profile page. Keep your information up to date for the best experience!</p>
   </div>
   <div>
