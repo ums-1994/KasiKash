@@ -158,11 +158,11 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <div>
             <label class="block text-sm font-medium mb-2" style="color: #60efff;">ID Number</label>
-            <input type="text" name="id_number" value="{{ user.id_number or '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+            <input type="text" name="id_number" value="{{ user.id_number if user.id_number else '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
           </div>
           <div>
             <label class="block text-sm font-medium mb-2" style="color: #60efff;">Date of Birth</label>
-            <input type="date" name="date_of_birth" value="{{ user.date_of_birth or '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+            <input type="date" name="date_of_birth" value="{{ user.date_of_birth if user.date_of_birth else '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
           </div>
           <div class="md:col-span-2">
             <label class="block text-sm font-medium mb-2" style="color: #60efff;">Address</label>
