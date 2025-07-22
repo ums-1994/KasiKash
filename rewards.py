@@ -141,7 +141,7 @@ def generate_voucher_code():
     code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
     return f"KASI-{code}"
 
-def create_voucher(user_id, voucher_type, amount):
+def create_voucher(firebase_uid, voucher_type, amount):
     """Create a voucher in the database"""
     conn = get_db_connection()
     cur = conn.cursor()
@@ -161,7 +161,7 @@ def create_voucher(user_id, voucher_type, amount):
         INSERT INTO vouchers (user_id, voucher_type, voucher_code, amount)
         VALUES (%s, %s, %s, %s)
         RETURNING id
-    """, (user_id, voucher_type, voucher_code, amount))
+    """, (firebase_uid, voucher_type, voucher_code, amount))
     
     voucher_id = cur.fetchone()[0]
     conn.commit()
@@ -204,7 +204,7 @@ def purchase_airtime():
     """, (card_id, user_id, -amount, 'purchase_airtime', f'Airtime for {phone_number}'))
     
     # Create voucher
-    voucher_code = create_voucher(user_id, 'airtime', amount)
+    voucher_code = create_voucher(firebase_uid, 'airtime', amount)
     
     conn.commit()
     cur.close()
@@ -255,7 +255,7 @@ def purchase_electricity():
     """, (card_id, user_id, -amount, 'purchase_electricity', f'Electricity for {meter_number}'))
     
     # Create voucher
-    voucher_code = create_voucher(user_id, 'electricity', amount)
+    voucher_code = create_voucher(firebase_uid, 'electricity', amount)
     
     conn.commit()
     cur.close()
@@ -591,7 +591,7 @@ def buy_marketplace_item(item_id):
                 voucher_type = item_name.lower().replace(' voucher', '').replace(' ', '_')
                 voucher_amount = price
             
-            voucher_code = create_voucher(user_id, voucher_type, voucher_amount)
+            voucher_code = create_voucher(firebase_uid, voucher_type, voucher_amount)
             vouchers_created.append(voucher_code)
         
         # Create order with 'completed' status since vouchers are generated
@@ -835,8 +835,7 @@ def redeem_marketplace_item(item):
 @rewards_bp.route('/vouchers', methods=['GET'])
 def view_vouchers():
     firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
+    if not firebase_uid:
         return redirect(url_for('login'))
     
     conn = get_db_connection()
@@ -848,7 +847,7 @@ def view_vouchers():
         FROM vouchers 
         WHERE user_id = %s 
         ORDER BY created_at DESC
-    """, (user_id,))
+    """, (firebase_uid,))
     
     vouchers = []
     for row in cur.fetchall():
@@ -870,8 +869,7 @@ def view_vouchers():
 @rewards_bp.route('/vouchers/redeem/<voucher_code>', methods=['POST'])
 def redeem_voucher(voucher_code):
     firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
+    if not firebase_uid:
         return jsonify({'error': 'User not authenticated'}), 401
     
     conn = get_db_connection()
@@ -882,7 +880,7 @@ def redeem_voucher(voucher_code):
         SELECT id, voucher_type, amount, status 
         FROM vouchers 
         WHERE voucher_code = %s AND user_id = %s
-    """, (voucher_code, user_id))
+    """, (voucher_code, firebase_uid))
     
     voucher = cur.fetchone()
     if not voucher:

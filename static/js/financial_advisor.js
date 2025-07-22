@@ -5,7 +5,10 @@ async function sendChat(msg) {
   try {
     const res = await fetch('/financial_advisor/chat', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+      },
       body: JSON.stringify({ user_id: window.USER_ID || '', message: msg })
     });
     if (!res.ok) {
@@ -68,7 +71,13 @@ function initUpload() {
     container.innerHTML = '<div class="text-blue-600">Analyzing your statement...</div>';
     const data = new FormData(form);
     try {
-      const res = await fetch(form.action || '/financial_advisor/upload', { method: 'POST', body: data });
+      const res = await fetch(form.action || '/financial_advisor/upload', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCSRFToken()
+        },
+        body: data
+      });
       const json = await res.json();
       container.innerHTML = '';
       if (json.error) {
@@ -113,8 +122,13 @@ function initUpload() {
   };
 }
 
+// Add this function at the top
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
 // --- Initialization ---
 window.addEventListener('DOMContentLoaded', function() {
   initChat();
   initUpload();
-}); 
+});

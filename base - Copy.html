@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ user_language }}">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>KasiKash - {% block title %}{% endblock %}</title>
@@ -21,7 +21,6 @@
         .sidebar {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border-right: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 
                 0 20px 40px rgba(0, 0, 0, 0.2),
@@ -64,7 +63,6 @@
         .top-bar {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .page-title {
@@ -104,7 +102,6 @@
         .alert {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1rem;
             color: #fff;
@@ -179,77 +176,76 @@
     </style>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col max-h-screen overflow-y-auto">
+    <div class="fixed inset-y-0 left-0 w-64 sidebar">
         <!-- Logo -->
-        <div class="flex items-center justify-center h-16 logo-section flex-shrink-0">
+        <div class="flex items-center justify-center h-16 logo-section">
             <a href="/" class="flex items-center space-x-3">
-                <img src="{{ url_for('static', filename='logo_admin.png') }}" alt="KasiKash Logo" style="height:48px;width:48px;border-radius:50%;box-shadow:0 0 16px #60efff;">
+                <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-10 w-auto animate-float">
                 <span class="text-2xl logo-text">KasiKash</span>
             </a>
         </div>
         <!-- Navigation -->
-        <nav class="mt-4 flex-1 overflow-y-auto">
-          <ul class="space-y-1">
-        <nav class="mt-8" style="flex: 1 1 auto; min-height: 0;">
-          <ul class="space-y-2" style="overflow-y: auto; max-height: calc(100vh - 180px);">
+        <nav class="mt-8">
+          <ul class="space-y-2">
             <li>
-              <a href="/home" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-home mr-2"></i> Home
+              <a href="/home" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-home mr-3"></i> Home
               </a>
             </li>
             <li>
-              <a href="/stokvels" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-users mr-2"></i> Stokvels
+              <a href="/stokvels" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-users mr-3"></i> Stokvels
               </a>
             </li>
             <li>
-              <a href="/contributions" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-dollar-sign mr-2"></i> Contributions
+              <a href="/contributions" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-dollar-sign mr-3"></i> Contributions
               </a>
             </li>
             <li>
-              <a href="/payouts" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-wallet mr-2"></i> Payouts
+              <a href="/payouts" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-wallet mr-3"></i> Payouts
               </a>
             </li>
             <li>
-              <a href="/savings_goals" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-chart-line mr-2"></i> Savings Goals
+              <a href="/savings_goals" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-chart-line mr-3"></i> Savings Goals
               </a>
             </li>
             <li>
-              <a href="/payment_methods" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-credit-card mr-2"></i> Payment Methods
+              <a href="/payment_methods" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-credit-card mr-3"></i> Payment Methods
               </a>
             </li>
             <li>
-              <a href="{{ url_for('rewards.rewards_card_page') }}" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-gift mr-2"></i> My Rewards Card
+              <a href="{{ url_for('rewards.rewards_card_page') }}" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-gift mr-3"></i> My Rewards Card
               </a>
             </li>
             <li>
-              <a href="/settings" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-cog mr-2"></i> Settings
+              <a href="/settings" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-cog mr-3"></i> Settings
               </a>
             </li>
             {% if session.role == 'admin' %}
             <li>
-              <a href="/admin/dashboard" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-user-shield mr-2"></i> Admin
+              <a href="/admin/dashboard" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-user-shield mr-3"></i> Admin
               </a>
             </li>
             {% endif %}
             <li>
-              <a href="{{ url_for('advisor.dashboard') }}" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-user-tie mr-3"></i> Financial Advisor
+              <a href="{{ url_for('advisor.dashboard') }}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <svg class="h-5 w-5 text-indigo-500 mr-2" ...> <!-- icon here --> </svg>
+                Financial Advisor
               </a>
             </li>
           </ul>
         </nav>
         <!-- User Section -->
-        <div class="w-full p-4 user-section flex-shrink-0 mt-auto">
+        <div class="absolute bottom-0 w-full p-4 user-section">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-10 h-10 rounded-xl user-avatar flex items-center justify-center text-white font-bold text-base">
@@ -260,7 +256,7 @@
                     </div>
                 </div>
                 <div class="ml-3">
-                    <a href="/logout" class="text-sm logout-link">{{ 'Logout' }}</a>
+                    <a href="/logout" class="text-sm logout-link">{{ t('logout', user_language) }}</a>
                 </div>
             </div>
         </div>
@@ -310,7 +306,6 @@
     {% include 'chatbot.html' %}
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
     {% block extra_js %}{% endblock %}
-    
-    <!-- Removed <div id="myDiv"></div> which was used for the demo graph -->
+    <div id="myDiv"></div>
 </body>
 </html>

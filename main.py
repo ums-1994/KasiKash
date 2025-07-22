@@ -46,6 +46,9 @@ from calendar import monthrange
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from flask_mail import Mail, Message
 from flask_wtf.csrf import generate_csrf
+import calendar
+from flask import g
+from flask_babel import _
 
 # Load environment variables
 load_dotenv()
@@ -54,6 +57,8 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+
+babel = Babel(app)
 
 UPLOAD_FOLDER = 'static/profile_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -334,6 +339,31 @@ def home():
     }
     active_stokvels_count = 0
     total_contributions = 0
+    recent_activities = []
+
+    # Calendar data generation (existing code)
+    now = datetime.now()
+    year = request.args.get('year', now.year, type=int)
+    month = request.args.get('month', now.month, type=int)
+    month_name = datetime(year, month, 1).strftime('%B')
+    cal = calendar.monthcalendar(year, month)
+    calendar_days = []
+    today = date.today()
+    flat_cal = [day for week in cal for day in week]
+    for day_num in flat_cal:
+        if day_num == 0:
+            calendar_days.append({'is_day': False})
+        else:
+            current_date = date(year, month, day_num)
+            calendar_days.append({
+                'is_day': True,
+                'date': day_num,
+                'full_date': current_date.strftime('%Y-%m-%d'),
+                'is_today': current_date == today,
+                'is_weekend': current_date.weekday() >= 5
+            })
+    calendar_events = []
+
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
@@ -353,11 +383,80 @@ def home():
                     WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
                 """, (firebase_uid,))
                 total_contributions = cur.fetchone()[0] or 0
+
+                # Fetch calendar events from diary
+                cur.execute("""
+                    SELECT event_date, event_name, description 
+                    FROM diary 
+                    WHERE user_id = %s AND EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s
+                """, (firebase_uid, year, month))
+                for row in cur.fetchall():
+                    calendar_events.append({
+                        'date': row[0].strftime('%Y-%m-%d'),
+                        'type': row[1].lower() if row[1] else 'custom',
+                        'desc': row[2]
+                    })
+
+                # Fetch recent activities: last 7 transactions and completed goals
+                cur.execute("""
+                    SELECT type, amount, transaction_date
+                    FROM transactions
+                    WHERE user_id = %s AND status = 'completed'
+                    ORDER BY transaction_date DESC
+                    LIMIT 7
+                """, (firebase_uid,))
+                for t in cur.fetchall():
+                    t_type, t_amount, t_date = t
+                    title = {
+                        'contribution': 'Monthly Contribution',
+                        'withdrawal': 'Withdrawal',
+                        'savings_contribution': 'Savings Goal Contribution',
+                        'payout': 'Payout',
+                    }.get(t_type, t_type.replace('_', ' ').title())
+                    status = 'Processed' if t_type == 'contribution' else ('Completed' if t_type in ['withdrawal', 'savings_contribution', 'payout'] else 'Completed')
+                    recent_activities.append({
+                        'type': t_type,
+                        'title': title,
+                        'amount': float(t_amount),
+                        'date': t_date,
+                        'status': status
+                    })
+                # Add completed savings goals
+                cur.execute("""
+                    SELECT name, target_amount, created_at
+                    FROM savings_goals
+                    WHERE user_id = %s AND status = 'completed'
+                    ORDER BY created_at DESC
+                    LIMIT 2
+                """, (firebase_uid,))
+                for g in cur.fetchall():
+                    g_name, g_amount, g_date = g
+                    recent_activities.append({
+                        'type': 'goal',
+                        'title': g_name,
+                        'amount': float(g_amount),
+                        'date': g_date,
+                        'status': 'Achieved'
+                    })
+                # Sort all activities by date descending
+                recent_activities.sort(key=lambda x: x['date'], reverse=True)
     except Exception as e:
         print(f"Dashboard error: {e}")
         active_stokvels_count = 0
         total_contributions = 0
-    return render_template('dashboard.html', user=user, active_stokvels_count=active_stokvels_count, total_contributions=total_contributions)
+
+    print("Recent activities:", recent_activities)
+    return render_template(
+        'dashboard.html', 
+        user=user, 
+        active_stokvels_count=active_stokvels_count, 
+        total_contributions=total_contributions,
+        calendar_month=month_name,
+        calendar_year=year,
+        calendar_days=calendar_days,
+        calendar_events=calendar_events,
+        recent_activities=recent_activities
+    )
 
 
 @app.route('/analysis')
@@ -648,6 +747,18 @@ def login_validation():
                     print(f"Database update error during login: {str(db_e)}")
                     # This error is not critical enough to prevent login, but
                     # should be logged.
+
+                # Update stokvel_members for pending invites
+                try:
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute(
+                                "UPDATE stokvel_members SET user_id = %s WHERE email = %s AND user_id IS NULL",
+                                (user_record.uid, email)
+                            )
+                            conn.commit()
+                except Exception as e:
+                    print(f"Error updating stokvel_members for pending invites: {e}")
 
                 if not user_record.email_verified:
                     print("User email not verified")  # Debug log
@@ -961,6 +1072,11 @@ def registration():
                             (user.uid, username, email)
                         )
                         local_user_id = cur.fetchone()[0]
+                        # Update stokvel_members for pending invites
+                        cur.execute(
+                            "UPDATE stokvel_members SET user_id = %s WHERE email = %s AND user_id IS NULL",
+                            (user.uid, email)
+                        )
                         conn.commit()
 
                         if local_user_id:
@@ -1599,8 +1715,14 @@ def contribute_to_goal():
                 payment_info = ""
                 if payment_method:
                     method_type, details = payment_method
+                    import json
                     if isinstance(details, str):
-                        details = json.loads(details)
+                        try:
+                            details = json.loads(details)
+                        except Exception:
+                            details = {}
+                    if not isinstance(details, dict):
+                        details = {}
                     if method_type in ['credit_card', 'debit_card', 'card']:
                         last4 = details.get('card_number', '')[-4:]
                         payment_info = f" from your card ending in {last4}"
@@ -2088,29 +2210,28 @@ def add_payment_method():
         card_holder_name = request.form.get('card_holder_name')
         card_number = request.form.get('card_number')
         expiry_date = request.form.get('expiry_date')
-        # Note: Storing CVV is not PCI compliant. This is for demonstration.
         cvv = request.form.get('cvv')
         if not all([card_holder_name, card_number, expiry_date, cvv]):
             flash("All card fields are required.", "danger")
             return redirect(url_for('payment_methods'))
-            details_dict = {
-                "card_holder_name": card_holder_name,
-                "card_number": card_number,
-                "expiry_date": expiry_date,
-                # "cvv": cvv 
-            }
-        elif payment_type == 'bank_account':
-            account_holder_name = request.form.get('account_holder_name')
-            account_number = request.form.get('account_number')
-            bank_name = request.form.get('bank_name')
-            if not all([account_holder_name, account_number, bank_name]):
-                flash("All bank account fields are required.", "danger")
-                return redirect(url_for('payment_methods'))
-            details_dict = {
-                "account_holder_name": account_holder_name,
-                "account_number": account_number,
-                "bank_name": bank_name
-            }
+        details_dict = {
+            "card_holder_name": card_holder_name,
+            "card_number": card_number,
+            "expiry_date": expiry_date,
+            # "cvv": cvv
+        }
+    elif payment_type == 'bank_account':
+        account_holder_name = request.form.get('account_holder_name')
+        account_number = request.form.get('account_number')
+        bank_name = request.form.get('bank_name')
+        if not all([account_holder_name, account_number, bank_name]):
+            flash("All bank account fields are required.", "danger")
+            return redirect(url_for('payment_methods'))
+        details_dict = {
+            "account_holder_name": account_holder_name,
+            "account_number": account_number,
+            "bank_name": bank_name
+        }
     else:
         flash("Invalid payment type selected.", "danger")
         return redirect(url_for('payment_methods'))
@@ -3091,6 +3212,28 @@ def add_stokvel_member(stokvel_id):
                     (stokvel_id, email, 'member')
                 )
                 conn.commit()
+        # Send invitation email
+        from flask import url_for
+        stokvel_name = None
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
+                row = cur.fetchone()
+                if row:
+                    stokvel_name = row[0]
+        invite_link = url_for('register', _external=True)
+        subject = f"You've been invited to join the stokvel '{stokvel_name}' on KasiKash!"
+        html_content = f"""
+        <html><body>
+        <p>Hello,</p>
+        <p>You have been invited to join the stokvel <b>{stokvel_name}</b> on KasiKash.</p>
+        <p>If you already have an account, simply log in with this email address. If not, click below to register:</p>
+        <p><a href='{invite_link}'>Join KasiKash</a></p>
+        <p>Once you register or log in, you'll see your stokvel automatically.</p>
+        <p>Thanks,<br>The KasiKash Team</p>
+        </body></html>
+        """
+        send_email(email, subject, html_content)
         flash("Member invitation sent!", "success")
     except Exception as e:
         print(f"Error adding member: {e}")
@@ -3114,6 +3257,7 @@ def remove_stokvel_member(stokvel_id, member_id):
     return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
 @app.route('/referral', methods=['GET', 'POST'])
+@login_required
 def referral():
     if request.method == 'POST':
         email = request.form.get('email')
@@ -3137,7 +3281,7 @@ def referral():
     return render_template('referral.html')
 
 @app.context_processor
-def inject_globals():
+def inject_global():
     return dict(csrf_token=generate_csrf)
 
 @app.route('/test_csrf')
@@ -3373,9 +3517,12 @@ def request_loan():
     
     return render_template('request_loan.html', stokvel_options=stokvel_options, loan_requests=loan_requests)
 
-# --- Replace app.run with socketio.run ---
+# ... existing code ...
+    return render_template('referral.html', referral_link=referral_link, message=message, stokvels=stokvels, selected_stokvel_id=selected_stokvel_id)
+
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5001, debug=True)
+    # Use 127.0.0.1 which is accessible in the browser
+    socketio.run(app, host="127.0.0.1", port=5001, debug=True)
 
 # Inject _ into Jinja2 context for translations
 try:
@@ -3419,4 +3566,61 @@ def dashboard():
         total_contributions = 0
     return render_template('dashboard.html', user=user, active_stokvels_count=active_stokvels_count, total_contributions=total_contributions)
 
+@app.route('/api/recent_activity')
+@login_required
+def recent_activity_api():
+    firebase_uid = session.get('user_id')
+    activities = []
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Fetch recent transactions
+                cur.execute("""
+                    SELECT 'transaction' as activity_type, type, amount, transaction_date as date
+                    FROM transactions
+                    WHERE user_id = %s AND status = 'completed'
+                    ORDER BY transaction_date DESC
+                    LIMIT 5
+                """, (firebase_uid,))
+                transactions = cur.fetchall()
+                for t in transactions:
+                    activities.append({
+                        'type': t['type'],
+                        'title': t['type'].replace('_', ' ').title(),
+                        'amount': float(t['amount']),
+                        'date': t['date'].isoformat(),
+                        'status': 'Completed'
+                    })
+
+                # Fetch recent savings goals reached
+                cur.execute("""
+                    SELECT 'goal' as activity_type, name, target_amount as amount, created_at as date
+                    FROM savings_goals
+                    WHERE user_id = %s AND status = 'completed'
+                    ORDER BY created_at DESC
+                    LIMIT 2
+                """, (firebase_uid,))
+                goals = cur.fetchall()
+                for g in goals:
+                    activities.append({
+                        'type': 'goal',
+                        'title': g['name'],
+                        'amount': float(g['amount']),
+                        'date': g['date'].isoformat(),
+                        'status': 'Achieved'
+                    })
+        activities.sort(key=lambda x: x['date'], reverse=True)
+        # If no activities, return dummy data for debugging
+        if not activities:
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            activities = [
+                {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': (now-timedelta(hours=2)).isoformat(), 'status': 'Processed'},
+                {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': (now-timedelta(days=1)).isoformat(), 'status': 'Achieved'},
+                {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': (now-timedelta(days=3)).isoformat(), 'status': 'Completed'}
+            ]
+        return jsonify(activities[:7])
+    except Exception as e:
+        print(f"ERROR fetching recent activity: {e}")
+        return jsonify({"error": "Could not fetch recent activity"}), 500
 

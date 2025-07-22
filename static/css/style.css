@@ -759,17 +759,9 @@ body.light-mode {
     color-scheme: dark;
 }
 
-/* Force all user-facing cards and their content to use dashboard colors */
-.card, .main-content .card, .dashboard-main .card, .admin-main .card, .card * {
-  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
-  color: #eaf6fb !important;
-  border: 1px solid #22304a !important;
-  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
-}
-body.light-mode .card, body.light-mode .main-content .card, body.light-mode .dashboard-main .card, body.light-mode .admin-main .card, body.light-mode .card * {
-  background: #fafdff !important;
-  color: #222b45 !important;
-  border: 1px solid #b3d4fc !important;
+.glass-card {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* Force only user-facing cards (not admin) to use dashboard colors */

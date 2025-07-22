@@ -1,16 +1,9 @@
-<div class="space-y-4">
-  <div class="border-l-4 border-orange-400 bg-orange-50 p-4 rounded">
-    <div class="font-semibold text-orange-700">Spending Alert</div>
-    <div class="text-orange-800 text-sm">Your dining out expenses are 40% above budget this month.</div>
-    <button class="mt-2 text-xs text-orange-700 underline">Save R800/month by cooking more at home</button>
+{# Only show the graphs, remove all alert and opportunity cards #}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+  <div>
+    <canvas id="advisor-pie-chart" width="400" height="400"></canvas>
   </div>
-  <div class="border-l-4 border-green-400 bg-green-50 p-4 rounded">
-    <div class="font-semibold text-green-700">Savings Progress</div>
-    <div class="text-green-800 text-sm">You're on track to reach your emergency fund goal 2 months early!</div>
-  </div>
-  <div class="border-l-4 border-blue-400 bg-blue-50 p-4 rounded">
-    <div class="font-semibold text-blue-700">Stokvel Opportunity</div>
-    <div class="text-blue-800 text-sm">Joining a stokvel could boost your savings by 15%.</div>
-    <button class="mt-2 text-xs text-blue-700 underline">Explore local stokvels</button>
+  <div>
+    <canvas id="advisor-bar-chart" width="400" height="400"></canvas>
   </div>
 </div> 

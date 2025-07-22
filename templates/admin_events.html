@@ -16,7 +16,10 @@
             {% endfor %}
         </select>
       </div>
-      <!-- Remove the Name field -->
+      <div class="flex-1 min-w-[180px]">
+        <label class="block font-semibold mb-1" style="color:#60efff;">Event Name</label>
+        <input type="text" name="name" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
+      </div>
       <div class="flex-1 min-w-[180px]">
         <label class="block font-semibold mb-1" style="color:#60efff;">Target Date</label>
         <input type="date" name="target_date" class="w-full border border-[#22304a] rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#60efff]" required>
