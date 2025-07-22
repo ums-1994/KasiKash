@@ -1,0 +1,138 @@
+{% extends 'admin_base.html' %}
+{% block title %}{{ _('Reward Rules Configuration') }}{% endblock %}
+{% block admin_content %}
+<style>
+  .rules-form {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  .rule-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    color: white;
+    margin-bottom: 1rem;
+  }
+  .rule-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .rule-description {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<div class="p-6">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ _('Reward Rules Configuration') }}</h1>
+    <p class="text-gray-600">{{ _('Configure automatic reward triggers and multipliers for your reward system.') }}</p>
+  </div>
+
+  <!-- Rules Form -->
+  <div class="rules-form">
+    <h2 class="text-xl font-semibold mb-6 text-gray-800">{{ _('Automatic Reward Rules') }}</h2>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      
+      <!-- Contribution Multiplier -->
+      <div class="rule-card">
+        <div class="rule-title">{{ _('Contribution Multiplier') }}</div>
+        <div class="rule-description">
+          {{ _('How many reward points users earn per R1 contributed to stokvels.') }}
+        </div>
+        <input type="number" name="contribution_multiplier" 
+               value="{{ rules.get('contribution_multiplier', '1') }}" 
+               min="0" step="0.1"
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+      </div>
+
+      <!-- Welcome Bonus -->
+      <div class="rule-card">
+        <div class="rule-title">{{ _('Welcome Bonus') }}</div>
+        <div class="rule-description">
+          {{ _('Reward points given to new users when they join the platform.') }}
+        </div>
+        <input type="number" name="welcome_bonus" 
+               value="{{ rules.get('welcome_bonus', '0') }}" 
+               min="0"
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+      </div>
+
+      <!-- Referral Bonus -->
+      <div class="rule-card">
+        <div class="rule-title">{{ _('Referral Bonus') }}</div>
+        <div class="rule-description">
+          {{ _('Reward points given when a user successfully refers another user.') }}
+        </div>
+        <input type="number" name="referral_bonus" 
+               value="{{ rules.get('referral_bonus', '0') }}" 
+               min="0"
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+      </div>
+
+      <!-- Monthly Bonus -->
+      <div class="rule-card">
+        <div class="rule-title">{{ _('Monthly Bonus') }}</div>
+        <div class="rule-description">
+          {{ _('Monthly reward points given to active users who made contributions.') }}
+        </div>
+        <input type="number" name="monthly_bonus" 
+               value="{{ rules.get('monthly_bonus', '0') }}" 
+               min="0"
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+      </div>
+
+      <!-- Event Attendance Bonus -->
+      <div class="rule-card">
+        <div class="rule-title">{{ _('Event Attendance Bonus') }}</div>
+        <div class="rule-description">
+          {{ _('Reward points given for attending stokvel events and meetings.') }}
+        </div>
+        <input type="number" name="event_attendance_bonus" 
+               value="{{ rules.get('event_attendance_bonus', '0') }}" 
+               min="0"
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+      </div>
+
+      <!-- Loan Payment Bonus -->
+      <div class="rule-card">
+        <div class="rule-title">{{ _('Loan Payment Bonus') }}</div>
+        <div class="rule-description">
+          {{ _('Reward points given for on-time loan payments.') }}
+        </div>
+        <input type="number" name="loan_payment_bonus" 
+               value="{{ rules.get('loan_payment_bonus', '0') }}" 
+               min="0"
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+      </div>
+
+      <div class="mt-6">
+        <button type="submit" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-md transition duration-200">
+          {{ _('Save Reward Rules') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Rules Information -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-blue-800 mb-3">{{ _('How Reward Rules Work') }}</h3>
+    <div class="text-blue-700 space-y-2">
+      <p><strong>{{ _('Contribution Multiplier:') }}</strong> {{ _('Users earn this many points per R1 contributed. Set to 1 for 1:1 ratio.') }}</p>
+      <p><strong>{{ _('Welcome Bonus:') }}</strong> {{ _('Automatically given to new users upon registration.') }}</p>
+      <p><strong>{{ _('Referral Bonus:') }}</strong> {{ _('Given when a user successfully refers another user to the platform.') }}</p>
+      <p><strong>{{ _('Monthly Bonus:') }}</strong> {{ _('Given monthly to users who made contributions in the previous month.') }}</p>
+      <p><strong>{{ _('Event Attendance:') }}</strong> {{ _('Given for attending stokvel events and meetings.') }}</p>
+      <p><strong>{{ _('Loan Payment:') }}</strong> {{ _('Given for on-time loan payments and good financial behavior.') }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-4" style="background: linear-gradient(135deg, #60efff 0%, #00ff87 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Loan Repayment
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300">
+            Repay your approved loans from any stokvel
+        </p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} mb-4 p-4 rounded-lg shadow-md">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Loan Repayment Form -->
+    <div class="max-w-4xl mx-auto">
+        <div class="rounded-xl shadow-lg p-6 mb-8" style="background: #22304a; color: #60efff; border: 1px solid #22304a;">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center" style="color: #60efff;">
+                <i class="fas fa-credit-card mr-2" style="color: #60efff;"></i>
+                Repay Your Loan
+            </h2>
+
+            {% if loans %}
+                <form method="POST" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Loan Selection -->
+                    <div class="form-group">
+                        <label for="loan_id" class="block text-sm font-medium mb-2" style="color: #60efff;">
+                            Select Loan to Repay
+                        </label>
+                        <select name="loan_id" id="loan_id" required 
+                                class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#60efff] focus:border-transparent"
+                                style="background: #1e3357 !important; color: #60efff !important; border: 1px solid #60efff;">
+                            <option value="">Choose a loan...</option>
+                            {% for loan in loans %}
+                                <option value="{{ loan[0] }}" data-amount="{{ loan[1] }}">
+                                    {{ loan[4] }} - R{{ "%.2f"|format(loan[1]) }} ({{ loan[3].strftime('%Y-%m-%d') if loan[3] else 'N/A' }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Repayment Amount -->
+                    <div class="form-group">
+                        <label for="repayment_amount" class="block text-sm font-medium mb-2" style="color: #60efff;">
+                            Repayment Amount (R)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2" style="color: #b6c2e2;">R</span>
+                            <input type="number" name="repayment_amount" id="repayment_amount" 
+                                   step="0.01" min="0.01" required
+                                   value="{{ repayment_amount if repayment_amount else '' }}"
+                                   class="w-full pl-8 pr-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:ring-2 focus:ring-[#60efff] focus:border-transparent" style="border: 1px solid #60efff;"
+                                   placeholder="0.00">
+                        </div>
+                        <p class="text-sm mt-1" style="color: #b6c2e2;">Enter the amount you want to repay</p>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="form-group">
+                        <label for="payment_method_id" class="block text-sm font-medium mb-2" style="color: #60efff;">
+                            Payment Method
+                        </label>
+                        {% if payment_methods %}
+                            <select name="payment_method_id" id="payment_method_id" required 
+                                    class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#60efff] focus:border-transparent"
+                                    style="background: #1e3357 !important; color: #60efff !important; border: 1px solid #60efff;">
+                                <option value="">Select payment method...</option>
+                                {% for method in payment_methods %}
+                                    <option value="{{ method.id }}">
+                                        {{ method.type|title }}
+                                        {% if method.details.account_number %}
+                                            - {{ method.details.account_number }}
+                                        {% elif method.details.card_number %}
+                                            - Card ending in {{ method.details.card_number[-4:] }}
+                                        {% endif %}
+                                        {% if method.is_default %}(Default){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                                <p class="text-yellow-800 dark:text-yellow-200">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    No payment methods found. Please add a payment method first.
+                                </p>
+                                <a href="{{ url_for('payment_methods') }}" class="inline-block mt-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
+                                    Add Payment Method
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-group">
+                        <button type="submit" 
+                                style="width: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; font-weight: bold; padding: 0.75rem 2rem; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10); transition: background 0.3s;"
+                                {% if not payment_methods %}disabled{% endif %}>
+                            <i class="fas fa-check mr-2"></i>
+                            Process Repayment
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <!-- No Loans Available -->
+                <div class="text-center py-12">
+                    <div class="mb-4">
+                        <i class="fas fa-hand-holding-usd text-6xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                        No Loans Available for Repayment
+                    </h3>
+                    <p class="text-gray-500 dark:text-gray-500 mb-6">
+                        You don't have any approved loans that need repayment at the moment.
+                    </p>
+                    <a href="{{ url_for('stokvels') }}" class="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Stokvels
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Loan History Section -->
+        {% if loans %}
+            <div class="rounded-xl shadow-lg p-6 mt-8" style="background: #22304a; color: #60efff; border: 1px solid #22304a;">
+                <h3 class="text-xl font-semibold mb-4 flex items-center" style="color: #60efff;">
+                    <i class="fas fa-history mr-2" style="color: #60efff;"></i>
+                    Your Approved Loans
+                </h3>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" style="background: #1e3357; color: #eaf6fb; border-radius: 0.75rem;">
+                        <thead>
+                            <tr style="background: #22304a; color: #60efff;">
+                                <th class="text-left py-3 px-4 font-semibold">Stokvel</th>
+                                <th class="text-left py-3 px-4 font-semibold">Amount</th>
+                                <th class="text-left py-3 px-4 font-semibold">Date</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loans %}
+                                <tr style="border-bottom: 1px solid #22304a;">
+                                    <td class="py-3 px-4">
+                                        <span class="font-medium">{{ loan[4] or 'N/A' }}</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="font-semibold" style="color: #00ff87;">
+                                            R{{ "%.2f"|format(loan[1]) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4" style="color: #b6c2e2;">
+                                        {{ loan[3].strftime('%Y-%m-%d') if loan[3] else 'N/A' }}
+                                    </td>
+                                    <td class="py-3 px-4" style="color: #b6c2e2;">
+                                        {{ loan[2] or 'No description' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- JavaScript for form interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loanSelect = document.getElementById('loan_id');
+    const amountInput = document.getElementById('repayment_amount');
+    
+    if (loanSelect && amountInput) {
+        loanSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const loanAmount = selectedOption.getAttribute('data-amount');
+            
+            if (loanAmount) {
+                amountInput.value = loanAmount;
+                amountInput.max = loanAmount;
+            }
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const amount = parseFloat(amountInput.value);
+            const selectedLoan = loanSelect.value;
+            
+            if (!selectedLoan) {
+                e.preventDefault();
+                alert('Please select a loan to repay.');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid repayment amount.');
+                return;
+            }
+            
+            // Confirm repayment
+            if (!confirm('Are you sure you want to process this loan repayment?')) {
+                e.preventDefault();
+                return;
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-4" style="background: linear-gradient(135deg, #60efff 0%, #00ff87 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Request a Loan
+        </h1>
+        <p class="text-lg" style="color: #b6c2e2;">
+            Apply for a loan from your stokvel
+        </p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6">
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded-lg shadow-md" style="background: #22304a; color: #60efff; border: 1px solid #60efff;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Loan Request Form -->
+    <div class="max-w-4xl mx-auto">
+        <div class="rounded-xl shadow-lg p-6 mb-8" style="background: #22304a; color: #60efff; border: 1px solid #22304a;">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center" style="color: #60efff;">
+                <i class="fas fa-hand-holding-usd mr-2" style="color: #00ff87;"></i>
+                Apply for a Loan
+            </h2>
+
+            {% if stokvel_options %}
+                <form method="POST" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <!-- Stokvel Selection -->
+                    <div class="form-group">
+                        <label for="stokvel_id" class="block text-sm font-medium mb-2" style="color: #60efff;">
+                            Select Stokvel
+                        </label>
+                        <select name="stokvel_id" id="stokvel_id" required 
+                                class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#60efff] focus:border-transparent"
+                                style="background: #1e3357 !important; color: #60efff !important; border: 1px solid #60efff;">
+                            <option value="">Choose a stokvel...</option>
+                            {% for stokvel in stokvel_options %}
+                                <option value="{{ stokvel[0] }}" data-monthly="{{ stokvel[3] }}" data-target="{{ stokvel[2] }}">
+                                    {{ stokvel[1] }} - Monthly: R{{ "%.2f"|format(stokvel[3]) if stokvel[3] else '0.00' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Loan Amount -->
+                    <div class="form-group">
+                        <label for="amount" class="block text-sm font-medium mb-2" style="color: #60efff;">
+                            Loan Amount (R)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2" style="color: #b6c2e2;">R</span>
+                            <input type="number" name="amount" id="amount" 
+                                   step="0.01" min="0.01" required
+                                   value="{{ amount if amount else '' }}"
+                                   class="w-full pl-8 pr-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:ring-2 focus:ring-[#60efff] focus:border-transparent" style="border: 1px solid #60efff;"
+                                   placeholder="0.00">
+                        </div>
+                        <p class="text-sm mt-1" style="color: #b6c2e2;">Enter the amount you need to borrow</p>
+                    </div>
+
+                    <!-- Loan Description -->
+                    <div class="form-group">
+                        <label for="description" class="block text-sm font-medium mb-2" style="color: #60efff;">
+                            Purpose of Loan
+                        </label>
+                        <textarea name="description" id="description" rows="4" required
+                                  class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:ring-2 focus:ring-[#60efff] focus:border-transparent" style="border: 1px solid #60efff;"
+                                  placeholder="Please describe why you need this loan (e.g., emergency expenses, home repairs, education, etc.)"></textarea>
+                        <p class="text-sm mt-1" style="color: #b6c2e2;">Be specific about how you plan to use the loan</p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-group">
+                        <button type="submit" 
+                                style="width: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; font-weight: bold; padding: 0.75rem 2rem; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10); transition: background 0.3s;">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Submit Loan Request
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <!-- No Stokvels Available -->
+                <div class="text-center py-12">
+                    <div class="mb-4">
+                        <i class="fas fa-users text-6xl" style="color: #60efff;"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2" style="color: #60efff;">
+                        No Stokvels Available
+                    </h3>
+                    <p class="mb-6" style="color: #b6c2e2;">
+                        You need to be a member of a stokvel to request a loan.
+                    </p>
+                    <a href="{{ url_for('stokvels') }}" style="background: linear-gradient(90deg, #60efff, #00ff87); color: #22304a; font-weight: bold; padding: 0.75rem 2rem; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06); transition: background 0.3s;">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Join a Stokvel
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Loan History Section -->
+        {% if loan_requests %}
+            <div class="rounded-xl shadow-lg p-6 mt-8" style="background: #22304a; color: #60efff; border: 1px solid #22304a;">
+                <h3 class="text-xl font-semibold mb-4 flex items-center" style="color: #60efff;">
+                    <i class="fas fa-history mr-2" style="color: #60efff;"></i>
+                    Your Loan History
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" style="background: #1e3357; color: #eaf6fb; border-radius: 0.75rem;">
+                        <thead>
+                            <tr style="background: #22304a; color: #60efff;">
+                                <th class="text-left py-3 px-4 font-semibold">Stokvel</th>
+                                <th class="text-left py-3 px-4 font-semibold">Amount</th>
+                                <th class="text-left py-3 px-4 font-semibold">Date</th>
+                                <th class="text-left py-3 px-4 font-semibold">Status</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loan_requests %}
+                                <tr style="border-bottom: 1px solid #22304a;">
+                                    <td class="py-3 px-4">
+                                        <span class="font-medium">{{ loan[5] or 'N/A' }}</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="font-semibold" style="color: #00ff87;">
+                                            R{{ "%.2f"|format(loan[1]) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4" style="color: #b6c2e2;">
+                                        {{ loan[3].strftime('%Y-%m-%d') if loan[3] else 'N/A' }}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        {% if loan[4] == 'pending' %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full" style="background: #f9d423; color: #22304a;">Pending</span>
+                                        {% elif loan[4] == 'approved' %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full" style="background: #00ff87; color: #22304a;">Approved</span>
+                                        {% elif loan[4] == 'rejected' %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full" style="background: #ff4e50; color: #fff;">Rejected</span>
+                                        {% else %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full" style="background: #22304a; color: #60efff;">{{ loan[4]|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4" style="color: #b6c2e2;">
+                                        {{ loan[2] or 'No description' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- JavaScript for form interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stokvelSelect = document.getElementById('stokvel_id');
+    const amountInput = document.getElementById('amount');
+    
+    if (stokvelSelect && amountInput) {
+        stokvelSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const monthlyContribution = selectedOption.getAttribute('data-monthly');
+            const targetAmount = selectedOption.getAttribute('data-target');
+            
+            if (monthlyContribution) {
+                // Suggest loan amount based on monthly contribution (e.g., 3x monthly contribution)
+                const suggestedAmount = parseFloat(monthlyContribution) * 3;
+                amountInput.placeholder = suggestedAmount.toFixed(2);
+                amountInput.max = targetAmount || '';
+            }
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const amount = parseFloat(amountInput.value);
+            const selectedStokvel = stokvelSelect.value;
+            const description = document.getElementById('description').value.trim();
+            
+            if (!selectedStokvel) {
+                e.preventDefault();
+                alert('Please select a stokvel.');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid loan amount.');
+                return;
+            }
+            
+            if (!description) {
+                e.preventDefault();
+                alert('Please provide a description for your loan request.');
+                return;
+            }
+            
+            // Confirm loan request
+            if (!confirm('Are you sure you want to submit this loan request?')) {
+                e.preventDefault();
+                return;
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

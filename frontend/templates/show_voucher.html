@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center py-12">
+  <div class="max-w-lg w-full mx-auto bg-white/5 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 p-10 text-center">
+    <h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-6 tracking-tight">Your Voucher Code</h2>
+    <div class="text-4xl font-mono font-bold bg-white/10 text-white rounded-xl p-6 mb-6 shadow-inner select-all">
+      {{ code }}
+    </div>
+    <p class="text-lg text-gray-300 mb-8">Use this code to redeem your voucher on your selected network.</p>
+    <a href="{{ url_for('rewards.rewards_card_page') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:scale-105">
+      <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+      </svg>
+      Back to Rewards
+    </a>
+  </div>
+</div>
+{% endblock %} 
