@@ -1,5 +1,6 @@
 {% extends 'admin_base.html' %}
 {% block admin_content %}
+<!-- DEBUG: CSRF token is {{ csrf_token() }} -->
 <h1 style="color:#60efff;">Loan Approvals</h1>
 <p style="color:#eaf6fb;">Here you can approve or reject loan applications.</p>
 <!-- Filter by status -->
@@ -13,6 +14,11 @@
     </select>
   </form>
 </div>
+{% if loans|selectattr('4', 'equalto', 'rejected')|list %}
+  <div style="background:#ffeaea;color:#b30000;padding:8px 16px;margin-bottom:8px;border-left:6px solid #ff5858;font-weight:bold;">
+    Rejected loans are highlighted in red.
+  </div>
+{% endif %}
 <table class="table-auto w-full mt-2 text-sm admin-card" style="background:linear-gradient(135deg,#101c2c 60%,#1e3357 100%);color:#eaf6fb;">
   <thead>
     <tr style="color:#60efff;">
@@ -22,45 +28,47 @@
       <th>Amount</th>
       <th>Status</th>
       <th>Transaction Date</th>
-      <th>Comment</th>
       <th>Actions</th>
     </tr>
   </thead>
   <tbody>
     {% for loan in loans %}
-    <tr>
+    <tr{% if loan[4] == 'rejected' %} style="background: #ffeaea; border-left: 6px solid #ff5858;"{% endif %}>
       <td>{{ loan[0] }}</td>
       <td>{{ loan[1] }}</td>
       <td>{{ loan[2] }}</td>
       <td>{{ loan[3] }}</td>
       <td>{{ loan[4] }}</td>
       <td>{{ loan[5] }}</td>
-      <td>{{ loan[6] or '' }}</td>
-      <td class="flex gap-2 justify-center">
+      <td class="flex gap-2 justify-center items-center" style="min-width: 260px; max-width: 260px; white-space: nowrap;">
         {% if current_status == 'pending' %}
-        <form method="POST" action="{{ url_for('admin.approve_loan') }}" style="display:inline;">
+        <form method="POST" action="{{ url_for('admin.approve_loan') }}" style="display:inline;" class="js-approve-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
+          <input type="hidden" name="comment" value="">
           <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;">Approve</button>
         </form>
-        <form method="POST" action="{{ url_for('admin.reject_loan') }}" style="display:inline;">
+        <form method="POST" action="{{ url_for('admin.reject_loan') }}" style="display:inline;" class="js-reject-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
-          <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#ff4e50 0%,#f9d423 100%);color:#101c2c;">Reject</button>
+          <input type="hidden" name="comment" value="">
+          <button type="submit" class="admin-card btn px-4 py-1 text-lg font-semibold shadow" style="background:linear-gradient(90deg,#ff5858 0%,#f09819 100%);color:#101c2c;">Reject</button>
         </form>
+        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-view-loan-details-btn" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" data-loan-id="{{ loan[0] }}">View</button>
+        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-user-history-btn" style="background:linear-gradient(90deg,#22304a 0%,#60efff 100%);color:#eaf6fb;" data-user-email="{{ loan[2] }}">History</button>
         {% elif current_status in ['approved', 'rejected'] %}
         <form method="POST" action="{{ url_for('admin.undo_loan') }}" style="display:inline;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
-          <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Undo</button>
+          <button type="submit" class="admin-card btn px-4 py-1 text-lg font-semibold shadow" style="background:linear-gradient(90deg,#f09819 0%,#ff5858 100%);color:#101c2c;">Undo</button>
         </form>
-        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" data-loan-id="{{ loan[0] }}">View</button>
-        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#22304a 0%,#60efff 100%);color:#eaf6fb;" data-user-email="{{ loan[2] }}">History</button>
+        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-view-loan-details-btn" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" data-loan-id="{{ loan[0] }}">View</button>
+        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-user-history-btn" style="background:linear-gradient(90deg,#22304a 0%,#60efff 100%);color:#eaf6fb;" data-user-email="{{ loan[2] }}">History</button>
         {% endif %}
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="8">No loans found for this status.</td></tr>
+    <tr><td colspan="6">No loans found for this status.</td></tr>
     {% endfor %}
   </tbody>
 </table>
@@ -104,24 +112,17 @@ function closeUserHistory() {
   document.getElementById('userHistoryModal').classList.add('hidden');
 }
 // Add comment prompt for approve/reject
-function addCommentAndSubmit(form, action) {
-  var comment = prompt('Enter a comment for this decision (optional):');
-  if (comment !== null) {
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'comment';
-    input.value = comment;
-    form.appendChild(input);
-    form.submit();
-  }
-}
-// Attach to approve/reject forms
+// Refactored comment prompt to never remove CSRF token
 window.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('form[action$="/admin/loans/approve"], form[action$="/admin/loans/reject"]').forEach(function(form) {
+  document.querySelectorAll('form.js-approve-form, form.js-reject-form').forEach(function(form) {
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       var action = form.action.includes('approve') ? 'approve' : 'reject';
-      addCommentAndSubmit(form, action);
+      var comment = prompt('Enter a comment for this decision (optional):');
+      if (comment !== null) {
+        form.querySelector('input[name="comment"]').value = comment;
+        form.submit();
+      }
     });
   });
   // View Loan Details buttons
@@ -136,6 +137,14 @@ window.addEventListener('DOMContentLoaded', function() {
     button.addEventListener('click', function() {
       var userEmail = this.dataset.userEmail;
       showUserHistory(userEmail);
+    });
+  });
+  // Confirmation for reject
+  document.querySelectorAll('.js-reject-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      if (!confirm('Are you sure you want to reject this loan request?')) {
+        e.preventDefault();
+      }
     });
   });
 });

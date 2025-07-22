@@ -590,32 +590,37 @@
     </div>
     <!-- Activity Visualizer Chart -->
     <div class="activity-visualizer">
-      <canvas id="activityChart" height="120"></canvas>
+      <canvas id="activityChart" height="220"></canvas>
     </div>
     <!-- Timeline -->
+    {% set default_activities = [
+      {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': '2 hours ago', 'status': 'Processed'},
+      {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': 'Yesterday', 'status': 'Achieved'},
+      {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': '3 days ago', 'status': 'Completed'}
+    ] %}
+    {% set activities = recent_activities if recent_activities and recent_activities|length > 0 else default_activities %}
     <div class="activity-timeline">
-      {% set default_activities = [
-        {'type': 'contribution', 'title': 'Monthly Contribution', 'amount': 1500.00, 'date': '2 hours ago', 'status': 'Processed'},
-        {'type': 'goal', 'title': 'Savings Goal Reached', 'amount': 10000.00, 'date': 'Yesterday', 'status': 'Achieved'},
-        {'type': 'withdrawal', 'title': 'Emergency Withdrawal', 'amount': 500.00, 'date': '3 days ago', 'status': 'Completed'}
-      ] %}
-      {% for activity in recent_activities|default(default_activities) %}
-      <div class="timeline-item">
-        <div class="timeline-content">
-          <div class="timeline-header">
-            <span class="timeline-title">{{ activity.title }}</span>
-            <span class="timeline-date">{{ activity.date }}</span>
+      {% if activities and activities|length > 0 %}
+        {% for activity in activities %}
+          <div class="timeline-item">
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-title">{{ activity.title }}</span>
+                <span class="timeline-date">{{ activity.date }}</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+                <span class="timeline-badge {% if activity.type == 'contribution' %}badge-contribution{% elif activity.type == 'withdrawal' %}badge-withdrawal{% else %}badge-goal{% endif %}">
+                  <i class="fas {% if activity.type == 'contribution' %}fa-arrow-up{% elif activity.type == 'withdrawal' %}fa-arrow-down{% else %}fa-flag{% endif %}" style="margin-right: 0.25rem;"></i>
+                  {{ activity.status }}
+                </span>
+                <span class="timeline-amount">R {{ "%.2f"|format(activity.amount) }}</span>
+              </div>
+            </div>
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
-            <span class="timeline-badge {% if activity.type == 'contribution' %}badge-contribution{% elif activity.type == 'withdrawal' %}badge-withdrawal{% else %}badge-goal{% endif %}">
-              <i class="fas {% if activity.type == 'contribution' %}fa-arrow-up{% elif activity.type == 'withdrawal' %}fa-arrow-down{% else %}fa-flag{% endif %}" style="margin-right: 0.25rem;"></i>
-              {{ activity.status }}
-            </span>
-            <span class="timeline-amount">R {{ "%.2f"|format(activity.amount) }}</span>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center; color:#b2f7ef;">No recent activity found.</div>
+      {% endif %}
     </div>
   </div>
   <!-- Calendar Card (spans 2 columns) -->
@@ -626,105 +631,112 @@
       <button id="calendarNextBtn" aria-label="Next Month"><i class="fas fa-chevron-right"></i></button>
     </div>
     <div class="calendar" id="calendarGrid">
-      {% for day in calendar_days|default([]) %}
-        <div class="calendar-day {% if day.is_today %}today{% endif %}{% if day.is_weekend %} weekend{% endif %}" data-date="{{ day.full_date }}">
-          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-            <span>{{ day.date }}</span>
-          </div>
-          {% set events = [] %}
-          {% for event in calendar_events|default([]) %}
-            {% if event.date == day.full_date %}
-              {% set _ = events.append(event) %}
+      {% for day in calendar_days %}
+        {% if day.is_day %}
+          <div class="calendar-day {% if day.is_today %}today{% endif %}{% if day.is_weekend %} weekend{% endif %}" data-date="{{ day.full_date }}">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+              <span>{{ day.date }}</span>
+            </div>
+            {% set events = [] %}
+            {% for event in calendar_events %}
+              {% if event.date == day.full_date %}
+                {% set _ = events.append(event) %}
+              {% endif %}
+            {% endfor %}
+            {% if events %}
+              <ul style="margin-top: 0.25rem; font-size: 0.85em;">
+                {% for event in events %}
+                  <li class="calendar-event-item" data-date="{{ day.full_date }}" data-type="{{ event.type }}" style="cursor:pointer;">
+                    {% if event.type == 'contribution' %}<i class="fas fa-arrow-up" style="color: #34D399;"></i>{% endif %}
+                    {% if event.type == 'payout' %}<i class="fas fa-arrow-down" style="color: #60a5fa;"></i>{% endif %}
+                    {% if event.type == 'goal' %}<i class="fas fa-star" style="color: #fbbf24;"></i>{% endif %}
+                    {% if event.type == 'repayment' %}<i class="fas fa-money-bill-wave" style="color: #ef4444;"></i>{% endif %}
+                    {% if event.type == 'custom' %}<i class="fas fa-bell" style="color: #a78bfa;"></i>{% endif %}
+                    <span style="margin-left: 0.25em;">{{ event.desc }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
             {% endif %}
-          {% endfor %}
-          {% if events %}
-            <ul style="margin-top: 0.25rem; font-size: 0.85em;">
-              {% for event in events %}
-                <li class="calendar-event-item" data-date="{{ day.full_date }}" data-type="{{ event.type }}" style="cursor:pointer;">
-                  {% if event.type == 'contribution' %}<i class="fas fa-arrow-up" style="color: #34D399;"></i>{% endif %}
-                  {% if event.type == 'payout' %}<i class="fas fa-arrow-down" style="color: #60a5fa;"></i>{% endif %}
-                  {% if event.type == 'goal' %}<i class="fas fa-star" style="color: #fbbf24;"></i>{% endif %}
-                  {% if event.type == 'repayment' %}<i class="fas fa-money-bill-wave" style="color: #ef4444;"></i>{% endif %}
-                  {% if event.type == 'custom' %}<i class="fas fa-bell" style="color: #a78bfa;"></i>{% endif %}
-                  <span style="margin-left: 0.25em;">{{ event.desc }}</span>
-                </li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
+          </div>
+        {% else %}
+          <div class="calendar-day empty"></div>
+        {% endif %}
       {% endfor %}
     </div>
   </div>
 </div>
 {% endblock %}
 {% block extra_js %}
-<script id="activity-data" type="application/json">
-  {{ recent_activities|default(default_activities)|map(attribute='amount')|list|tojson }}
-</script>
-<script id="activity-labels" type="application/json">
-  {{ recent_activities|default(default_activities)|map(attribute='title')|list|tojson }}
-</script>
-<script id="activity-types" type="application/json">
-  {{ recent_activities|default(default_activities)|map(attribute='type')|list|tojson }}
-</script>
+<script id="activity-data" type="application/json">{{ activities|map(attribute='amount')|list|tojson }}</script>
+<script id="activity-labels" type="application/json">{{ activities|map(attribute='title')|list|tojson }}</script>
+<script id="activity-types" type="application/json">{{ activities|map(attribute='type')|list|tojson }}</script>
 <script>
-// Chart.js Activity Visualizer
-const activityData = JSON.parse(document.getElementById('activity-data').textContent);
-const activityLabels = JSON.parse(document.getElementById('activity-labels').textContent);
-const activityTypes = JSON.parse(document.getElementById('activity-types').textContent);
-const activityColors = activityTypes.map(type => {
-  if (type === 'contribution') return '#34D399';
-  if (type === 'withdrawal') return '#EF4444';
-  if (type === 'goal') return '#7B61FF';
-  return '#60efff';
-});
-const ctx = document.getElementById('activityChart').getContext('2d');
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: activityLabels,
-    datasets: [{
-      label: 'Amount',
-      data: activityData,
-      backgroundColor: activityColors,
-      borderRadius: 8,
-      borderSkipped: false,
-      maxBarThickness: 38,
-    }]
-  },
-  options: {
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            return 'R ' + context.parsed.y.toLocaleString();
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: { color: '#eaf6fb', font: { weight: 600 } }
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse data from JSON script tags
+    let activityData = JSON.parse(document.getElementById('activity-data').textContent);
+    let activityLabels = JSON.parse(document.getElementById('activity-labels').textContent);
+    let activityTypes = JSON.parse(document.getElementById('activity-types').textContent);
+    // If no data, show a placeholder
+    if (!activityData || activityData.length === 0) {
+        activityData = [0];
+        activityLabels = ['No Data'];
+        activityTypes = ['none'];
+    }
+    const activityColors = activityTypes.map(type => {
+      if (type === 'contribution') return '#34D399';
+      if (type === 'withdrawal') return '#EF4444';
+      if (type === 'goal') return '#7B61FF';
+      return '#60efff';
+    });
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: activityLabels,
+        datasets: [{
+          label: 'Amount',
+          data: activityData,
+          backgroundColor: activityColors,
+          borderRadius: 8,
+          borderSkipped: false,
+          maxBarThickness: 38,
+        }]
       },
-      y: {
-        grid: { color: 'rgba(96,239,255,0.08)' },
-        ticks: { color: '#b2f7ef', font: { weight: 600 }, beginAtZero: true }
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'R ' + context.parsed.y.toLocaleString();
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#eaf6fb', font: { weight: 600 } }
+          },
+          y: {
+            grid: { color: 'rgba(96,239,255,0.08)' },
+            ticks: { color: '#b2f7ef', font: { weight: 600 }, beginAtZero: true }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false,
       }
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-  }
+    });
 });
 </script>
 <script>
+// Keep other scripts like the progress bar one
 document.querySelectorAll('.stokvel-progress-bar').forEach(function(el) {
-  el.style.width = el.getAttribute('data-width') + '%';
-  el.style.background = 'linear-gradient(90deg, #60efff, #00ff87)';
-  el.style.height = '100%';
-  el.style.borderRadius = '0.5rem';
-  el.style.transition = 'width 0.3s ease';
+    el.style.width = el.getAttribute('data-width') + '%';
+    el.style.background = 'linear-gradient(90deg, #60efff, #00ff87)';
+    el.style.height = '100%';
+    el.style.borderRadius = '0.5rem';
+    el.style.transition = 'width 0.3s ease';
 });
 </script>
 {% endblock %}

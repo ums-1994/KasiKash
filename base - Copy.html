@@ -1,26 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ user_language }}">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>KasiKash - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
     {% block extra_css %}{% endblock %}
     <style>
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%) fixed !important;
+            background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
             font-family: 'Inter', 'Montserrat', sans-serif;
             color: #E2E2F0;
         }
         .sidebar {
-            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
             border-right: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 
@@ -28,16 +27,18 @@
                 inset 0 0 0 1px rgba(255, 255, 255, 0.05);
         }
         .nav-link {
-            color: #eaf6fb;
+            color: rgba(255, 255, 255, 0.8);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid transparent;
             background: rgba(255, 255, 255, 0);
         }
         .nav-link:hover {
-            color: #60efff;
-            background: rgba(96,239,255,0.08);
-            border: 1.5px solid #60efff;
-            box-shadow: 0 8px 16px rgba(96,239,255,0.10);
+            color: #fff;
+            background: rgba(123, 97, 255, 0.1);
+            border: 1px solid rgba(123, 97, 255, 0.2);
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.1),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05);
             transform: translateY(-1px);
         }
         .nav-link svg {
@@ -49,7 +50,7 @@
         }
         .logo-section {
             background: linear-gradient(90deg, rgba(123, 97, 255, 0.1), rgba(97, 218, 251, 0.1));
-            border-bottom: 1px solid #22304a;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .logo-text {
             background: linear-gradient(90deg, #7B61FF, #61DAFB);
@@ -60,53 +61,53 @@
             letter-spacing: -0.5px;
         }
         .top-bar {
-            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .page-title {
-            color: #60efff;
+            color: #fff;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
         .notification-icon, .profile-icon {
-            color: #60efff;
+            color: rgba(255, 255, 255, 0.8);
             transition: all 0.3s ease;
         }
         .notification-icon:hover, .profile-icon:hover {
-            color: #00ff87;
+            color: #7B61FF;
             transform: translateY(-1px);
-            filter: drop-shadow(0 0 8px rgba(96,239,255,0.5));
+            filter: drop-shadow(0 0 8px rgba(123, 97, 255, 0.5));
         }
         .notification-badge {
             background: linear-gradient(135deg, #7B61FF, #61DAFB);
             box-shadow: 0 0 10px rgba(123, 97, 255, 0.5);
         }
         .user-section {
-            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-            border-top: 1px solid #22304a;
+            background: rgba(255, 255, 255, 0.03);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
         .user-avatar {
             background: linear-gradient(135deg, #7B61FF, #61DAFB);
             box-shadow: 0 0 15px rgba(123, 97, 255, 0.3);
         }
         .logout-link {
-            color: #60efff;
+            color: rgba(255, 255, 255, 0.8);
             transition: all 0.3s ease;
         }
         .logout-link:hover {
-            color: #00ff87;
-            text-shadow: 0 0 10px rgba(96,239,255,0.5);
+            color: #7B61FF;
+            text-shadow: 0 0 10px rgba(123, 97, 255, 0.5);
         }
         .alert {
             background: rgba(255, 255, 255, 0.05);
-            -webkit-backdrop-filter: blur(16px);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1rem;
-            color: #eaf6fb;
-            box-shadow: 0 8px 32px rgba(35,41,70,0.18);
+            color: #fff;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05);
         }
         .alert-success {
             background: rgba(72, 187, 120, 0.1);
@@ -161,77 +162,90 @@
             border: 2px solid #7B61FF;
             box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
         }
+        
+        /* Bell shake animation for new notifications */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+        
+        .shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
     </style>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col max-h-screen overflow-y-auto">
+    <div class="fixed inset-y-0 left-0 w-64 sidebar">
         <!-- Logo -->
-        <div class="flex items-center justify-center h-16 logo-section flex-shrink-0">
+        <div class="flex items-center justify-center h-16 logo-section">
             <a href="/" class="flex items-center space-x-3">
-                <img src="{{ url_for('static', filename='logo_admin.png') }}" alt="KasiKash Logo" style="height:48px;width:48px;border-radius:50%;box-shadow:0 0 16px #60efff;">
+                <img src="{{ url_for('static', filename='kasikash-logo.svg') }}" alt="KasiKash Logo" class="h-10 w-auto animate-float">
                 <span class="text-2xl logo-text">KasiKash</span>
             </a>
         </div>
         <!-- Navigation -->
-        <nav class="mt-4 flex-1 overflow-y-auto">
-          <ul class="space-y-1">
+        <nav class="mt-8">
+          <ul class="space-y-2">
             <li>
-              <a href="/home" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-home mr-2"></i> Home
+              <a href="/home" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-home mr-3"></i> Home
               </a>
             </li>
             <li>
-              <a href="/stokvels" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-users mr-2"></i> Stokvels
+              <a href="/stokvels" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-users mr-3"></i> Stokvels
               </a>
             </li>
             <li>
-              <a href="/contributions" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-dollar-sign mr-2"></i> Contributions
+              <a href="/contributions" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-dollar-sign mr-3"></i> Contributions
               </a>
             </li>
             <li>
-              <a href="/payouts" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-wallet mr-2"></i> Payouts
+              <a href="/payouts" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-wallet mr-3"></i> Payouts
               </a>
             </li>
             <li>
-              <a href="/savings_goals" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-chart-line mr-2"></i> Savings Goals
+              <a href="/savings_goals" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-chart-line mr-3"></i> Savings Goals
               </a>
             </li>
             <li>
-              <a href="/payment_methods" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-credit-card mr-2"></i> Payment Methods
+              <a href="/payment_methods" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-credit-card mr-3"></i> Payment Methods
               </a>
             </li>
             <li>
-              <a href="{{ url_for('rewards.rewards_card_page') }}" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-gift mr-2"></i> My Rewards Card
+              <a href="{{ url_for('rewards.rewards_card_page') }}" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-gift mr-3"></i> My Rewards Card
               </a>
             </li>
             <li>
-              <a href="/settings" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-cog mr-2"></i> Settings
+              <a href="/settings" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-cog mr-3"></i> Settings
               </a>
             </li>
             {% if session.role == 'admin' %}
             <li>
-              <a href="/admin/dashboard" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
-                <i class="fas fa-user-shield mr-2"></i> Admin
+              <a href="/admin/dashboard" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
+                <i class="fas fa-user-shield mr-3"></i> Admin
               </a>
             </li>
             {% endif %}
             <li>
-              <a href="{{ url_for('advisor.dashboard') }}" class="flex items-center px-4 py-2 text-gray-200 hover:bg-gray-800 rounded transition">
-                <i class="fas fa-user-tie mr-3"></i> Financial Advisor
+              <a href="{{ url_for('advisor.dashboard') }}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <svg class="h-5 w-5 text-indigo-500 mr-2" ...> <!-- icon here --> </svg>
+                Financial Advisor
               </a>
             </li>
           </ul>
         </nav>
         <!-- User Section -->
-        <div class="w-full p-4 user-section flex-shrink-0 mt-auto">
+        <div class="absolute bottom-0 w-full p-4 user-section">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-10 h-10 rounded-xl user-avatar flex items-center justify-center text-white font-bold text-base">
@@ -242,7 +256,7 @@
                     </div>
                 </div>
                 <div class="ml-3">
-                    <a href="/logout" class="text-sm logout-link">{{ 'Logout' }}</a>
+                    <a href="/logout" class="text-sm logout-link">{{ t('logout', user_language) }}</a>
                 </div>
             </div>
         </div>
@@ -253,7 +267,7 @@
             <div class="flex items-center justify-between w-full px-6 py-4">
                 <h2 class="text-xl page-title">{% block page_title %}{% endblock %}</h2>
                 <div class="flex items-center space-x-6">
-                    <a href="/notifications" id="notification-icon" class="notification-icon relative">
+                    <a href="{{ url_for('notifications') }}" id="notification-icon" class="notification-icon relative">
                         <i class="fa-solid fa-bell w-6 h-6 text-xl"></i>
                         <span id="notification-badge"
                               class="notification-badge absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white{% if not (notification_count and notification_count > 0) %} hidden{% endif %}">
@@ -284,19 +298,14 @@
             {% block content %}{% endblock %}
         </main>
     </div>
-    <!-- jQuery (full version, not slim) -->
+    <!-- Scripts at the end of body, in correct order -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <!-- Bootstrap JS (if you use it) -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <!-- Bootstrap Select plugin -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-    <!-- Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <!-- Your custom scripts (must come after all libraries) -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     {% include 'chatbot.html' %}
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
     {% block extra_js %}{% endblock %}
+    <div id="myDiv"></div>
 </body>
 </html>

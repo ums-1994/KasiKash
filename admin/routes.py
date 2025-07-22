@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, session, flash, url_for, jsonify, Response
+from flask import render_template, request, redirect, session, flash, url_for, jsonify, Response, g, send_file
 import support
 import psycopg2
 import psycopg2.extras
@@ -16,13 +16,16 @@ from extensions import csrf
 from translations import get_text
 from datetime import datetime
 import os
-from flask import g
-from flask import send_file
+from flask_babel import _
 
 # Add this context processor to make 't' available in all templates
 @admin_bp.app_context_processor
 def inject_t():
     return dict(t=get_text, _=get_text)
+
+@admin_bp.app_context_processor
+def inject_admin_globals():
+    return dict(_=_)
 
 def get_user_language():
     return session.get('language_preference', 'en')

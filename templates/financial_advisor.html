@@ -8,14 +8,31 @@
     <nav class="flex space-x-4" id="advisor-tabs">
       <button class="tab-btn px-4 py-2 rounded bg-blue-900 text-cyan-300 font-semibold" data-tab="overview">Overview</button>
       <button class="tab-btn px-4 py-2 rounded text-cyan-300 hover:bg-blue-800" data-tab="upload">Upload</button>
-      <button class="tab-btn px-4 py-2 rounded text-cyan-300 hover:bg-blue-800" data-tab="ai">AI Assistant</button>
-      <button class="tab-btn px-4 py-2 rounded text-cyan-300 hover:bg-blue-800" data-tab="stokvels">Stokvels</button>
+      <button class="tab-btn px-4 py-2 rounded text-cyan-300 hover:bg-blue-800" data-tab="ai">Financial Assistant</button>
     </nav>
   </div>
   <div id="tab-overview" class="tab-content">
     {% include "advisor/insights.html" %}
     {% include "advisor/budget.html" %}
-    {% include "advisor/goals.html" %}
+    <!-- Show advice and analysis below the graphs -->
+    <div id="overview-charts" style="display:flex; gap:2rem; flex-wrap:wrap;">
+      <div style="flex:1 1 300px;">
+        <h4>Spending by Category</h4>
+        <canvas id="spendingPieChart"></canvas>
+      </div>
+      <div style="flex:1 1 300px;">
+        <h4>Spending Over Time</h4>
+        <canvas id="spendingBarChart"></canvas>
+      </div>
+    </div>
+    <div id="overview-advice-analysis">
+      {% if session['advisor_analysis'] %}
+        <div class="mt-8">
+          <h2 class="text-lg font-bold mb-2">AI Financial Analysis & Advice</h2>
+          <div class="p-4 border rounded bg-gray-50 text-gray-900">{{ session['advisor_analysis']|safe }}</div>
+        </div>
+      {% endif %}
+    </div>
   </div>
   <div id="tab-upload" class="tab-content hidden">
     {% include "advisor/upload.html" %}
@@ -23,10 +40,19 @@
   <div id="tab-ai" class="tab-content hidden">
     {% include "advisor/chat.html" %}
   </div>
-  <div id="tab-stokvels" class="tab-content hidden">
-    {% include "advisor/stokvels.html" %}
-  </div>
 </div>
+{% if session['advisor_transactions'] %}
+<script>
+  window.ADVISOR_TRANSACTIONS = {{ session['advisor_transactions']|tojson }};
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.ADVISOR_TRANSACTIONS && window.ADVISOR_TRANSACTIONS.length > 0) {
+      updateOverviewCharts(window.ADVISOR_TRANSACTIONS);
+    }
+  });
+</script>
+{% endif %}
+<!-- Add Chart.js before financial_advisor.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/financial_advisor.js') }}"></script>
 <script>
 window.USER_ID = "{{ user_id|e }}";

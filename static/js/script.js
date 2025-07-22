@@ -9,7 +9,6 @@ function disableButton(optbtn,femail,otp,reset)
     }
 }
 
-
 $(document).ready(function(){
     $(".multi_select").selectpicker();
 })

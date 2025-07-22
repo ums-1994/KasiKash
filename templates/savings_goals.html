@@ -185,19 +185,13 @@
         </div>
     </div>
 
-    <!-- Payment Confirmation Modal -->
-    <div id="goalPaymentConfirmModal" class="hidden modal-backdrop" style="background-color: rgba(10, 10, 20, 0.8); backdrop-filter: blur(8px);">
-        <div class="glass-card" style="width: 100%; max-width: 420px; margin: 2rem auto;">
-            <h3 class="accent" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">Confirm Payment</h3>
-            <div style="margin-bottom: 1.5rem;">
-                <div style="margin-bottom: 0.8rem;">
-                    <span style="color: #a0aec0;">Goal:</span> 
-                    <span id="confirmGoalName" style="color: #fff; font-weight: 600;"></span>
-                </div>
-                <div style="margin-bottom: 0.8rem;">
-                    <span style="color: #a0aec0;">Amount:</span> 
-                    R<span id="confirmGoalAmount" style="color: #fff; font-weight: 600;"></span>
-                </div>
+    <!-- Payment Confirmation Modal for Goal Contribution -->
+    <div id="goalPaymentConfirmModal" class="hidden fixed inset-0" style="display:none; background: rgba(30,51,87,0.85); align-items: center; justify-content: center; z-index: 50;">
+        <div class="rounded-lg shadow-lg p-8 max-w-sm w-full relative" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Confirm Payment</h3>
+            <div class="mb-4">
+                <div class="mb-2"><span class="font-semibold">Goal:</span> <span id="confirmGoalName"></span></div>
+                <div class="mb-2"><span class="font-semibold">Amount:</span> R<span id="confirmGoalAmount"></span></div>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 1rem;">
                 <button type="button" onclick="closeGoalConfirmModal()" class="btn-secondary">Cancel</button>
@@ -208,6 +202,7 @@
 </div>
 
 <script>
+    // Modal open/close logic
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
@@ -245,6 +240,48 @@
         document.getElementById('contributeGoalForm').submit();
     }
 
+    // Payment confirmation modal logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const createForm = document.getElementById('createGoalForm');
+        if (createForm) {
+            createForm.addEventListener('submit', handleFormSubmit);
+        }
+
+        const showGoalConfirmModalBtn = document.getElementById('showGoalConfirmModalBtn');
+        const goalNameSpan = document.getElementById('goalName');
+        const contributionAmountInput = document.getElementById('contribution_amount');
+
+        showGoalConfirmModalBtn.addEventListener('click', function() {
+            const goalName = goalNameSpan.textContent;
+            const amount = contributionAmountInput.value;
+            if (!goalName || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+                alert('Please enter a valid contribution amount.');
+                return;
+            }
+            document.getElementById('confirmGoalName').textContent = goalName;
+            document.getElementById('confirmGoalAmount').textContent = amount;
+            openModal('goalPaymentConfirmModal');
+        });
+
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === "Escape") {
+                document.querySelectorAll('.modal-backdrop').forEach(modal => {
+                    if (!modal.classList.contains('hidden')) {
+                        closeModal(modal.id);
+                    }
+                });
+            }
+        });
+    });
+
     async function handleFormSubmit(event) {
         event.preventDefault();
         const form = event.target;
@@ -281,46 +318,5 @@
             messageArea.classList.remove('hidden');
         }
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const createForm = document.getElementById('createGoalForm');
-        if (createForm) {
-            createForm.addEventListener('submit', handleFormSubmit);
-        }
-
-        const showGoalConfirmModalBtn = document.getElementById('showGoalConfirmModalBtn');
-        const goalNameSpan = document.getElementById('goalName');
-        const contributionAmountInput = document.getElementById('contribution_amount');
-
-        showGoalConfirmModalBtn.addEventListener('click', function() {
-            const goalName = goalNameSpan.textContent;
-            const amount = contributionAmountInput.value;
-            if (!goalName || !amount) {
-                alert('Please fill in all fields.');
-                return;
-            }
-            document.getElementById('confirmGoalName').textContent = goalName;
-            document.getElementById('confirmGoalAmount').textContent = amount;
-            openModal('goalPaymentConfirmModal');
-        });
-
-        document.querySelectorAll('.modal-backdrop').forEach(modal => {
-            modal.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    closeModal(modal.id);
-                }
-            });
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === "Escape") {
-                document.querySelectorAll('.modal-backdrop').forEach(modal => {
-                    if (!modal.classList.contains('hidden')) {
-                        closeModal(modal.id);
-                    }
-                });
-            }
-        });
-    });
 </script>
 {% endblock %} 
