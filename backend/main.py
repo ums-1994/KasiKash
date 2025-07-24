@@ -3520,8 +3520,8 @@ def request_loan():
     return render_template('referral.html', referral_link=referral_link, message=message, stokvels=stokvels, selected_stokvel_id=selected_stokvel_id)
 
 if __name__ == "__main__":
-    # Use 127.0.0.1 which is accessible in the browser
-    socketio.run(app, host="127.0.0.1", port=5001, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)
 
 # Inject _ into Jinja2 context for translations
 try:
