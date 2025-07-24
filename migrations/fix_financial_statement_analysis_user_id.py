@@ -5,12 +5,6 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-DB_NAME = os.getenv('DB_NAME', 'kasikash_db')
-DB_USER = os.getenv('DB_USER', 'kasikash_user')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'test123')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PORT = os.getenv('DB_PORT', '5432')
-
 MIGRATION_SQL = '''
 ALTER TABLE financial_statement_analysis
     ALTER COLUMN user_id TYPE VARCHAR(64);
@@ -21,13 +15,7 @@ ALTER TABLE financial_statement_analysis
 
 def run_migration():
     try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
         cur = conn.cursor()
         print('Running migration to fix user_id type in financial_statement_analysis...')
         cur.execute(MIGRATION_SQL)

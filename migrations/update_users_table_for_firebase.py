@@ -9,13 +9,7 @@ def update_users_table():
     print("Adding firebase_uid column...")
     conn = None
     try:
-        conn = psycopg2.connect(
-            dbname=os.getenv('DB_NAME'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            host=os.getenv('DB_HOST'),
-            port=os.getenv('DB_PORT')
-        )
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
         cur = conn.cursor()
 
         cur.execute("""
