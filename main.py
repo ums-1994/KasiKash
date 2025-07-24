@@ -49,6 +49,7 @@ from flask_wtf.csrf import generate_csrf
 import calendar
 from flask import g
 from flask_babel import _
+import socket
 
 # Load environment variables
 load_dotenv()
@@ -95,7 +96,7 @@ if not firebase_admin._apps:
     cred = credentials.Certificate(
     os.getenv(
         "FIREBASE_SERVICE_ACCOUNT_KEY_PATH",
-         "firebase-service-account.json"))
+         "firebase_service_account.json"))
     firebase_admin.initialize_app(cred)
 
 # Database connection function
@@ -340,112 +341,113 @@ def home():
     active_stokvels_count = 0
     total_contributions = 0
     recent_activities = []
-
-    # Calendar data generation (existing code)
-    now = datetime.now()
-    year = request.args.get('year', now.year, type=int)
-    month = request.args.get('month', now.month, type=int)
-    month_name = datetime(year, month, 1).strftime('%B')
-    cal = calendar.monthcalendar(year, month)
-    calendar_days = []
-    today = date.today()
-    flat_cal = [day for week in cal for day in week]
-    for day_num in flat_cal:
-        if day_num == 0:
-            calendar_days.append({'is_day': False})
-        else:
-            current_date = date(year, month, day_num)
-            calendar_days.append({
-                'is_day': True,
-                'date': day_num,
-                'full_date': current_date.strftime('%Y-%m-%d'),
-                'is_today': current_date == today,
-                'is_weekend': current_date.weekday() >= 5
-            })
-    calendar_events = []
-
+    user_settings = {}
     try:
         with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Count active stokvels for this user
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 cur.execute("""
-                    SELECT COUNT(DISTINCT s.id)
-                    FROM stokvels s
-                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
-                    WHERE sm.user_id = %s
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
                 """, (firebase_uid,))
-                active_stokvels_count = cur.fetchone()[0] or 0
-
-                # Sum total contributions for this user
-                cur.execute("""
-                    SELECT COALESCE(SUM(amount), 0)
-                    FROM transactions
-                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
-                """, (firebase_uid,))
-                total_contributions = cur.fetchone()[0] or 0
-
-                # Fetch calendar events from diary
-                cur.execute("""
-                    SELECT event_date, event_name, description 
-                    FROM diary 
-                    WHERE user_id = %s AND EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s
-                """, (firebase_uid, year, month))
-                for row in cur.fetchall():
-                    calendar_events.append({
-                        'date': row[0].strftime('%Y-%m-%d'),
-                        'type': row[1].lower() if row[1] else 'custom',
-                        'desc': row[2]
+                user_settings = cur.fetchone() or {}
+            # Restore original code for calendar and activity data
+            now = datetime.now()
+            year = request.args.get('year', now.year, type=int)
+            month = request.args.get('month', now.month, type=int)
+            month_name = datetime(year, month, 1).strftime('%B')
+            cal = calendar.monthcalendar(year, month)
+            calendar_days = []
+            today = date.today()
+            flat_cal = [day for week in cal for day in week]
+            for day_num in flat_cal:
+                if day_num == 0:
+                    calendar_days.append({'is_day': False})
+                else:
+                    current_date = date(year, month, day_num)
+                    calendar_days.append({
+                        'is_day': True,
+                        'date': day_num,
+                        'full_date': current_date.strftime('%Y-%m-%d'),
+                        'is_today': current_date == today,
+                        'is_weekend': current_date.weekday() >= 5
                     })
-
-                # Fetch recent activities: last 7 transactions and completed goals
-                cur.execute("""
-                    SELECT type, amount, transaction_date
-                    FROM transactions
-                    WHERE user_id = %s AND status = 'completed'
-                    ORDER BY transaction_date DESC
-                    LIMIT 7
-                """, (firebase_uid,))
-                for t in cur.fetchall():
-                    t_type, t_amount, t_date = t
-                    title = {
-                        'contribution': 'Monthly Contribution',
-                        'withdrawal': 'Withdrawal',
-                        'savings_contribution': 'Savings Goal Contribution',
-                        'payout': 'Payout',
-                    }.get(t_type, t_type.replace('_', ' ').title())
-                    status = 'Processed' if t_type == 'contribution' else ('Completed' if t_type in ['withdrawal', 'savings_contribution', 'payout'] else 'Completed')
-                    recent_activities.append({
-                        'type': t_type,
-                        'title': title,
-                        'amount': float(t_amount),
-                        'date': t_date,
-                        'status': status
-                    })
-                # Add completed savings goals
-                cur.execute("""
-                    SELECT name, target_amount, created_at
-                    FROM savings_goals
-                    WHERE user_id = %s AND status = 'completed'
-                    ORDER BY created_at DESC
-                    LIMIT 2
-                """, (firebase_uid,))
-                for g in cur.fetchall():
-                    g_name, g_amount, g_date = g
-                    recent_activities.append({
-                        'type': 'goal',
-                        'title': g_name,
-                        'amount': float(g_amount),
-                        'date': g_date,
-                        'status': 'Achieved'
-                    })
-                # Sort all activities by date descending
-                recent_activities.sort(key=lambda x: x['date'], reverse=True)
+            calendar_events = []
+            # Count active stokvels for this user
+            cur.execute("""
+                SELECT COUNT(DISTINCT s.id)
+                FROM stokvels s
+                JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                WHERE sm.user_id = %s
+            """, (firebase_uid,))
+            active_stokvels_count = cur.fetchone()[0] or 0
+            # Sum total contributions for this user
+            cur.execute("""
+                SELECT COALESCE(SUM(amount), 0)
+                FROM transactions
+                WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
+            """, (firebase_uid,))
+            total_contributions = cur.fetchone()[0] or 0
+            # Fetch calendar events from diary
+            cur.execute("""
+                SELECT event_date, event_name, description 
+                FROM diary 
+                WHERE user_id = %s AND EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s
+            """, (firebase_uid, year, month))
+            for row in cur.fetchall():
+                calendar_events.append({
+                    'date': row[0].strftime('%Y-%m-%d'),
+                    'type': row[1].lower() if row[1] else 'custom',
+                    'desc': row[2]
+                })
+            # Fetch recent activities: last 7 transactions and completed goals
+            cur.execute("""
+                SELECT type, amount, transaction_date
+                FROM transactions
+                WHERE user_id = %s AND status = 'completed'
+                ORDER BY transaction_date DESC
+                LIMIT 7
+            """, (firebase_uid,))
+            for t in cur.fetchall():
+                t_type, t_amount, t_date = t
+                title = {
+                    'contribution': 'Monthly Contribution',
+                    'withdrawal': 'Withdrawal',
+                    'savings_contribution': 'Savings Goal Contribution',
+                    'payout': 'Payout',
+                }.get(t_type, t_type.replace('_', ' ').title())
+                status = 'Processed' if t_type == 'contribution' else ('Completed' if t_type in ['withdrawal', 'savings_contribution', 'payout'] else 'Completed')
+                recent_activities.append({
+                    'type': t_type,
+                    'title': title,
+                    'amount': float(t_amount),
+                    'date': t_date,
+                    'status': status
+                })
+            # Add completed savings goals
+            cur.execute("""
+                SELECT name, target_amount, created_at
+                FROM savings_goals
+                WHERE user_id = %s AND status = 'completed'
+                ORDER BY created_at DESC
+                LIMIT 2
+            """, (firebase_uid,))
+            for g in cur.fetchall():
+                g_name, g_amount, g_date = g
+                recent_activities.append({
+                    'type': 'goal',
+                    'title': g_name,
+                    'amount': float(g_amount),
+                    'date': g_date,
+                    'status': 'Achieved'
+                })
+            # Sort all activities by date descending
+            recent_activities.sort(key=lambda x: x['date'], reverse=True)
+        user.update(user_settings)
     except Exception as e:
         print(f"Dashboard error: {e}")
         active_stokvels_count = 0
         total_contributions = 0
-
-    print("Recent activities:", recent_activities)
     return render_template(
         'dashboard.html', 
         user=user, 
@@ -508,13 +510,21 @@ def analysis():
 @login_required
 def financial_insight():
     user_id = session.get('user_id')
+    user_settings = {}
     if not user_id:
         flash('Please log in to view financial insights.', 'danger')
         return redirect(url_for('login'))
-    
     try:
         with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (user_id,))
+                user_settings = cur.fetchone() or {}
             with conn.cursor() as cur:
+                # Restore original code for financial insight data
                 # Get total contributions
                 cur.execute("""
                     SELECT COALESCE(SUM(amount), 0) as total_contributions
@@ -522,7 +532,6 @@ def financial_insight():
                     WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
                 """, (user_id,))
                 total_contributions = cur.fetchone()[0]
-                
                 # Get monthly average
                 cur.execute("""
                     SELECT COALESCE(AVG(monthly_total), 0) as monthly_average
@@ -535,7 +544,6 @@ def financial_insight():
                     ) monthly_totals
                 """, (user_id,))
                 monthly_average = cur.fetchone()[0]
-                
                 # Get savings goal progress
                 cur.execute("""
                     SELECT COALESCE(SUM(current_amount) / NULLIF(SUM(target_amount), 0), 0) as progress
@@ -543,7 +551,6 @@ def financial_insight():
                     WHERE user_id = %s AND status = 'active'
                 """, (user_id,))
                 savings_progress = cur.fetchone()[0]
-                
                 # Get contribution data for chart (last 6 months)
                 cur.execute("""
                     SELECT DATE_TRUNC('month', transaction_date) as month,
@@ -555,29 +562,24 @@ def financial_insight():
                     ORDER BY month
                 """, (user_id,))
                 contribution_data = cur.fetchall()
-                
                 # Prepare chart data
                 contribution_dates = []
                 monthly_contributions = []
                 for row in contribution_data:
                     contribution_dates.append(row[0].strftime('%b %Y'))
                     monthly_contributions.append(float(row[1]))
-                
+        return render_template(
+            'financial_insight.html',
+            total_contributions=total_contributions,
+            monthly_average=monthly_average,
+            savings_progress=savings_progress,
+            contribution_dates=contribution_dates,
+            monthly_contributions=monthly_contributions,
+            user=user_settings)
     except Exception as e:
-        print(f"Error fetching financial insight data: {e}")
-        total_contributions = 0
-        monthly_average = 0
-        savings_progress = 0
-        contribution_dates = []
-        monthly_contributions = []
-        flash('Failed to load financial data.', 'danger')
-    
-    return render_template('financial_insight.html', 
-                         total_contributions=total_contributions,
-                         monthly_average=monthly_average,
-                         savings_progress=savings_progress,
-                         contribution_dates=contribution_dates,
-                         monthly_contributions=monthly_contributions)
+        print(f"Financial insight page error: {e}")
+        flash('An error occurred while loading financial insights. Please try again.')
+        return render_template('financial_insight.html', user=user_settings)
 
 @app.route('/login')
 def login():
@@ -1147,11 +1149,11 @@ def stokvels():
         flash("User not found in session, please log in again.", "error")
         return redirect('/login')
 
+    user_settings = {}
     try:
         with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                # Fetch stokvels where the current user is a member, including
-                # their role
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Fetch stokvels where the current user is a member, including their role
                 cur.execute("""
                     SELECT 
                         s.id, 
@@ -1193,17 +1195,29 @@ def stokvels():
                 created_stokvels = [
                     dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
 
+                # Fetch user settings for tutorial popup
+                cur.execute("""
+                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions, reminders_enabled, show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (firebase_uid,))
+                user_settings = cur.fetchone() or {}
+
         return render_template(
-    'stokvels.html',
-    stokvels=user_stokvels,
-     created_stokvels=created_stokvels)
+            'stokvels.html',
+            stokvels=user_stokvels,
+            created_stokvels=created_stokvels,
+            user=user_settings
+        )
     except Exception as e:
         flash(f"An error occurred while loading your stokvels: {e}")
         print(f"Stokvels page error: {e}")
         return render_template(
-    'stokvels.html',
-    stokvels=[],
-     created_stokvels=[])
+            'stokvels.html',
+            stokvels=[],
+            created_stokvels=[],
+            user=user_settings
+        )
 
 
 @app.route('/create_stokvel', methods=['POST'])
@@ -1263,9 +1277,16 @@ def contributions():
     if not firebase_uid:
         flash("User not found in session, please log in again.", "error")
         return redirect('/login')
-
+    user_settings = {}
     try:
         with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (firebase_uid,))
+                user_settings = cur.fetchone() or {}
             with conn.cursor() as cur:
                 # Use firebase_uid directly since the database now uses
                 # Firebase UIDs
@@ -1351,7 +1372,8 @@ def contributions():
     'contributions.html',
     contributions=contributions_list,
     stokvels=stokvels_list,
-     payment_info=payment_info_text)
+     payment_info=payment_info_text,
+     user=user_settings)
     except Exception as e:
         print(f"Error in contributions route: {e}")
         flash("An error occurred while loading your contributions.")
@@ -1359,7 +1381,8 @@ def contributions():
     'contributions.html',
     contributions=[],
     stokvels=[],
-     payment_info="Could not load payment info.")
+     payment_info="Could not load payment info.",
+     user=user_settings)
 
 
 @app.route('/make_contribution', methods=['GET', 'POST'])
@@ -1429,8 +1452,16 @@ def payouts():
     if not firebase_uid:
         flash("User not found in session, please log in again.", "error")
         return redirect('/login')
+    user_settings = {}
     try:
         with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (firebase_uid,))
+                user_settings = cur.fetchone() or {}
             with conn.cursor() as cur:
                 # Get user's payouts using firebase_uid directly
                 cur.execute("""
@@ -1466,11 +1497,12 @@ def payouts():
         return render_template(
     'payouts.html',
     payouts=payouts_list,
-     stokvel_options=stokvel_options)
+     stokvel_options=stokvel_options,
+     user=user_settings)
     except Exception as e:
         print(f"Payouts page error: {e}")
         flash("An error occurred while loading payouts. Please try again.")
-        return redirect('/home')
+        return render_template('payouts.html', payouts=[], stokvel_options=[], user=user_settings)
 
 
 @app.route('/request_payout', methods=['POST'])
@@ -1556,8 +1588,16 @@ def request_payout():
 @login_required
 def savings_goals():
     firebase_uid = session['user_id']
+    user_settings = {}
     try:
         with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (firebase_uid,))
+                user_settings = cur.fetchone() or {}
             with conn.cursor() as cur:
                 # Use firebase_uid directly since the database now uses
                 # Firebase UIDs
@@ -1612,11 +1652,12 @@ def savings_goals():
         return render_template(
             'savings_goals.html',
             goals=goals_list,
-            payment_info=payment_info_text)
+            payment_info=payment_info_text,
+            user=user_settings)
     except Exception as e:
         print(f"Savings goals page error: {e}")
         flash("An error occurred while loading your savings goals. Please try again.")
-        return redirect('/home')
+        return render_template('savings_goals.html', goals=[], payment_info="Could not load payment info.", user=user_settings)
 
 
 @app.route('/create_savings_goal', methods=['POST'])
@@ -2129,10 +2170,17 @@ def mark_all_notifications_unread():
 @app.route('/payment_methods')
 @login_required
 def payment_methods():
-    import json
     firebase_uid = session['user_id']
+    user_settings = {}
     try:
         with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (firebase_uid,))
+                user_settings = cur.fetchone() or {}
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT id, type, details, is_default, created_at
@@ -2190,11 +2238,12 @@ def payment_methods():
                     payment_methods_list.append(pm_dict)
         return render_template(
     'payment_methods.html',
-     payment_methods=payment_methods_list)
+     payment_methods=payment_methods_list,
+     user=user_settings)
     except Exception as e:
         print(f"Payment methods page error: {e}")
         flash("An error occurred while loading your payment methods. Please try again.")
-        return render_template('payment_methods.html', payment_methods=[])
+        return render_template('payment_methods.html', payment_methods=[], user=user_settings)
 
 
 @app.route('/add_payment_method', methods=['POST'])
@@ -2355,7 +2404,7 @@ def settings():
 
                 # Fetch notification/app preferences from user_settings table
                 cur.execute("""
-                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions
+                    SELECT email_notifications, sms_notifications, weekly_summary, receive_promotions, reminders_enabled, show_tutorial, tutorial_completed
                     FROM user_settings
                     WHERE user_id = %s
                 """, (user_id,))
@@ -2379,25 +2428,24 @@ def settings():
 def update_settings():
     user_id = session['user_id']
     form_section = request.form.get('form_section')
-
     query = None
     params = None
-
     if form_section == 'language_preference':
         language = request.form.get('language_preference')
         if language:
             session['language_preference'] = language
             query = "UPDATE users SET language_preference = %s WHERE firebase_uid = %s"
             params = (language, user_id)
-
     elif form_section == 'app_preferences':
         email_notifications = 'email_notifications' in request.form
         sms_notifications = 'sms_notifications' in request.form
         weekly_summary = 'weekly_summary' in request.form
         receive_promotions = 'receive_promotions' in request.form
+        reminders_enabled = 'reminders_enabled' in request.form
+        show_tutorial = 'show_tutorial' in request.form
         query = """
             UPDATE user_settings
-            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s
+            SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s, reminders_enabled = %s, show_tutorial = %s
             WHERE user_id = %s
         """
         params = (
@@ -2405,29 +2453,25 @@ def update_settings():
             sms_notifications,
             weekly_summary,
             receive_promotions,
+            reminders_enabled,
+            show_tutorial,
             user_id)
-
     elif form_section == 'security':
         two_factor_enabled = 'two_factor_enabled' in request.form
         query = "UPDATE users SET two_factor_enabled = %s WHERE firebase_uid = %s"
         params = (two_factor_enabled, user_id)
-
     if query and params:
         try:
             support.execute_query("update", query, params)
-            
             # Create notification for settings update
             message = "Your settings have been updated successfully!"
-            create_notification(user_id, message, link_url=url_for(
-                'settings'), notification_type='settings_updated')
-            
+            create_notification(user_id, message, link_url=url_for('settings'), notification_type='settings_updated')
             flash("Settings updated successfully!", "success")
         except Exception as e:
             print(f"Error updating settings for section {form_section}: {e}")
             flash("An error occurred while updating settings.", "danger")
     else:
         flash("Invalid settings update request.", "warning")
-        
     return redirect(url_for('settings'))
 
 
@@ -2475,6 +2519,7 @@ def update_user_setting(user_id, section, setting, value):
 @app.route('/profile')
 @login_required
 def profile():
+    user_settings = {}
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -2509,6 +2554,15 @@ def profile():
                     print(f"Error fetching Firebase user for verification status: {e}")
                     is_verified = False
                 user['is_verified'] = is_verified
+                
+                # Fetch tutorial settings
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (session['user_id'],))
+                user_settings = cur.fetchone() or {}
+                user.update(user_settings)
                 
                 return render_template('profile.html', 
                                      user=user, 
@@ -3109,9 +3163,24 @@ def download_stokvel_statement_pdf(stokvel_id):
 
 
 @app.route('/virtual-rewards')
+@login_required
 def virtual_rewards():
-    # You can add login checks or user context here if needed
-    return render_template('virtual_rewards.html')
+    firebase_uid = session.get('user_id')
+    user_settings = {}
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (firebase_uid,))
+                user_settings = cur.fetchone() or {}
+        return render_template('virtual_rewards.html', user=user_settings)
+    except Exception as e:
+        print(f"Virtual rewards page error: {e}")
+        flash("An error occurred while loading virtual rewards. Please try again.")
+        return render_template('virtual_rewards.html', user=user_settings)
 
 
 # Register the rewards blueprint
@@ -3520,9 +3589,26 @@ def request_loan():
 # ... existing code ...
     return render_template('referral.html', referral_link=referral_link, message=message, stokvels=stokvels, selected_stokvel_id=selected_stokvel_id)
 
+def get_wsl_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return None
+
 if __name__ == "__main__":
-    # Use 127.0.0.1 which is accessible in the browser
-    socketio.run(app, host="127.0.0.1", port=5001, debug=True)
+    wsl_ip = get_wsl_ip()
+    print("\nYour app is running! Access it at:")
+    print("  http://localhost:5001/  (WSL only)")
+    if wsl_ip:
+        print(f"  http://{wsl_ip}:5001/  (from Windows browser)")
+    else:
+        print("  <Could not detect WSL IP. Run 'hostname -I' in WSL to find it.>")
+    print("")
+    socketio.run(app, host="0.0.0.0", port=5001, debug=True)
 
 # Inject _ into Jinja2 context for translations
 try:
@@ -3543,6 +3629,16 @@ def dashboard():
     total_contributions = 0
     try:
         with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Fetch user settings for tutorial popup
+                cur.execute("""
+                    SELECT show_tutorial, tutorial_completed
+                    FROM user_settings
+                    WHERE user_id = %s
+                """, (firebase_uid,))
+                tutorial_settings = cur.fetchone() or {}
+                user.update(tutorial_settings)
+
             with conn.cursor() as cur:
                 # Count active stokvels for this user
                 cur.execute("""
@@ -3623,4 +3719,20 @@ def recent_activity_api():
     except Exception as e:
         print(f"ERROR fetching recent activity: {e}")
         return jsonify({"error": "Could not fetch recent activity"}), 500
+
+@app.route('/api/complete_tutorial', methods=['POST'])
+@login_required
+def complete_tutorial():
+    user_id = session['user_id']
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE user_settings SET tutorial_completed = TRUE WHERE user_id = %s
+                """, (user_id,))
+                conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error marking tutorial as completed: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 

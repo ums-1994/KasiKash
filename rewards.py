@@ -371,6 +371,13 @@ def rewards_card_page():
         {'amount': row[0], 'type': row[1], 'description': row[2], 'date': row[3]}
         for row in cur.fetchall()
     ]
+    # Fetch tutorial settings from user_settings
+    cur.execute("""
+        SELECT show_tutorial, tutorial_completed
+        FROM user_settings
+        WHERE user_id = %s
+    """, (firebase_uid,))
+    user_settings = cur.fetchone() or {}
     cur.close()
     conn.close()
     
@@ -379,7 +386,8 @@ def rewards_card_page():
                          transactions=transactions,
                          total_earned=total_earned,
                          total_spent=total_spent,
-                         active_programs=active_programs)
+                         active_programs=active_programs,
+                         user=user_settings)
 
 @rewards_bp.route('/spend/airtime', methods=['POST'])
 def spend_airtime_form():
