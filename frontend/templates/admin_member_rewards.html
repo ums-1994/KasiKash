@@ -1,0 +1,63 @@
+{% extends 'admin_base.html' %}
+{% block title %}{{ _('Member Rewards') }}{% endblock %}
+{% block admin_content %}
+<div class="p-8">
+    <div class="bg-gradient-to-r from-green-400 to-blue-400 rounded-xl p-6 flex items-center justify-between mb-8 shadow-lg" style="min-height: 90px;">
+        <div>
+            <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                {{ _('Member Rewards') }}
+                <span class="inline-block align-middle">
+                    <i class="fas fa-medal" style="font-size:2rem;"></i>
+                </span>
+            </h1>
+            <p class="text-lg text-white mt-2">{{ _('View, assign, and manage rewards for individual stokvel members.') }}</p>
+        </div>
+    </div>
+    <div class="bg-white bg-opacity-10 rounded-xl shadow-lg p-6 mb-8" style="backdrop-filter: blur(8px);">
+        <h2 class="text-xl font-semibold mb-4 text-green-200">{{ _('Assign Reward') }}</h2>
+        <form class="flex flex-wrap gap-4 mb-6" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div>
+                <label class="block text-green-100 mb-1">{{ _('Member Email') }}</label>
+                <input type="email" name="email" class="rounded px-3 py-2 bg-white bg-opacity-20 text-green-900 focus:outline-none" placeholder="{{ _('member@example.com') }}">
+            </div>
+            <div>
+                <label class="block text-green-100 mb-1">{{ _('Reward') }}</label>
+                <select name="reward" class="rounded px-3 py-2 bg-white bg-opacity-20 text-green-900 focus:outline-none">
+                    <option value="points">{{ _('Points') }}</option>
+                    <option value="badge">{{ _('Badge') }}</option>
+                    <option value="voucher">{{ _('Voucher') }}</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-green-100 mb-1">{{ _('Amount') }}</label>
+                <input type="number" name="amount" class="rounded px-3 py-2 bg-white bg-opacity-20 text-green-900 focus:outline-none" placeholder="{{ _('50') }}">
+            </div>
+            <button type="submit" class="ml-auto bg-gradient-to-r from-green-400 to-blue-400 text-white font-semibold px-6 py-2 rounded shadow hover:scale-105 transition-transform">{{ _('Assign Reward') }}</button>
+        </form>
+        <h2 class="text-xl font-semibold mb-4 text-green-200">{{ _('Member Rewards History') }}</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-green-100">
+                <thead>
+                    <tr class="bg-green-900 bg-opacity-60">
+                        <th class="py-2 px-4">{{ _('Date') }}</th>
+                        <th class="py-2 px-4">{{ _('Member') }}</th>
+                        <th class="py-2 px-4">{{ _('Reward') }}</th>
+                        <th class="py-2 px-4">{{ _('Amount') }}</th>
+                        <th class="py-2 px-4">{{ _('Status') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-green-800 bg-opacity-30 transition">
+                        <td class="py-2 px-4">2025-07-08</td>
+                        <td class="py-2 px-4">john@example.com</td>
+                        <td class="py-2 px-4">{{ _('Points') }}</td>
+                        <td class="py-2 px-4">100</td>
+                        <td class="py-2 px-4">{{ _('Assigned') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

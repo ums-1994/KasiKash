@@ -23,7 +23,7 @@
                     </label>
                     <p class="text-sm mt-1" style="color: #60efff;">Add an extra layer of security to your account</p>
                 </div>
-                <button type="submit" style="background: linear-gradient(90deg, #60efff, #00ff87); color: #22304a; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
+                <button type="submit" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
                     {{ t('save', user_language) }} Security Settings
                 </button>
             </form>
@@ -48,7 +48,7 @@
                     </select>
                     <p class="text-sm mt-1" style="color: #60efff;">Choose how you want to receive notifications</p>
                 </div>
-                <button type="submit" style="background: linear-gradient(90deg, #60efff, #00ff87); color: #22304a; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
+                <button type="submit" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
                     {{ t('save', user_language) }} Notification Settings
                 </button>
             </form>
@@ -79,7 +79,7 @@
                     </select>
                     <p class="text-sm mt-1" style="color: #60efff;">{{ t('choose_language', user_language) }}</p>
                 </div>
-                <button type="submit" style="background: linear-gradient(90deg, #60efff, #00ff87); color: #22304a; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
+                <button type="submit" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
                     {{ t('save_language_settings', user_language) }}
                 </button>
             </form>
@@ -100,8 +100,9 @@
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="email_notifications" name="email_notifications" class="sr-only" {% if user.email_notifications %}checked{% endif %}>
-                            <div class="block" style="background: #22304a; border: 1px solid #60efff; width: 3.5rem; height: 2rem; border-radius: 2rem;"></div>
-                            <div class="dot absolute left-1 top-1" style="background: #60efff; width: 1.5rem; height: 1.5rem; border-radius: 50%; transition: transform 0.3s;"></div>
+                            <div class="toggle-switch">
+                                <div class="dot"></div>
+                            </div>
                         </div>
                     </label>
 
@@ -113,8 +114,9 @@
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="sms_notifications" name="sms_notifications" class="sr-only" {% if user.sms_notifications %}checked{% endif %}>
-                            <div class="block" style="background: #22304a; border: 1px solid #60efff; width: 3.5rem; height: 2rem; border-radius: 2rem;"></div>
-                            <div class="dot absolute left-1 top-1" style="background: #60efff; width: 1.5rem; height: 1.5rem; border-radius: 50%; transition: transform 0.3s;"></div>
+                            <div class="toggle-switch">
+                                <div class="dot"></div>
+                            </div>
                         </div>
                     </label>
 
@@ -126,8 +128,9 @@
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="weekly_summary" name="weekly_summary" class="sr-only" {% if user.weekly_summary %}checked{% endif %}>
-                            <div class="block" style="background: #22304a; border: 1px solid #60efff; width: 3.5rem; height: 2rem; border-radius: 2rem;"></div>
-                            <div class="dot absolute left-1 top-1" style="background: #60efff; width: 1.5rem; height: 1.5rem; border-radius: 50%; transition: transform 0.3s;"></div>
+                            <div class="toggle-switch">
+                                <div class="dot"></div>
+                            </div>
                         </div>
                     </label>
 
@@ -139,13 +142,14 @@
                         </div>
                         <div class="relative">
                             <input type="checkbox" id="reminders_enabled" name="reminders_enabled" class="sr-only" {% if user.reminders_enabled %}checked{% endif %}>
-                            <div class="block" style="background: #22304a; border: 1px solid #60efff; width: 3.5rem; height: 2rem; border-radius: 2rem;"></div>
-                            <div class="dot absolute left-1 top-1" style="background: #60efff; width: 1.5rem; height: 1.5rem; border-radius: 50%; transition: transform 0.3s;"></div>
+                            <div class="toggle-switch">
+                                <div class="dot"></div>
+                            </div>
                         </div>
                     </label>
                 </div>
                 <div class="mt-6">
-                    <button type="submit" style="background: linear-gradient(90deg, #60efff, #00ff87); color: #22304a; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
+                    <button type="submit" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: bold; transition: background 0.3s;">
                         Save App Preferences
                     </button>
                 </div>
@@ -173,14 +177,60 @@
     </div>
 </div>
 
-<style>
-    /* Tailwind CSS for the toggle */
-    input:checked ~ .dot {
-        transform: translateX(100%);
-        background-color: #48bb78; /* equivalent to green-500 */
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // For each toggle input, update the .toggle-switch class on change
+  document.querySelectorAll('.toggle-switch').forEach(function(switchDiv) {
+    var input = switchDiv.previousElementSibling;
+    function updateToggle() {
+      if (input.checked) {
+        switchDiv.classList.add('checked');
+      } else {
+        switchDiv.classList.remove('checked');
+      }
     }
-    input:checked ~ .block {
-        background-color: #a0aec0; /* equivalent to gray-400 */
+    if (input) {
+      input.addEventListener('change', updateToggle);
+      // Set initial state
+      updateToggle();
+    }
+  });
+});
+</script>
+<style>
+    /* Modern toggle switch styles */
+    .toggle-switch {
+      width: 3.5rem;
+      height: 2rem;
+      border-radius: 2rem;
+      background: #22304a;
+      border: 2px solid #60efff;
+      position: relative;
+      transition: background 0.3s, border 0.3s;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 0 0 2px #101c2c;
+    }
+    .toggle-switch .dot {
+      position: absolute;
+      top: 0.18rem;
+      left: 0.18rem;
+      width: 1.65rem;
+      height: 1.65rem;
+      border-radius: 50%;
+      background: #60efff;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      transition: transform 0.3s, background 0.3s, border 0.3s;
+    }
+    .toggle-switch.checked {
+      background: #3b82f6;
+      border-color: #3b82f6;
+    }
+    .toggle-switch.checked .dot {
+      transform: translateX(1.5rem);
+      background: #fff;
+      border: 2px solid #3b82f6;
     }
 </style>
 {% endblock %} 

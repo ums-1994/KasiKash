@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="{{ user_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>KasiKash Admin - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_lightmode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+            transition: background 0.3s ease;
+        }
+        
+        /* Light mode styles */
+        body.light-mode {
+            background: linear-gradient(135deg, #f8fafc 60%, #e2e8f0 100%);
+        }
+        
+        body.light-mode .admin-main {
+            background: linear-gradient(135deg, #f8fafc 60%, #e2e8f0 100%);
+            color: #1e293b;
+        }
+        
+        body.light-mode .sidebar {
+            background: linear-gradient(135deg, #f8fafc 60%, #e2e8f0 100%);
+            color: #1e293b;
+            border-right: 2px solid #cbd5e1;
+        }
+        
+        body.light-mode .sidebar .nav a {
+            color: #475569;
+        }
+        
+        body.light-mode .sidebar .nav a:hover, 
+        body.light-mode .sidebar .nav a.active {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+        
+        body.light-mode .dashboard-header {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+        
+        body.light-mode .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Theme toggle button styles */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: rgba(96, 239, 255, 0.1);
+            border: 2px solid #60efff;
+            border-radius: 50px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(96, 239, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        body.light-mode .theme-toggle {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        
+        body.light-mode .theme-toggle:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+        
+        .theme-toggle i {
+            font-size: 1.2rem;
+            color: #60efff;
+            transition: color 0.3s ease;
+        }
+        
+        body.light-mode .theme-toggle i {
+            color: #3b82f6;
+        }
+        
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 240px;
+            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+            color: #60efff;
+            transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s, background 0.3s ease;
+            box-shadow: 4px 0 24px rgba(35,41,70,0.10); /* right shadow only */
+            border-right: 2px solid #22304a;
+            border-top-right-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            transform: translateX(0);
+        }
+        .sidebar.closed {
+            transform: translateX(-100%);
+            box-shadow: none;
+        }
+        .sidebar .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem 1rem 1rem 1rem;
+            border-bottom: 1px solid #2d3250;
+            transition: border-color 0.3s ease;
+        }
+        
+        body.light-mode .sidebar .sidebar-header {
+            border-bottom-color: #cbd5e1;
+        }
+        
+        .sidebar .sidebar-header img {
+            height: 36px;
+            margin-right: 0.75rem;
+        }
+        .sidebar .nav {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .sidebar .nav a {
+            color: #60efff;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .sidebar .nav a:hover, .sidebar .nav a.active {
+            background: #eaf6fb;
+            color: #101c2c;
+        }
+        .sidebar .nav i {
+            font-size: 1.2rem;
+            width: 22px;
+            text-align: center;
+        }
+        .admin-main {
+            flex: 1;
+            margin-left: 240px;
+            padding: 2rem;
+            transition: margin-left 0.3s cubic-bezier(.4,2,.6,1), background 0.3s ease, color 0.3s ease;
+            background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+            color: #fff;
+        }
+        .admin-content-card {
+            background: transparent;
+        }
+        .sidebar.closed ~ .admin-main {
+            margin-left: 0;
+        }
+        .dashboard-header {
+            background: #07306b;
+            color: #60efff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+            padding: 2rem 2.5rem 2rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: none;
+            margin-bottom: 1.5rem;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .stat-card {
+            background: rgba(0,20,50,0.85);
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 32px rgba(35,41,70,0.13);
+            padding: 2.2rem 2rem 1.7rem 2rem;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-width: 0;
+            min-height: 220px;
+            position: relative;
+            transition: box-shadow 0.18s, transform 0.18s, background 0.3s ease, color 0.3s ease, border 0.3s ease;
+            border: none;
+        }
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .admin-main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <script>
+    // Always apply the saved theme on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (localStorage.getItem('themeMode') === 'light') {
+        document.body.classList.add('light-mode');
+      } else {
+        document.body.classList.remove('light-mode');
+      }
+    });
+    </script>
+    {% if request.endpoint == 'admin.settings' %}
+    <button id="themeToggleBtn" class="btn btn-primary" style="position:fixed;top:20px;right:20px;z-index:9999;">
+      Toggle Light/Dark Mode
+    </button>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const btn = document.getElementById('themeToggleBtn');
+      if (!btn) return;
+      btn.addEventListener('click', function() {
+        document.body.classList.toggle('light-mode');
+        // Save preference
+        if (document.body.classList.contains('light-mode')) {
+          localStorage.setItem('themeMode', 'light');
+        } else {
+          localStorage.setItem('themeMode', 'dark');
+        }
+      });
+    });
+    </script>
+    {% endif %}
+    <div class="admin-wrapper">
+        <nav class="sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <img src="{{ url_for('static', filename='logo_admin.png') }}" alt="KasiKash Admin Logo" style="height:48px;width:48px;border-radius:50%;box-shadow:0 0 16px #60efff;">
+                <span style="font-size:1.5rem;font-weight:bold;background:linear-gradient(90deg,#60efff,#00ff87);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 8px #60efff;margin-left:8px;">KasiKash</span>
+            </div>
+            <div class="nav flex-column">
+                <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{{ url_for('admin.manage_users') }}" class="{% if request.endpoint == 'admin.manage_users' %}active{% endif %}"><i class="fas fa-users"></i> Manage Users</a>
+                <a href="{{ url_for('admin.loan_approvals') }}" class="{% if request.endpoint == 'admin.loan_approvals' %}active{% endif %}"><i class="fas fa-hand-holding-usd"></i> Loan Approvals</a>
+                <a href="{{ url_for('admin.events') }}" class="{% if request.endpoint == 'admin.events' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Events</a>
+                <a href="{{ url_for('admin.memberships') }}" class="{% if request.endpoint == 'admin.memberships' %}active{% endif %}"><i class="fas fa-medal"></i> Membership Plans</a>
+                <a href="{{ url_for('admin.notifications') }}" class="{% if request.endpoint == 'admin.notifications' %}active{% endif %}"><i class="fas fa-bell"></i> Notifications</a>
+                <a href="{{ url_for('admin.kyc_approvals') }}" class="{% if request.endpoint == 'admin.kyc_approvals' %}active{% endif %}"><i class="fas fa-id-card"></i> KYC Approvals</a>
+                <a href="{{ url_for('admin.virtual_rewards') }}" class="{%- if request.endpoint == 'admin.virtual_rewards' %}active{%- endif %}"><i class="fas fa-gift"></i> Virtual Rewards</a>
+                <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </nav>
+        <main class="admin-main" id="adminMain">
+            <div class="admin-content-card">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="mb-4">
+                        {% set seen = [] %}
+                        {% for category, message in messages %}
+                            {% if message not in seen %}
+                                <div class="p-4 rounded-md 
+                                    {% if category == 'success' %}bg-green-100 border border-green-400 text-green-700
+                                    {% elif category == 'danger' %}bg-red-100 border border-red-400 text-red-700
+                                    {% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}"
+                                    role="alert">
+                                    {{ message }}
+                                </div>
+                                {% set _ = seen.append(message) %}
+                            {% endif %}
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                {% block admin_content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,55 +1,133 @@
-/* Light mode overrides for admin */
+/* Light mode overrides for admin - improved contrast and readability */
 body.lightmode, .lightmode .admin-main {
-    background: #f7fafc !important;
-    color: #222 !important;
+    background: #FFFFFF !important;
+    color: #333333 !important;
 }
 .lightmode .sidebar {
-    background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
-    color: #101c2c !important;
-    border-right: 2px solid #b2d6f7 !important;
+    background: linear-gradient(135deg, #F8F9FA 60%, #E9ECEF 100%) !important;
+    color: #2E86AB !important;
+    border-right: 2px solid #E9ECEF !important;
 }
-.lightmode .sidebar .nav a {
-    color: #101c2c !important;
+.lightmode .sidebar .nav a,
+.lightmode .sidebar .nav i,
+.lightmode .sidebar .nav svg {
+    color: #2E86AB !important;
+    fill: #2E86AB !important;
 }
 .lightmode .sidebar .nav a.active, .lightmode .sidebar .nav a:hover {
-    background: #60efff !important;
-    color: #101c2c !important;
+    background: #007BFF !important;
+    color: #FFFFFF !important;
+}
+.lightmode .sidebar .nav a.active i, .lightmode .sidebar .nav a.active svg,
+.lightmode .sidebar .nav a:hover i, .lightmode .sidebar .nav a:hover svg {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
 }
 .lightmode .admin-main {
-    background: #f7fafc !important;
-    color: #222 !important;
+    background: #FFFFFF !important;
+    color: #333333 !important;
 }
-.lightmode .admin-card, .lightmode .admin-content-card, .lightmode table.admin-card {
-    background: #fff !important;
-    color: #222 !important;
-    border: 1px solid #e2e8f0 !important;
+.lightmode .admin-card, .lightmode .admin-content-card, .lightmode table.admin-card, .lightmode .card, .lightmode .section {
+    background: #F8F9FA !important;
+    color: #333333 !important;
+    border: 1px solid #E9ECEF !important;
 }
 .lightmode .admin-card *, .lightmode .admin-content-card *, .lightmode table.admin-card * {
-    color: #222 !important;
+    color: #333333 !important;
 }
 .lightmode th, .lightmode td {
-    color: #222 !important;
+    color: #333333 !important;
 }
 .lightmode .bg-gradient-to-r, .lightmode .bg-gradient-to-br {
-    background: #eaf6fb !important;
+    background: #F8F9FA !important;
 }
-.lightmode .btn {
-    background: linear-gradient(90deg,#60efff 0%,#00ff87 100%) !important;
-    color: #101c2c !important;
+.lightmode .btn, .lightmode button, .lightmode .primary-btn {
+    background: #2E86AB !important;
+    color: #FFFFFF !important;
+    border: none !important;
 }
-
-/* Banner (h1, p at top) should keep their color in both modes */
+.lightmode .btn-secondary, .lightmode .secondary-btn {
+    background: #F8F9FA !important;
+    color: #007BFF !important;
+    border: 1px solid #007BFF !important;
+}
+.lightmode a, .lightmode .link, .lightmode .quick-action-card {
+    color: #007BFF !important;
+}
+.lightmode .quick-action-card:hover {
+    background: #E9ECEF !important;
+}
+.lightmode .success, .lightmode .text-success {
+    color: #28A745 !important;
+}
+.lightmode .warning, .lightmode .text-warning {
+    color: #FFC107 !important;
+}
+.lightmode .danger, .lightmode .text-danger {
+    color: #DC3545 !important;
+}
+.lightmode .info, .lightmode .text-info {
+    color: #17A2B8 !important;
+}
+.lightmode .stokvel-value, .lightmode .financial-metric {
+    color: #28A745 !important;
+}
+.lightmode .divider, .lightmode hr {
+    border-color: #E9ECEF !important;
+}
+.lightmode .text-muted, .lightmode .subtle-text {
+    color: #6C757D !important;
+}
+.lightmode select, .lightmode .filter-select, .lightmode .dropdown {
+    color: #333333 !important;
+    font-weight: 600 !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E9ECEF !important;
+}
+.lightmode .alert-success {
+    background: #D4EDDA !important;
+    color: #155724 !important;
+    border: 1px solid #C3E6CB !important;
+}
+.lightmode .alert-warning {
+    background: #FFF3CD !important;
+    color: #856404 !important;
+    border: 1px solid #FFEEBA !important;
+}
+.lightmode .alert-danger {
+    background: #F8D7DA !important;
+    color: #721C24 !important;
+    border: 1px solid #F5C6CB !important;
+}
+.lightmode .alert-info {
+    background: #D1ECF1 !important;
+    color: #0C5460 !important;
+    border: 1px solid #BEE5EB !important;
+}
+.lightmode .stat-card, .lightmode .dashboard-stat, .lightmode .metric-card {
+    background: #F8F9FA !important;
+    color: #2E86AB !important;
+    border: 1px solid #E9ECEF !important;
+}
+.lightmode .stat-card .stat-value, .lightmode .dashboard-stat .stat-value, .lightmode .metric-card .metric-value {
+    color: #2E86AB !important;
+    font-weight: 700 !important;
+}
+.lightmode .stat-card .stat-label, .lightmode .dashboard-stat .stat-label, .lightmode .metric-card .metric-label {
+    color: #6C757D !important;
+}
+.lightmode .stat-card .stat-delta, .lightmode .dashboard-stat .stat-delta, .lightmode .metric-card .trend-indicator {
+    color: #28A745 !important;
+}
+.lightmode .stat-card .stat-delta.down, .lightmode .dashboard-stat .stat-delta.down, .lightmode .metric-card .trend-indicator.trend-down {
+    color: #DC3545 !important;
+}
 .lightmode h1[style], .lightmode p[style] {
     color: inherit !important;
 }
-.lightmode h1[style*="#60efff"], .lightmode h1[style*='rgb(96,239,255)'] {
-    color: #60efff !important;
+.lightmode h1[style*="#2E86AB"], .lightmode h1[style*='rgb(46,134,171)'] {
+    color: #2E86AB !important;
 }
-.lightmode p[style*="#eaf6fb"], .lightmode p[style*='rgb(234,246,251)'] {
-    color: #eaf6fb !important;
-}
-.lightmode select, .lightmode .filter-select, .lightmode .dropdown {
-    color: #222 !important;
-    font-weight: 600 !important;
-    background: #fff !important;
+.lightmode p[style*="#6C757D"], .lightmode p[style*='rgb(108,117,125)'] {
+    color: #6C757D !important;
 }
