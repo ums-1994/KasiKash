@@ -21,13 +21,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 
 def create_audit_logs_table():
     try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
         cur = conn.cursor()
         cur.execute(CREATE_TABLE_SQL)
         conn.commit()

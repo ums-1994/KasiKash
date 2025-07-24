@@ -11,7 +11,7 @@ def get_db_connection():
     )
 
 def main():
-    conn = get_db_connection()
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
     cur = conn.cursor()
     try:
         # Create the admin_settings table if it doesn't exist

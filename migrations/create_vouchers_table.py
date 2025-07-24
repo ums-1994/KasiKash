@@ -8,13 +8,7 @@ load_dotenv()
 def create_vouchers_table():
     conn = None
     try:
-        conn = psycopg2.connect(
-            dbname=os.getenv('DB_NAME', 'kasikash_db'),
-            user=os.getenv('DB_USER', 'kasikash_user'),
-            password=os.getenv('DB_PASSWORD', 'test123'),
-            host=os.getenv('DB_HOST', 'localhost'),
-            port=os.getenv('DB_PORT', '5432')
-        )
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
         cur = conn.cursor()
         cur.execute('''
             CREATE TABLE IF NOT EXISTS vouchers (

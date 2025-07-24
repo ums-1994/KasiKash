@@ -31,7 +31,7 @@ def create_notifications_table():
     }
     
     try:
-        conn = psycopg2.connect(**db_params)
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
         cursor = conn.cursor()
 
         # Check if the table already exists
