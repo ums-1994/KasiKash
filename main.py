@@ -11,7 +11,7 @@ from functools import wraps
 import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
-import openai
+    import openai
 from extensions import csrf
 import firebase_admin
 from flask_wtf import FlaskForm
@@ -166,7 +166,7 @@ print(
     f"DEBUG: B2_ENDPOINT_URL loaded from .env: {os.getenv('B2_ENDPOINT_URL')}")
 
 # Set OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app.secret_key = os.getenv('SECRET_KEY')
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -327,18 +327,18 @@ def feedback():
 @login_required
 def home():
     firebase_uid = session.get('user_id')
-    user = {
+                        user = {
         'username': session.get('username', 'User'),
         'profile_picture': session.get('profile_picture'),
         'email': session.get('email'),
     }
-    active_stokvels_count = 0
-    total_contributions = 0
-    try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
+                    active_stokvels_count = 0
+                    total_contributions = 0
+        try:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
                 # Count active stokvels for this user
-                cur.execute("""
+                    cur.execute("""
                     SELECT COUNT(DISTINCT s.id)
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
@@ -349,11 +349,11 @@ def home():
                 # Sum total contributions for this user
                 cur.execute("""
                     SELECT COALESCE(SUM(amount), 0)
-                    FROM transactions
+                        FROM transactions
                     WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
                 """, (firebase_uid,))
                 total_contributions = cur.fetchone()[0] or 0
-    except Exception as e:
+        except Exception as e:
         print(f"Dashboard error: {e}")
         active_stokvels_count = 0
         total_contributions = 0
@@ -677,7 +677,7 @@ def login_validation():
                                                 print(
     f"Executing update query for related table: {query} with params {params}")
                                                 cur.execute(query, params)
-                                        except Exception as update_e:
+                except Exception as update_e:
                                             print(f"Error updating related table {query}: {str(update_e)}")
                                             # Log but don't stop the process,
                                             # as some tables might not exist or
@@ -989,14 +989,14 @@ def registration():
             except Exception as db_e:
                 print(f"Database check error during registration: {db_e}")
                 flash("An error occurred during registration. Please try again.")
-                return redirect('/register')
+            return redirect('/register')
 
             try:
                 # Create user in Firebase Authentication
-                user = auth.create_user(
-                    email=email,
-                    password=passwd,
-                    display_name=username,
+                    user = auth.create_user(
+                        email=email,
+                        password=passwd,
+                        display_name=username,
                     email_verified=False  # Set to False so user must verify
                 )
                 print(f"Created Firebase user: {user.uid}")
@@ -1008,27 +1008,27 @@ def registration():
                 send_email_verification(email, verification_link)
 
                 # Store Firebase UID and username/email in your PostgreSQL database
-                with support.db_connection() as conn:
-                    with conn.cursor() as cur:
-                        cur.execute(
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute(
                             "INSERT INTO users (firebase_uid, username, email) VALUES (%s, %s, %s) RETURNING id",
                             (user.uid, username, email)
-                        )
-                        local_user_id = cur.fetchone()[0]
-                        conn.commit()
+                            )
+                            local_user_id = cur.fetchone()[0]
+                    conn.commit()
 
-                        if local_user_id:
-                            session['user_id'] = user.uid
-                            session['username'] = username
-                            session['is_verified'] = True
-                            session.permanent = True
+                    if local_user_id:
+                        session['user_id'] = user.uid
+                        session['username'] = username
+                        session['is_verified'] = True
+                        session.permanent = True
                             flash("Registration successful! You can now log in.")
                             return redirect('/login')
-                        else:
+                    else:
                             flash(
                                 "Registration failed: Could not retrieve local user ID.")
-                            auth.delete_user(user.uid)
-                            return redirect('/register')
+                        auth.delete_user(user.uid)
+                        return redirect('/register')
 
             except Exception as e:
                 print(f"Registration error: {str(e)}")
@@ -1041,7 +1041,7 @@ def registration():
                 return redirect('/register')
         else:
             flash("Not enough data to register, try again!!")
-            return redirect('/register')
+        return redirect('/register')
     else:
         flash("Already a user is logged-in!")
         return redirect('/home')
@@ -1392,7 +1392,7 @@ def make_contribution():
                     except Exception as e:
                         print(f"Error adding reward points: {e}")
                         # Don't fail the contribution if reward points fail
-
+                        
                     # Get default payment method for flash message
                     cur.execute(
     "SELECT type, details FROM payment_methods WHERE user_id = %s AND is_default = TRUE",
@@ -2031,7 +2031,7 @@ def clear_notifications():
                 cur.execute(
     "DELETE FROM notifications WHERE user_id = %s", (user_id,))
                 conn.commit()
-                flash("All notifications cleared.", "success")
+        flash("All notifications cleared.", "success")
     except Exception as e:
         print(f"Error clearing notifications: {e}")
         flash("Failed to clear notifications.", "danger")
@@ -2178,7 +2178,7 @@ def payment_methods():
                             masked_details = f"Mobile: ****{last4}  {provider}"
                         else:
                             # fallback: show only non-sensitive fields
-                            masked_details = ', '.join(
+                            masked_details = ', '.join(  
     f"{k}: {v}" for k,
      v in details_json.items() if 'number' not in k and 'card' not in k)
                     except Exception as e:
@@ -2212,24 +2212,24 @@ def add_payment_method():
         if not all([card_holder_name, card_number, expiry_date, cvv]):
             flash("All card fields are required.", "danger")
             return redirect(url_for('payment_methods'))
-            details_dict = {
-                "card_holder_name": card_holder_name,
-                "card_number": card_number,
-                "expiry_date": expiry_date,
+        details_dict = {
+            "card_holder_name": card_holder_name,
+            "card_number": card_number,
+            "expiry_date": expiry_date,
                 # "cvv": cvv 
-            }
-        elif payment_type == 'bank_account':
-            account_holder_name = request.form.get('account_holder_name')
-            account_number = request.form.get('account_number')
-            bank_name = request.form.get('bank_name')
-            if not all([account_holder_name, account_number, bank_name]):
-                flash("All bank account fields are required.", "danger")
-                return redirect(url_for('payment_methods'))
-            details_dict = {
-                "account_holder_name": account_holder_name,
-                "account_number": account_number,
-                "bank_name": bank_name
-            }
+        }
+    elif payment_type == 'bank_account':
+        account_holder_name = request.form.get('account_holder_name')
+        account_number = request.form.get('account_number')
+        bank_name = request.form.get('bank_name')
+        if not all([account_holder_name, account_number, bank_name]):
+            flash("All bank account fields are required.", "danger")
+            return redirect(url_for('payment_methods'))
+        details_dict = {
+            "account_holder_name": account_holder_name,
+            "account_number": account_number,
+            "bank_name": bank_name
+        }
     else:
         flash("Invalid payment type selected.", "danger")
         return redirect(url_for('payment_methods'))
@@ -2381,18 +2381,18 @@ def update_settings():
     query = None
     params = None
 
-    if form_section == 'language_preference':
-        language = request.form.get('language_preference')
-        if language:
-            session['language_preference'] = language
+        if form_section == 'language_preference':
+            language = request.form.get('language_preference')
+            if language:
+                session['language_preference'] = language
             query = "UPDATE users SET language_preference = %s WHERE firebase_uid = %s"
             params = (language, user_id)
 
-    elif form_section == 'app_preferences':
-        email_notifications = 'email_notifications' in request.form
-        sms_notifications = 'sms_notifications' in request.form
-        weekly_summary = 'weekly_summary' in request.form
-        receive_promotions = 'receive_promotions' in request.form
+        elif form_section == 'app_preferences':
+            email_notifications = 'email_notifications' in request.form
+            sms_notifications = 'sms_notifications' in request.form
+            weekly_summary = 'weekly_summary' in request.form
+            receive_promotions = 'receive_promotions' in request.form
         query = """
             UPDATE user_settings
             SET email_notifications = %s, sms_notifications = %s, weekly_summary = %s, receive_promotions = %s
@@ -2405,8 +2405,8 @@ def update_settings():
             receive_promotions,
             user_id)
 
-    elif form_section == 'security':
-        two_factor_enabled = 'two_factor_enabled' in request.form
+        elif form_section == 'security':
+            two_factor_enabled = 'two_factor_enabled' in request.form
         query = "UPDATE users SET two_factor_enabled = %s WHERE firebase_uid = %s"
         params = (two_factor_enabled, user_id)
 
@@ -2420,9 +2420,9 @@ def update_settings():
                 'settings'), notification_type='settings_updated')
             
             flash("Settings updated successfully!", "success")
-        except Exception as e:
-            print(f"Error updating settings for section {form_section}: {e}")
-            flash("An error occurred while updating settings.", "danger")
+    except Exception as e:
+        print(f"Error updating settings for section {form_section}: {e}")
+        flash("An error occurred while updating settings.", "danger")
     else:
         flash("Invalid settings update request.", "warning")
         
@@ -2479,8 +2479,8 @@ def profile():
                 # Get user data, ensuring all columns including kyc_status are selected
                 cur.execute("""
                     SELECT u.*, 
-                           COUNT(DISTINCT s.id) as active_stokvels_count,
-                           COALESCE(SUM(CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END), 0) as total_contributions,
+                        COUNT(DISTINCT s.id) as active_stokvels_count,
+                        COALESCE(SUM(CASE WHEN t.type = 'contribution' THEN t.amount ELSE 0 END), 0) as total_contributions,
                            COALESCE(SUM(CASE WHEN t.type = 'withdrawal' THEN t.amount ELSE 0 END), 0) as total_withdrawals
                     FROM users u
                     LEFT JOIN stokvel_members sm ON u.firebase_uid = sm.user_id
@@ -2628,7 +2628,7 @@ def upload_kyc():
         flash(f'An error occurred during KYC upload: {e}', 'danger')
 
     return redirect(url_for('profile'))           
-    
+
     
 def inject_user_name():
     username = None
@@ -2946,19 +2946,19 @@ def handle_chat():
         else:  # mode == 'rule'
             response = rule_based_chat(user_message, user_id, user_name)
 
-        # Save chat history (for both modes)
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        INSERT INTO chat_history (user_id, message, response)
-                        VALUES (%s, %s, %s)
-                    """, (user_id, user_message, response))
-                    conn.commit()
-        except Exception as e:
-            print(f"Error saving chat history: {e}")
+            # Save chat history (for both modes)
+            try:
+                with support.db_connection() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute("""
+                                INSERT INTO chat_history (user_id, message, response)
+                                VALUES (%s, %s, %s)
+                            """, (user_id, user_message, response))
+                        conn.commit()
+            except Exception as e:
+                print(f"Error saving chat history: {e}")
 
-        # Return the response to the frontend
+            # Return the response to the frontend
         return jsonify(
     response=response,
     mode=mode,
@@ -3175,9 +3175,9 @@ def handle_fetch_messages(data):
     if not stokvel_id:
         return
     messages = []
-    with support.db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
                 SELECT m.user_id, u.username, m.message, m.timestamp
                 FROM stokvel_chat_messages m
                 JOIN users u ON m.user_id = u.firebase_uid
@@ -3202,16 +3202,16 @@ def add_stokvel_member(stokvel_id):
         return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
     try:
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
                 # Add a pending member with just an email (user_id is NULL)
                 cur.execute(
                     "INSERT INTO stokvel_members (stokvel_id, email, role) VALUES (%s, %s, %s)",
                     (stokvel_id, email, 'member')
                 )
-                conn.commit()
+                    conn.commit()
         flash("Member invitation sent!", "success")
-    except Exception as e:
+        except Exception as e:
         print(f"Error adding member: {e}")
         flash("Failed to add member. Please try again.", "danger")
     return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
@@ -3279,10 +3279,10 @@ def pay_back_loan():
         if not all([loan_id, repayment_amount, payment_method_id]):
             flash('Please fill in all required fields.', 'danger')
             return redirect(url_for('pay_back_loan'))
-        
-        try:
-            with support.db_connection() as conn:
-                with conn.cursor() as cur:
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
                     # Get loan details
                     cur.execute("""
                         SELECT t.amount, t.description, t.stokvel_id, s.name as stokvel_name
@@ -3304,13 +3304,13 @@ def pay_back_loan():
                         return redirect(url_for('pay_back_loan'))
                     
                     # Record the repayment transaction
-                    cur.execute("""
+                cur.execute("""
                         INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
                         VALUES (%s, %s, %s, 'loan_repayment', %s, NOW(), 'completed')
                     """, (user_id, stokvel_id, repayment_amount, f"Loan repayment for: {loan_description}"))
                     
                     # Update the original loan with repayment info
-                    cur.execute("""
+                cur.execute("""
                         UPDATE transactions 
                         SET description = CONCAT(description, ' | Repayment: R', %s, ' on ', NOW()::date)
                         WHERE id = %s
@@ -3339,12 +3339,12 @@ def pay_back_loan():
                     ORDER BY t.transaction_date DESC
                 """, (user_id,))
                 loans = cur.fetchall()
-                
+
                 # Get user's payment methods
                 cur.execute("""
                     SELECT id, type, details, is_default
                     FROM payment_methods
-                    WHERE user_id = %s
+                    WHERE user_id = %s 
                     ORDER BY is_default DESC, id ASC
                 """, (user_id,))
                 payment_methods_raw = cur.fetchall()
@@ -3399,7 +3399,7 @@ def request_loan():
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
                     # Check if the user is a member of this stokvel
-                    cur.execute("""
+                cur.execute("""
                         SELECT 1 FROM stokvel_members
                         WHERE stokvel_id = %s AND user_id = %s
                     """, (stokvel_id, user_id))
@@ -3408,7 +3408,7 @@ def request_loan():
                         return redirect(url_for('request_loan'))
                     
                     # Check if user already has a pending loan from this stokvel
-                    cur.execute("""
+                cur.execute("""
                         SELECT 1 FROM transactions
                         WHERE user_id = %s AND stokvel_id = %s AND type = 'payout' AND status = 'pending'
                     """, (user_id, stokvel_id))
@@ -3425,8 +3425,8 @@ def request_loan():
                     # Get stokvel name and admin user for notification
                     cur.execute("""
                         SELECT s.name, sm.user_id
-                        FROM stokvels s
-                        JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
                         WHERE s.id = %s AND sm.role = 'admin'
                     """, (stokvel_id,))
                     stokvel_info = cur.fetchone()
@@ -3528,7 +3528,7 @@ def dashboard():
                 # Sum total contributions for this user
                 cur.execute("""
                     SELECT COALESCE(SUM(amount), 0)
-                    FROM transactions
+                    FROM transactions 
                     WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
                 """, (firebase_uid,))
                 total_contributions = cur.fetchone()[0] or 0
@@ -3539,7 +3539,6 @@ def dashboard():
     return render_template('dashboard.html', user=user, active_stokvels_count=active_stokvels_count, total_contributions=total_contributions)
 
 
-=======
 from flask import Flask, render_template, request, redirect, session, flash, jsonify, url_for, Response, send_file
 import os
 from datetime import timedelta, datetime, date
@@ -4960,7 +4959,7 @@ def make_contribution():
         except Exception as e:
             print(f"Error making contribution: {e}")
             flash("An error occurred while making your contribution.", "danger")
-        return redirect(url_for('contributions'))
+            return redirect(url_for('contributions'))
     # GET request fallback
     # ... existing code ...
 
@@ -5260,7 +5259,7 @@ def contribute_to_goal():
                     import json
                     if isinstance(details, str):
                         try:
-                            details = json.loads(details)
+                        details = json.loads(details)
                         except Exception:
                             details = {}
                     if not isinstance(details, dict):
@@ -5756,24 +5755,24 @@ def add_payment_method():
         if not all([card_holder_name, card_number, expiry_date, cvv]):
             flash("All card fields are required.", "danger")
             return redirect(url_for('payment_methods'))
-        details_dict = {
-            "card_holder_name": card_holder_name,
-            "card_number": card_number,
-            "expiry_date": expiry_date,
-            # "cvv": cvv
-        }
-    elif payment_type == 'bank_account':
-        account_holder_name = request.form.get('account_holder_name')
-        account_number = request.form.get('account_number')
-        bank_name = request.form.get('bank_name')
-        if not all([account_holder_name, account_number, bank_name]):
-            flash("All bank account fields are required.", "danger")
-            return redirect(url_for('payment_methods'))
-        details_dict = {
-            "account_holder_name": account_holder_name,
-            "account_number": account_number,
-            "bank_name": bank_name
-        }
+            details_dict = {
+                "card_holder_name": card_holder_name,
+                "card_number": card_number,
+                "expiry_date": expiry_date,
+                # "cvv": cvv 
+            }
+        elif payment_type == 'bank_account':
+            account_holder_name = request.form.get('account_holder_name')
+            account_number = request.form.get('account_number')
+            bank_name = request.form.get('bank_name')
+            if not all([account_holder_name, account_number, bank_name]):
+                flash("All bank account fields are required.", "danger")
+                return redirect(url_for('payment_methods'))
+            details_dict = {
+                "account_holder_name": account_holder_name,
+                "account_number": account_number,
+                "bank_name": bank_name
+            }
     else:
         flash("Invalid payment type selected.", "danger")
         return redirect(url_for('payment_methods'))
@@ -7166,4 +7165,3 @@ def recent_activity_api():
         print(f"ERROR fetching recent activity: {e}")
         return jsonify({"error": "Could not fetch recent activity"}), 500
 
->>>>>>> 86cb7d85e6760bed88ce1e091ce006787bf53103
