@@ -23,29 +23,12 @@ DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
-@contextmanager
-def db_connection():
-    try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-        conn.autocommit = False
-        print(f"Successfully connected to database: {DB_NAME}")
-        yield conn
-    except Exception as e:
-        print(f"Database connection error: {e}")
-        raise e
-    finally:
-        if 'conn' in locals():
-            conn.close()
+def get_db_connection():
+    return psycopg2.connect(os.environ["DATABASE_URL"])
 
 @contextmanager
 def db_cursor():
-    with db_connection() as conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor()
         try:
             yield cursor
@@ -55,7 +38,7 @@ def db_cursor():
 def verify_db_connection():
     """Verify database connection and return True if successful"""
     try:
-        with db_connection() as conn:
+        with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
                 return True
