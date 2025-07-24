@@ -94,10 +94,7 @@ mail = Mail(app)
 
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
-    cred = credentials.Certificate(
-    os.getenv(
-        "FIREBASE_SERVICE_ACCOUNT_KEY_PATH",
-         "firebase-service-account.json"))
+    cred = credentials.Certificate(os.environ["FIREBASE_SERVICE_ACCOUNT_KEY_PATH"])
     firebase_admin.initialize_app(cred)
 
 # Database connection function
