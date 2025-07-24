@@ -14,12 +14,12 @@ from .models import db, ChatHistory, Transaction  # adjust import path if needed
 from pdf2image import convert_from_bytes
 import PyPDF2
 from openai import OpenAI
-from .support import db_connection, save_statement_analysis, get_latest_analysis, save_advisor_chat
+from .support import get_db_connection, save_statement_analysis, get_latest_analysis, save_advisor_chat
 import re
 
 # Delete old financial advisor data on app startup
 try:
-    with db_connection() as conn:
+    with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM financial_advisor_chat;")
             cur.execute("DELETE FROM financial_statement_analysis;")
@@ -58,7 +58,7 @@ def chat():
     print(f"[DEBUG] /chat user_id: {user_id}", flush=True)
     # Fetch latest analysis from database for context
     from flask import g
-    with db_connection() as conn:
+    with get_db_connection() as conn:
         analysis = get_latest_analysis(conn, user_id, with_budget=True)
     print(f"[DEBUG] get_latest_analysis result: {analysis}", flush=True)
     if not analysis:
@@ -107,7 +107,7 @@ def chat():
         print(f"OpenRouter API error: {e}", flush=True)
         return jsonify({'error': f'AI service error: {str(e)}'}), 500
     # Save chat history to database (including prompt and response)
-    with db_connection() as conn:
+    with get_db_connection() as conn:
         save_advisor_chat(conn, user_id, analysis_id, context_prompt, assistant_msg)
     return jsonify(response=assistant_msg)
 
@@ -230,8 +230,8 @@ def upload_statement():
             ai_analysis = None
             ai_budget_plan = None
         # Save analysis to database so chat assistant can find it
-        from .support import db_connection, save_statement_analysis
-        with db_connection() as conn:
+        from .support import get_db_connection, save_statement_analysis
+        with get_db_connection() as conn:
             if not ai_analysis:
                 ai_analysis = "No analysis available."
             if not ai_budget_plan:
