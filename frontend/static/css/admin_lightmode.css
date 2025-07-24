@@ -131,3 +131,54 @@ body.lightmode, .lightmode .admin-main {
 .lightmode p[style*="#6C757D"], .lightmode p[style*='rgb(108,117,125)'] {
     color: #6C757D !important;
 }
+/* Banner/Header */
+body.light-mode .dashboard-header,
+body.light-mode .banner,
+body.light-mode .navbar,
+body.light-mode header {
+    background: #1976d2 !important;
+    color: #fff !important;
+}
+
+/* Sidebar */
+body.light-mode .sidebar {
+    background: #fff !important;
+    color: #000 !important;
+    border-right: 2px solid #e2e8f0 !important;
+}
+body.light-mode .sidebar .nav a,
+body.light-mode .sidebar .nav i,
+body.light-mode .sidebar .nav svg {
+    color: #1976d2 !important;
+    fill: #1976d2 !important;
+}
+
+/* Main background */
+body.light-mode,
+body.light-mode .admin-main {
+    background: #fff !important;
+    color: #000 !important;
+}
+
+/* Cards */
+body.light-mode .stat-card,
+body.light-mode .dashboard-stat,
+body.light-mode .metric-card,
+body.light-mode .admin-card,
+body.light-mode .card,
+body.light-mode .section {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* All text inside admin-main and cards */
+body.light-mode .admin-main *,
+body.light-mode .stat-card *,
+body.light-mode .dashboard-stat *,
+body.light-mode .metric-card *,
+body.light-mode .admin-card *,
+body.light-mode .card *,
+body.light-mode .section * {
+    color: #000 !important;
+}
