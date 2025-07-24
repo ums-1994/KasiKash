@@ -262,7 +262,7 @@ def get_notification_count(user_id):
     if not user_id:
         return 0
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
     "SELECT COUNT(*) FROM notifications WHERE user_id = %s AND is_read = FALSE",
@@ -282,7 +282,7 @@ def create_notification(
      notification_type='general'):
     """Creates and saves an in-app notification for a user."""
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Get user's internal ID
                 cur.execute(
@@ -358,7 +358,7 @@ def home():
     calendar_events = []
 
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Count active stokvels for this user
                 cur.execute("""
@@ -506,7 +506,7 @@ def financial_insight():
         return redirect(url_for('login'))
     
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Get total contributions
                 cur.execute("""
@@ -613,7 +613,7 @@ def login_validation():
                 session.permanent = bool(remember)  # Ensure it's a boolean
                 # Fetch and set user role and profile_picture in session
                 try:
-                    with support.db_connection() as conn:
+                    with support.get_db_connection() as conn:
                         with conn.cursor() as cur:
                             cur.execute(
     "SELECT role, profile_picture FROM users WHERE firebase_uid = %s", (user_record.uid,))
@@ -633,7 +633,7 @@ def login_validation():
                 # Update local database with firebase_uid if not already
                 # present or different
                 try:
-                    with support.db_connection() as conn:
+                    with support.get_db_connection() as conn:
                         with conn.cursor() as cur:
                             # Get current internal ID and firebase_uid from
                             # local db
@@ -743,7 +743,7 @@ def login_validation():
 
                 # Update stokvel_members for pending invites
                 try:
-                    with support.db_connection() as conn:
+                    with support.get_db_connection() as conn:
                         with conn.cursor() as cur:
                             cur.execute(
                                 "UPDATE stokvel_members SET user_id = %s WHERE email = %s AND user_id IS NULL",
@@ -831,7 +831,7 @@ def forgot_password():
     f"Password reset requested for non-existent email: {email}")
                 # Check if user exists in local database
                 try:
-                    with support.db_connection() as conn:
+                    with support.get_db_connection() as conn:
                         with conn.cursor() as cur:
                             # First check if user exists
                             cur.execute(
@@ -1028,7 +1028,7 @@ def registration():
         if len(username) > 5 and len(email) > 10 and len(passwd) > 5:
             # Check if email already exists in PostgreSQL database
             try:
-                with support.db_connection() as conn:
+                with support.get_db_connection() as conn:
                     with conn.cursor() as cur:
                         cur.execute(
                             "SELECT id FROM users WHERE email = %s", (email,))
@@ -1058,7 +1058,7 @@ def registration():
                 send_email_verification(email, verification_link)
 
                 # Store Firebase UID and username/email in your PostgreSQL database
-                with support.db_connection() as conn:
+                with support.get_db_connection() as conn:
                     with conn.cursor() as cur:
                         cur.execute(
                             "INSERT INTO users (firebase_uid, username, email) VALUES (%s, %s, %s) RETURNING id",
@@ -1141,7 +1141,7 @@ def stokvels():
         return redirect('/login')
 
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Fetch stokvels where the current user is a member, including
                 # their role
@@ -1228,7 +1228,7 @@ def create_stokvel():
         else:
             support.execute_query("insert", "INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)", (stokvel_id, user_id, 'admin'))
         # Make the user a global admin and update session
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("UPDATE users SET role = 'admin' WHERE firebase_uid = %s", (user_id,))
                 conn.commit()
@@ -1258,7 +1258,7 @@ def contributions():
         return redirect('/login')
 
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Use firebase_uid directly since the database now uses
                 # Firebase UIDs
@@ -1372,7 +1372,7 @@ def make_contribution():
         try:
             amount = float(amount)
             stokvel_id = int(stokvel_id)
-            with support.db_connection() as conn:
+            with support.get_db_connection() as conn:
                 with conn.cursor() as cur:
                     # Check if the user is actually a member of this stokvel
                     cur.execute(
@@ -1423,7 +1423,7 @@ def payouts():
         flash("User not found in session, please log in again.", "error")
         return redirect('/login')
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Get user's payouts using firebase_uid directly
                 cur.execute("""
@@ -1486,7 +1486,7 @@ def request_payout():
         amount = float(amount)
         stokvel_id = int(stokvel_id)
 
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Check if the user is actually a member of this stokvel
                 cur.execute("""
@@ -1550,7 +1550,7 @@ def request_payout():
 def savings_goals():
     firebase_uid = session['user_id']
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Use firebase_uid directly since the database now uses
                 # Firebase UIDs
@@ -1628,7 +1628,7 @@ def create_savings_goal():
         target_amount = float(target_amount)
         # current_amount starts at 0
 
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     INSERT INTO savings_goals (user_id, name, target_amount, current_amount, target_date, status)
@@ -1665,7 +1665,7 @@ def contribute_to_goal():
             flash("Contribution amount must be greater than zero.")
             return redirect('/savings_goals')
 
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Verify the goal belongs to the user
                 cur.execute("""
@@ -1749,7 +1749,7 @@ def view_stokvel_members(stokvel_id):
             flash("Please log in to view stokvel members.")
             return redirect('/login')
 
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Get stokvel details, including id and description
                 cur.execute(
@@ -1842,7 +1842,7 @@ def view_stokvel_members(stokvel_id):
 def join_stokvel(stokvel_id):
     user_id = session['user_id']
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Check if already a member
                 cur.execute(
@@ -1910,7 +1910,7 @@ def join_stokvel(stokvel_id):
 def leave_stokvel(stokvel_id):
     user_id = session['user_id']
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Get stokvel name and admin user for notification before
                 # leaving
@@ -1972,7 +1972,7 @@ def delete_stokvel(stokvel_id):
     # For simplicity, we'll allow any logged-in user who created it (if we tracked creation)
     # or an admin to delete it. For now, assuming direct delete access.
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Delete all related transactions first
                 cur.execute(
@@ -1997,7 +1997,7 @@ def delete_stokvel(stokvel_id):
 def notifications():
     user_id = session['user_id']
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 # Fetch notifications for the user using firebase_uid
                 cur.execute("""
@@ -2022,7 +2022,7 @@ def notifications():
 def clear_notifications():
     user_id = session['user_id']
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
     "DELETE FROM notifications WHERE user_id = %s", (user_id,))
@@ -2125,7 +2125,7 @@ def payment_methods():
     import json
     firebase_uid = session['user_id']
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT id, type, details, is_default, created_at
@@ -2232,7 +2232,7 @@ def add_payment_method():
     details_json = json.dumps(details_dict)
 
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 if is_default:
                     cur.execute(
@@ -2272,7 +2272,7 @@ def set_default_payment_method():
         return redirect('/payment_methods')
 
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Clear existing default
                 cur.execute(
@@ -2310,7 +2310,7 @@ def delete_payment_method():
         return redirect('/payment_methods')
 
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     DELETE FROM payment_methods 
@@ -2336,7 +2336,7 @@ def delete_payment_method():
 def settings():
     user_id = session['user_id']
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 # Fetch general user settings from users table
                 cur.execute("""
@@ -2426,7 +2426,7 @@ def update_settings():
 
 def update_user_setting(user_id, section, setting, value):
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Map settings to database columns
                 column = None
@@ -2469,7 +2469,7 @@ def update_user_setting(user_id, section, setting, value):
 @login_required
 def profile():
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 # Get user data, ensuring all columns including kyc_status are selected
                 cur.execute("""
@@ -2710,8 +2710,8 @@ def send_email(to_email, subject, body):
 @app.route('/pricing')
 def pricing():
     try:
-        # Correctly use support.db_connection() as a context manager
-        with support.db_connection() as conn:
+        # Correctly use support.get_db_connection() as a context manager
+        with support.get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT * FROM pricing_plans")
                 pricing_plans = cursor.fetchall()
@@ -2943,7 +2943,7 @@ def handle_chat():
 
         # Save chat history (for both modes)
         try:
-            with support.db_connection() as conn:
+            with support.get_db_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
                         INSERT INTO chat_history (user_id, message, response)
@@ -2972,7 +2972,7 @@ def download_stokvel_statement_pdf(stokvel_id):
     user_id = session.get('user_id')
     # Fetch stokvel info and transactions
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
     "SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
@@ -3146,7 +3146,7 @@ def handle_send_message(data):
     if not (stokvel_id and message and user_id):
         return
     # Save message to DB
-    with support.db_connection() as conn:
+    with support.get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("INSERT INTO stokvel_chat_messages (stokvel_id, user_id, message) VALUES (%s, %s, %s) RETURNING timestamp", (stokvel_id, user_id, message))
             timestamp = cur.fetchone()[0]
@@ -3170,7 +3170,7 @@ def handle_fetch_messages(data):
     if not stokvel_id:
         return
     messages = []
-    with support.db_connection() as conn:
+    with support.get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT m.user_id, u.username, m.message, m.timestamp
@@ -3197,7 +3197,7 @@ def add_stokvel_member(stokvel_id):
         return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Add a pending member with just an email (user_id is NULL)
                 cur.execute(
@@ -3208,7 +3208,7 @@ def add_stokvel_member(stokvel_id):
         # Send invitation email
         from flask import url_for
         stokvel_name = None
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
                 row = cur.fetchone()
@@ -3237,7 +3237,7 @@ def add_stokvel_member(stokvel_id):
 @login_required
 def remove_stokvel_member(stokvel_id, member_id):
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "DELETE FROM stokvel_members WHERE id = %s AND stokvel_id = %s",
@@ -3299,7 +3299,7 @@ def pay_back_loan():
             return redirect(url_for('pay_back_loan'))
         
         try:
-            with support.db_connection() as conn:
+            with support.get_db_connection() as conn:
                 with conn.cursor() as cur:
                     # Get loan details
                     cur.execute("""
@@ -3346,7 +3346,7 @@ def pay_back_loan():
     
     # GET request - show loan repayment form
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Get user's approved loans
                 cur.execute("""
@@ -3414,7 +3414,7 @@ def request_loan():
                 flash('Loan amount must be greater than 0.', 'danger')
                 return redirect(url_for('request_loan'))
             
-            with support.db_connection() as conn:
+            with support.get_db_connection() as conn:
                 with conn.cursor() as cur:
                     # Check if the user is a member of this stokvel
                     cur.execute("""
@@ -3480,7 +3480,7 @@ def request_loan():
     
     # GET request - show loan request form
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Get stokvels the user is a member of
                 cur.execute("""
@@ -3535,7 +3535,7 @@ def dashboard():
     active_stokvels_count = 0
     total_contributions = 0
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Count active stokvels for this user
                 cur.execute("""
@@ -3565,7 +3565,7 @@ def recent_activity_api():
     firebase_uid = session.get('user_id')
     activities = []
     try:
-        with support.db_connection() as conn:
+        with support.get_db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 # Fetch recent transactions
                 cur.execute("""
