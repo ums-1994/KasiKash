@@ -1,8 +1,7 @@
-import psycopg2
 import os
 from dotenv import load_dotenv
+import psycopg2
 
-# Load environment variables
 load_dotenv()
 
 def update_users_table():

@@ -1,8 +1,7 @@
-import psycopg2
 import os
 from dotenv import load_dotenv
+import psycopg2
 
-# Load environment variables
 load_dotenv()
 
 DB_NAME = os.getenv('DB_NAME', 'kasikash_db')
