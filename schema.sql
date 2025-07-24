@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS stokvels (
 CREATE TABLE IF NOT EXISTS stokvel_members (
     id SERIAL PRIMARY KEY,
     stokvel_id INTEGER NOT NULL REFERENCES stokvels(id) ON DELETE CASCADE,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(64) REFERENCES users(firebase_uid) ON DELETE CASCADE,
     email VARCHAR(255),
     role VARCHAR(50) NOT NULL DEFAULT 'member',
     status VARCHAR(20) DEFAULT 'pending',
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS stokvel_members (
 -- Create the transactions table
 CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(64) NOT NULL REFERENCES users(firebase_uid) ON DELETE CASCADE,
     stokvel_id INTEGER REFERENCES stokvels(id) ON DELETE SET NULL,
     amount DECIMAL(10, 2) NOT NULL,
     transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 -- Create the savings_goals table
 CREATE TABLE IF NOT EXISTS savings_goals (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(64) NOT NULL REFERENCES users(firebase_uid) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     target_amount DECIMAL(10, 2) NOT NULL,
     current_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS savings_goals (
 -- Create the payment_methods table
 CREATE TABLE IF NOT EXISTS payment_methods (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(64) NOT NULL REFERENCES users(firebase_uid) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL,
     details TEXT NOT NULL,
     is_default BOOLEAN NOT NULL DEFAULT FALSE,
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS payment_methods (
 -- Create the chat_history table
 CREATE TABLE IF NOT EXISTS chat_history (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(64) NOT NULL REFERENCES users(firebase_uid) ON DELETE CASCADE,
     message TEXT NOT NULL,
     response TEXT NOT NULL,
     is_flagged BOOLEAN DEFAULT FALSE,
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS chat_history (
 -- Create the chatbot_preferences table
 CREATE TABLE IF NOT EXISTS chatbot_preferences (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(64) NOT NULL REFERENCES users(firebase_uid) ON DELETE CASCADE,
     language VARCHAR(10) DEFAULT 'en',
     notification_enabled BOOLEAN DEFAULT TRUE,
     quick_tips_enabled BOOLEAN DEFAULT TRUE,
@@ -317,7 +317,7 @@ ALTER TABLE transactions ADD COLUMN IF NOT EXISTS savings_goal_id INT REFERENCES
 
 CREATE TABLE IF NOT EXISTS events (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id VARCHAR(64) REFERENCES users(firebase_uid),
     event_type VARCHAR(50) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -333,7 +333,7 @@ CREATE TABLE IF NOT EXISTS membership_plans (
 
 CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id),
+    user_id VARCHAR(64) NOT NULL REFERENCES users(firebase_uid),
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
     link_url VARCHAR(255),
@@ -342,7 +342,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE TABLE IF NOT EXISTS user_settings (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    user_id VARCHAR(64) NOT NULL UNIQUE REFERENCES users(firebase_uid),
     -- Add any user-specific settings here, for example:
     email_notifications BOOLEAN DEFAULT TRUE,
     sms_notifications BOOLEAN DEFAULT FALSE,
