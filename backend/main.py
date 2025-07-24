@@ -316,7 +316,7 @@ def create_notification(
 
 @app.route('/')
 def welcome():
-    return render_template("welcome.html")
+    return render_template('welcome.html')
 
 
 @app.route('/feedback', methods=['POST'])
