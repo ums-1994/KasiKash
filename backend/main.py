@@ -2675,12 +2675,12 @@ def inject_user_name():
 
 def send_email(to_email, subject, body):
     try:
-        # Get email settings from environment variables
-        smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
-        smtp_port = int(os.getenv('SMTP_PORT', '587'))
-        smtp_username = os.getenv('SMTP_USERNAME')
-        smtp_password = os.getenv('SMTP_PASSWORD')
-        from_email = os.getenv('FROM_EMAIL', smtp_username)
+        # Get email settings from environment variables (use MAIL_ variables for Render compatibility)
+        smtp_server = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+        smtp_port = int(os.getenv('MAIL_PORT', '587'))
+        smtp_username = os.getenv('MAIL_USERNAME')
+        smtp_password = os.getenv('MAIL_PASSWORD')
+        from_email = os.getenv('MAIL_DEFAULT_SENDER', smtp_username)
 
         # DEBUG: Print loaded environment variables (REMOVE IN PRODUCTION)
         print(f"DEBUG: send_email - SMTP_SERVER: {smtp_server}")
@@ -2700,7 +2700,9 @@ def send_email(to_email, subject, body):
 
         # Create SMTP session
         server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
+        # Use TLS if MAIL_USE_TLS is set to True
+        if os.getenv('MAIL_USE_TLS', 'False').lower() == 'true':
+            server.starttls()
         server.login(smtp_username, smtp_password)
         
         # Send email
