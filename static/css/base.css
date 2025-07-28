@@ -453,3 +453,42 @@ main, .container, .max-w-4xl, .shadow-md, .rounded-lg, .p-6, .mb-4 {
 main *, .container *, .max-w-4xl *, .shadow-md *, .rounded-lg *, .p-6 *, .mb-4 * {
   color: #60efff !important;
 } 
+
+body.light-mode main {
+  background: #fff !important;
+  color: #222b45 !important;
+  border-color: #b3d4fc !important;
+} 
+
+/* === QUICK ACTIONS LIGHT MODE OVERRIDES (BASE) === */
+body.light-mode .quick-action-card {
+  background: #fafdff !important;
+  color: #1e293b !important;
+  border: 1.5px solid #b3d4fc !important;
+  box-shadow: 0 2px 8px rgba(96,239,255,0.04) !important;
+}
+body.light-mode .quick-action-card:hover {
+  background: #e3f0ff !important;
+  border: 1.5px solid #7B61FF !important;
+  box-shadow: 0 4px 16px rgba(123,97,255,0.08) !important;
+}
+body.light-mode .quick-action-icon {
+  color: #7B61FF !important;
+  background: none !important;
+}
+body.light-mode .quick-action-card:hover .quick-action-icon {
+  color: #61DAFB !important;
+}
+body.light-mode .quick-action-label {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+}
+body.light-mode .quick-action-desc {
+  color: #64748b !important;
+}
+body.light-mode .quick-action-tooltip {
+  background: #e3f0ff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+  box-shadow: 0 2px 8px rgba(123,97,255,0.08) !important;
+} 

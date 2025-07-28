@@ -120,3 +120,84 @@ def execute_query(operation, query, params=None):
             cur.close()
         if conn:
             conn.close() 
+
+
+def save_statement_analysis(conn, user_id, statement_text, ai_analysis, transactions, file_name, ai_budget_plan):
+    """
+    Save a financial statement analysis to the database.
+    Args:
+        conn: psycopg2 connection object
+        user_id (str): Firebase UID of the user
+        statement_text (str): Raw statement text
+        ai_analysis (str): AI-generated analysis
+        transactions (list/dict): Parsed transactions (will be stored as JSON)
+        file_name (str): Name of the uploaded file
+        ai_budget_plan (str): AI-generated budget plan
+    Returns:
+        int: The id of the inserted analysis row
+    """
+    import json
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO financial_statement_analysis
+                    (user_id, statement_text, ai_analysis, transactions_json, file_name, ai_budget_plan)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING id
+                """,
+                (user_id, statement_text, ai_analysis, json.dumps(transactions), file_name, ai_budget_plan)
+            )
+            analysis_id = cur.fetchone()[0]
+            conn.commit()
+            return analysis_id
+    except Exception as e:
+        print(f"[ERROR] Failed to save statement analysis: {e}")
+        conn.rollback()
+        return None 
+
+
+def get_latest_analysis(conn, user_id, with_budget=False):
+    """
+    Get the latest financial statement analysis for a user.
+    """
+    try:
+        with conn.cursor() as cur:
+            query = """
+                SELECT id, statement_text, ai_analysis, transactions_json, ai_budget_plan
+                FROM financial_statement_analysis
+                WHERE user_id = %s
+                ORDER BY uploaded_at DESC
+                LIMIT 1
+            """
+            cur.execute(query, (user_id,))
+            result = cur.fetchone()
+            if result and with_budget:
+                return result
+            elif result:
+                # return without budget if not requested
+                return result[0], result[1], result[2], result[3], None
+            return None
+    except Exception as e:
+        print(f"[ERROR] Failed to get latest analysis: {e}")
+        return None
+
+
+def save_advisor_chat(conn, user_id, analysis_id, message, response):
+    """
+    Save a financial advisor chat message to the database.
+    """
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO financial_advisor_chat
+                    (user_id, statement_analysis_id, message, response)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (user_id, analysis_id, message, response)
+            )
+            conn.commit()
+    except Exception as e:
+        print(f"[ERROR] Failed to save advisor chat: {e}")
+        conn.rollback() 

@@ -7,6 +7,7 @@
     <title>KasiKash - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base_lightmode.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
@@ -263,6 +264,9 @@
                     <a href="{{ url_for('profile') }}" class="profile-icon">
                         <i class="fa-solid fa-user-circle w-6 h-6 text-xl"></i>
                     </a>
+                    <button class="theme-toggle" id="themeToggleBtn" title="Toggle Light/Dark Mode" style="background:rgba(96,239,255,0.1);border:2px solid #60efff;border-radius:50px;padding:8px 12px;cursor:pointer;transition:all 0.3s ease;backdrop-filter:blur(10px);">
+                      <i class="fas fa-adjust"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -298,5 +302,26 @@
     {% include 'chatbot.html' %}
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
     {% block extra_js %}{% endblock %}
+    <script>
+    // Always apply the saved theme on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (localStorage.getItem('themeMode') === 'light') {
+        document.body.classList.add('light-mode');
+      } else {
+        document.body.classList.remove('light-mode');
+      }
+      const btn = document.getElementById('themeToggleBtn');
+      if (!btn) return;
+      btn.addEventListener('click', function() {
+        document.body.classList.toggle('light-mode');
+        // Save preference
+        if (document.body.classList.contains('light-mode')) {
+          localStorage.setItem('themeMode', 'light');
+        } else {
+          localStorage.setItem('themeMode', 'dark');
+        }
+      });
+    });
+    </script>
 </body>
 </html>

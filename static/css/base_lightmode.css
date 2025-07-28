@@ -1,0 +1,680 @@
+/* Base Light Mode Theme - Comprehensive Dashboard Interface */
+
+/* === BODY AND MAIN LAYOUT === */
+body.light-mode {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  font-family: 'Inter', 'Montserrat', sans-serif;
+}
+
+body.light-mode main {
+  background: #fafdff !important;
+  color: #222b45 !important;
+}
+
+/* === SIDEBAR LIGHT MODE === */
+body.light-mode .sidebar {
+  background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
+  color: #101c2c !important;
+  border-right: 2px solid #b2d6f7 !important;
+  box-shadow: 0 20px 40px rgba(35,41,70,0.08) !important;
+}
+
+/* Sidebar Logo Section */
+body.light-mode .logo-section {
+  background: linear-gradient(90deg, rgba(123, 97, 255, 0.1), rgba(97, 218, 251, 0.1)) !important;
+  border-bottom: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .logo-text {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #7B61FF !important;
+}
+
+/* Sidebar Navigation */
+body.light-mode .nav-link,
+body.light-mode nav a {
+  color: #1e293b !important;
+  background: rgba(255, 255, 255, 0) !important;
+  border: 1px solid transparent !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body.light-mode .nav-link:hover,
+body.light-mode nav a:hover {
+  color: #7B61FF !important;
+  background: rgba(123, 97, 255, 0.08) !important;
+  border: 1.5px solid #7B61FF !important;
+  box-shadow: 0 8px 16px rgba(123, 97, 255, 0.10) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.light-mode .nav-link svg,
+body.light-mode nav a i {
+  color: #64748b !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .nav-link:hover svg,
+body.light-mode nav a:hover i {
+  color: #7B61FF !important;
+  filter: drop-shadow(0 0 8px rgba(123, 97, 255, 0.5)) !important;
+}
+
+/* Sidebar User Section */
+body.light-mode .user-section {
+  background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
+  border-top: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .user-avatar {
+  background: linear-gradient(135deg, #7B61FF, #61DAFB) !important;
+  box-shadow: 0 0 15px rgba(123, 97, 255, 0.3) !important;
+}
+
+body.light-mode .logout-link {
+  color: #7B61FF !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .logout-link:hover {
+  color: #61DAFB !important;
+  text-shadow: 0 0 10px rgba(123, 97, 255, 0.5) !important;
+}
+
+/* === TOP BAR LIGHT MODE === */
+body.light-mode .top-bar {
+  background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
+  border-bottom: 1px solid #b3d4fc !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .page-title {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px !important;
+}
+
+/* Top Bar Icons */
+body.light-mode .notification-icon,
+body.light-mode .profile-icon {
+  color: #7B61FF !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .notification-icon:hover,
+body.light-mode .profile-icon:hover {
+  color: #61DAFB !important;
+  transform: translateY(-1px) !important;
+  filter: drop-shadow(0 0 8px rgba(123, 97, 255, 0.5)) !important;
+}
+
+body.light-mode .notification-badge {
+  background: linear-gradient(135deg, #7B61FF, #61DAFB) !important;
+  box-shadow: 0 0 10px rgba(123, 97, 255, 0.5) !important;
+}
+
+/* Theme Toggle Button */
+body.light-mode .theme-toggle {
+  background: rgba(123, 97, 255, 0.1) !important;
+  border: 2px solid #7B61FF !important;
+  color: #7B61FF !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .theme-toggle:hover {
+  background: rgba(123, 97, 255, 0.2) !important;
+  border-color: #61DAFB !important;
+  color: #61DAFB !important;
+  transform: translateY(-1px) !important;
+}
+
+/* === ALERTS LIGHT MODE === */
+body.light-mode .alert {
+  background: #fff !important;
+  border: 1px solid #b3d4fc !important;
+  color: #1e293b !important;
+  box-shadow: 0 8px 32px rgba(35,41,70,0.08) !important;
+}
+
+body.light-mode .alert-success {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  border-color: #34d399 !important;
+}
+
+body.light-mode .alert-danger {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #ef4444 !important;
+}
+
+body.light-mode .alert-info {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border-color: #3b82f6 !important;
+}
+
+/* === GENERAL TEXT COLORS === */
+body.light-mode .text-gray-200 {
+  color: #1e293b !important;
+}
+
+body.light-mode .text-white {
+  color: #1e293b !important;
+}
+
+body.light-mode .text-gray-800 {
+  color: #475569 !important;
+}
+
+/* === BUTTONS LIGHT MODE === */
+body.light-mode .btn {
+  background: linear-gradient(90deg, #7B61FF 0%, #61DAFB 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .btn:hover {
+  background: linear-gradient(90deg, #61DAFB 0%, #7B61FF 100%) !important;
+  color: #fff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 16px rgba(123, 97, 255, 0.2) !important;
+}
+
+/* === FORM ELEMENTS LIGHT MODE === */
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+  border-radius: 0.5rem !important;
+}
+
+body.light-mode input:focus,
+body.light-mode textarea:focus,
+body.light-mode select:focus {
+  border-color: #7B61FF !important;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.1) !important;
+  outline: none !important;
+}
+
+body.light-mode input::placeholder,
+body.light-mode textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* === CARDS AND CONTAINERS === */
+body.light-mode .card {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .card:hover {
+  box-shadow: 0 8px 32px rgba(35,41,70,0.12) !important;
+  border-color: #7B61FF !important;
+}
+
+/* === TABLES LIGHT MODE === */
+body.light-mode table {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+body.light-mode th {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #b3d4fc !important;
+}
+
+body.light-mode td {
+  color: #475569 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.light-mode tr:hover {
+  background: #f1f5f9 !important;
+}
+
+/* === MODALS AND OVERLAYS === */
+body.light-mode .modal {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+  box-shadow: 0 20px 40px rgba(35,41,70,0.15) !important;
+}
+
+body.light-mode .modal-header {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .modal-footer {
+  background: #f8fafc !important;
+  border-top: 1px solid #b3d4fc !important;
+}
+
+/* === DROPDOWNS AND MENUS === */
+body.light-mode .dropdown-menu {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+  box-shadow: 0 8px 32px rgba(35,41,70,0.12) !important;
+}
+
+body.light-mode .dropdown-item {
+  color: #475569 !important;
+}
+
+body.light-mode .dropdown-item:hover {
+  background: #f1f5f9 !important;
+  color: #7B61FF !important;
+}
+
+/* === PROGRESS BARS AND INDICATORS === */
+body.light-mode .progress {
+  background: #e2e8f0 !important;
+}
+
+body.light-mode .progress-bar {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+}
+
+body.light-mode .progress-circle-bg {
+  stroke: #e2e8f0 !important;
+}
+
+body.light-mode .progress-circle {
+  stroke: url(#gradient) !important;
+}
+
+/* === BADGES AND TAGS === */
+body.light-mode .badge {
+  background: rgba(123, 97, 255, 0.1) !important;
+  color: #7B61FF !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+}
+
+body.light-mode .badge-success {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: #059669 !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .badge-danger {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #b91c1c !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-mode .badge-warning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #d97706 !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+/* === TOOLTIPS === */
+body.light-mode .tooltip {
+  background: #1e293b !important;
+  color: #fff !important;
+  border: 1px solid #475569 !important;
+}
+
+/* === SCROLLBARS === */
+body.light-mode ::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+body.light-mode ::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 4px !important;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+/* === FOCUS STATES === */
+body.light-mode *:focus {
+  outline: 2px solid #7B61FF !important;
+  outline-offset: 2px !important;
+}
+
+/* === ANIMATIONS AND TRANSITIONS === */
+body.light-mode * {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* === UTILITY CLASSES === */
+body.light-mode .bg-dark {
+  background: #1e293b !important;
+}
+
+body.light-mode .bg-light {
+  background: #f8fafc !important;
+}
+
+body.light-mode .text-dark {
+  color: #1e293b !important;
+}
+
+body.light-mode .text-light {
+  color: #475569 !important;
+}
+
+body.light-mode .border-dark {
+  border-color: #475569 !important;
+}
+
+body.light-mode .border-light {
+  border-color: #e2e8f0 !important;
+}
+
+/* === CHATBOT LIGHT MODE === */
+body.light-mode .chatbot-container {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+  box-shadow: 0 8px 32px rgba(35,41,70,0.12) !important;
+}
+
+body.light-mode .chatbot-header {
+  background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .chatbot-messages {
+  background: #f8fafc !important;
+}
+
+body.light-mode .chatbot-message {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+body.light-mode .chatbot-input {
+  background: #fff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+  body.light-mode .sidebar {
+    background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
+  }
+  
+  body.light-mode .top-bar {
+    background: linear-gradient(135deg, #eaf6fb 60%, #c6e6f7 100%) !important;
+  }
+}
+
+/* === FORCE ALL ELEMENTS TO LIGHT MODE === */
+body.light-mode * {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* === TEXT VISIBILITY FIXES === */
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+  color: #1e293b !important;
+}
+
+body.light-mode p,
+body.light-mode span,
+body.light-mode div,
+body.light-mode label {
+  color: #475569 !important;
+}
+
+body.light-mode .text-white,
+body.light-mode .text-gray-200,
+body.light-mode .text-gray-300,
+body.light-mode .text-gray-400 {
+  color: #1e293b !important;
+}
+
+body.light-mode .text-gray-500,
+body.light-mode .text-gray-600,
+body.light-mode .text-gray-700 {
+  color: #475569 !important;
+}
+
+body.light-mode .text-gray-800,
+body.light-mode .text-gray-900 {
+  color: #1e293b !important;
+}
+
+/* Ensure all text in cards is visible */
+body.light-mode .card *,
+body.light-mode .glass-card *,
+body.light-mode .dashboard-card * {
+  color: #1e293b !important;
+}
+
+body.light-mode .card p,
+body.light-mode .glass-card p,
+body.light-mode .dashboard-card p {
+  color: #475569 !important;
+}
+
+/* Ensure navigation text is visible */
+body.light-mode nav *,
+body.light-mode .nav-link *,
+body.light-mode .sidebar * {
+  color: #1e293b !important;
+}
+
+body.light-mode nav a,
+body.light-mode .nav-link {
+  color: #1e293b !important;
+}
+
+body.light-mode nav a:hover,
+body.light-mode .nav-link:hover {
+  color: #7B61FF !important;
+}
+
+/* Ensure form labels and text are visible */
+body.light-mode label,
+body.light-mode .form-label {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+body.light-mode .form-text,
+body.light-mode .help-text {
+  color: #64748b !important;
+}
+
+/* Ensure table text is visible */
+body.light-mode table *,
+body.light-mode th,
+body.light-mode td {
+  color: #1e293b !important;
+}
+
+body.light-mode th {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+body.light-mode td {
+  color: #475569 !important;
+}
+
+/* Ensure modal text is visible */
+body.light-mode .modal *,
+body.light-mode .modal-title,
+body.light-mode .modal-body * {
+  color: #1e293b !important;
+}
+
+/* Ensure dropdown text is visible */
+body.light-mode .dropdown-menu *,
+body.light-mode .dropdown-item {
+  color: #475569 !important;
+}
+
+body.light-mode .dropdown-item:hover {
+  color: #7B61FF !important;
+}
+
+/* Ensure alert text is visible */
+body.light-mode .alert * {
+  color: inherit !important;
+}
+
+/* Ensure button text is visible */
+body.light-mode .btn {
+  color: #fff !important;
+}
+
+body.light-mode .btn-secondary {
+  background: #64748b !important;
+  color: #fff !important;
+}
+
+body.light-mode .btn-outline {
+  background: transparent !important;
+  color: #7B61FF !important;
+  border: 1px solid #7B61FF !important;
+}
+
+body.light-mode .btn-outline:hover {
+  background: #7B61FF !important;
+  color: #fff !important;
+}
+
+/* Ensure badge text is visible */
+body.light-mode .badge {
+  color: #7B61FF !important;
+}
+
+body.light-mode .badge-success {
+  color: #059669 !important;
+}
+
+body.light-mode .badge-danger {
+  color: #b91c1c !important;
+}
+
+body.light-mode .badge-warning {
+  color: #d97706 !important;
+}
+
+/* Ensure tooltip text is visible */
+body.light-mode .tooltip {
+  color: #fff !important;
+}
+
+body.light-mode .tooltip * {
+  color: #fff !important;
+}
+
+/* Ensure placeholder text is visible */
+body.light-mode ::placeholder {
+  color: #64748b !important;
+}
+
+/* Ensure link text is visible */
+body.light-mode a {
+  color: #7B61FF !important;
+}
+
+body.light-mode a:hover {
+  color: #61DAFB !important;
+}
+
+/* Ensure icon colors are visible */
+body.light-mode i,
+body.light-mode .fas,
+body.light-mode .far,
+body.light-mode .fab {
+  color: #64748b !important;
+}
+
+body.light-mode i:hover,
+body.light-mode .fas:hover,
+body.light-mode .far:hover,
+body.light-mode .fab:hover {
+  color: #7B61FF !important;
+}
+
+/* Ensure specific text classes are visible */
+body.light-mode .text-muted {
+  color: #64748b !important;
+}
+
+body.light-mode .text-primary {
+  color: #7B61FF !important;
+}
+
+body.light-mode .text-secondary {
+  color: #64748b !important;
+}
+
+body.light-mode .text-success {
+  color: #059669 !important;
+}
+
+body.light-mode .text-danger {
+  color: #b91c1c !important;
+}
+
+body.light-mode .text-warning {
+  color: #d97706 !important;
+}
+
+body.light-mode .text-info {
+  color: #0ea5e9 !important;
+}
+
+/* === SPECIFIC OVERRIDES FOR DASHBOARD COMPONENTS === */
+body.light-mode .dashboard-main,
+body.light-mode .dashboard-grid,
+body.light-mode .welcome-banner,
+body.light-mode .admin-dashboard-banner,
+body.light-mode .glass-card,
+body.light-mode .dashboard-card,
+body.light-mode .activity-card,
+body.light-mode .calendar-card,
+body.light-mode .quick-action-card {
+  background: #fff !important;
+  color: #222b45 !important;
+  border-color: #b3d4fc !important;
+}
+
+/* === ENSURE CONSISTENCY WITH DASHBOARD LIGHT MODE === */
+body.light-mode .welcome-banner,
+body.light-mode .admin-dashboard-banner {
+  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
+  color: #222b45 !important;
+  border: 2px solid #b3d4fc !important;
+}
+
+body.light-mode .glass-card:hover,
+body.light-mode .dashboard-card:hover {
+  background: #f3f8ff !important;
+  border: 1.5px solid #7B61FF !important;
+  box-shadow: 0 8px 32px rgba(123,97,255,0.08) !important;
+} 

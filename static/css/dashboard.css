@@ -1,16 +1,23 @@
+/* === DASHBOARD BASE STYLES === */
 body {
   min-height: 100vh;
   background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
   font-family: 'Inter', 'Montserrat', sans-serif;
+  color: #E2E2F0;
 }
+
+/* === DASHBOARD GRID LAYOUT === */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
 }
+
+/* === GLASS CARD STYLES === */
 .glass-card {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 1.5rem;
   box-shadow: 
@@ -20,6 +27,7 @@ body {
   padding: 2rem;
   position: relative;
 }
+
 .glass-card:hover {
   transform: translateY(-5px);
   box-shadow: 
@@ -27,37 +35,39 @@ body {
     inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.1);
 }
+
+/* === ACCENT TEXT === */
 .accent {
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: #7B61FF;
   font-weight: 700;
 }
+
+/* === PROGRESS ELEMENTS === */
 .progress-circle-bg {
   stroke: rgba(255, 255, 255, 0.05);
 }
+
 .progress-circle {
   stroke: url(#gradient);
   transition: all 0.3s ease;
 }
+
 .progress-label {
   font-size: 1.2rem;
   font-weight: 600;
   fill: #0072ff;
 }
+
 .progress-bar {
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   box-shadow: 0 0 20px rgba(123, 97, 255, 0.3);
 }
-.day-bar {
-  width: 12px;
-  height: 40px;
-  border-radius: 6px;
-  margin: 0 2px;
-  background: linear-gradient(180deg, #00c6ff, #0072ff);
-  opacity: 0.7;
-  display: inline-block;
-}
+
+/* === CALENDAR STYLES === */
 .calendar {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -66,6 +76,7 @@ body {
   border-radius: 1rem;
   padding: 1rem;
 }
+
 .calendar-day {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -81,20 +92,24 @@ body {
   color: #fff;
   position: relative;
 }
+
 .calendar-day:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.1);
 }
+
 .calendar-day.today {
   border: 2px solid #7B61FF;
   box-shadow: 0 0 15px rgba(123, 97, 255, 0.2);
 }
+
 .calendar-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
+
 .calendar-nav button {
   background: linear-gradient(90deg, #00c6ff, #0072ff);
   color: #fff;
@@ -105,18 +120,12 @@ body {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .calendar-nav button:hover {
   background: linear-gradient(90deg, #0072ff, #00c6ff);
 }
-@media (max-width: 1024px) {
-  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 768px) {
-  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 500px) {
-  .dashboard-grid { grid-template-columns: 1fr; }
-}
+
+/* === WELCOME BANNER === */
 .welcome-banner {
   position: relative;
   min-height: 240px;
@@ -124,21 +133,15 @@ body {
   overflow: hidden;
   margin-bottom: 2rem;
   background: 
-    /* Mesh gradient pattern */
     radial-gradient(circle at 20% 20%, rgba(123, 97, 255, 0.3) 0%, transparent 40%),
     radial-gradient(circle at 80% 80%, rgba(97, 218, 251, 0.3) 0%, transparent 40%),
-    /* Base gradient */
-    linear-gradient(135deg, 
-      #7B61FF 0%,
-      #61DAFB 100%
-    );
+    linear-gradient(135deg, #7B61FF 0%, #61DAFB 100%);
   box-shadow: 
     0 20px 40px rgba(0, 0, 0, 0.2),
     inset 0 0 80px rgba(255, 255, 255, 0.1);
   animation: pulseGlow 8s ease infinite;
 }
 
-/* Animated mesh overlay */
 .welcome-banner::before {
   content: '';
   position: absolute;
@@ -154,7 +157,6 @@ body {
   animation: meshMove 20s linear infinite;
 }
 
-/* Glowing orbs */
 .welcome-banner::after {
   content: '';
   position: absolute;
@@ -164,44 +166,6 @@ body {
     radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 30%);
   filter: blur(30px);
   animation: orbFloat 10s ease-in-out infinite alternate;
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 
-      0 20px 40px rgba(0, 0, 0, 0.2),
-      inset 0 0 80px rgba(255, 255, 255, 0.1);
-  }
-  50% {
-    box-shadow: 
-      0 20px 50px rgba(123, 97, 255, 0.3),
-      inset 0 0 100px rgba(255, 255, 255, 0.15);
-  }
-}
-
-@keyframes meshMove {
-  0% {
-    transform: translateX(0) translateY(0);
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateX(-20px) translateY(-20px);
-    opacity: 0.5;
-  }
-}
-
-@keyframes orbFloat {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(-10px) scale(1.1);
-    opacity: 0.8;
-  }
 }
 
 .welcome-content {
@@ -218,6 +182,7 @@ body {
     rgba(45, 45, 68, 0.2)
   );
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .welcome-title {
@@ -226,7 +191,9 @@ body {
   margin-bottom: 1rem;
   background: linear-gradient(90deg, #FFFFFF, #E2E2F0);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: #FFFFFF;
   letter-spacing: -1px;
   position: relative;
 }
@@ -249,7 +216,7 @@ body {
   margin-top: 1rem;
 }
 
-/* Add styles for the visualization card */
+/* === CHART CONTAINER === */
 .chart-container {
   position: relative;
   height: 180px;
@@ -257,6 +224,7 @@ body {
   margin-top: 1rem;
 }
 
+/* === METRIC GRID === */
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -281,7 +249,9 @@ body {
   font-weight: 700;
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: #7B61FF;
   margin-bottom: 0.25rem;
 }
 
@@ -310,7 +280,7 @@ body {
   color: #EF4444;
 }
 
-/* Activity Timeline styles */
+/* === TIMELINE STYLES === */
 .activity-timeline {
   position: relative;
   padding-left: 2rem;
@@ -381,7 +351,9 @@ body {
   font-weight: 600;
   background: linear-gradient(90deg, #7B61FF, #61DAFB);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: #7B61FF;
 }
 
 .timeline-badge {
@@ -408,6 +380,45 @@ body {
   color: #818CF8;
 }
 
+/* === ANIMATIONS === */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.2),
+      inset 0 0 80px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 20px 50px rgba(123, 97, 255, 0.3),
+      inset 0 0 100px rgba(255, 255, 255, 0.15);
+  }
+}
+
+@keyframes meshMove {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-20px) translateY(-20px);
+    opacity: 0.5;
+  }
+}
+
+@keyframes orbFloat {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-10px) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -417,4 +428,212 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 1024px) {
+  .dashboard-grid { 
+    grid-template-columns: repeat(3, 1fr); 
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+
+@media (max-width: 500px) {
+  .dashboard-grid { 
+    grid-template-columns: 1fr; 
+  }
+}
+
+/* === LIGHT MODE OVERRIDES === */
+body.light-mode {
+  background: #fafdff !important;
+  color: #222b45 !important;
+}
+
+body.light-mode .dashboard-grid {
+  background: #fafdff !important;
+}
+
+body.light-mode .welcome-banner,
+body.light-mode .admin-dashboard-banner {
+  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
+  color: #222b45 !important;
+  border: 2px solid #b3d4fc !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .glass-card,
+body.light-mode .dashboard-card {
+  background: #fff !important;
+  color: #222b45 !important;
+  border: 1.5px solid #b3d4fc !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .glass-card:hover,
+body.light-mode .dashboard-card:hover {
+  background: #f3f8ff !important;
+  border: 1.5px solid #7B61FF !important;
+  box-shadow: 0 8px 32px rgba(123,97,255,0.08) !important;
+}
+
+body.light-mode .accent {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #7B61FF !important;
+}
+
+body.light-mode .calendar-day {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .calendar-day.today {
+  border: 2px solid #7B61FF !important;
+  box-shadow: 0 0 15px #b3d4fc !important;
+}
+
+body.light-mode .calendar-day:hover {
+  background: #e3f0ff !important;
+  border-color: #7B61FF !important;
+}
+
+body.light-mode .calendar-nav button {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  color: #fff !important;
+}
+
+body.light-mode .calendar-nav button:hover {
+  background: linear-gradient(90deg, #61DAFB, #7B61FF) !important;
+}
+
+body.light-mode .welcome-title {
+  background: linear-gradient(90deg, #1e293b, #475569) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #1e293b !important;
+}
+
+body.light-mode .welcome-subtitle {
+  color: #475569 !important;
+}
+
+body.light-mode .timeline-content {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .timeline-content:hover {
+  background: #e3f0ff !important;
+}
+
+body.light-mode .timeline-title {
+  color: #1e293b !important;
+}
+
+body.light-mode .timeline-date {
+  color: #64748b !important;
+}
+
+body.light-mode .timeline-amount {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #7B61FF !important;
+}
+
+body.light-mode .metric-card {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .metric-card:hover {
+  background: #e3f0ff !important;
+}
+
+body.light-mode .metric-value {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #7B61FF !important;
+}
+
+body.light-mode .metric-label {
+  color: #64748b !important;
+}
+
+body.light-mode .trend-up {
+  background: rgba(52, 211, 153, 0.12) !important;
+  color: #059669 !important;
+}
+
+body.light-mode .trend-down {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #b91c1c !important;
+}
+
+body.light-mode .timeline-badge.badge-contribution {
+  background: rgba(52, 211, 153, 0.12) !important;
+  color: #059669 !important;
+}
+
+body.light-mode .timeline-badge.badge-withdrawal {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #b91c1c !important;
+}
+
+body.light-mode .timeline-badge.badge-goal {
+  background: rgba(99, 102, 241, 0.12) !important;
+  color: #3730a3 !important;
+}
+
+body.light-mode .btn {
+  background: linear-gradient(90deg, #7B61FF 0%, #61DAFB 100%) !important;
+  color: #fff !important;
+}
+
+body.light-mode .btn:hover {
+  background: linear-gradient(90deg, #61DAFB 0%, #7B61FF 100%) !important;
+  color: #fff !important;
+}
+
+/* === TEXT VISIBILITY FIXES === */
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+  color: #1e293b !important;
+}
+
+body.light-mode p,
+body.light-mode span,
+body.light-mode div {
+  color: #475569 !important;
+}
+
+body.light-mode .text-white {
+  color: #1e293b !important;
+}
+
+body.light-mode a {
+  color: #7B61FF !important;
+}
+
+body.light-mode a:hover {
+  color: #61DAFB !important;
 } 

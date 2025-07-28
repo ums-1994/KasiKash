@@ -1,0 +1,563 @@
+/* Dashboard Light Mode Overrides */
+body.light-mode,
+body.light-mode .dashboard-main,
+body.light-mode .dashboard-grid,
+body.light-mode .welcome-banner,
+body.light-mode .admin-dashboard-banner {
+  background: #fafdff !important;
+  color: #222b45 !important;
+}
+
+/* Welcome Banner Light Mode */
+body.light-mode .welcome-banner,
+body.light-mode .admin-dashboard-banner {
+  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
+  color: #222b45 !important;
+  border: 2px solid #b3d4fc !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .welcome-banner h1,
+body.light-mode .admin-dashboard-banner h1 {
+  color: #1e293b !important;
+}
+
+body.light-mode .welcome-banner p,
+body.light-mode .admin-dashboard-banner p {
+  color: #475569 !important;
+}
+
+/* Glass Cards Light Mode */
+body.light-mode .glass-card,
+body.light-mode .dashboard-card {
+  background: #fff !important;
+  color: #222b45 !important;
+  border: 1.5px solid #b3d4fc !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .glass-card:hover,
+body.light-mode .dashboard-card:hover {
+  background: #f3f8ff !important;
+  border: 1.5px solid #7B61FF !important;
+  box-shadow: 0 8px 32px rgba(123,97,255,0.08) !important;
+}
+
+body.light-mode .glass-card h2,
+body.light-mode .glass-card h3,
+body.light-mode .dashboard-card h2,
+body.light-mode .dashboard-card h3 {
+  color: #1e293b !important;
+}
+
+body.light-mode .glass-card p,
+body.light-mode .dashboard-card p {
+  color: #475569 !important;
+}
+
+/* Quick Actions Light Mode */
+body.light-mode .quick-action-card {
+  background: #fafdff !important;
+  color: #1e293b !important;
+  border: 1.5px solid #b3d4fc !important;
+  box-shadow: 0 2px 8px rgba(96,239,255,0.04) !important;
+}
+
+body.light-mode .quick-action-card:hover {
+  background: #e3f0ff !important;
+  border: 1.5px solid #7B61FF !important;
+  box-shadow: 0 4px 16px rgba(123,97,255,0.08) !important;
+}
+
+body.light-mode .quick-action-icon {
+  color: #7B61FF !important;
+  background: none !important;
+}
+
+body.light-mode .quick-action-card:hover .quick-action-icon {
+  color: #61DAFB !important;
+}
+
+body.light-mode .quick-action-label {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+}
+
+body.light-mode .quick-action-desc {
+  color: #64748b !important;
+}
+
+body.light-mode .quick-action-tooltip {
+  background: #e3f0ff !important;
+  color: #1e293b !important;
+  border: 1px solid #b3d4fc !important;
+  box-shadow: 0 2px 8px rgba(123,97,255,0.08) !important;
+}
+
+/* Activity Card Light Mode */
+body.light-mode .activity-card {
+  background: #fff !important;
+  color: #222b45 !important;
+  border: 1.5px solid #b3d4fc !important;
+}
+
+body.light-mode .activity-visualizer,
+body.light-mode .chart-container {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1.5px solid #b3d4fc !important;
+}
+
+/* Calendar Card Light Mode */
+body.light-mode .calendar-card {
+  background: #fff !important;
+  color: #222b45 !important;
+  border: 1.5px solid #b3d4fc !important;
+}
+
+body.light-mode .calendar-day {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .calendar-day.today {
+  border: 2px solid #7B61FF !important;
+  box-shadow: 0 0 15px #b3d4fc !important;
+}
+
+body.light-mode .calendar-day.empty {
+  background: #fafdff !important;
+  border: 1px solid #e3f0ff !important;
+}
+
+body.light-mode .calendar-day:hover {
+  background: #e3f0ff !important;
+  border-color: #7B61FF !important;
+}
+
+body.light-mode .calendar-nav button {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+body.light-mode .calendar-nav button:hover {
+  background: linear-gradient(90deg, #61DAFB, #7B61FF) !important;
+}
+
+body.light-mode .calendar-event-item {
+  color: #222b45 !important;
+}
+
+/* Buttons Light Mode */
+body.light-mode .dashboard-btn,
+body.light-mode .btn {
+  background: linear-gradient(90deg, #7B61FF 0%, #61DAFB 100%) !important;
+  color: #fff !important;
+}
+
+body.light-mode .dashboard-btn:hover,
+body.light-mode .btn:hover {
+  background: linear-gradient(90deg, #61DAFB 0%, #7B61FF 100%) !important;
+  color: #fff !important;
+}
+
+/* Accent Text Light Mode */
+body.light-mode .accent {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #7B61FF !important;
+}
+
+/* Progress Bars Light Mode */
+body.light-mode .stokvel-progress-bar {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+}
+
+/* Timeline Light Mode */
+body.light-mode .timeline-content {
+  background: #fafdff !important;
+  color: #222b45 !important;
+  border: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .timeline-content:hover {
+  background: #e3f0ff !important;
+}
+
+body.light-mode .timeline-title {
+  color: #222b45 !important;
+}
+
+body.light-mode .timeline-date {
+  color: #64748b !important;
+}
+
+body.light-mode .timeline-amount {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #7B61FF !important;
+}
+
+body.light-mode .timeline-item::before {
+  background: linear-gradient(180deg, #b3d4fc, #e3f0ff) !important;
+}
+
+body.light-mode .timeline-item::after {
+  background: #7B61FF !important;
+  box-shadow: 0 0 10px #b3d4fc !important;
+}
+
+/* Timeline Badges Light Mode */
+body.light-mode .timeline-badge {
+  border: 1px solid #b3d4fc !important;
+}
+
+body.light-mode .timeline-badge.badge-contribution {
+  background: rgba(52, 211, 153, 0.12) !important;
+  color: #059669 !important;
+}
+
+body.light-mode .timeline-badge.badge-withdrawal {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #b91c1c !important;
+}
+
+body.light-mode .timeline-badge.badge-goal {
+  background: rgba(99, 102, 241, 0.12) !important;
+  color: #3730a3 !important;
+}
+
+/* Activity View All Button Light Mode */
+body.light-mode .activity-view-all {
+  background: #e3f0ff !important;
+  color: #1e293b !important;
+  border-radius: 0.75rem !important;
+  padding: 0.5rem 1rem !important;
+  border: 1px solid #b3d4fc !important;
+  transition: background 0.2s !important;
+  text-decoration: none !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  display: inline-block;
+}
+
+body.light-mode .activity-view-all:hover {
+  background: #b3d4fc !important;
+  color: #1e293b !important;
+}
+
+/* User Profile Card Specific Light Mode */
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] {
+  background: #fff !important;
+  color: #222b45 !important;
+  border: 1.5px solid #b3d4fc !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .accent {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #7B61FF !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .text-white {
+  color: #475569 !important;
+}
+
+/* User Stats Grid Light Mode */
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="background: rgba(96,239,255,0.1)"] {
+  background: rgba(123, 97, 255, 0.1) !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="background: rgba(0,255,135,0.1)"] {
+  background: rgba(0, 255, 135, 0.1) !important;
+  border: 1px solid rgba(0, 255, 135, 0.2) !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #60efff"] {
+  color: #7B61FF !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #00ff87"] {
+  color: #00ff87 !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #b2f7ef"] {
+  color: #64748b !important;
+}
+
+/* User Badges Light Mode */
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] span[style*="background: rgba(96,239,255,0.2)"] {
+  background: rgba(123, 97, 255, 0.2) !important;
+  color: #7B61FF !important;
+  border: 1px solid rgba(123, 97, 255, 0.3) !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] span[style*="background: rgba(0,255,135,0.2)"] {
+  background: rgba(0, 255, 135, 0.2) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.3) !important;
+}
+
+/* Quick Profile Actions Light Mode */
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] a[style*="background: rgba(96,239,255,0.1)"] {
+  background: rgba(123, 97, 255, 0.1) !important;
+  color: #7B61FF !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] a[style*="background: rgba(96,239,255,0.1)"]:hover {
+  background: rgba(123, 97, 255, 0.2) !important;
+}
+
+/* Empty State Light Mode */
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="background: rgba(255,255,255,0.05)"] {
+  background: rgba(123, 97, 255, 0.05) !important;
+  border: 1px dashed rgba(123, 97, 255, 0.3) !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #b2f7ef"] {
+  color: #64748b !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] a[style*="color: #60efff"] {
+  color: #7B61FF !important;
+}
+
+/* Chart Colors Light Mode */
+body.light-mode .activity-visualizer canvas {
+  filter: brightness(1.1) contrast(1.1);
+}
+
+/* Global Text Colors Light Mode */
+body.light-mode .text-white {
+  color: #1e293b !important;
+}
+
+body.light-mode .text-sm {
+  color: #64748b !important;
+}
+
+/* Force all dashboard content to light mode */
+body.light-mode .dashboard-main,
+body.light-mode .dashboard-main *,
+body.light-mode .dashboard-grid,
+body.light-mode .dashboard-grid * {
+  background: #fff !important;
+  color: #222b45 !important;
+  border-color: #b3d4fc !important;
+}
+
+/* Ensure welcome banner stays light */
+body.light-mode .welcome-banner,
+body.light-mode .welcome-banner *,
+body.light-mode .admin-dashboard-banner,
+body.light-mode .admin-dashboard-banner * {
+  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
+  color: #222b45 !important;
+}
+
+/* === DASHBOARD TEXT VISIBILITY FIXES === */
+body.light-mode .dashboard-main h1,
+body.light-mode .dashboard-main h2,
+body.light-mode .dashboard-main h3,
+body.light-mode .dashboard-main h4,
+body.light-mode .dashboard-main h5,
+body.light-mode .dashboard-main h6 {
+  color: #1e293b !important;
+}
+
+body.light-mode .dashboard-main p,
+body.light-mode .dashboard-main span,
+body.light-mode .dashboard-main div {
+  color: #475569 !important;
+}
+
+body.light-mode .welcome-banner h1,
+body.light-mode .welcome-banner h2,
+body.light-mode .welcome-banner h3,
+body.light-mode .admin-dashboard-banner h1,
+body.light-mode .admin-dashboard-banner h2,
+body.light-mode .admin-dashboard-banner h3 {
+  color: #1e293b !important;
+}
+
+body.light-mode .welcome-banner p,
+body.light-mode .admin-dashboard-banner p {
+  color: #475569 !important;
+}
+
+body.light-mode .glass-card h1,
+body.light-mode .glass-card h2,
+body.light-mode .glass-card h3,
+body.light-mode .glass-card h4,
+body.light-mode .glass-card h5,
+body.light-mode .glass-card h6,
+body.light-mode .dashboard-card h1,
+body.light-mode .dashboard-card h2,
+body.light-mode .dashboard-card h3,
+body.light-mode .dashboard-card h4,
+body.light-mode .dashboard-card h5,
+body.light-mode .dashboard-card h6 {
+  color: #1e293b !important;
+}
+
+body.light-mode .glass-card p,
+body.light-mode .glass-card span,
+body.light-mode .glass-card div,
+body.light-mode .dashboard-card p,
+body.light-mode .dashboard-card span,
+body.light-mode .dashboard-card div {
+  color: #475569 !important;
+}
+
+/* Ensure quick action text is visible */
+body.light-mode .quick-action-label {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+}
+
+body.light-mode .quick-action-desc {
+  color: #64748b !important;
+}
+
+body.light-mode .quick-action-icon {
+  color: #7B61FF !important;
+}
+
+body.light-mode .quick-action-card:hover .quick-action-icon {
+  color: #61DAFB !important;
+}
+
+/* Ensure timeline text is visible */
+body.light-mode .timeline-title {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+body.light-mode .timeline-date {
+  color: #64748b !important;
+}
+
+body.light-mode .timeline-amount {
+  color: #7B61FF !important;
+  font-weight: 600 !important;
+}
+
+body.light-mode .timeline-badge {
+  color: inherit !important;
+}
+
+body.light-mode .timeline-badge.badge-contribution {
+  color: #059669 !important;
+}
+
+body.light-mode .timeline-badge.badge-withdrawal {
+  color: #b91c1c !important;
+}
+
+body.light-mode .timeline-badge.badge-goal {
+  color: #3730a3 !important;
+}
+
+/* Ensure calendar text is visible */
+body.light-mode .calendar-day {
+  color: #1e293b !important;
+}
+
+body.light-mode .calendar-event-item {
+  color: #1e293b !important;
+}
+
+body.light-mode .calendar-nav button {
+  color: #fff !important;
+}
+
+/* Ensure metric text is visible */
+body.light-mode .metric-value {
+  color: #7B61FF !important;
+  font-weight: 700 !important;
+}
+
+body.light-mode .metric-label {
+  color: #64748b !important;
+}
+
+/* Ensure activity view all button text is visible */
+body.light-mode .activity-view-all {
+  color: #1e293b !important;
+  text-decoration: none !important;
+}
+
+body.light-mode .activity-view-all:hover {
+  color: #1e293b !important;
+}
+
+/* Ensure all text in user profile card is visible */
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .accent {
+  color: #7B61FF !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .text-white {
+  color: #475569 !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #60efff"] {
+  color: #7B61FF !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #00ff87"] {
+  color: #00ff87 !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #b2f7ef"] {
+  color: #64748b !important;
+}
+
+/* Ensure all icons are visible */
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] i,
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .fas {
+  color: #64748b !important;
+}
+
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] i:hover,
+body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .fas:hover {
+  color: #7B61FF !important;
+}
+
+/* Ensure accent text is visible */
+body.light-mode .accent {
+  color: #7B61FF !important;
+  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Ensure all links are visible */
+body.light-mode a {
+  color: #7B61FF !important;
+}
+
+body.light-mode a:hover {
+  color: #61DAFB !important;
+}
+
+/* Ensure all buttons have visible text */
+body.light-mode .dashboard-btn,
+body.light-mode .btn {
+  color: #fff !important;
+}
+
+body.light-mode .dashboard-btn:hover,
+body.light-mode .btn:hover {
+  color: #fff !important;
+} 
