@@ -62,7 +62,8 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 babel = Babel(app)
 
-UPLOAD_FOLDER = 'static/profile_pics'
+# Update upload folder to be inside the static folder
+UPLOAD_FOLDER = os.path.join(app.static_folder, 'profile_pics')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -2561,6 +2562,10 @@ def upload_profile_picture():
     if file and allowed_file(file.filename):
         filename = secure_filename(f"{user_id}_{file.filename}")
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        
         file.save(filepath)
         
         # Update user profile picture path in database
@@ -2604,6 +2609,9 @@ def upload_kyc():
     app.config['KYC_UPLOAD_FOLDER'], id_filename)
         address_filepath = os.path.join(
     app.config['KYC_UPLOAD_FOLDER'], address_filename)
+
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(id_filepath), exist_ok=True)
 
         id_doc.save(id_filepath)
         address_doc.save(address_filepath)
