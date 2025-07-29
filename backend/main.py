@@ -3543,6 +3543,7 @@ except ImportError:
 @login_required
 def dashboard():
     firebase_uid = session.get('user_id')
+    print("Dashboard: firebase_uid from session:", firebase_uid)
     user = {
         'username': session.get('username', 'User'),
         'profile_picture': session.get('profile_picture'),
@@ -3561,6 +3562,7 @@ def dashboard():
                     WHERE sm.user_id = %s
                 """, (firebase_uid,))
                 active_stokvels_count = cur.fetchone()[0] or 0
+                print("Dashboard: active_stokvels_count from DB:", active_stokvels_count)
 
                 # Sum total contributions for this user
                 cur.execute("""
