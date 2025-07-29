@@ -1,563 +1,1230 @@
-/* Dashboard Light Mode Overrides */
-body.light-mode,
+/* === UNIFIED LIGHT MODE COLOR SCHEME === */
+
+/* Primary Colors - Consistent across all features */
+body.light-mode {
+  --primary-purple: #7B61FF !important;
+  --primary-cyan: #61DAFB !important;
+  --primary-gradient: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+  --background-white: #fff !important;
+  --background-light: #fafdff !important;
+  --background-hover: #f3f8ff !important;
+  --text-dark: #1e293b !important;
+  --text-gray: #475569 !important;
+  --text-light: #64748b !important;
+  --border-light: #b3d4fc !important;
+  --success-green: #059669 !important;
+  --danger-red: #b91c1c !important;
+  --warning-orange: #d97706 !important;
+}
+
+/* Apply unified colors to all dashboard elements */
 body.light-mode .dashboard-main,
 body.light-mode .dashboard-grid,
 body.light-mode .welcome-banner,
-body.light-mode .admin-dashboard-banner {
-  background: #fafdff !important;
-  color: #222b45 !important;
-}
-
-/* Welcome Banner Light Mode */
-body.light-mode .welcome-banner,
-body.light-mode .admin-dashboard-banner {
-  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
-  color: #222b45 !important;
-  border: 2px solid #b3d4fc !important;
-  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
-}
-
-body.light-mode .welcome-banner h1,
-body.light-mode .admin-dashboard-banner h1 {
-  color: #1e293b !important;
-}
-
-body.light-mode .welcome-banner p,
-body.light-mode .admin-dashboard-banner p {
-  color: #475569 !important;
-}
-
-/* Glass Cards Light Mode */
+body.light-mode .admin-dashboard-banner,
 body.light-mode .glass-card,
-body.light-mode .dashboard-card {
-  background: #fff !important;
-  color: #222b45 !important;
-  border: 1.5px solid #b3d4fc !important;
-  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+body.light-mode .dashboard-card,
+body.light-mode .activity-card,
+body.light-mode .calendar-card,
+body.light-mode .quick-action-card,
+body.light-mode .savings-goal-card {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--border-light) !important;
 }
 
 body.light-mode .glass-card:hover,
-body.light-mode .dashboard-card:hover {
-  background: #f3f8ff !important;
-  border: 1.5px solid #7B61FF !important;
+body.light-mode .dashboard-card:hover,
+body.light-mode .savings-goal-card:hover {
+  background: var(--background-hover) !important;
+  border: 1.5px solid var(--primary-purple) !important;
   box-shadow: 0 8px 32px rgba(123,97,255,0.08) !important;
 }
 
-body.light-mode .glass-card h2,
-body.light-mode .glass-card h3,
-body.light-mode .dashboard-card h2,
-body.light-mode .dashboard-card h3 {
-  color: #1e293b !important;
+/* Unified text colors */
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+  color: var(--text-dark) !important;
 }
 
-body.light-mode .glass-card p,
-body.light-mode .dashboard-card p {
-  color: #475569 !important;
+body.light-mode p,
+body.light-mode span,
+body.light-mode div {
+  color: var(--text-gray) !important;
 }
 
-/* Quick Actions Light Mode */
-body.light-mode .quick-action-card {
-  background: #fafdff !important;
-  color: #1e293b !important;
-  border: 1.5px solid #b3d4fc !important;
-  box-shadow: 0 2px 8px rgba(96,239,255,0.04) !important;
+body.light-mode .accent {
+  background: var(--primary-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: var(--primary-purple) !important;
 }
 
-body.light-mode .quick-action-card:hover {
-  background: #e3f0ff !important;
-  border: 1.5px solid #7B61FF !important;
-  box-shadow: 0 4px 16px rgba(123,97,255,0.08) !important;
-}
-
-body.light-mode .quick-action-icon {
-  color: #7B61FF !important;
-  background: none !important;
-}
-
-body.light-mode .quick-action-card:hover .quick-action-icon {
-  color: #61DAFB !important;
-}
-
-body.light-mode .quick-action-label {
-  color: #1e293b !important;
-  font-weight: 700 !important;
-}
-
-body.light-mode .quick-action-desc {
-  color: #64748b !important;
-}
-
-body.light-mode .quick-action-tooltip {
-  background: #e3f0ff !important;
-  color: #1e293b !important;
-  border: 1px solid #b3d4fc !important;
-  box-shadow: 0 2px 8px rgba(123,97,255,0.08) !important;
-}
-
-/* Activity Card Light Mode */
-body.light-mode .activity-card {
-  background: #fff !important;
-  color: #222b45 !important;
-  border: 1.5px solid #b3d4fc !important;
-}
-
-body.light-mode .activity-visualizer,
-body.light-mode .chart-container {
-  background: #fafdff !important;
-  color: #222b45 !important;
-  border: 1.5px solid #b3d4fc !important;
-}
-
-/* Calendar Card Light Mode */
-body.light-mode .calendar-card {
-  background: #fff !important;
-  color: #222b45 !important;
-  border: 1.5px solid #b3d4fc !important;
-}
-
-body.light-mode .calendar-day {
-  background: #fafdff !important;
-  color: #222b45 !important;
-  border: 1px solid #b3d4fc !important;
-}
-
-body.light-mode .calendar-day.today {
-  border: 2px solid #7B61FF !important;
-  box-shadow: 0 0 15px #b3d4fc !important;
-}
-
-body.light-mode .calendar-day.empty {
-  background: #fafdff !important;
-  border: 1px solid #e3f0ff !important;
-}
-
-body.light-mode .calendar-day:hover {
-  background: #e3f0ff !important;
-  border-color: #7B61FF !important;
-}
-
-body.light-mode .calendar-nav button {
-  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
-  color: #fff !important;
+/* Unified button colors */
+body.light-mode .btn,
+body.light-mode .dashboard-btn,
+body.light-mode .savings-goal-card .btn {
+  background: var(--primary-gradient) !important;
+  color: var(--background-white) !important;
   border: none !important;
 }
 
-body.light-mode .calendar-nav button:hover {
-  background: linear-gradient(90deg, #61DAFB, #7B61FF) !important;
-}
-
-body.light-mode .calendar-event-item {
-  color: #222b45 !important;
-}
-
-/* Buttons Light Mode */
-body.light-mode .dashboard-btn,
-body.light-mode .btn {
-  background: linear-gradient(90deg, #7B61FF 0%, #61DAFB 100%) !important;
-  color: #fff !important;
-}
-
+body.light-mode .btn:hover,
 body.light-mode .dashboard-btn:hover,
-body.light-mode .btn:hover {
-  background: linear-gradient(90deg, #61DAFB 0%, #7B61FF 100%) !important;
-  color: #fff !important;
+body.light-mode .savings-goal-card .btn:hover {
+  background: linear-gradient(90deg, var(--primary-cyan), var(--primary-purple)) !important;
+  color: var(--background-white) !important;
 }
 
-/* Accent Text Light Mode */
-body.light-mode .accent {
-  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: #7B61FF !important;
+/* Unified icon colors */
+body.light-mode i,
+body.light-mode .fas,
+body.light-mode .far,
+body.light-mode .fab {
+  color: var(--text-light) !important;
 }
 
-/* Progress Bars Light Mode */
-body.light-mode .stokvel-progress-bar {
-  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
+body.light-mode i:hover,
+body.light-mode .fas:hover,
+body.light-mode .far:hover,
+body.light-mode .fab:hover {
+  color: var(--primary-purple) !important;
 }
 
-/* Timeline Light Mode */
-body.light-mode .timeline-content {
-  background: #fafdff !important;
-  color: #222b45 !important;
-  border: 1px solid #b3d4fc !important;
-}
-
-body.light-mode .timeline-content:hover {
-  background: #e3f0ff !important;
-}
-
-body.light-mode .timeline-title {
-  color: #222b45 !important;
-}
-
-body.light-mode .timeline-date {
-  color: #64748b !important;
-}
-
-body.light-mode .timeline-amount {
-  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: #7B61FF !important;
-}
-
-body.light-mode .timeline-item::before {
-  background: linear-gradient(180deg, #b3d4fc, #e3f0ff) !important;
-}
-
-body.light-mode .timeline-item::after {
-  background: #7B61FF !important;
-  box-shadow: 0 0 10px #b3d4fc !important;
-}
-
-/* Timeline Badges Light Mode */
-body.light-mode .timeline-badge {
-  border: 1px solid #b3d4fc !important;
-}
-
-body.light-mode .timeline-badge.badge-contribution {
-  background: rgba(52, 211, 153, 0.12) !important;
-  color: #059669 !important;
-}
-
-body.light-mode .timeline-badge.badge-withdrawal {
-  background: rgba(239, 68, 68, 0.12) !important;
-  color: #b91c1c !important;
-}
-
-body.light-mode .timeline-badge.badge-goal {
-  background: rgba(99, 102, 241, 0.12) !important;
-  color: #3730a3 !important;
-}
-
-/* Activity View All Button Light Mode */
-body.light-mode .activity-view-all {
-  background: #e3f0ff !important;
-  color: #1e293b !important;
-  border-radius: 0.75rem !important;
-  padding: 0.5rem 1rem !important;
-  border: 1px solid #b3d4fc !important;
-  transition: background 0.2s !important;
-  text-decoration: none !important;
-  font-size: 0.875rem !important;
-  font-weight: 600 !important;
-  display: inline-block;
-}
-
-body.light-mode .activity-view-all:hover {
-  background: #b3d4fc !important;
-  color: #1e293b !important;
-}
-
-/* User Profile Card Specific Light Mode */
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] {
-  background: #fff !important;
-  color: #222b45 !important;
-  border: 1.5px solid #b3d4fc !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .accent {
-  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: #7B61FF !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .text-white {
-  color: #475569 !important;
-}
-
-/* User Stats Grid Light Mode */
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="background: rgba(96,239,255,0.1)"] {
-  background: rgba(123, 97, 255, 0.1) !important;
-  border: 1px solid rgba(123, 97, 255, 0.2) !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="background: rgba(0,255,135,0.1)"] {
-  background: rgba(0, 255, 135, 0.1) !important;
-  border: 1px solid rgba(0, 255, 135, 0.2) !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #60efff"] {
-  color: #7B61FF !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #00ff87"] {
-  color: #00ff87 !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #b2f7ef"] {
-  color: #64748b !important;
-}
-
-/* User Badges Light Mode */
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] span[style*="background: rgba(96,239,255,0.2)"] {
-  background: rgba(123, 97, 255, 0.2) !important;
-  color: #7B61FF !important;
-  border: 1px solid rgba(123, 97, 255, 0.3) !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] span[style*="background: rgba(0,255,135,0.2)"] {
-  background: rgba(0, 255, 135, 0.2) !important;
-  color: #00ff87 !important;
-  border: 1px solid rgba(0, 255, 135, 0.3) !important;
-}
-
-/* Quick Profile Actions Light Mode */
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] a[style*="background: rgba(96,239,255,0.1)"] {
-  background: rgba(123, 97, 255, 0.1) !important;
-  color: #7B61FF !important;
-  border: 1px solid rgba(123, 97, 255, 0.2) !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] a[style*="background: rgba(96,239,255,0.1)"]:hover {
-  background: rgba(123, 97, 255, 0.2) !important;
-}
-
-/* Empty State Light Mode */
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="background: rgba(255,255,255,0.05)"] {
-  background: rgba(123, 97, 255, 0.05) !important;
-  border: 1px dashed rgba(123, 97, 255, 0.3) !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #b2f7ef"] {
-  color: #64748b !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] a[style*="color: #60efff"] {
-  color: #7B61FF !important;
-}
-
-/* Chart Colors Light Mode */
-body.light-mode .activity-visualizer canvas {
-  filter: brightness(1.1) contrast(1.1);
-}
-
-/* Global Text Colors Light Mode */
-body.light-mode .text-white {
-  color: #1e293b !important;
-}
-
-body.light-mode .text-sm {
-  color: #64748b !important;
-}
-
-/* Force all dashboard content to light mode */
-body.light-mode .dashboard-main,
-body.light-mode .dashboard-main *,
-body.light-mode .dashboard-grid,
-body.light-mode .dashboard-grid * {
-  background: #fff !important;
-  color: #222b45 !important;
-  border-color: #b3d4fc !important;
-}
-
-/* Ensure welcome banner stays light */
-body.light-mode .welcome-banner,
-body.light-mode .welcome-banner *,
-body.light-mode .admin-dashboard-banner,
-body.light-mode .admin-dashboard-banner * {
-  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
-  color: #222b45 !important;
-}
-
-/* === DASHBOARD TEXT VISIBILITY FIXES === */
-body.light-mode .dashboard-main h1,
-body.light-mode .dashboard-main h2,
-body.light-mode .dashboard-main h3,
-body.light-mode .dashboard-main h4,
-body.light-mode .dashboard-main h5,
-body.light-mode .dashboard-main h6 {
-  color: #1e293b !important;
-}
-
-body.light-mode .dashboard-main p,
-body.light-mode .dashboard-main span,
-body.light-mode .dashboard-main div {
-  color: #475569 !important;
-}
-
-body.light-mode .welcome-banner h1,
-body.light-mode .welcome-banner h2,
-body.light-mode .welcome-banner h3,
-body.light-mode .admin-dashboard-banner h1,
-body.light-mode .admin-dashboard-banner h2,
-body.light-mode .admin-dashboard-banner h3 {
-  color: #1e293b !important;
-}
-
-body.light-mode .welcome-banner p,
-body.light-mode .admin-dashboard-banner p {
-  color: #475569 !important;
-}
-
-body.light-mode .glass-card h1,
-body.light-mode .glass-card h2,
-body.light-mode .glass-card h3,
-body.light-mode .glass-card h4,
-body.light-mode .glass-card h5,
-body.light-mode .glass-card h6,
-body.light-mode .dashboard-card h1,
-body.light-mode .dashboard-card h2,
-body.light-mode .dashboard-card h3,
-body.light-mode .dashboard-card h4,
-body.light-mode .dashboard-card h5,
-body.light-mode .dashboard-card h6 {
-  color: #1e293b !important;
-}
-
-body.light-mode .glass-card p,
-body.light-mode .glass-card span,
-body.light-mode .glass-card div,
-body.light-mode .dashboard-card p,
-body.light-mode .dashboard-card span,
-body.light-mode .dashboard-card div {
-  color: #475569 !important;
-}
-
-/* Ensure quick action text is visible */
-body.light-mode .quick-action-label {
-  color: #1e293b !important;
-  font-weight: 700 !important;
-}
-
-body.light-mode .quick-action-desc {
-  color: #64748b !important;
-}
-
-body.light-mode .quick-action-icon {
-  color: #7B61FF !important;
-}
-
-body.light-mode .quick-action-card:hover .quick-action-icon {
-  color: #61DAFB !important;
-}
-
-/* Ensure timeline text is visible */
-body.light-mode .timeline-title {
-  color: #1e293b !important;
-  font-weight: 600 !important;
-}
-
-body.light-mode .timeline-date {
-  color: #64748b !important;
-}
-
-body.light-mode .timeline-amount {
-  color: #7B61FF !important;
-  font-weight: 600 !important;
-}
-
-body.light-mode .timeline-badge {
-  color: inherit !important;
-}
-
-body.light-mode .timeline-badge.badge-contribution {
-  color: #059669 !important;
-}
-
-body.light-mode .timeline-badge.badge-withdrawal {
-  color: #b91c1c !important;
-}
-
-body.light-mode .timeline-badge.badge-goal {
-  color: #3730a3 !important;
-}
-
-/* Ensure calendar text is visible */
-body.light-mode .calendar-day {
-  color: #1e293b !important;
-}
-
-body.light-mode .calendar-event-item {
-  color: #1e293b !important;
-}
-
-body.light-mode .calendar-nav button {
-  color: #fff !important;
-}
-
-/* Ensure metric text is visible */
-body.light-mode .metric-value {
-  color: #7B61FF !important;
-  font-weight: 700 !important;
-}
-
-body.light-mode .metric-label {
-  color: #64748b !important;
-}
-
-/* Ensure activity view all button text is visible */
-body.light-mode .activity-view-all {
-  color: #1e293b !important;
-  text-decoration: none !important;
-}
-
-body.light-mode .activity-view-all:hover {
-  color: #1e293b !important;
-}
-
-/* Ensure all text in user profile card is visible */
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .accent {
-  color: #7B61FF !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .text-white {
-  color: #475569 !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #60efff"] {
-  color: #7B61FF !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #00ff87"] {
-  color: #00ff87 !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] div[style*="color: #b2f7ef"] {
-  color: #64748b !important;
-}
-
-/* Ensure all icons are visible */
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] i,
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .fas {
-  color: #64748b !important;
-}
-
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] i:hover,
-body.light-mode .glass-card[style*="display: flex; flex-direction: column"] .fas:hover {
-  color: #7B61FF !important;
-}
-
-/* Ensure accent text is visible */
-body.light-mode .accent {
-  color: #7B61FF !important;
-  background: linear-gradient(90deg, #7B61FF, #61DAFB) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-
-/* Ensure all links are visible */
+/* Unified link colors */
 body.light-mode a {
-  color: #7B61FF !important;
+  color: var(--primary-purple) !important;
 }
 
 body.light-mode a:hover {
-  color: #61DAFB !important;
+  color: var(--primary-cyan) !important;
 }
 
-/* Ensure all buttons have visible text */
+/* Unified status colors */
+body.light-mode .badge-success,
+body.light-mode .savings-goal-status.active {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: var(--success-green) !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .badge-danger,
+body.light-mode .savings-goal-action-btn.delete {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: var(--danger-red) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-mode .badge-warning,
+body.light-mode .savings-goal-status.paused {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: var(--warning-orange) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Unified progress colors */
+body.light-mode .progress-bar,
+body.light-mode .savings-goal-progress-bar {
+  background: var(--primary-gradient) !important;
+}
+
+/* Unified form colors */
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select,
+body.light-mode .savings-goal-form input,
+body.light-mode .savings-goal-form textarea,
+body.light-mode .savings-goal-form select {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+body.light-mode input:focus,
+body.light-mode textarea:focus,
+body.light-mode select:focus,
+body.light-mode .savings-goal-form input:focus,
+body.light-mode .savings-goal-form textarea:focus,
+body.light-mode .savings-goal-form select:focus {
+  border-color: var(--primary-purple) !important;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.1) !important;
+}
+
+/* Unified placeholder colors */
+body.light-mode ::placeholder {
+  color: var(--text-light) !important;
+}
+
+/* Unified background colors */
+body.light-mode,
+body.light-mode .dashboard-main,
+body.light-mode .dashboard-grid {
+  background: var(--background-light) !important;
+}
+
+/* Unified banner colors */
+body.light-mode .welcome-banner,
+body.light-mode .admin-dashboard-banner,
+body.light-mode .savings-goals-banner {
+  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
+  color: var(--text-dark) !important;
+  border: 2px solid var(--border-light) !important;
+}
+
+/* Unified card colors */
+body.light-mode .card,
+body.light-mode .glass-card,
+body.light-mode .dashboard-card,
+body.light-mode .savings-goal-card {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+/* Unified hover effects */
+body.light-mode .card:hover,
+body.light-mode .glass-card:hover,
+body.light-mode .dashboard-card:hover,
+body.light-mode .savings-goal-card:hover {
+  background: var(--background-hover) !important;
+  border-color: var(--primary-purple) !important;
+  box-shadow: 0 8px 32px rgba(35,41,70,0.12) !important;
+}
+
+/* Unified text visibility for all elements */
+body.light-mode .dashboard-main *,
+body.light-mode .savings-goals-main *,
+body.light-mode .savings-goals-container *,
+body.light-mode .savings-goal-card * {
+  color: var(--text-dark) !important;
+}
+
+body.light-mode .dashboard-main p,
+body.light-mode .savings-goal-card p,
+body.light-mode .dashboard-main span,
+body.light-mode .savings-goal-card span,
+body.light-mode .dashboard-main div,
+body.light-mode .savings-goal-card div {
+  color: var(--text-gray) !important;
+}
+
+/* Ensure accent elements maintain their gradient */
+body.light-mode .dashboard-main .accent,
+body.light-mode .savings-goal-card .accent {
+  background: var(--primary-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: var(--primary-purple) !important;
+}
+
+/* === SAVINGS GOALS UNIFIED LIGHT MODE === */
+
+/* Savings Goals Page Banner */
+body.light-mode .savings-goals-banner {
+  background: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%) !important;
+  color: var(--text-dark) !important;
+  border: 2px solid var(--border-light) !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .savings-goals-banner h1 {
+  color: var(--text-dark) !important;
+}
+
+body.light-mode .savings-goals-banner p {
+  color: var(--text-gray) !important;
+}
+
+/* Savings Goal Header */
+body.light-mode .savings-goal-header {
+  color: var(--text-dark) !important;
+}
+
+body.light-mode .savings-goal-name {
+  color: var(--primary-purple) !important;
+  font-weight: 600 !important;
+}
+
+body.light-mode .savings-goal-category {
+  color: var(--text-light) !important;
+  font-weight: 500 !important;
+}
+
+/* Savings Goal Progress */
+body.light-mode .savings-goal-progress {
+  background: var(--background-light) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.75rem !important;
+}
+
+body.light-mode .savings-goal-progress-container {
+  background: rgba(123, 97, 255, 0.1) !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+}
+
+/* Savings Goal Financial Details */
+body.light-mode .savings-goal-financial {
+  background: var(--background-light) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.75rem !important;
+}
+
+body.light-mode .savings-goal-financial-label {
+  color: var(--text-light) !important;
+  font-size: 0.875rem !important;
+}
+
+body.light-mode .savings-goal-financial-value {
+  color: var(--primary-purple) !important;
+  font-weight: 700 !important;
+}
+
+body.light-mode .savings-goal-amount-saved {
+  color: var(--success-green) !important;
+  font-weight: 700 !important;
+}
+
+body.light-mode .savings-goal-amount-remaining {
+  color: var(--danger-red) !important;
+  font-weight: 700 !important;
+}
+
+/* Savings Goal Action Buttons */
+body.light-mode .savings-goal-action-btn {
+  background: rgba(123, 97, 255, 0.1) !important;
+  color: var(--primary-purple) !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .savings-goal-action-btn:hover {
+  background: rgba(123, 97, 255, 0.2) !important;
+  color: var(--primary-purple) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.light-mode .savings-goal-action-btn.delete {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: var(--danger-red) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-mode .savings-goal-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: var(--danger-red) !important;
+}
+
+body.light-mode .savings-goal-action-btn.complete {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: var(--success-green) !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .savings-goal-action-btn.complete:hover {
+  background: rgba(52, 211, 153, 0.2) !important;
+  color: var(--success-green) !important;
+}
+
+/* Create Savings Goal Button */
+body.light-mode .create-savings-goal-btn {
+  background: var(--primary-gradient) !important;
+  color: var(--background-white) !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(123, 97, 255, 0.2) !important;
+}
+
+body.light-mode .create-savings-goal-btn:hover {
+  background: linear-gradient(90deg, var(--primary-cyan), var(--primary-purple)) !important;
+  color: var(--background-white) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(123, 97, 255, 0.3) !important;
+}
+
+/* Savings Goals Grid */
+body.light-mode .savings-goals-grid {
+  background: var(--background-light) !important;
+}
+
+/* Savings Goal Empty State */
+body.light-mode .savings-goal-empty-state {
+  background: rgba(123, 97, 255, 0.05) !important;
+  border: 1px dashed rgba(123, 97, 255, 0.3) !important;
+  color: var(--text-light) !important;
+}
+
+body.light-mode .savings-goal-empty-state i {
+  color: var(--primary-purple) !important;
+  opacity: 0.5 !important;
+}
+
+body.light-mode .savings-goal-empty-state a {
+  color: var(--primary-purple) !important;
+}
+
+/* Savings Goal Description */
+body.light-mode .savings-goal-description {
+  color: var(--text-light) !important;
+  font-style: italic !important;
+}
+
+/* Savings Goal Status Badges */
+body.light-mode .savings-goal-status {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: var(--success-green) !important;
+  border: 1px solid rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .savings-goal-status.active {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: var(--success-green) !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .savings-goal-status.completed {
+  background: rgba(99, 102, 241, 0.1) !important;
+  color: #3730a3 !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+body.light-mode .savings-goal-status.paused {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: var(--warning-orange) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Savings Goal Form */
+body.light-mode .savings-goal-form {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1.5px solid var(--border-light) !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+body.light-mode .savings-goal-form label {
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+}
+
+/* Savings Goal Timeline */
+body.light-mode .savings-goal-timeline {
+  background: var(--background-light) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+body.light-mode .savings-goal-timeline-item {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+body.light-mode .savings-goal-timeline-item:hover {
+  background: var(--background-hover) !important;
+  border-color: var(--primary-purple) !important;
+}
+
+/* Savings Goal Charts */
+body.light-mode .savings-goal-chart {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+body.light-mode .savings-goal-chart canvas {
+  filter: brightness(1.1) contrast(1.1) !important;
+}
+
+/* Force all savings goal elements to use unified colors */
+body.light-mode .savings-goals-main *,
+body.light-mode .savings-goals-container *,
+body.light-mode .savings-goal-card * {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--border-light) !important;
+}
+
+/* Ensure savings goal text uses unified colors */
+body.light-mode .savings-goal-card h1,
+body.light-mode .savings-goal-card h2,
+body.light-mode .savings-goal-card h3,
+body.light-mode .savings-goal-card h4,
+body.light-mode .savings-goal-card h5,
+body.light-mode .savings-goal-card h6 {
+  color: var(--text-dark) !important;
+}
+
+body.light-mode .savings-goal-card p,
+body.light-mode .savings-goal-card span,
+body.light-mode .savings-goal-card div {
+  color: var(--text-gray) !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-name {
+  color: var(--primary-purple) !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-status {
+  color: var(--success-green) !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-amount {
+  color: var(--primary-purple) !important;
+  font-weight: 700 !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-target {
+  color: var(--text-light) !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-progress-text {
+  color: var(--text-light) !important;
+}
+
+/* Ensure savings goal icons use unified colors */
+body.light-mode .savings-goal-card i,
+body.light-mode .savings-goal-card .fas,
+body.light-mode .savings-goal-card .far,
+body.light-mode .savings-goal-card .fab {
+  color: var(--text-light) !important;
+}
+
+body.light-mode .savings-goal-card i:hover,
+body.light-mode .savings-goal-card .savings-goal-card .fas:hover,
+body.light-mode .savings-goal-card .far:hover,
+body.light-mode .savings-goal-card .fab:hover {
+  color: var(--primary-purple) !important;
+}
+
+/* === FORCE SAVINGS GOAL CARDS TO LIGHT MODE === */
+
+/* Override any dark backgrounds on savings goal cards */
+body.light-mode .savings-goal-card,
+body.light-mode .savings-goal-card[style*="background"],
+body.light-mode .savings-goal-card[style*="gradient"],
+body.light-mode .savings-goal-card[style*="dark"],
+body.light-mode .savings-goal-card[style*="black"] {
+  background: var(--background-white) !important;
+  background-image: none !important;
+  background: linear-gradient(135deg, #fff, #fafdff) !important;
+  color: var(--text-dark) !important;
+  border: 1.5px solid var(--border-light) !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+/* Force all text in savings goal cards to be dark */
+body.light-mode .savings-goal-card *,
+body.light-mode .savings-goal-card h1,
+body.light-mode .savings-goal-card h2,
+body.light-mode .savings-goal-card h3,
+body.light-mode .savings-goal-card h4,
+body.light-mode .savings-goal-card h5,
+body.light-mode .savings-goal-card h6,
+body.light-mode .savings-goal-card p,
+body.light-mode .savings-goal-card span,
+body.light-mode .savings-goal-card div,
+body.light-mode .savings-goal-card label {
+  color: var(--text-dark) !important;
+}
+
+/* Override any white text that might be applied */
+body.light-mode .savings-goal-card .text-white,
+body.light-mode .savings-goal-card [style*="color: white"],
+body.light-mode .savings-goal-card [style*="color: #fff"],
+body.light-mode .savings-goal-card [style*="color: #ffffff"] {
+  color: var(--text-dark) !important;
+}
+
+/* Force specific savings goal elements to use proper colors */
+body.light-mode .savings-goal-card .savings-goal-name,
+body.light-mode .savings-goal-card .goal-name,
+body.light-mode .savings-goal-card .title {
+  color: var(--primary-purple) !important;
+  font-weight: 600 !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-status,
+body.light-mode .savings-goal-card .status,
+body.light-mode .savings-goal-card .badge {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: var(--success-green) !important;
+  border: 1px solid rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-amount,
+body.light-mode .savings-goal-card .current-amount,
+body.light-mode .savings-goal-card .amount {
+  color: var(--primary-purple) !important;
+  font-weight: 700 !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-target,
+body.light-mode .savings-goal-card .target-amount,
+body.light-mode .savings-goal-card .target {
+  color: var(--text-light) !important;
+  font-weight: 500 !important;
+}
+
+body.light-mode .savings-goal-card .savings-goal-progress-text,
+body.light-mode .savings-goal-card .progress-text,
+body.light-mode .savings-goal-card .progress {
+  color: var(--text-light) !important;
+}
+
+body.light-mode .savings-goal-card .target-date,
+body.light-mode .savings-goal-card .date {
+  color: var(--text-gray) !important;
+}
+
+/* Force input fields to have proper light mode styling */
+body.light-mode .savings-goal-card input,
+body.light-mode .savings-goal-card input[type="text"],
+body.light-mode .savings-goal-card input[type="number"],
+body.light-mode .savings-goal-card input[type="email"],
+body.light-mode .savings-goal-card textarea,
+body.light-mode .savings-goal-card select {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.5rem !important;
+}
+
+body.light-mode .savings-goal-card input:focus,
+body.light-mode .savings-goal-card input[type="text"]:focus,
+body.light-mode .savings-goal-card input[type="number"]:focus,
+body.light-mode .savings-goal-card input[type="email"]:focus,
+body.light-mode .savings-goal-card textarea:focus,
+body.light-mode .savings-goal-card select:focus {
+  border-color: var(--primary-purple) !important;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.1) !important;
+  outline: none !important;
+}
+
+body.light-mode .savings-goal-card input::placeholder,
+body.light-mode .savings-goal-card textarea::placeholder {
+  color: var(--text-light) !important;
+}
+
+/* Force contribute buttons to use unified styling */
+body.light-mode .savings-goal-card .btn,
+body.light-mode .savings-goal-card button,
+body.light-mode .savings-goal-card .contribute-btn,
+body.light-mode .savings-goal-card [class*="btn"],
+body.light-mode .savings-goal-card [class*="button"] {
+  background: var(--primary-gradient) !important;
+  color: var(--background-white) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .savings-goal-card .btn:hover,
+body.light-mode .savings-goal-card button:hover,
+body.light-mode .savings-goal-card .contribute-btn:hover,
+body.light-mode .savings-goal-card [class*="btn"]:hover,
+body.light-mode .savings-goal-card [class*="button"]:hover {
+  background: linear-gradient(90deg, var(--primary-cyan), var(--primary-purple)) !important;
+  color: var(--background-white) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 16px rgba(123, 97, 255, 0.2) !important;
+}
+
+/* Override any dark button styles */
+body.light-mode .savings-goal-card .btn[style*="background: gray"],
+body.light-mode .savings-goal-card .btn[style*="background: #gray"],
+body.light-mode .savings-goal-card .btn[style*="background: dark"],
+body.light-mode .savings-goal-card .btn[style*="background: #333"],
+body.light-mode .savings-goal-card .btn[style*="background: #666"] {
+  background: var(--primary-gradient) !important;
+  color: var(--background-white) !important;
+}
+
+/* Force all icons in savings goal cards to be visible */
+body.light-mode .savings-goal-card i,
+body.light-mode .savings-goal-card .fas,
+body.light-mode .savings-goal-card .far,
+body.light-mode .savings-goal-card .fab,
+body.light-mode .savings-goal-card svg {
+  color: var(--text-light) !important;
+  fill: var(--text-light) !important;
+}
+
+body.light-mode .savings-goal-card i:hover,
+body.light-mode .savings-goal-card .fas:hover,
+body.light-mode .savings-goal-card .far:hover,
+body.light-mode .savings-goal-card .fab:hover,
+body.light-mode .savings-goal-card svg:hover {
+  color: var(--primary-purple) !important;
+  fill: var(--primary-purple) !important;
+}
+
+/* Override any white icons */
+body.light-mode .savings-goal-card i[style*="color: white"],
+body.light-mode .savings-goal-card .fas[style*="color: white"],
+body.light-mode .savings-goal-card .far[style*="color: white"],
+body.light-mode .savings-goal-card .fab[style*="color: white"],
+body.light-mode .savings-goal-card svg[style*="color: white"] {
+  color: var(--text-light) !important;
+  fill: var(--text-light) !important;
+}
+
+/* Force progress bars to use unified styling */
+body.light-mode .savings-goal-card .progress,
+body.light-mode .savings-goal-card .progress-bar,
+body.light-mode .savings-goal-card [class*="progress"] {
+  background: var(--primary-gradient) !important;
+  border-radius: 0.5rem !important;
+}
+
+body.light-mode .savings-goal-card .progress-container,
+body.light-mode .savings-goal-card [class*="progress-container"] {
+  background: rgba(123, 97, 255, 0.1) !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+  border-radius: 0.5rem !important;
+}
+
+/* Override any inline styles that might be applied */
+body.light-mode .savings-goal-card[style] {
+  background: var(--background-white) !important;
+  background-image: none !important;
+  color: var(--text-dark) !important;
+}
+
+body.light-mode .savings-goal-card *[style*="background"] {
+  background: var(--background-white) !important;
+  background-image: none !important;
+}
+
+body.light-mode .savings-goal-card *[style*="color"] {
+  color: var(--text-dark) !important;
+}
+
+/* Ensure hover effects work properly */
+body.light-mode .savings-goal-card:hover {
+  background: var(--background-hover) !important;
+  border: 1.5px solid var(--primary-purple) !important;
+  box-shadow: 0 8px 32px rgba(123,97,255,0.08) !important;
+  transform: translateY(-2px) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* === COMPLETE DASHBOARD INTERFACE CONSISTENCY === */
+
+/* Force all dashboard containers to use unified styling */
+body.light-mode .dashboard-container,
+body.light-mode .dashboard-wrapper,
+body.light-mode .dashboard-content,
+body.light-mode .main-content,
+body.light-mode .content-area {
+  background: var(--background-light) !important;
+  color: var(--text-dark) !important;
+}
+
+/* Force all dashboard sections to use unified styling */
+body.light-mode .dashboard-section,
+body.light-mode .dashboard-panel,
+body.light-mode .dashboard-widget,
+body.light-mode .dashboard-module {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+}
+
+/* Force all dashboard cards to use unified styling */
+body.light-mode .card,
+body.light-mode .glass-card,
+body.light-mode .dashboard-card,
+body.light-mode .widget-card,
+body.light-mode .info-card,
+body.light-mode .stats-card,
+body.light-mode .metric-card,
+body.light-mode .activity-card,
+body.light-mode .calendar-card,
+body.light-mode .quick-action-card,
+body.light-mode .savings-goal-card,
+body.light-mode .stokvel-card,
+body.light-mode [class*="card"],
+body.light-mode [class*="Card"] {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.06) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Unified hover effects for all cards */
+body.light-mode .card:hover,
+body.light-mode .glass-card:hover,
+body.light-mode .dashboard-card:hover,
+body.light-mode .widget-card:hover,
+body.light-mode .info-card:hover,
+body.light-mode .stats-card:hover,
+body.light-mode .metric-card:hover,
+body.light-mode .activity-card:hover,
+body.light-mode .calendar-card:hover,
+body.light-mode .quick-action-card:hover,
+body.light-mode .savings-goal-card:hover,
+body.light-mode .stokvel-card:hover,
+body.light-mode [class*="card"]:hover,
+body.light-mode [class*="Card"]:hover {
+  background: var(--background-hover) !important;
+  border: 1.5px solid var(--primary-purple) !important;
+  box-shadow: 0 8px 32px rgba(123,97,255,0.08) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Force all text elements to use unified colors */
+body.light-mode .dashboard-main *,
+body.light-mode .dashboard-container *,
+body.light-mode .dashboard-wrapper *,
+body.light-mode .dashboard-content *,
+body.light-mode .main-content *,
+body.light-mode .content-area * {
+  color: var(--text-dark) !important;
+}
+
+/* Unified text hierarchy */
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6,
+body.light-mode .title,
+body.light-mode .heading,
+body.light-mode .card-title,
+body.light-mode .widget-title {
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+}
+
+body.light-mode p,
+body.light-mode span,
+body.light-mode div,
+body.light-mode .text,
+body.light-mode .description,
+body.light-mode .label {
+  color: var(--text-gray) !important;
+}
+
+body.light-mode .text-light,
+body.light-mode .text-muted,
+body.light-mode .text-secondary,
+body.light-mode .caption,
+body.light-mode .subtitle {
+  color: var(--text-light) !important;
+}
+
+/* Unified accent text */
+body.light-mode .accent,
+body.light-mode .highlight,
+body.light-mode .emphasis,
+body.light-mode .primary-text {
+  background: var(--primary-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: var(--primary-purple) !important;
+}
+
+/* Force all buttons to use unified styling */
+body.light-mode .btn,
+body.light-mode .button,
 body.light-mode .dashboard-btn,
-body.light-mode .btn {
-  color: #fff !important;
+body.light-mode .action-btn,
+body.light-mode .primary-btn,
+body.light-mode .secondary-btn,
+body.light-mode [class*="btn"],
+body.light-mode [class*="Button"] {
+  background: var(--primary-gradient) !important;
+  color: var(--background-white) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  display: inline-block !important;
 }
 
+/* Unified button hover effects */
+body.light-mode .btn:hover,
+body.light-mode .button:hover,
 body.light-mode .dashboard-btn:hover,
-body.light-mode .btn:hover {
-  color: #fff !important;
+body.light-mode .action-btn:hover,
+body.light-mode .primary-btn:hover,
+body.light-mode .secondary-btn:hover,
+body.light-mode [class*="btn"]:hover,
+body.light-mode [class*="Button"]:hover {
+  background: linear-gradient(90deg, var(--primary-cyan), var(--primary-purple)) !important;
+  color: var(--background-white) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 16px rgba(123, 97, 255, 0.2) !important;
+}
+
+/* Force all icons to use unified styling */
+body.light-mode i,
+body.light-mode .fas,
+body.light-mode .far,
+body.light-mode .fab,
+body.light-mode .icon,
+body.light-mode svg,
+body.light-mode [class*="icon"],
+body.light-mode [class*="Icon"] {
+  color: var(--text-light) !important;
+  fill: var(--text-light) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Unified icon hover effects */
+body.light-mode i:hover,
+body.light-mode .fas:hover,
+body.light-mode .far:hover,
+body.light-mode .fab:hover,
+body.light-mode .icon:hover,
+body.light-mode svg:hover,
+body.light-mode [class*="icon"]:hover,
+body.light-mode [class*="Icon"]:hover {
+  color: var(--primary-purple) !important;
+  fill: var(--primary-purple) !important;
+  transform: scale(1.1) !important;
+}
+
+/* Force all links to use unified styling */
+body.light-mode a,
+body.light-mode .link,
+body.light-mode .nav-link,
+body.light-mode [class*="link"],
+body.light-mode [class*="Link"] {
+  color: var(--primary-purple) !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Unified link hover effects */
+body.light-mode a:hover,
+body.light-mode .link:hover,
+body.light-mode .nav-link:hover,
+body.light-mode [class*="link"]:hover,
+body.light-mode [class*="Link"]:hover {
+  color: var(--primary-cyan) !important;
+  text-decoration: underline !important;
+}
+
+/* Force all form elements to use unified styling */
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select,
+body.light-mode .form-control,
+body.light-mode .input,
+body.light-mode .textarea,
+body.light-mode .select,
+body.light-mode [class*="input"],
+body.light-mode [class*="Input"] {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Unified form focus effects */
+body.light-mode input:focus,
+body.light-mode textarea:focus,
+body.light-mode select:focus,
+body.light-mode .form-control:focus,
+body.light-mode .input:focus,
+body.light-mode .textarea:focus,
+body.light-mode .select:focus,
+body.light-mode [class*="input"]:focus,
+body.light-mode [class*="Input"]:focus {
+  border-color: var(--primary-purple) !important;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.1) !important;
+  outline: none !important;
+}
+
+/* Unified placeholder styling */
+body.light-mode ::placeholder,
+body.light-mode input::placeholder,
+body.light-mode textarea::placeholder {
+  color: var(--text-light) !important;
+  opacity: 0.7 !important;
+}
+
+/* Force all badges to use unified styling */
+body.light-mode .badge,
+body.light-mode .tag,
+body.light-mode .status,
+body.light-mode .label,
+body.light-mode [class*="badge"],
+body.light-mode [class*="Badge"] {
+  background: rgba(123, 97, 255, 0.1) !important;
+  color: var(--primary-purple) !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+  border-radius: 0.25rem !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
+/* Unified badge variants */
+body.light-mode .badge-success,
+body.light-mode .badge.active,
+body.light-mode .status.active {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: var(--success-green) !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .badge-danger,
+body.light-mode .badge.error,
+body.light-mode .status.error {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: var(--danger-red) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-mode .badge-warning,
+body.light-mode .badge.warning,
+body.light-mode .status.warning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: var(--warning-orange) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Force all progress elements to use unified styling */
+body.light-mode .progress,
+body.light-mode .progress-bar,
+body.light-mode .progress-container,
+body.light-mode [class*="progress"],
+body.light-mode [class*="Progress"] {
+  background: var(--primary-gradient) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 0 10px rgba(123, 97, 255, 0.2) !important;
+}
+
+body.light-mode .progress-bg,
+body.light-mode .progress-track,
+body.light-mode [class*="progress-bg"],
+body.light-mode [class*="progress-track"] {
+  background: rgba(123, 97, 255, 0.1) !important;
+  border: 1px solid rgba(123, 97, 255, 0.2) !important;
+  border-radius: 0.5rem !important;
+}
+
+/* Force all tables to use unified styling */
+body.light-mode table,
+body.light-mode .table,
+body.light-mode [class*="table"],
+body.light-mode [class*="Table"] {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+}
+
+body.light-mode th,
+body.light-mode .table-header,
+body.light-mode [class*="table-header"] {
+  background: var(--background-light) !important;
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+body.light-mode td,
+body.light-mode .table-cell,
+body.light-mode [class*="table-cell"] {
+  color: var(--text-gray) !important;
+  border-bottom: 1px solid rgba(179, 212, 252, 0.3) !important;
+}
+
+body.light-mode tr:hover,
+body.light-mode .table-row:hover,
+body.light-mode [class*="table-row"]:hover {
+  background: var(--background-hover) !important;
+}
+
+/* Force all modals to use unified styling */
+body.light-mode .modal,
+body.light-mode .dialog,
+body.light-mode .popup,
+body.light-mode [class*="modal"],
+body.light-mode [class*="Modal"] {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 40px rgba(35,41,70,0.15) !important;
+}
+
+body.light-mode .modal-header,
+body.light-mode .dialog-header,
+body.light-mode .popup-header {
+  background: var(--background-light) !important;
+  color: var(--text-dark) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+body.light-mode .modal-footer,
+body.light-mode .dialog-footer,
+body.light-mode .popup-footer {
+  background: var(--background-light) !important;
+  color: var(--text-dark) !important;
+  border-top: 1px solid var(--border-light) !important;
+}
+
+/* Force all dropdowns to use unified styling */
+body.light-mode .dropdown,
+body.light-mode .dropdown-menu,
+body.light-mode .dropdown-content,
+body.light-mode [class*="dropdown"],
+body.light-mode [class*="Dropdown"] {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 8px 32px rgba(35,41,70,0.12) !important;
+}
+
+body.light-mode .dropdown-item,
+body.light-mode .dropdown-option,
+body.light-mode [class*="dropdown-item"] {
+  color: var(--text-gray) !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode .dropdown-item:hover,
+body.light-mode .dropdown-option:hover,
+body.light-mode [class*="dropdown-item"]:hover {
+  background: var(--background-hover) !important;
+  color: var(--primary-purple) !important;
+}
+
+/* Force all alerts to use unified styling */
+body.light-mode .alert,
+body.light-mode .notification,
+body.light-mode .message,
+body.light-mode [class*="alert"],
+body.light-mode [class*="Alert"] {
+  background: var(--background-white) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 16px rgba(35,41,70,0.08) !important;
+}
+
+body.light-mode .alert-success,
+body.light-mode .notification.success {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: var(--success-green) !important;
+  border-color: rgba(52, 211, 153, 0.2) !important;
+}
+
+body.light-mode .alert-danger,
+body.light-mode .notification.error {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: var(--danger-red) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-mode .alert-warning,
+body.light-mode .notification.warning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: var(--warning-orange) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+body.light-mode .alert-info,
+body.light-mode .notification.info {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #1e40af !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Force all tooltips to use unified styling */
+body.light-mode .tooltip,
+body.light-mode .tip,
+body.light-mode [class*="tooltip"],
+body.light-mode [class*="Tooltip"] {
+  background: var(--text-dark) !important;
+  color: var(--background-white) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.25rem !important;
+  box-shadow: 0 4px 16px rgba(35,41,70,0.15) !important;
+}
+
+/* Force all scrollbars to use unified styling */
+body.light-mode ::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+body.light-mode ::-webkit-scrollbar-track {
+  background: var(--background-light) !important;
+  border-radius: 4px !important;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb {
+  background: var(--border-light) !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-purple) !important;
+}
+
+/* Force all focus states to use unified styling */
+body.light-mode *:focus {
+  outline: 2px solid var(--primary-purple) !important;
+  outline-offset: 2px !important;
+}
+
+/* Force all animations to use unified timing */
+body.light-mode * {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Override any remaining dark elements */
+body.light-mode [style*="background: dark"],
+body.light-mode [style*="background: black"],
+body.light-mode [style*="background: #333"],
+body.light-mode [style*="background: #444"],
+body.light-mode [style*="background: #666"] {
+  background: var(--background-white) !important;
+}
+
+body.light-mode [style*="color: white"],
+body.light-mode [style*="color: #fff"],
+body.light-mode [style*="color: #ffffff"] {
+  color: var(--text-dark) !important;
+}
+
+/* Ensure complete consistency across all dashboard elements */
+body.light-mode .dashboard-main,
+body.light-mode .dashboard-container,
+body.light-mode .dashboard-wrapper,
+body.light-mode .dashboard-content,
+body.light-mode .main-content,
+body.light-mode .content-area,
+body.light-mode .sidebar,
+body.light-mode .top-bar,
+body.light-mode .header,
+body.light-mode .footer {
+  background: var(--background-light) !important;
+  color: var(--text-dark) !important;
 } 
