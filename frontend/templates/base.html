@@ -193,43 +193,109 @@
         
         /* Light theme styles */
         body.light-theme {
-            background: #f8fafc;
-            color: #1e293b;
+            background: #f8fafc !important;
+            color: #1e293b !important;
         }
-        
         body.light-theme .sidebar {
-            background: #1e3a8a;
-            border-right: 1px solid #e2e8f0;
+            background: #1e3a8a !important;
+            border-right: 1px solid #e2e8f0 !important;
         }
-        
         body.light-theme .top-bar {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0 !important;
         }
-        
         body.light-theme .page-title {
-            color: #1e293b;
+            color: #1e293b !important;
         }
-        
         body.light-theme .notification-icon,
         body.light-theme .profile-icon {
-            color: #64748b;
+            color: #64748b !important;
         }
-        
         body.light-theme .notification-icon:hover,
         body.light-theme .profile-icon:hover {
-            color: #3b82f6;
+            color: #3b82f6 !important;
         }
-        
         body.light-theme .theme-toggle {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1) !important;
+            border: 1px solid rgba(59, 130, 246, 0.2) !important;
+            color: #3b82f6 !important;
         }
-        
         body.light-theme .theme-toggle:hover {
-            background: rgba(59, 130, 246, 0.2);
-            color: #1d4ed8;
+            background: rgba(59, 130, 246, 0.2) !important;
+            color: #1d4ed8 !important;
+        }
+        /* Additional light theme styles for all components */
+        body.light-theme .card,
+        body.light-theme .glass-card,
+        body.light-theme .dashboard-card {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+        body.light-theme .card:hover,
+        body.light-theme .glass-card:hover,
+        body.light-theme .dashboard-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        body.light-theme .btn {
+            background: #3b82f6 !important;
+            color: #ffffff !important;
+            border: 1px solid #3b82f6 !important;
+        }
+        body.light-theme .btn:hover {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+        }
+        body.light-theme input,
+        body.light-theme select,
+        body.light-theme textarea {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #d1d5db !important;
+        }
+        body.light-theme input:focus,
+        body.light-theme select:focus,
+        body.light-theme textarea:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+        body.light-theme .nav-link {
+            color: #ffffff !important;
+        }
+        body.light-theme .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        body.light-theme .logo-text {
+            color: #ffffff !important;
+        }
+        body.light-theme main {
+            background: #f8fafc !important;
+        }
+        body.light-theme .alert {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        body.light-theme .alert-info {
+            background: #dbeafe !important;
+            color: #1e40af !important;
+            border-color: #93c5fd !important;
+        }
+        body.light-theme .alert-success {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border-color: #86efac !important;
+        }
+        body.light-theme .alert-warning {
+            background: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #fcd34d !important;
+        }
+        body.light-theme .alert-danger {
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            border-color: #fca5a5 !important;
         }
     </style>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
