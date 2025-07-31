@@ -17,6 +17,24 @@ from openai import OpenAI
 from .support import db_connection, save_statement_analysis, get_latest_analysis, save_advisor_chat
 import re
 
+def add_paragraphs(text):
+    import re
+    # Split into blocks separated by two or more newlines
+    blocks = re.split(r'\n{2,}', text)
+    html = []
+    for block in blocks:
+        block = block.strip()
+        if not block:
+            continue
+        # If block looks like a table or list, don't wrap in <p>
+        if (block.startswith('<ul>') or block.startswith('<table') or
+            block.startswith('<ol>') or block.startswith('<tr>') or
+            block.startswith('<th>') or block.startswith('<td>')):
+            html.append(block)
+        else:
+            html.append(f'<p>{block}</p>')
+    return '\n'.join(html)
+
 # Delete old financial advisor data on app startup
 try:
     with db_connection() as conn:
@@ -34,7 +52,15 @@ advisor_bp = Blueprint('advisor', __name__, url_prefix='/financial_advisor')
 @login_required
 def dashboard():
     user_id = session.get('user_id')
-    return render_template('financial_advisor.html', user_id=user_id)
+    # Fetch latest analysis for this user
+    from .support import db_connection, get_latest_analysis
+    advisor_analysis = None
+    with db_connection() as conn:
+        analysis = get_latest_analysis(conn, user_id, with_budget=True)
+        if analysis:
+            _, _, analysis_text, _, _ = analysis
+            advisor_analysis = analysis_text
+    return render_template('financial_advisor.html', user_id=user_id, advisor_analysis=advisor_analysis)
 
 @advisor_bp.route('/debug_session', methods=['GET'])
 def debug_session():
@@ -64,24 +90,20 @@ def chat():
     if not analysis:
         return jsonify({'error': 'No financial analysis found for your account. Please upload a statement and ensure it is processed successfully before chatting.'}), 400
     analysis_id, statement_text, analysis_text, transactions_json, ai_budget_plan = analysis
-    # Build context-aware prompt
+    # Build a shorter, context-aware prompt
     context_prompt = (
-        "You are a financial advisor. Here is the user's bank statement, previous analysis, parsed transactions, and budget plan. "
-        "Use ALL the data to answer the user's question and provide actionable, detailed advice.\n\n"
-        f"Statement (raw data):\n{statement_text}\n\n"
+        "You are a financial advisor. Here is the user's previous financial analysis and their follow-up question. "
+        "Use the analysis to provide actionable, detailed advice.\n\n"
         f"Previous AI Financial Analysis & Advice:\n{analysis_text}\n\n"
-        f"Parsed Transactions:\n{transactions_json}\n\n"
-        f"Budget Plan:\n{ai_budget_plan}\n\n"
         f"User's follow-up question/request:\n{user_msg}"
     )
-    # Restore real OpenRouter AI API call
     api_key = current_app.config.get('OPENROUTER_API_KEY') or os.getenv("OPENROUTER_API_KEY")
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "google/gemma-2-9b-it:free",
+        "model": "qwen/qwen3-30b-a3b:free",
         "messages": [
             {"role": "user", "content": context_prompt}
         ]
@@ -90,7 +112,8 @@ def chat():
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
-            json=payload
+            json=payload,
+            timeout=60
         )
         response.raise_for_status()
         result = response.json()
@@ -98,11 +121,16 @@ def chat():
             print(f"OpenRouter API error: {result}", flush=True)
             return jsonify({'error': 'AI service did not return a valid response. Please try again later.'}), 502
         assistant_msg = result['choices'][0]['message']['content']
-    except requests.exceptions.HTTPError as e:
-        print(f"OpenRouter API error: {e}", flush=True)
-        if response.status_code == 503:
-            return jsonify({'error': 'AI service is temporarily unavailable. Please try again later.'}), 503
-        return jsonify({'error': f'AI service error: {str(e)}'}), 500
+        # Remove markdown asterisks and headers, and convert dashes to bullets for a cleaner look
+        import re
+        assistant_msg = re.sub(r'\*{3,}', '', assistant_msg)  # Remove ***
+        assistant_msg = re.sub(r'\*{2}', '', assistant_msg)   # Remove **
+        assistant_msg = re.sub(r'\*', '', assistant_msg)      # Remove *
+        assistant_msg = re.sub(r'#+', '', assistant_msg)       # Remove markdown headers (#)
+        assistant_msg = re.sub(r'^\s*- ', '• ', assistant_msg, flags=re.MULTILINE)  # Replace dash lists with bullets
+    except requests.exceptions.Timeout:
+        print("[AI Exception] Request timed out.")
+        return jsonify({'error': 'AI service timed out. Please try again later.'}), 504
     except Exception as e:
         print(f"OpenRouter API error: {e}", flush=True)
         return jsonify({'error': f'AI service error: {str(e)}'}), 500
@@ -136,51 +164,42 @@ def upload_statement():
         pdf_url = '/static/statements/' + safe_name
         # Extract text from PDF for analysis
         import PyPDF2
+        from pdf2image import convert_from_bytes
+        import pytesseract
         text = ""
         try:
-            file_for_text = open(save_path, 'rb')
-            reader = PyPDF2.PdfReader(file_for_text)
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
-            file_for_text.close()
-            print(f"[PDF Extraction] Extracted text length: {len(text)}")
-            print(f"[PDF Extraction] Sample: {text[:500]}")
-        except Exception as e:
-            print(f"[PDF Extraction] Exception: {e}")
-            text = ""
-        # If text extraction is empty or too short, try OCR on each page
-        if not text.strip() or len(text.strip()) < 50:
-            try:
-                from pdf2image import convert_from_bytes
-                import pytesseract
-                with open(save_path, 'rb') as f:
-                    pdf_bytes = f.read()
+            with open(save_path, 'rb') as file_for_text:
+                pdf_bytes = file_for_text.read()
+                file_for_text.seek(0)
+                reader = PyPDF2.PdfReader(file_for_text)
                 images = convert_from_bytes(pdf_bytes)
-                ocr_text = ""
-                for img in images:
-                    ocr_text += pytesseract.image_to_string(img) + "\n"
-                if ocr_text.strip():
-                    text += "\n[OCR]\n" + ocr_text
-                print(f"[OCR Extraction] Extracted OCR text length: {len(ocr_text)}")
-                print(f"[OCR Extraction] Sample: {ocr_text[:500]}")
-            except Exception as ocr_e:
-                print(f"[OCR Extraction] Exception: {ocr_e}")
-                pass
+                for i, page in enumerate(reader.pages):
+                    # Extract text from PDF page
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += f"\n[PDF Page {i+1} Text]\n" + page_text + "\n"
+                    # Extract OCR from image of the page
+                    if i < len(images):
+                        ocr_text = pytesseract.image_to_string(images[i])
+                        if ocr_text.strip():
+                            text += f"\n[PDF Page {i+1} OCR]\n" + ocr_text + "\n"
+            print(f"[PDF+OCR Extraction] Extracted text length: {len(text)}")
+            print(f"[PDF+OCR Extraction] Sample: {text[:500]}")
+        except Exception as e:
+            print(f"[PDF+OCR Extraction] Exception: {e}")
+            text = ""
         print(f"[Final Extraction] Total text length sent to AI: {len(text)}")
         print(f"[Final Extraction] Sample: {text[:500]}")
-        # Always run AI analysis on the full extracted text, even if parsing fails
-        ai_analysis = None
-        ai_budget_plan = None
-        prompt = (
-            "Below is a bank statement. Please analyze the user's financial situation, "
-            "summarize key spending and savings patterns, and provide professional, actionable financial advice.\n"
-            "Statement:\n"
-            f"{text}"
-        )
-        print(f"[AI Prompt] Length: {len(prompt)}")
-        print(f"[AI Prompt] Sample: {prompt[:500]}")
+        # Limit the input to the first 4000 characters to fit the model's context window
+        max_chars = 4000
+        short_text = text[:max_chars]
+
+        prompt = f"""
+Give financial advice based on this bank statement:
+{short_text}
+"""
+
+        print(f"[AI Prompt] {prompt[:500]}")
         api_key = current_app.config.get('OPENROUTER_API_KEY') or os.getenv("OPENROUTER_API_KEY")
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -191,7 +210,7 @@ def upload_statement():
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers=headers,
                 json={
-                    "model": "google/gemma-2-9b-it:free",
+                    "model": "qwen/qwen3-30b-a3b:free",
                     "messages": [
                         {"role": "user", "content": prompt}
                     ]
@@ -202,126 +221,94 @@ def upload_statement():
             print(f"[AI Response] {result}")
             if 'choices' in result and result['choices']:
                 ai_analysis = result['choices'][0]['message']['content']
+                import re
+                # Convert markdown headers to <b> tags
+                ai_analysis = re.sub(r'^\s*#+\s*(.*)', r'<b>\1</b>', ai_analysis, flags=re.MULTILINE)
+                # Convert double asterisks to <b>
+                ai_analysis = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', ai_analysis)
+                # Remove single asterisks
+                ai_analysis = re.sub(r'\*', '', ai_analysis)
+                # Replace dash-based lists with <ul><li>...</li></ul>
+                def dash_to_ul(text):
+                    lines = text.split('\n')
+                    in_ul = False
+                    new_lines = []
+                    for line in lines:
+                        if re.match(r'^\s*- ', line):
+                            if not in_ul:
+                                new_lines.append('<ul>')
+                                in_ul = True
+                            new_lines.append('<li>' + line.lstrip('- ').strip() + '</li>')
+                        else:
+                            if in_ul:
+                                new_lines.append('</ul>')
+                                in_ul = False
+                            new_lines.append(line)
+                    if in_ul:
+                        new_lines.append('</ul>')
+                    return '\n'.join(new_lines)
+                ai_analysis = dash_to_ul(ai_analysis)
+                # Convert markdown tables to HTML tables
+                def md_table_to_html(text):
+                    lines = text.split('\n')
+                    html = []
+                    in_table = False
+                    for i, line in enumerate(lines):
+                        if re.match(r'^\s*\|', line):
+                            cells = [c.strip() for c in line.strip().split('|')[1:-1]]
+                            if not in_table:
+                                html.append('<table class="advisor-table">')
+                                in_table = True
+                            if i+1 < len(lines) and re.match(r'^\s*\|[\s:-]+\|$', lines[i+1]):
+                                html.append('<tr>' + ''.join(f'<th>{c}</th>' for c in cells) + '</tr>')
+                            else:
+                                html.append('<tr>' + ''.join(f'<td>{c}</td>' for c in cells) + '</tr>')
+                        else:
+                            if in_table:
+                                html.append('</table>')
+                                in_table = False
+                            html.append(line)
+                    if in_table:
+                        html.append('</table>')
+                    return '\n'.join(html)
+                ai_analysis = md_table_to_html(ai_analysis)
+                # Wrap in a div for styling
+                ai_analysis = add_paragraphs(ai_analysis)
+                ai_analysis = f'<div class="advisor-analysis-html">{ai_analysis}</div>'
             else:
                 print(f"[AI Error] No choices in result: {result}")
                 ai_analysis = "No analysis available. (AI returned no choices)"
-            # Now, request a structured budget plan
-            budget_prompt = (
-                "Based on the following bank statement and your previous analysis, create a structured, detailed budget plan as a clear, readable text.\n"
-                f"Statement:\n{text}\n\nPrevious Analysis:\n{ai_analysis}"
-            )
-            budget_response = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers=headers,
-                json={
-                    "model": "google/gemma-2-9b-it:free",
-                    "messages": [
-                        {"role": "user", "content": budget_prompt}
-                    ]
-                }
-            )
-            budget_response.raise_for_status()
-            budget_result = budget_response.json()
-            print(f"[AI Budget Response] {budget_result}")
-            if 'choices' in budget_result and budget_result['choices']:
-                ai_budget_plan = budget_result['choices'][0]['message']['content']
         except Exception as e:
             print(f"[AI Exception] {e}")
             ai_analysis = None
-            ai_budget_plan = None
         # Save analysis to database so chat assistant can find it
         from .support import db_connection, save_statement_analysis
         with db_connection() as conn:
             if not ai_analysis:
                 ai_analysis = "No analysis available."
-            if not ai_budget_plan:
-                ai_budget_plan = ""
             analysis_id = save_statement_analysis(
-                conn, user_id, text, ai_analysis, [], file.filename, ai_budget_plan
+                conn, user_id, text, ai_analysis, [], file.filename, None
             )
-        # Attempt to parse transactions, but do not block AI analysis if parsing fails
-        def parse_statement(text):
+        # --- Extract transactions from statement text ---
+        def parse_transactions(text):
             import re
-            lines = [l.strip() for l in text.splitlines() if l.strip()]
-            meta = {'bank': '', 'account_holder': '', 'account': '', 'branch': '', 'period': ''}
-            transactions = []
-            # Extract metadata from the first 10 lines
-            for i in range(min(10, len(lines))):
-                l = lines[i]
-                if 'statement' in l.lower() and 'account' in l.lower():
-                    meta['bank'] = l
-                if 'account holder' in l.lower():
-                    meta['account_holder'] = l.split(':',1)[-1].strip()
-                if 'account:' in l.lower() and not meta['account']:
-                    meta['account'] = l.split(':',1)[-1].strip()
-                if 'branch:' in l.lower():
-                    meta['branch'] = l.split(':',1)[-1].strip()
-                if 'statement period' in l.lower():
-                    meta['period'] = l.split(':',1)[-1].strip()
-            # Find table header
-            header_idx = -1
-            headers = []
-            for i, l in enumerate(lines):
-                if ('date' in l.lower() and 'description' in l.lower() and
-                    ('debit' in l.lower() or 'credit' in l.lower() or 'amount' in l.lower() or 'balance' in l.lower())):
-                    header_idx = i
-                    if '|' in l:
-                        headers = [h.strip() for h in l.split('|') if h.strip()]
-                    else:
-                        headers = [h.strip() for h in re.split(r'\s{2,}', l) if h.strip()]
-                    break
-            def is_date(s):
-                return bool(re.match(r'^(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})$', s))
-            if header_idx != -1 and headers:
-                data_lines = lines[header_idx+1:]
-                i = 0
-                while i < len(data_lines):
-                    l = data_lines[i]
-                    if not l or set(l) <= set('-| '):
-                        i += 1
-                        continue
-                    # Try to parse row
-                    row = re.split(r'\s{2,}|\|', l)
-                    row = [x.strip() for x in row if x.strip()]
-                    if len(row) >= len(headers):
-                        txn = dict(zip(headers, row))
-                        transactions.append(txn)
-                    i += 1
-            return transactions
-        transactions = parse_statement(text)
-        def normalize_transaction_keys(txn):
-            key_map = {
-                'date': 'Date', 'Date': 'Date',
-                'description': 'Description', 'desc': 'Description', 'Desc': 'Description',
-                'amount': 'Amount', 'amt': 'Amount', 'Amount': 'Amount',
-                'debit': 'Debit (R)', 'Debit': 'Debit (R)', 'Debit (R)': 'Debit (R)',
-                'credit': 'Credit (R)', 'Credit': 'Credit (R)', 'Credit (R)': 'Credit (R)',
-                'category': 'Category', 'Category': 'Category'
-            }
-            norm = {}
-            for k, v in txn.items():
-                std_key = key_map.get(k.strip(), k.strip())
-                norm[std_key] = v
-            return norm
-        transactions = [normalize_transaction_keys(txn) for txn in transactions]
-        if not transactions and ai_analysis:
-            import re
-            def extract_transactions_from_analysis(analysis):
-                pattern = re.compile(r'([A-Za-z &]+):\s*R?([\d,]+(?:\.\d{1,2})?)')
-                txns = []
-                for match in pattern.finditer(analysis):
-                    category = match.group(1).strip()
-                    amount = match.group(2).replace(',', '')
-                    try:
-                        amount = float(amount)
-                    except:
-                        continue
-                    txns.append({
-                        'Date': '',
-                        'Description': category,
-                        'Amount': amount
+            txs = []
+            # Example regex for lines like: 01/04/2025 Rent - Diepsloot Prop 6,500.00-2,000.00
+            pattern = re.compile(r'^(\d{2}/\d{2}/\d{4})\s+(.+?)\s+([\d,]+\.\d{2})-([\d,]+\.\d{2})$', re.MULTILINE)
+            for match in pattern.finditer(text):
+                date, desc, debit, credit = match.groups()
+                debit = float(debit.replace(",", "")) if debit else 0.0
+                credit = float(credit.replace(",", "")) if credit else 0.0
+                amount = credit - debit  # Net effect
+                txs.append({
+                    'date': date,
+                    'description': desc.strip(),
+                    'amount': amount,
+                    'debit': debit,
+                    'credit': credit,
+                    'category': None  # Could add simple rules later
                     })
-                return txns
-            transactions = extract_transactions_from_analysis(ai_analysis)
+            return txs
+        transactions = parse_transactions(text)
         session['advisor_transactions'] = transactions
-        return jsonify(success=True, pdf_url=pdf_url, analysis=ai_analysis, budget_plan=ai_budget_plan, transactions=transactions, statement_text=text) 
+        return jsonify(success=True, pdf_url=pdf_url, analysis=ai_analysis, statement_text=text, transactions=transactions) 

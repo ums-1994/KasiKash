@@ -2956,7 +2956,12 @@ def handle_chat():
                     print(f"OpenRouter API error: {e}")
                     response = "Sorry, I encountered an error with the AI service. Please try again later."
         else:  # mode == 'rule'
-            response = rule_based_chat(user_message, user_id, user_name)
+            try:
+                from .chatbot_enhanced import enhanced_rule_based_chat
+                response = enhanced_rule_based_chat(user_message, user_id, user_name)
+            except ImportError:
+                # Fallback to original function if enhanced module not available
+                response = rule_based_chat(user_message, user_id, user_name)
 
         # Save chat history (for both modes)
         try:
