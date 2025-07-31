@@ -384,11 +384,11 @@ def home():
                 """, (firebase_uid,))
                 total_contributions = cur.fetchone()[0] or 0
 
-                # Fetch calendar events from diary
+                # Fetch calendar events from events table
                 cur.execute("""
-                    SELECT event_date, event_name, description 
-                    FROM diary 
-                    WHERE user_id = %s AND EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s
+                    SELECT event_date, title, description 
+                    FROM events 
+                    WHERE created_by = %s AND EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s
                 """, (firebase_uid, year, month))
                 for row in cur.fetchall():
                     calendar_events.append({
@@ -1143,6 +1143,7 @@ def debug_session():
 @login_required
 def stokvels():
     firebase_uid = session.get('user_id')
+    print("STOKVELS: firebase_uid from session:", firebase_uid)
     if not firebase_uid:
         flash("User not found in session, please log in again.", "error")
         return redirect('/login')
@@ -3529,21 +3530,12 @@ def request_loan():
 # ... existing code ...
     return render_template('referral.html', referral_link=referral_link, message=message, stokvels=stokvels, selected_stokvel_id=selected_stokvel_id)
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port, debug=True)
-
-# Inject _ into Jinja2 context for translations
-try:
-    from flask_babel import _
-except ImportError:
-    def _(s): return s
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
     firebase_uid = session.get('user_id')
     print("Dashboard: firebase_uid from session:", firebase_uid)
+    print("Dashboard: session data:", dict(session))
     user = {
         'username': session.get('username', 'User'),
         'profile_picture': session.get('profile_picture'),
@@ -3554,17 +3546,17 @@ def dashboard():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                # Count active stokvels for this user
                 cur.execute("""
-                    SELECT COUNT(DISTINCT s.id)
+                    SELECT s.id, s.name
                     FROM stokvels s
                     JOIN stokvel_members sm ON s.id = sm.stokvel_id
                     WHERE sm.user_id = %s
                 """, (firebase_uid,))
-                active_stokvels_count = cur.fetchone()[0] or 0
+                stokvels = cur.fetchall()
+                print("Dashboard: stokvels for user:", stokvels)
+                active_stokvels_count = len(stokvels)
                 print("Dashboard: active_stokvels_count from DB:", active_stokvels_count)
 
-                # Sum total contributions for this user
                 cur.execute("""
                     SELECT COALESCE(SUM(amount), 0)
                     FROM transactions
@@ -3575,7 +3567,41 @@ def dashboard():
         print(f"Dashboard error: {e}")
         active_stokvels_count = 0
         total_contributions = 0
-    return render_template('dashboard.html', user=user, active_stokvels_count=active_stokvels_count, total_contributions=total_contributions)
+    print(f"Dashboard: Final values - stokvels: {active_stokvels_count}, contributions: {total_contributions}")
+    return render_template('dashboard.html', user=user, active_stokvels_count=active_stokvels_count, total_contributions=total_contributions, user_stokvels=stokvels)
+
+@app.route('/api/dashboard-stats')
+@login_required
+def dashboard_stats():
+    firebase_uid = session.get('user_id')
+    print("DASHBOARD API: firebase_uid from session:", firebase_uid)
+    active_stokvels_count = 0
+    total_contributions = 0
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT s.id
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON s.id = sm.stokvel_id
+                    WHERE sm.user_id = %s
+                """, (firebase_uid,))
+                stokvels = cur.fetchall()
+                active_stokvels_count = len(stokvels)
+
+                cur.execute("""
+                    SELECT COALESCE(SUM(amount), 0)
+                    FROM transactions
+                    WHERE user_id = %s AND type = 'contribution' AND status = 'completed'
+                """, (firebase_uid,))
+                total_contributions = cur.fetchone()[0] or 0
+    except Exception as e:
+        print(f"Dashboard stats error: {e}")
+
+    return jsonify({
+        "active_stokvels_count": active_stokvels_count,
+        "total_contributions": total_contributions
+    })
 
 @app.route('/api/recent_activity')
 @login_required
@@ -3634,4 +3660,33 @@ def recent_activity_api():
     except Exception as e:
         print(f"ERROR fetching recent activity: {e}")
         return jsonify({"error": "Could not fetch recent activity"}), 500
+
+@app.route('/api/debug-tables')
+def debug_tables():
+    with support.db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT table_name FROM information_schema.tables
+                WHERE table_schema = 'public'
+            """)
+            tables = cur.fetchall()
+    return jsonify([t[0] for t in tables])
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    print("=" * 60)
+    print("🚀 KasiKash Application Starting...")
+    print("=" * 60)
+    print(f"📱 Local Access: http://localhost:{port}")
+    print(f"🌐 Network Access: http://127.0.0.1:{port}")
+    print("=" * 60)
+    print("💡 Use 'http://localhost:5000' in your browser")
+    print("=" * 60)
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)
+
+# Inject _ into Jinja2 context for translations
+try:
+    from flask_babel import _
+except ImportError:
+    def _(s): return s
 

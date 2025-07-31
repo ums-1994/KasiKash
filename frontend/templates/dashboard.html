@@ -483,11 +483,11 @@
     <!-- User Stats Grid -->
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; width: 100%; margin-bottom: 1rem;">
       <div style="background: rgba(96,239,255,0.1); border-radius: 0.75rem; padding: 0.75rem; text-align: center; border: 1px solid rgba(96,239,255,0.2);">
-        <div style="font-size: 1.25rem; font-weight: 700; color: #60efff;">{{ active_stokvels_count|default(0) }}</div>
+        <div style="font-size: 1.25rem; font-weight: 700; color: #60efff;" data-stat="stokvels">{{ active_stokvels_count|default(0) }}</div>
         <div style="font-size: 0.75rem; color: #b2f7ef;">Stokvels</div>
       </div>
       <div style="background: rgba(0,255,135,0.1); border-radius: 0.75rem; padding: 0.75rem; text-align: center; border: 1px solid rgba(0,255,135,0.2);">
-        <div style="font-size: 1.25rem; font-weight: 700; color: #00ff87;">R{{ "%.0f"|format(total_contributions|default(0)) }}</div>
+        <div style="font-size: 1.25rem; font-weight: 700; color: #00ff87;" data-stat="contributions">R{{ "%.0f"|format(total_contributions|default(0)) }}</div>
         <div style="font-size: 0.75rem; color: #b2f7ef;">Contributed</div>
       </div>
     </div>
@@ -737,6 +737,43 @@ document.querySelectorAll('.stokvel-progress-bar').forEach(function(el) {
     el.style.height = '100%';
     el.style.borderRadius = '0.5rem';
     el.style.transition = 'width 0.3s ease';
+});
+
+// Real-time dashboard updates
+function updateDashboardStats() {
+    fetch('/api/dashboard-stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error fetching dashboard stats:', data.error);
+                return;
+            }
+            
+            // Update stokvel count
+            const stokvelCountElement = document.querySelector('[data-stat="stokvels"]');
+            if (stokvelCountElement) {
+                stokvelCountElement.textContent = data.active_stokvels_count;
+            }
+            
+            // Update contributions amount
+            const contributionsElement = document.querySelector('[data-stat="contributions"]');
+            if (contributionsElement) {
+                contributionsElement.textContent = 'R' + data.total_contributions.toLocaleString();
+            }
+            
+            console.log('Dashboard stats updated:', data);
+        })
+        .catch(error => {
+            console.error('Error updating dashboard stats:', error);
+        });
+}
+
+// Update stats every 30 seconds
+setInterval(updateDashboardStats, 30000);
+
+// Update stats immediately when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateDashboardStats();
 });
 </script>
 {% endblock %}
