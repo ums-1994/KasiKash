@@ -176,6 +176,61 @@
         .shake {
             animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
         }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        
+        /* Light theme styles */
+        body.light-theme {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        
+        body.light-theme .sidebar {
+            background: #1e3a8a;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        body.light-theme .top-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        body.light-theme .page-title {
+            color: #1e293b;
+        }
+        
+        body.light-theme .notification-icon,
+        body.light-theme .profile-icon {
+            color: #64748b;
+        }
+        
+        body.light-theme .notification-icon:hover,
+        body.light-theme .profile-icon:hover {
+            color: #3b82f6;
+        }
+        
+        body.light-theme .theme-toggle {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+        
+        body.light-theme .theme-toggle:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #1d4ed8;
+        }
     </style>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
@@ -271,6 +326,10 @@
             <div class="flex items-center justify-between w-full px-6 py-4">
                 <h2 class="text-xl page-title">{% block page_title %}{% endblock %}</h2>
                 <div class="flex items-center space-x-6">
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="theme-toggle p-2 rounded-lg transition-all duration-300">
+                        <i id="theme-icon" class="fas fa-sun text-xl"></i>
+                    </button>
                     <a href="{{ url_for('notifications') }}" id="notification-icon" class="notification-icon relative">
                         <i class="fa-solid fa-bell w-6 h-6 text-xl"></i>
                         <span id="notification-badge"
@@ -309,6 +368,65 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     {% include 'chatbot.html' %}
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    
+    <!-- Theme Switching JavaScript -->
+    <script>
+        // Theme switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
+            
+            // Check for saved theme preference or default to dark
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            body.className = currentTheme === 'light' ? 'light-theme' : '';
+            updateThemeIcon(currentTheme);
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    
+                    console.log('Switching theme from', currentTheme, 'to', newTheme);
+                    
+                    // Toggle theme class
+                    body.classList.toggle('light-theme');
+                    
+                    // Update icon
+                    updateThemeIcon(newTheme);
+                    
+                    // Save preference
+                    localStorage.setItem('theme', newTheme);
+                    
+                    // Send to server and reload
+                    fetch('/switch_theme', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    }).then(response => {
+                        console.log('Theme switched successfully');
+                        window.location.reload();
+                    }).catch(error => {
+                        console.log('Theme preference saved locally');
+                        window.location.reload();
+                    });
+                });
+            }
+            
+            function updateThemeIcon(theme) {
+                if (themeIcon) {
+                    if (theme === 'light') {
+                        themeIcon.className = 'fas fa-moon text-xl';
+                    } else {
+                        themeIcon.className = 'fas fa-sun text-xl';
+                    }
+                }
+            }
+        });
+    </script>
+    
     {% block extra_js %}{% endblock %}
     
     <!-- Removed <div id="myDiv"></div> which was used for the demo graph -->
