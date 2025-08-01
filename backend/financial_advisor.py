@@ -35,16 +35,9 @@ def add_paragraphs(text):
             html.append(f'<p>{block}</p>')
     return '\n'.join(html)
 
-# Delete old financial advisor data on app startup
-try:
-    with db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM financial_advisor_chat;")
-            cur.execute("DELETE FROM financial_statement_analysis;")
-        conn.commit()
-    print("[INFO] Old financial advisor data deleted on startup.")
-except Exception as e:
-    print(f"[ERROR] Failed to delete old financial advisor data: {e}")
+# Note: Removed startup data deletion to preserve user financial data
+# Users' financial analysis and chat history will be preserved between sessions
+print("[INFO] Financial advisor module loaded - user data preserved.")
 
 advisor_bp = Blueprint('advisor', __name__, url_prefix='/financial_advisor')
 

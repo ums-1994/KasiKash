@@ -3536,7 +3536,27 @@ def request_loan():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port, debug=True)
+    
+    # Check if we're in development or production
+    debug_mode = os.environ.get("FLASK_ENV") == "development"
+    
+    print("🚀 Starting KasiKash Application...")
+    print("=" * 50)
+    
+    if debug_mode:
+        # Development mode - local access only, with debug interface
+        print(f"🌐 Development Mode")
+        print(f"📱 Application running on: http://127.0.0.1:{port}")
+        print(f"🔧 Debug mode: ENABLED")
+        print("=" * 50)
+        socketio.run(app, host="127.0.0.1", port=port, debug=True)
+    else:
+        # Production mode - no debug interface, accessible from any IP
+        print(f"🌐 Production Mode")
+        print(f"📱 Application running on: http://0.0.0.0:{port}")
+        print(f"🔧 Debug mode: DISABLED")
+        print("=" * 50)
+        socketio.run(app, host="0.0.0.0", port=port, debug=False)
 
 # Inject _ into Jinja2 context for translations
 try:
