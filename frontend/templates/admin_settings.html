@@ -149,6 +149,115 @@
         width: 2.2em;
         height: 1.2em;
     }
+    
+    /* Light mode overrides */
+    body.light-mode .admin-settings-title {
+        color: #1e293b !important;
+        text-shadow: 0 2px 8px rgba(30, 41, 59, 0.1);
+    }
+    
+    body.light-mode .admin-settings-subtitle {
+        color: #64748b !important;
+        text-shadow: 0 1px 6px rgba(100, 116, 139, 0.1);
+    }
+    
+    body.light-mode .settings-container {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        box-shadow: 0 2px 16px rgba(59, 130, 246, 0.1);
+    }
+    
+    body.light-mode .settings-tabs {
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    body.light-mode .settings-tab {
+        color: #64748b !important;
+    }
+    
+    body.light-mode .settings-tab.active {
+        color: #ffffff !important;
+        background: #3b82f6 !important;
+        border-bottom-color: #3b82f6;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    }
+    
+    body.light-mode .settings-tab:hover {
+        color: #ffffff !important;
+        background: #3b82f6 !important;
+        border-bottom-color: #3b82f6;
+    }
+    
+    body.light-mode .settings-section {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    body.light-mode .settings-card {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0;
+    }
+    
+    body.light-mode .settings-card h4 {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .settings-card .help-text {
+        color: #64748b !important;
+    }
+    
+    body.light-mode .setting-label {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .setting-controls {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .control-group {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .form-select,
+    body.light-mode .form-control,
+    body.light-mode .input-group-text {
+        color: #1e293b !important;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+    }
+    
+    body.light-mode .form-check-label {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .switch-user-label {
+        background: #ffffff !important;
+        color: #3b82f6 !important;
+        border: 2px solid #3b82f6;
+        box-shadow: 0 1px 4px rgba(59, 130, 246, 0.1);
+    }
+    
+    body.light-mode #switchToUserView:checked + .switch-user-label {
+        background: #3b82f6 !important;
+        color: #ffffff !important;
+        border-color: #3b82f6;
+    }
+    
+    body.light-mode .audit-log-table th {
+        background-color: #f8fafc !important;
+        color: #374151 !important;
+    }
+    
+    body.light-mode .audit-log-table td {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .setting-item {
+        border-bottom: 1px dashed #e2e8f0;
+    }
 </style>
 <form action="{{ url_for('admin.settings') }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
