@@ -1075,7 +1075,7 @@ def registration():
                         # Update stokvel_members for pending invites
                         cur.execute(
                             "UPDATE stokvel_members SET user_id = %s WHERE email = %s AND user_id IS NULL",
-                            (user.uid, email)
+                            (local_user_id, email)
                         )
                         conn.commit()
 
@@ -1210,49 +1210,58 @@ def stokvels():
 @app.route('/create_stokvel', methods=['POST'])
 @login_required
 def create_stokvel():
-    user_id = session['user_id']
+    firebase_uid = session['user_id']  # This is actually the Firebase UID
     name = request.form['name']
     description = request.form['description']
     monthly_contribution = request.form['monthly_contribution']
     
-    # Insert new stokvel and get its ID
-    query = "INSERT INTO stokvels (name, description, created_by, monthly_contribution) VALUES (%s, %s, %s, %s) RETURNING id"
-    result = support.execute_query(
-    "insert", query, (name, description, user_id, monthly_contribution))
-
-    stokvel_id = result[0] if result else None
-    if stokvel_id:
-        # Add the creator as the first member
-        support.execute_query(
-    "insert",
-    "INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)",
-    (stokvel_id,
-    user_id,
-     'admin'))
-        # Add the creator as the first member or update their role to admin if already a member
-        existing = support.execute_query("search", "SELECT id FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s", (stokvel_id, user_id))
-        if existing:
-            support.execute_query("update", "UPDATE stokvel_members SET role = %s WHERE stokvel_id = %s AND user_id = %s", ('admin', stokvel_id, user_id))
-        else:
-            support.execute_query("insert", "INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)", (stokvel_id, user_id, 'admin'))
-        # Make the user a global admin and update session
+    try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("UPDATE users SET role = 'admin' WHERE firebase_uid = %s", (user_id,))
+                # Get the actual user ID from the users table using Firebase UID
+                cur.execute("SELECT id FROM users WHERE firebase_uid = %s", (firebase_uid,))
+                user_result = cur.fetchone()
+                
+                if not user_result:
+                    flash('User not found. Please log in again.', 'danger')
+                    return redirect(url_for('stokvels'))
+                
+                actual_user_id = user_result[0]
+                
+                # Insert new stokvel and get its ID
+                cur.execute(
+                    "INSERT INTO stokvels (name, description, created_by, monthly_contribution) VALUES (%s, %s, %s, %s) RETURNING id",
+                    (name, description, actual_user_id, monthly_contribution)
+                )
+                stokvel_id = cur.fetchone()[0]
+                
+                # Add the creator as the first member
+                cur.execute(
+                    "INSERT INTO stokvel_members (stokvel_id, user_id, role) VALUES (%s, %s, %s)",
+                    (stokvel_id, actual_user_id, 'admin')
+                )
+                
+                # Make the user a global admin and update session
+                cur.execute("UPDATE users SET role = 'admin' WHERE id = %s", (actual_user_id,))
                 conn.commit()
-        session['role'] = 'admin'
-        # Create a notification for the creator
-        message = f"You successfully created the stokvel '{name}'!"
-        link = url_for('view_stokvel_members', stokvel_id=stokvel_id)
-        create_notification(
-    user_id,
-    message,
-    link_url=link,
-     notification_type='stokvel_created')
-
-        flash('Stokvel created successfully!', 'success')
-    else:
-        flash('Failed to create stokvel.', 'danger')
+                
+                session['role'] = 'admin'
+                
+                # Create a notification for the creator
+                message = f"You successfully created the stokvel '{name}'!"
+                link = url_for('view_stokvel_members', stokvel_id=stokvel_id)
+                create_notification(
+                    actual_user_id,
+                    message,
+                    link_url=link,
+                    notification_type='stokvel_created'
+                )
+                
+                flash('Stokvel created successfully!', 'success')
+                
+    except Exception as e:
+        print(f"Error creating stokvel: {e}")
+        flash('Failed to create stokvel. Please try again.', 'danger')
         
     return redirect(url_for('stokvels'))
 
@@ -1747,6 +1756,22 @@ def contribute_to_goal():
 @app.route('/stokvel/<int:stokvel_id>/members')
 @login_required
 def view_stokvel_members(stokvel_id):
+    # First, try to link any pending members to existing users
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                # Update pending members to link with existing users
+                cur.execute("""
+                    UPDATE stokvel_members 
+                    SET user_id = u.id::text 
+                    FROM users u 
+                    WHERE stokvel_members.email = u.email 
+                    AND (stokvel_members.user_id IS NULL OR stokvel_members.user_id = '')
+                    AND stokvel_members.stokvel_id = %s
+                """, (stokvel_id,))
+                conn.commit()
+    except Exception as e:
+        print(f"Error linking pending members: {e}")
     # Debug log
     print(
     f"DEBUG: Navigating to view_stokvel_members for stokvel_id: {stokvel_id}")
@@ -1787,11 +1812,12 @@ def view_stokvel_members(stokvel_id):
                 print(f"DEBUG: Converted stokvel dict: {stokvel}")  # Debug log
 
                 # Get registered members (joined with users)
+                # For now, just get members by email to avoid type conversion issues
                 cur.execute("""
                     SELECT u.username, u.email, sm.role, sm.id as member_id
                     FROM users u
-                    JOIN stokvel_members sm ON u.firebase_uid = sm.user_id
-                    WHERE sm.stokvel_id = %s
+                    JOIN stokvel_members sm ON u.email = sm.email
+                    WHERE sm.stokvel_id = %s AND sm.email IS NOT NULL
                 """, (stokvel_id,))
                 members_tuples = cur.fetchall()
                 # Debug log
@@ -1821,9 +1847,39 @@ def view_stokvel_members(stokvel_id):
                 print(f"DEBUG: Converted members list: {members_list}")
 
                 # Check if current user is a member and their role
-                cur.execute("""
-                    SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s
-                """, (stokvel_id, user_id))
+                # First get the actual user ID from firebase_uid
+                cur.execute("SELECT id FROM users WHERE firebase_uid = %s", (user_id,))
+                actual_user_result = cur.fetchone()
+                actual_user_id = actual_user_result[0] if actual_user_result else None
+                
+                if actual_user_id:
+                    # Check by email since that's more reliable
+                    cur.execute("SELECT email FROM users WHERE id = %s", (actual_user_id,))
+                    user_email_result = cur.fetchone()
+                    user_email = user_email_result[0] if user_email_result else None
+                    
+                    if user_email:
+                        cur.execute("""
+                            SELECT role FROM stokvel_members WHERE stokvel_id = %s AND email = %s
+                        """, (stokvel_id, user_email))
+                    else:
+                        cur.execute("""
+                            SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s
+                        """, (stokvel_id, None))
+                else:
+                    # If user not found, check by email
+                    cur.execute("SELECT email FROM users WHERE firebase_uid = %s", (user_id,))
+                    user_email_result = cur.fetchone()
+                    user_email = user_email_result[0] if user_email_result else None
+                    
+                    if user_email:
+                        cur.execute("""
+                            SELECT role FROM stokvel_members WHERE stokvel_id = %s AND email = %s
+                        """, (stokvel_id, user_email))
+                    else:
+                        cur.execute("""
+                            SELECT role FROM stokvel_members WHERE stokvel_id = %s AND user_id = %s
+                        """, (stokvel_id, None))
                 user_stokvel_role = cur.fetchone()
                 is_member = user_stokvel_role is not None
                 user_role_in_stokvel = user_stokvel_role[0] if user_stokvel_role else 'none'
@@ -3213,6 +3269,7 @@ def handle_fetch_messages(data):
 @app.route('/stokvel/<int:stokvel_id>/add_member', methods=['POST'])
 @login_required
 def add_stokvel_member(stokvel_id):
+    from flask import url_for
     email = request.form.get('email')
     if not email:
         flash("Email is required to add a member.", "danger")
@@ -3221,14 +3278,25 @@ def add_stokvel_member(stokvel_id):
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
+                # Check if member already exists in this stokvel
+                cur.execute(
+                    "SELECT id FROM stokvel_members WHERE stokvel_id = %s AND email = %s",
+                    (stokvel_id, email)
+                )
+                existing_member = cur.fetchone()
+                
+                if existing_member:
+                    flash(f"Member with email {email} is already part of this stokvel.", "warning")
+                    return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
+                
                 # Add a pending member with just an email (user_id is NULL)
                 cur.execute(
                     "INSERT INTO stokvel_members (stokvel_id, email, role) VALUES (%s, %s, %s)",
                     (stokvel_id, email, 'member')
                 )
                 conn.commit()
+        
         # Send invitation email
-        from flask import url_for
         stokvel_name = None
         with support.db_connection() as conn:
             with conn.cursor() as cur:
@@ -3236,6 +3304,7 @@ def add_stokvel_member(stokvel_id):
                 row = cur.fetchone()
                 if row:
                     stokvel_name = row[0]
+        
         invite_link = url_for('register', _external=True)
         subject = f"You've been invited to join the stokvel '{stokvel_name}' on KasiKash!"
         html_content = f"""
@@ -3249,10 +3318,15 @@ def add_stokvel_member(stokvel_id):
         </body></html>
         """
         send_email(email, subject, html_content)
-        flash("Member invitation sent!", "success")
+        flash(f"Invitation sent to {email}!", "success")
+        
     except Exception as e:
         print(f"Error adding member: {e}")
-        flash("Failed to add member. Please try again.", "danger")
+        if "duplicate key value violates unique constraint" in str(e):
+            flash(f"Member with email {email} is already part of this stokvel.", "warning")
+        else:
+            flash("Failed to add member. Please try again.", "danger")
+    
     return redirect(url_for('view_stokvel_members', stokvel_id=stokvel_id))
 
 @app.route('/stokvel/<int:stokvel_id>/remove_member/<int:member_id>', methods=['POST'])
