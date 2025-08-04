@@ -642,8 +642,8 @@ select, .dropdown, .filter-select, .dropdown-menu, .autocomplete-menu, input[typ
 }
 
 /* Light mode support for user interface */
-body.light-mode {
-    background: var(--sb-lightblue) !important;
+body.light-mode, body.light-theme {
+    background: #ffffff !important;
     color: var(--sb-text) !important;
 }
 
@@ -772,11 +772,11 @@ body.light-mode {
   border: 1px solid #22304a !important;
   box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
 }
-body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card),
-body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) * {
-  background: #fafdff !important;
+body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card), body.light-theme .card:not(.admin-card):not(.admin-content-card):not(.pricing-card),
+body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) *, body.light-theme .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) * {
+  background: #ffffff !important;
   color: #222b45 !important;
-  border: 1px solid #b3d4fc !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 .stokvel-card {

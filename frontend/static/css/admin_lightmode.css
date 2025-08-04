@@ -1,6 +1,6 @@
 /* Light mode overrides for admin - improved contrast and readability */
-body.lightmode, .lightmode .admin-main {
-    background: #f5f7fa !important;
+body.lightmode, .lightmode .admin-main, body.light-theme, body.light-theme .admin-main {
+    background: #ffffff !important;
     color: #222b45 !important;
 }
 
@@ -29,8 +29,8 @@ body.lightmode, .lightmode .admin-main {
 }
 
 .lightmode .admin-main,
-body.lightmode .admin-main {
-    background: #f5f7fa !important;
+body.lightmode .admin-main, body.light-theme .admin-main {
+    background: #ffffff !important;
     color: #222b45 !important;
 }
 
@@ -190,9 +190,9 @@ body.light-mode .sidebar .nav svg {
 }
 
 /* Main background */
-body.light-mode,
-body.light-mode .admin-main {
-    background: #fff !important;
+body.light-mode, body.light-theme,
+body.light-mode .admin-main, body.light-theme .admin-main {
+    background: #ffffff !important;
     color: #000 !important;
 }
 
