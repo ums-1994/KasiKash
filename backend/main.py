@@ -3551,12 +3551,12 @@ if __name__ == "__main__":
         print("=" * 50)
         socketio.run(app, host="127.0.0.1", port=port, debug=True)
     else:
-        # Production mode - no debug interface, accessible from any IP
+        # Production mode - bind to localhost for deployment compatibility
         print(f"🌐 Production Mode")
-        print(f"📱 Application running on: http://0.0.0.0:{port}")
+        print(f"📱 Application running on: http://localhost:{port}")
         print(f"🔧 Debug mode: DISABLED")
         print("=" * 50)
-        socketio.run(app, host="0.0.0.0", port=port, debug=False)
+        socketio.run(app, host="localhost", port=port, debug=False)
 
 # Inject _ into Jinja2 context for translations
 try:
