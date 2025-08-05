@@ -1214,10 +1214,14 @@ def create_stokvel():
     description = request.form['description']
     monthly_contribution = request.form['monthly_contribution']
     
+    # Get optional fields
+    target_amount = request.form.get('target_amount')
+    target_date = request.form.get('target_date')
+    
     # Insert new stokvel and get its ID
-    query = "INSERT INTO stokvels (name, description, created_by, monthly_contribution) VALUES (%s, %s, %s, %s) RETURNING id"
+    query = "INSERT INTO stokvels (name, description, created_by, monthly_contribution, target_amount, target_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
     result = support.execute_query(
-    "insert", query, (name, description, user_id, monthly_contribution))
+        "insert", query, (name, description, user_id, monthly_contribution, target_amount, target_date))
 
     stokvel_id = result[0] if result else None
     if stokvel_id:
@@ -3146,73 +3150,68 @@ app.register_blueprint(advisor_bp)
 
 # ... rest of the code ...
 
-# Initialize Flask-SocketIO only in development mode
-if os.environ.get("FLASK_ENV") == "development":
-    socketio = SocketIO(app, cors_allowed_origins="*")
-else:
-    # In production, create a dummy socketio for compatibility
-    socketio = None
+# Initialize Flask-SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # --- Real-time Stokvel Chat Events ---
-if socketio:  # Only register socketio events in development
-    @socketio.on('join_stokvel_room')
-    def handle_join_stokvel_room(data):
-        stokvel_id = data.get('stokvel_id')
-        user_id = session.get('user_id')
-        if stokvel_id and user_id:
-            join_room(f'stokvel_{stokvel_id}')
-            emit('status', {'msg': f'User joined stokvel chat.'}, room=f'stokvel_{stokvel_id}')
+@socketio.on('join_stokvel_room')
+def handle_join_stokvel_room(data):
+    stokvel_id = data.get('stokvel_id')
+    user_id = session.get('user_id')
+    if stokvel_id and user_id:
+        join_room(f'stokvel_{stokvel_id}')
+        emit('status', {'msg': f'User joined stokvel chat.'}, room=f'stokvel_{stokvel_id}')
 
-    @socketio.on('send_message')
-    def handle_send_message(data):
-        stokvel_id = data.get('stokvel_id')
-        message = data.get('message')
-        user_id = session.get('user_id')
-        username = None
-        if not (stokvel_id and message and user_id):
-            return
-        # Save message to DB
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("INSERT INTO stokvel_chat_messages (stokvel_id, user_id, message) VALUES (%s, %s, %s) RETURNING timestamp", (stokvel_id, user_id, message))
-                timestamp = cur.fetchone()[0]
-                conn.commit()
-                # Get username for display
-                cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (user_id,))
-                user_row = cur.fetchone()
-                if user_row:
-                    username = user_row[0]
-        emit('receive_message', {
-            'stokvel_id': stokvel_id,
-            'user_id': user_id,
-            'username': username,
-            'message': message,
-            'timestamp': str(timestamp)
-        }, room=f'stokvel_{stokvel_id}')
+@socketio.on('send_message')
+def handle_send_message(data):
+    stokvel_id = data.get('stokvel_id')
+    message = data.get('message')
+    user_id = session.get('user_id')
+    username = None
+    if not (stokvel_id and message and user_id):
+        return
+    # Save message to DB
+    with support.db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO stokvel_chat_messages (stokvel_id, user_id, message) VALUES (%s, %s, %s) RETURNING timestamp", (stokvel_id, user_id, message))
+            timestamp = cur.fetchone()[0]
+            conn.commit()
+            # Get username for display
+            cur.execute("SELECT username FROM users WHERE firebase_uid = %s", (user_id,))
+            user_row = cur.fetchone()
+            if user_row:
+                username = user_row[0]
+    emit('receive_message', {
+        'stokvel_id': stokvel_id,
+        'user_id': user_id,
+        'username': username,
+        'message': message,
+        'timestamp': str(timestamp)
+    }, room=f'stokvel_{stokvel_id}')
 
-    @socketio.on('fetch_messages')
-    def handle_fetch_messages(data):
-        stokvel_id = data.get('stokvel_id')
-        if not stokvel_id:
-            return
-        messages = []
-        with support.db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT m.user_id, u.username, m.message, m.timestamp
-                    FROM stokvel_chat_messages m
-                    JOIN users u ON m.user_id = u.firebase_uid
-                    WHERE m.stokvel_id = %s
-                    ORDER BY m.timestamp ASC
-                """, (stokvel_id,))
-                for row in cur.fetchall():
-                    messages.append({
-                        'user_id': row[0],
-                        'username': row[1],
-                        'message': row[2],
-                        'timestamp': str(row[3])
-                    })
-        emit('chat_history', {'messages': messages})
+@socketio.on('fetch_messages')
+def handle_fetch_messages(data):
+    stokvel_id = data.get('stokvel_id')
+    if not stokvel_id:
+        return
+    messages = []
+    with support.db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT m.user_id, u.username, m.message, m.timestamp
+                FROM stokvel_chat_messages m
+                JOIN users u ON m.user_id = u.firebase_uid
+                WHERE m.stokvel_id = %s
+                ORDER BY m.timestamp ASC
+            """, (stokvel_id,))
+            for row in cur.fetchall():
+                messages.append({
+                    'user_id': row[0],
+                    'username': row[1],
+                    'message': row[2],
+                    'timestamp': str(row[3])
+                })
+    emit('chat_history', {'messages': messages})
 
 @app.route('/stokvel/<int:stokvel_id>/add_member', methods=['POST'])
 @login_required
@@ -3541,27 +3540,7 @@ def request_loan():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    
-    # Check if we're in development or production
-    debug_mode = os.environ.get("FLASK_ENV") == "development"
-    
-    print("🚀 Starting KasiKash Application...")
-    print("=" * 50)
-    
-    if debug_mode and socketio:
-        # Development mode - use socketio for real-time features
-        print(f"🌐 Development Mode")
-        print(f"📱 Application running on: http://127.0.0.1:{port}")
-        print(f"🔧 Debug mode: ENABLED")
-        print("=" * 50)
-        socketio.run(app, host="127.0.0.1", port=port, debug=True)
-    else:
-        # Production mode - use Flask app directly
-        print(f" Production Mode")
-        print(f"📱 Application running on: http://0.0.0.0:{port}")
-        print(f"🔧 Debug mode: DISABLED")
-        print("=" * 50)
-        app.run(host="0.0.0.0", port=port, debug=False)
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)
 
 # Inject _ into Jinja2 context for translations
 try:
