@@ -3544,19 +3544,19 @@ if __name__ == "__main__":
     print("=" * 50)
     
     if debug_mode:
-        # Development mode - local access only, with debug interface
+        # Development mode - use socketio for real-time features
         print(f"🌐 Development Mode")
         print(f"📱 Application running on: http://127.0.0.1:{port}")
         print(f"🔧 Debug mode: ENABLED")
         print("=" * 50)
         socketio.run(app, host="127.0.0.1", port=port, debug=True)
     else:
-        # Production mode - bind to localhost for deployment compatibility
+        # Production mode - use Flask app directly for deployment
         print(f"🌐 Production Mode")
         print(f"📱 Application running on: http://localhost:{port}")
         print(f"🔧 Debug mode: DISABLED")
         print("=" * 50)
-        socketio.run(app, host="localhost", port=port, debug=False)
+        app.run(host="localhost", port=port, debug=False)
 
 # Inject _ into Jinja2 context for translations
 try:
