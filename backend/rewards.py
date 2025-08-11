@@ -1,20 +1,46 @@
+# --- Voucher Purchase Route for Member Interface ---
+
+# --- Voucher Purchase Route for Member Interface ---
+
+
+
 import os
+import psycopg2
 import random
 import string
 from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for, flash
-import psycopg2
-
-rewards_bp = Blueprint('rewards', __name__)
 
 def get_db_connection():
     return psycopg2.connect(
-        dbname=os.getenv('DB_NAME'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        host=os.getenv('DB_HOST', 'localhost'),
-        port=os.getenv('DB_PORT', 5432)
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT"),
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD")
     )
 
+rewards_bp = Blueprint('rewards', __name__)
+
+@rewards_bp.route('/purchase_voucher', methods=['POST'])
+def purchase_voucher():
+    firebase_uid = session.get('user_id')
+    if not firebase_uid:
+        flash('You must be logged in to purchase a voucher.', 'danger')
+        return redirect(url_for('login'))
+    voucher_type = request.form.get('voucher_type')
+    amount = request.form.get('amount')
+    if not voucher_type or not amount:
+        flash('Please select a voucher type and amount.', 'danger')
+        return redirect(url_for('rewards.rewards_card_page'))
+    try:
+        amount = float(amount)
+        # Optionally: Check if user has enough balance, deduct, etc.
+        voucher_code = create_voucher(firebase_uid, voucher_type, amount)
+        flash(f'Voucher purchased! Code: {voucher_code}', 'success')
+    except Exception as e:
+        print('Voucher purchase error:', e)
+        flash('Failed to purchase voucher. Please try again.', 'danger')
+    return redirect(url_for('rewards.rewards_card_page'))
 def generate_card_number():
     return ''.join([str(random.randint(0, 9)) for _ in range(16)])
 
