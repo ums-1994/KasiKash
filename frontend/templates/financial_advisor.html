@@ -6,35 +6,11 @@
   <h1 class="text-2xl font-semibold mb-4">KasiKash Financial Advisor</h1>
   <div class="mb-6">
     <nav class="flex space-x-4" id="advisor-tabs">
-      <button class="tab-btn px-4 py-2 rounded bg-blue-900 text-cyan-300 font-semibold" data-tab="overview">Overview</button>
-      <button class="tab-btn px-4 py-2 rounded text-cyan-300 hover:bg-blue-800" data-tab="upload">Upload</button>
+      <button class="tab-btn px-4 py-2 rounded bg-blue-900 text-cyan-300 font-semibold" data-tab="upload">Upload</button>
       <button class="tab-btn px-4 py-2 rounded text-cyan-300 hover:bg-blue-800" data-tab="ai">Financial Assistant</button>
     </nav>
   </div>
-  <div id="tab-overview" class="tab-content">
-    {% include "advisor/insights.html" %}
-    {% include "advisor/budget.html" %}
-    <!-- Show advice and analysis below the graphs -->
-    <div id="overview-charts" style="display:flex; gap:2rem; flex-wrap:wrap;">
-      <div style="flex:1 1 300px;">
-        <h4>Spending by Category</h4>
-        <canvas id="spendingPieChart"></canvas>
-      </div>
-      <div style="flex:1 1 300px;">
-        <h4>Spending Over Time</h4>
-        <canvas id="spendingBarChart"></canvas>
-      </div>
-    </div>
-    <div id="overview-advice-analysis">
-      {% if session['advisor_analysis'] %}
-        <div class="mt-8">
-          <h2 class="text-lg font-bold mb-2">AI Financial Analysis & Advice</h2>
-          <div class="p-4 border rounded bg-gray-50 text-gray-900">{{ session['advisor_analysis']|safe }}</div>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-  <div id="tab-upload" class="tab-content hidden">
+  <div id="tab-upload" class="tab-content">
     {% include "advisor/upload.html" %}
   </div>
   <div id="tab-ai" class="tab-content hidden">
@@ -54,19 +30,8 @@
 <!-- Add Chart.js before financial_advisor.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/financial_advisor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 <script>
 window.USER_ID = "{{ user_id|e }}";
-// Simple tab switching
-const tabBtns = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
-tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    tabBtns.forEach(b => b.classList.remove('bg-blue-900'));
-    btn.classList.add('bg-blue-900');
-    const tab = btn.getAttribute('data-tab');
-    tabContents.forEach(tc => tc.classList.add('hidden'));
-    document.getElementById('tab-' + tab).classList.remove('hidden');
-  });
-});
 </script>
 {% endblock %} 

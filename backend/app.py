@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from rewards import rewards_bp
+from .rewards import rewards_bp
 from dotenv import load_dotenv
 
 load_dotenv()

@@ -5,7 +5,7 @@ import random
 import string
 from dotenv import load_dotenv
 from flask_mail import Message
-from your_flask_app import mail  # Adjust import as needed for your app
+# from your_flask_app import mail  # Adjust import as needed for your app
 import sys
 
 load_dotenv()

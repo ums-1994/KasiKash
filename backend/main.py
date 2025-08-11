@@ -1214,10 +1214,14 @@ def create_stokvel():
     description = request.form['description']
     monthly_contribution = request.form['monthly_contribution']
     
+    # Get optional fields
+    target_amount = request.form.get('target_amount')
+    target_date = request.form.get('target_date')
+    
     # Insert new stokvel and get its ID
-    query = "INSERT INTO stokvels (name, description, created_by, monthly_contribution) VALUES (%s, %s, %s, %s) RETURNING id"
+    query = "INSERT INTO stokvels (name, description, created_by, monthly_contribution, target_amount, target_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
     result = support.execute_query(
-    "insert", query, (name, description, user_id, monthly_contribution))
+        "insert", query, (name, description, user_id, monthly_contribution, target_amount, target_date))
 
     stokvel_id = result[0] if result else None
     if stokvel_id:
@@ -2955,7 +2959,12 @@ def handle_chat():
                     print(f"OpenRouter API error: {e}")
                     response = "Sorry, I encountered an error with the AI service. Please try again later."
         else:  # mode == 'rule'
-            response = rule_based_chat(user_message, user_id, user_name)
+            try:
+                from .chatbot_enhanced import enhanced_rule_based_chat
+                response = enhanced_rule_based_chat(user_message, user_id, user_name)
+            except ImportError:
+                # Fallback to original function if enhanced module not available
+                response = rule_based_chat(user_message, user_id, user_name)
 
         # Save chat history (for both modes)
         try:

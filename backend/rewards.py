@@ -151,17 +151,17 @@ def create_voucher(firebase_uid, voucher_type, amount):
     
     # Ensure voucher code is unique
     while True:
-        cur.execute("SELECT id FROM vouchers WHERE voucher_code = %s", (voucher_code,))
+        cur.execute("SELECT id FROM vouchers WHERE code = %s", (voucher_code,))
         if not cur.fetchone():
             break
         voucher_code = generate_voucher_code()
     
     # Insert voucher
-    cur.execute("""
-        INSERT INTO vouchers (user_id, voucher_type, voucher_code, amount)
-        VALUES (%s, %s, %s, %s)
-        RETURNING id
-    """, (firebase_uid, voucher_type, voucher_code, amount))
+        cur.execute("""
+            INSERT INTO vouchers (user_id, voucher_type, code, amount)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id
+        """, (firebase_uid, voucher_type, voucher_code, amount))
     
     voucher_id = cur.fetchone()[0]
     conn.commit()
@@ -843,7 +843,7 @@ def view_vouchers():
     
     # Get user's vouchers
     cur.execute("""
-        SELECT id, voucher_type, voucher_code, amount, status, created_at, used_at
+        SELECT id, voucher_type, code, amount, status, created_at, redeemed_at
         FROM vouchers 
         WHERE user_id = %s 
         ORDER BY created_at DESC
@@ -879,7 +879,7 @@ def redeem_voucher(voucher_code):
     cur.execute("""
         SELECT id, voucher_type, amount, status 
         FROM vouchers 
-        WHERE voucher_code = %s AND user_id = %s
+        WHERE code = %s AND user_id = %s
     """, (voucher_code, firebase_uid))
     
     voucher = cur.fetchone()
@@ -898,7 +898,7 @@ def redeem_voucher(voucher_code):
     # Mark voucher as used
     cur.execute("""
         UPDATE vouchers 
-        SET status = 'used', used_at = NOW() 
+        SET status = 'used', redeemed_at = NOW() 
         WHERE id = %s
     """, (voucher_id,))
     
