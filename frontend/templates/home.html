@@ -3,16 +3,51 @@
 {% block title %}Dashboard - KasiKash{% endblock %}
 
 {% block extra_css %}
-<!-- Add any additional CSS for this page here -->
+<link href="https://fonts.googleapis.com/css?family=Inter:400,600|Montserrat:700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    .pattern-wavy {
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    }
-     /* Add specific styles for the charts if needed, or rely on Plotly defaults and container size */
-    .chart {
-        width: 100%;
-        height: 300px; /* Adjust height as needed */
-    }
+body {
+  background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed !important;
+  min-height: 100vh;
+}
+.glass-card, .dashboard-card, .bg-white, .shadow-md {
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10) !important;
+  border: 2px solid #22304a !important;
+  color: #eaf6fb !important;
+}
+.glass-card:hover, .dashboard-card:hover, .bg-white:hover, .shadow-md:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 8px 32px rgba(35,41,70,0.16) !important;
+  border: 2px solid #60efff !important;
+  background: linear-gradient(120deg, #22304a 0%, #60efff 100%) !important;
+}
+.dashboard-card h3, .glass-card h3, .dashboard-card h2, .glass-card h2 {
+  color: #60efff !important;
+}
+.dashboard-card p, .glass-card p {
+  color: #b2f7ef !important;
+}
+.dashboard-btn, .btn {
+  background: linear-gradient(90deg, #60efff 0%, #00ff87 100%) !important;
+  color: #101c2c !important;
+  border: none !important;
+  border-radius: 7px !important;
+  padding: 0.6rem 1.7rem !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: inline-block;
+  min-width: 110px;
+  vertical-align: middle;
+  line-height: 1.2;
+  box-shadow: 0 2px 8px rgba(96,239,255,0.10) !important;
+}
+.dashboard-btn:hover, .btn:hover {
+  background: linear-gradient(90deg, #00ff87 0%, #60efff 100%) !important;
+  color: #101c2c !important;
+  box-shadow: 0 4px 16px rgba(0,255,135,0.18) !important;
+}
 </style>
 {% endblock %}
 
@@ -27,11 +62,11 @@
 {% block content %}
 
 <!-- Welcome Banner -->
-<div class="relative h-48 w-full bg-gradient-to-r from-green-500 to-orange-500 flex items-center p-8 rounded-lg shadow-md text-white text-xl font-semibold overflow-hidden">
-    <div class="absolute inset-0 pattern-wavy pattern-green-600 pattern-opacity-20 pattern-size-6"></div>
+<div class="relative h-48 w-full flex items-center p-8 rounded-lg shadow-md text-white text-xl font-semibold overflow-hidden"
+     style="background: linear-gradient(135deg, #3b82f6 0%, #60efff 100%); border: 2px solid #60efff; box-shadow: 0 4px 24px rgba(59, 130, 246, 0.15);">
     <div class="relative z-10">
-        <h2 class="text-3xl font-bold mb-2">Sawubona, {{ user_name }}! 👋</h2>
-        <p>You're doing great with your savings journey. Keep up the excellent work!</p>
+        <h2 class="text-3xl font-bold mb-2" style="color: #fff;">Sawubona, {{ user_name }}! 👋</h2>
+        <p style="color: #e0f2fe;">You're doing great with your savings journey. Keep up the excellent work!</p>
     </div>
 </div>
 
