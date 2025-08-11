@@ -355,6 +355,12 @@ def events():
         event_type = request.form.get('event_type')
         target_date = request.form.get('target_date')
         send_notification = 'send_notification' in request.form
+        # Debug: Log all form values
+        print(f"[DEBUG] Event creation form values: stokvel_id={stokvel_id}, name={name}, description={description}, event_type={event_type}, target_date={target_date}, send_notification={send_notification}")
+        if not stokvel_id or not name or not description or not event_type or not target_date:
+            flash('All fields are required to create an event.', 'danger')
+            print('[ERROR] Missing required event fields.')
+            return redirect(url_for('admin.events'))
         try:
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
@@ -369,7 +375,8 @@ def events():
                     members = cur.fetchall()
                     # Add event to each member's diary (calendar)
                     if not members:
-                        print(f"No members found for stokvel {stokvel_id}, event {event_id}")
+                        print(f"[ERROR] No members found for stokvel {stokvel_id}, event {event_id}")
+                        flash('No members found for the selected stokvel.', 'danger')
                     for member in members:
                         user_id = member[0]
                         if user_id:
@@ -377,7 +384,7 @@ def events():
                                 cur.execute("INSERT INTO diary (user_id, event_id, event_name, event_date, description) VALUES (%s, %s, %s, %s, %s)",
                                     (user_id, event_id, event_type, target_date, description))
                             except Exception as diary_e:
-                                print(f"Could not add to diary for user {user_id}: {diary_e}")
+                                print(f"[ERROR] Could not add to diary for user {user_id}: {diary_e}")
                     conn.commit()
                     # Notify all members and the creator
                     if send_notification:
@@ -393,10 +400,10 @@ def events():
                             message = f"You have created a new event '{event_type}' for your stokvel."
                             link = url_for('admin.events')
                             create_notification(creator_id, message, link_url=link, notification_type='event')
-            flash('Event created and notifications sent!', 'success')
+                flash('Event created and notifications sent!', 'success')
         except Exception as e:
-            print(f"Error creating event: {e}")
-            flash('Failed to create event.', 'danger')
+            print(f"[ERROR] Exception creating event: {e}")
+            flash('Failed to create event. Check logs for details.', 'danger')
         return redirect(url_for('admin.events'))
 
     events, stokvels = [], []

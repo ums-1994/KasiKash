@@ -788,3 +788,21 @@ body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-car
   box-shadow: 0 8px 32px 0 rgba(96,239,255,0.18), 0 2px 12px rgba(67,233,123,0.10);
   z-index: 2;
 }
+
+/* Dark mode for rewards cards */
+.dark-mode .rewards-stats-card,
+.dark-mode .rewards-card,
+.dark-mode .card {
+  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
+  color: #eaf6fb !important;
+  border: 1px solid #22304a !important;
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
+}
+
+/* Light mode override for rewards cards */
+body.light-mode .rewards-stats-card,
+body.light-mode .rewards-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  color: #1e293b !important;
+  border: 1.5px solid #e2e8f0 !important;
+}
