@@ -172,10 +172,8 @@ def create_voucher(firebase_uid, voucher_type, amount):
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # Get internal user ID
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
-        raise ValueError("User not found")
+    # For vouchers, we'll use the firebase_uid directly since that's how the table is structured
+    # This maintains consistency with the string-based user_id in the vouchers table
     
     # Generate unique voucher code
     voucher_code = generate_voucher_code()
@@ -188,12 +186,12 @@ def create_voucher(firebase_uid, voucher_type, amount):
         voucher_code = generate_voucher_code()
     
     try:
-        # Insert voucher
+        # Insert voucher using firebase_uid directly
         cur.execute("""
             INSERT INTO vouchers (user_id, voucher_type, code, amount)
             VALUES (%s, %s, %s, %s)
             RETURNING id
-        """, (user_id, voucher_type, voucher_code, amount))
+        """, (firebase_uid, voucher_type, voucher_code, amount))
         
         result = cur.fetchone()
         if result is None:
@@ -964,25 +962,19 @@ def view_vouchers():
         flash('Please log in to view your vouchers.', 'error')
         return redirect(url_for('login'))
     
-    # Get internal user ID
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
-        flash('User account not found.', 'error')
-        return redirect(url_for('login'))
-    
     conn = None
     cur = None
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         
-        # Get user's vouchers
+        # Get user's vouchers using firebase_uid directly
         cur.execute("""
             SELECT id, voucher_type, code, amount, status, created_at, redeemed_at
             FROM vouchers 
             WHERE user_id = %s 
             ORDER BY created_at DESC
-        """, (user_id,))
+        """, (firebase_uid,))
         
         vouchers = [
             {
@@ -1014,21 +1006,16 @@ def redeem_voucher(voucher_code):
     firebase_uid = session.get('user_id')
     if not firebase_uid:
         return jsonify({'error': 'User not authenticated'}), 401
-        
-    # Get internal user ID
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
-        return jsonify({'error': 'User account not found'}), 404
     
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # Check if voucher exists and belongs to user
+    # Check if voucher exists and belongs to user using firebase_uid
     cur.execute("""
         SELECT id, voucher_type, amount, status 
         FROM vouchers 
         WHERE code = %s AND user_id = %s
-    """, (voucher_code, user_id))
+    """, (voucher_code, firebase_uid))
     
     voucher = cur.fetchone()
     if not voucher:
