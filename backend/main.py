@@ -611,6 +611,22 @@ def login_validation():
                 user_record = auth.get_user_by_email(email)
                 print(f"User found: {user_record.uid}")  # Debug log
 
+                # Ensure user exists in local database
+                try:
+                    with support.db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("SELECT id FROM users WHERE firebase_uid = %s", (user_record.uid,))
+                            user = cur.fetchone()
+                            if not user:
+                                # User does not exist in local DB, create them
+                                cur.execute(
+                                    "INSERT INTO users (firebase_uid, username, email) VALUES (%s, %s, %s)",
+                                    (user_record.uid, user_record.display_name or user_record.email, user_record.email)
+                                )
+                                conn.commit()
+                except Exception as e:
+                    print(f"Error ensuring user exists in local DB: {e}")
+
                 session.clear()  # Clear any existing session data
                 session['user_id'] = str(user_record.uid)  # Ensure it's a string
                 session['username'] = str(user_record.display_name or email)  # Ensure it's a string
@@ -3032,10 +3048,7 @@ def handle_chat():
             print(f"Error saving chat history: {e}")
 
         # Return the response to the frontend
-        return jsonify(
-    response=response,
-    mode=mode,
-     timestamp=datetime.now().strftime('%H:%M'))
+        return jsonify(response=response, mode=mode, timestamp=datetime.now().strftime('%H:%M'))
 
     except Exception as e:
         print(f"Chat handler error: {e}")
@@ -3223,6 +3236,13 @@ def handle_send_message(data):
     username = None
     if not (stokvel_id and message and user_id):
         return
+    # Normalize message to string to avoid None issues
+    if not isinstance(message, str):
+        try:
+            message = str(message)
+        except Exception:
+            return
+    message = message.rstrip('\n')
     # Save message to DB
     with support.db_connection() as conn:
         with conn.cursor() as cur:
@@ -3265,6 +3285,119 @@ def handle_fetch_messages(data):
                     'timestamp': str(row[3])
                 })
     emit('chat_history', {'messages': messages})
+
+@socketio.on('typing')
+def handle_typing(data):
+    stokvel_id = data.get('stokvel_id')
+    if stokvel_id:
+        emit('show_typing', {}, room=f'stokvel_{stokvel_id}', include_self=False)
+
+@socketio.on('stop_typing')
+def handle_stop_typing(data):
+    stokvel_id = data.get('stokvel_id')
+    if stokvel_id:
+        emit('hide_typing', {}, room=f'stokvel_{stokvel_id}', include_self=False)
+
+# New routes for messages hub and unread APIs
+@app.route('/messages')
+@login_required
+def messages_hub():
+    user_id = session.get('user_id')
+    groups = []
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT s.id, s.name,
+                           COALESCE((
+                               SELECT COUNT(*) FROM stokvel_chat_messages m
+                               WHERE m.stokvel_id = s.id AND m.timestamp > COALESCE((
+                                   SELECT last_read_at FROM stokvel_chat_reads r
+                                   WHERE r.user_id = %s AND r.stokvel_id = s.id
+                               ), 'epoch')
+                           ), 0) AS unread
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON sm.stokvel_id = s.id
+                    WHERE sm.user_id = %s
+                    ORDER BY s.name
+                    """,
+                    (user_id, user_id)
+                )
+                groups = cur.fetchall()
+    except Exception as e:
+        print(f"Error loading messages hub: {e}")
+        groups = []
+    return render_template('messages.html', groups=groups)
+
+@app.route('/api/chats/unread')
+@login_required
+def api_chats_unread():
+    user_id = session.get('user_id')
+    data = {}
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT s.id,
+                           COALESCE((
+                               SELECT COUNT(*) FROM stokvel_chat_messages m
+                               WHERE m.stokvel_id = s.id AND m.timestamp > COALESCE((
+                                   SELECT last_read_at FROM stokvel_chat_reads r
+                                   WHERE r.user_id = %s AND r.stokvel_id = s.id
+                               ), 'epoch')
+                           ), 0) AS unread
+                    FROM stokvels s
+                    JOIN stokvel_members sm ON sm.stokvel_id = s.id
+                    WHERE sm.user_id = %s
+                    """,
+                    (user_id, user_id)
+                )
+                for row in cur.fetchall():
+                    data[str(row[0])] = int(row[1])
+    except Exception as e:
+        return jsonify({}), 500
+    return jsonify(data)
+
+@app.route('/api/chats/mark-read', methods=['POST'])
+@login_required
+def api_chats_mark_read():
+    user_id = session.get('user_id')
+    stokvel_id = request.json.get('stokvel_id')
+    if not stokvel_id:
+        return jsonify({'ok': False}), 400
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO stokvel_chat_reads (user_id, stokvel_id, last_read_at)
+                    VALUES (%s, %s, NOW())
+                    ON CONFLICT (user_id, stokvel_id)
+                    DO UPDATE SET last_read_at = EXCLUDED.last_read_at
+                    """,
+                    (user_id, stokvel_id)
+                )
+                conn.commit()
+    except Exception as e:
+        return jsonify({'ok': False}), 500
+    return jsonify({'ok': True})
+
+@app.route('/stokvel/<int:stokvel_id>/chat')
+@login_required
+def stokvel_chat_page(stokvel_id):
+    stokvel_name = 'Stokvel'
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT name FROM stokvels WHERE id = %s", (stokvel_id,))
+                row = cur.fetchone()
+                if row:
+                    stokvel_name = row[0]
+    except Exception as e:
+        print(f"Error loading stokvel chat page: {e}")
+    return render_template('chat_room.html', stokvel_id=stokvel_id, stokvel_name=stokvel_name)
 
 @app.route('/stokvel/<int:stokvel_id>/add_member', methods=['POST'])
 @login_required
@@ -3349,24 +3482,49 @@ def remove_stokvel_member(stokvel_id, member_id):
 @login_required
 def referral():
     if request.method == 'POST':
-        email = request.form.get('email')
-        inviter_name = request.form.get('inviter_name')
-        stokvel_name = request.form.get('stokvel_name')
-        if email and inviter_name and stokvel_name:
-            try:
-                msg = Message(
-                    subject=f"You've been invited to join {stokvel_name}!",
-                    recipients=[email],
-                    body=f"Hi! {inviter_name} has invited you to join {stokvel_name}. Click here to register: https://your-app-url/register"
-                )
-                mail.send(msg)
-                flash(f'Referral email sent to {email}!', 'success')
-            except Exception as e:
-                print(f"Error sending email: {e}")
-                flash('Failed to send referral email. Please try again later.', 'danger')
-        else:
+        email = request.form.get('email', '').strip()
+        inviter_name = request.form.get('inviter_name', '').strip()
+        stokvel_name = request.form.get('stokvel_name', '').strip()
+
+        if not email or not inviter_name or not stokvel_name:
             flash('Please enter all required fields.', 'danger')
+            return redirect(url_for('referral'))
+
+        try:
+            inviter_uid = session.get('user_id')
+            referral_link = url_for('register', _external=True) + f"?ref={inviter_uid}"
+
+            subject = f"{inviter_name} invited you to join {stokvel_name} on KasiKash"
+            html_body = f"""
+                <html>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <h2 style='color:#2c5282; margin:0 0 12px;'>You're invited to {stokvel_name}!</h2>
+                    <p>Hi there,</p>
+                    <p><strong>{inviter_name}</strong> has invited you to join <strong>{stokvel_name}</strong> on KasiKash.</p>
+                    <p>Click the button below to create your account and join:</p>
+                    <p style='margin: 24px 0;'>
+                        <a href='{referral_link}' style='background:#2c5282;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;'>Join KasiKash</a>
+                    </p>
+                    <p>If the button doesn't work, copy and paste this link:</p>
+                    <p><a href='{referral_link}'>{referral_link}</a></p>
+                    <hr style='border:1px solid #eee;margin:24px 0;'>
+                    <p style='color:#666;font-size:12px;'>Thanks,<br/>The KasiKash Team</p>
+                </body>
+                </html>
+            """
+
+            # Use shared SMTP helper for better reliability
+            sent = send_email(email, subject, html_body)
+            if sent:
+                flash(f'Referral email sent to {email}!', 'success')
+            else:
+                flash('Failed to send referral email. Please check email settings and try again.', 'danger')
+        except Exception as e:
+            print(f"Error sending referral email: {e}")
+            flash('Failed to send referral email. Please try again later.', 'danger')
+
         return redirect(url_for('referral'))
+
     return render_template('referral.html')
 
 @app.context_processor

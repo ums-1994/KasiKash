@@ -486,10 +486,12 @@
         <div style="font-size: 1.25rem; font-weight: 700; color: #60efff;" data-stat="stokvels">{{ active_stokvels_count|default(0) }}</div>
         <div style="font-size: 0.75rem; color: #b2f7ef;">Stokvels</div>
       </div>
-      <div style="background: rgba(0,255,135,0.1); border-radius: 0.75rem; padding: 0.75rem; text-align: center; border: 1px solid rgba(0,255,135,0.2);">
-        <div style="font-size: 1.25rem; font-weight: 700; color: #00ff87;" data-stat="contributions">R{{ "%.0f"|format(total_contributions|default(0)) }}</div>
-        <div style="font-size: 0.75rem; color: #b2f7ef;">Contributed</div>
-      </div>
+      <a href="/messages" style="text-decoration:none;">
+        <div style="background: rgba(0,255,135,0.1); border-radius: 0.75rem; padding: 0.75rem; text-align: center; border: 1px solid rgba(0,255,135,0.2);">
+          <div id="unread-total" style="font-size: 1.25rem; font-weight: 700; color: #00ff87;">0</div>
+          <div style="font-size: 0.75rem; color: #b2f7ef;">Messages</div>
+        </div>
+      </a>
     </div>
     
     <!-- Stokvel Memberships Visualizer -->

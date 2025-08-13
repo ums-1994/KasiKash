@@ -14,6 +14,7 @@ from fpdf import FPDF
 import os
 from flask_babel import _
 from ..rewards import add_reward
+from datetime import datetime
 
 # Add this context processor to make 't' available in all templates
 @admin_bp.app_context_processor
@@ -358,10 +359,15 @@ def events():
         try:
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
-                    # Insert event
+                    # Ensure calendar-friendly columns are populated too
+                    created_by = session.get('user_id')
                     cur.execute(
-                        "INSERT INTO events (stokvel_id, name, description, event_type, target_date) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                        (stokvel_id, name, description, event_type, target_date)
+                        """
+                        INSERT INTO events (stokvel_id, name, description, event_type, target_date, title, event_date, created_by)
+                        VALUES (%s, %s, %s, %s, %s, COALESCE(%s, %s), %s, %s)
+                        RETURNING id
+                        """,
+                        (stokvel_id, name, description, event_type, target_date, name, event_type, target_date, created_by)
                     )
                     event_id = cur.fetchone()[0]
                     # Fetch all members of the stokvel
@@ -374,8 +380,10 @@ def events():
                         user_id = member[0]
                         if user_id:
                             try:
-                                cur.execute("INSERT INTO diary (user_id, event_id, event_name, event_date, description) VALUES (%s, %s, %s, %s, %s)",
-                                    (user_id, event_id, event_type, target_date, description))
+                                cur.execute(
+                                    "INSERT INTO diary (user_id, event_id, event_name, event_date, description) VALUES (%s, %s, %s, %s, %s)",
+                                    (user_id, event_id, event_type, target_date, description)
+                                )
                             except Exception as diary_e:
                                 print(f"Could not add to diary for user {user_id}: {diary_e}")
                     conn.commit()

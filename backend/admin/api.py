@@ -340,10 +340,24 @@ def get_diary_events():
     try:
         with support.db_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT event_date, event_name, description FROM diary WHERE user_id = %s ORDER BY event_date", (user_id,))
-                events = [
-                    {'date': row[0].isoformat(), 'name': row[1], 'description': row[2]} for row in cur.fetchall()
-                ]
+                # Prefer events from stokvels the user belongs to, falling back to diary if present
+                cur.execute("""
+                    SELECT e.target_date, e.event_type, e.description
+                    FROM events e
+                    JOIN stokvel_members sm ON sm.stokvel_id = e.stokvel_id
+                    WHERE sm.user_id = %s AND e.target_date IS NOT NULL
+                    ORDER BY e.target_date
+                """, (user_id,))
+                rows = cur.fetchall()
+                if rows:
+                    events = [
+                        {'date': r[0].isoformat(), 'name': r[1], 'description': r[2]} for r in rows
+                    ]
+                else:
+                    cur.execute("SELECT event_date, event_name, description FROM diary WHERE user_id = %s ORDER BY event_date", (user_id,))
+                    events = [
+                        {'date': row[0].isoformat(), 'name': row[1], 'description': row[2]} for row in cur.fetchall()
+                    ]
         return jsonify({'events': events})
     except Exception as e:
         return jsonify({'events': [], 'error': str(e)})

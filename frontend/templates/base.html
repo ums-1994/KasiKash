@@ -4,9 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#60efff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KasiKash">
+    <meta name="msapplication-TileColor" content="#60efff">
+    <meta name="msapplication-config" content="/static/browserconfig.xml">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/kasikash-logo.svg">
     <title>KasiKash - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-responsive.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
@@ -302,7 +310,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col max-h-screen overflow-y-auto">
+    <div class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col">
         <!-- Logo -->
         <div class="flex items-center justify-center h-16 logo-section flex-shrink-0">
             <a href="/" class="flex items-center space-x-3">
@@ -311,10 +319,8 @@
             </a>
         </div>
         <!-- Navigation -->
-        <nav class="mt-4 flex-1 overflow-y-auto">
+        <nav class="mt-2" style="flex: 1 1 auto; min-height: 0;">
           <ul class="space-y-1">
-        <nav class="mt-8" style="flex: 1 1 auto; min-height: 0;">
-          <ul class="space-y-2" style="overflow-y: auto; max-height: calc(100vh - 180px);">
             <li>
               <a href="/home" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
                 <i class="fas fa-home mr-2"></i> Home
@@ -323,6 +329,13 @@
             <li>
               <a href="/stokvels" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
                 <i class="fas fa-users mr-2"></i> Stokvels
+              </a>
+            </li>
+            <li>
+              <a href="/messages" class="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-800 rounded transition text-sm">
+                <i class="fas fa-comments mr-2"></i>
+                Messages
+                <span id="sidebar-unread" class="ml-auto inline-flex items-center justify-center text-xs font-bold" style="background:#ff5a5f;color:white;border-radius:9999px;min-width:18px;height:18px;padding:0 6px;display:none;">0</span>
               </a>
             </li>
             <li>
@@ -370,18 +383,18 @@
           </ul>
         </nav>
         <!-- User Section -->
-        <div class="w-full p-4 user-section flex-shrink-0 mt-auto">
+        <div class="w-full p-3 user-section flex-shrink-0 mt-auto">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-xl user-avatar flex items-center justify-center text-white font-bold text-base">
+                    <div class="w-8 h-8 rounded-xl user-avatar flex items-center justify-center text-white font-bold text-sm">
                         {% set name = username if username else 'User' %}
                         {% set name_parts = name.split() %}
                         {% set initials = (name_parts[0][0] ~ (name_parts[1][0] if name_parts|length > 1 else '')) | upper %}
                         {{ initials }}
                     </div>
                 </div>
-                <div class="ml-3">
-                    <a href="/logout" class="text-sm logout-link">{{ 'Logout' }}</a>
+                <div class="ml-2">
+                    <a href="/logout" class="text-xs logout-link">{{ 'Logout' }}</a>
                 </div>
             </div>
         </div>
@@ -432,8 +445,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    {% include 'chatbot.html' %}
-    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile-responsive.js') }}"></script>
     
     <!-- Theme Switching JavaScript -->
     <script>

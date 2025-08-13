@@ -79,10 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setChatbotState(!currentlyMinimized);
     });
 
-    // Open chat window from FAB
-    chatbotFab.addEventListener('click', () => {
-        setChatbotState(false); // Open the chatbot
-    });
+    // Redirect FAB to messages page
+    if (chatbotFab) {
+        chatbotFab.addEventListener('click', () => {
+            window.location.href = '/messages';
+        });
+    }
 
     // Allow clicking the header to minimize/maximize (excluding controls)
     document.getElementById('chatbot-header').addEventListener('click', (e) => {

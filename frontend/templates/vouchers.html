@@ -1,21 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
   <div class="container mx-auto py-8 px-4">
     <div class="max-w-7xl mx-auto">
       <!-- Header Section -->
       <div class="text-center mb-12">
-        <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-4 tracking-tight">
+        <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 mb-4 tracking-tight">
           My Vouchers
         </h1>
-        <p class="text-xl text-gray-300 font-light">Your digital vouchers and reward codes</p>
+        <p class="text-xl text-gray-700 font-light">Your digital vouchers and reward codes</p>
       </div>
 
       <!-- Vouchers Grid -->
       {% if vouchers %}
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {% for voucher in vouchers %}
-        <div class="group bg-white/5 backdrop-blur-sm rounded-2xl shadow-xl border border-white/10 hover:scale-105 transition-all duration-300 overflow-hidden">
+        <div class="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 hover:scale-105 transition-all duration-300 overflow-hidden">
           <!-- Voucher Header -->
           <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 text-white relative">
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-pulse"></div>
@@ -49,9 +49,9 @@
           <!-- Voucher Code Section -->
           <div class="p-6">
             <div class="mb-6">
-              <label class="block text-sm font-bold text-white mb-3">Voucher Code</label>
+              <label class="block text-sm font-bold text-gray-900 mb-3">Voucher Code</label>
               <div class="flex items-center space-x-3">
-                <div class="flex-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-4 font-mono text-lg font-bold text-white">
+                <div class="flex-1 bg-gray-100 backdrop-blur-sm border border-gray-300 rounded-xl px-4 py-4 font-mono text-lg font-bold text-gray-900">
                   {{ voucher.code }}
                 </div>
                 {% if voucher.status == 'active' %}
@@ -65,7 +65,7 @@
                 {% endif %}
               </div>
             </div>
-            <div class="space-y-3 text-sm text-gray-300 mb-6">
+            <div class="space-y-3 text-sm text-gray-600 mb-6">
               <div class="flex justify-between items-center">
                 <span class="font-medium">Type:</span>
                 {% if voucher.type.startswith('airtime_') %}
@@ -112,7 +112,7 @@
         {% endfor %}
       </div>
       <!-- Floating Get More Vouchers Button -->
-      <button onclick="window.location.href='{{ url_for('rewards.marketplace') }}'" id="get-more-vouchers-fab"
+      <button type="button" id="get-more-vouchers-fab" data-url="{{ url_for('rewards.marketplace') }}"
         class="fixed z-50 bottom-8 right-8 flex items-center px-8 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black text-xl rounded-full shadow-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/40 animate-pulse-glow">
         <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -150,13 +150,28 @@ function redeemVoucher(voucherCode) {
         return;
     }
     
+    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+
     fetch(`/rewards/vouchers/redeem/${voucherCode}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
         }
     })
-    .then(response => response.json())
+    .then(async response => {
+        if (!response.ok) {
+            // Try to extract JSON error; if not JSON, throw to catch
+            try {
+                const data = await response.json();
+                throw new Error(data && data.error ? data.error : 'Request failed');
+            } catch (_) {
+                throw new Error('Request failed');
+            }
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             alert(data.message);
@@ -170,6 +185,19 @@ function redeemVoucher(voucherCode) {
         alert('An error occurred while redeeming the voucher.');
     });
 }
+
+// Attach navigation for the floating action button without inline JS
+document.addEventListener('DOMContentLoaded', () => {
+    const fab = document.getElementById('get-more-vouchers-fab');
+    if (fab) {
+        fab.addEventListener('click', () => {
+            const url = fab.getAttribute('data-url');
+            if (url) {
+                window.location.href = url;
+            }
+        });
+    }
+});
 </script>
 {% endblock %} 
 

@@ -36,6 +36,17 @@ def run_migration():
         cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS target_date DATE;")
         print("✅ Checked/Added 'target_date' column.")
 
+        # Columns expected by calendar queries in dashboard (backward-compatibility)
+        cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS title VARCHAR(255);")
+        print("✅ Checked/Added 'title' column (alias of event_type/name for calendar).")
+
+        cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS event_date DATE;")
+        print("✅ Checked/Added 'event_date' column (alias of target_date for calendar).")
+
+        # Store creator firebase_uid used by the dashboard filter
+        cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS created_by VARCHAR(64);")
+        print("✅ Checked/Added 'created_by' column (firebase UID of creator).")
+
         conn.commit()
         print("\nMigration completed successfully!")
 

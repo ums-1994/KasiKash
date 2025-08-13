@@ -63,6 +63,57 @@ setInterval(updateNotificationBadge, 10000);
 // Run on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateNotificationBadge();
+    // Calendar navigation handlers
+    const prevBtn = document.getElementById('calendarPrevBtn');
+    const nextBtn = document.getElementById('calendarNextBtn');
+    const monthLabel = document.getElementById('calendarMonthLabel');
+
+    function parseLabel(labelEl){
+        if(!labelEl) return null;
+        // Expected format: "Month YYYY"
+        const parts = labelEl.textContent.trim().split(/\s+/);
+        if(parts.length < 2) return null;
+        const monthName = parts[0];
+        const year = parseInt(parts[1], 10);
+        const monthIndex = [
+            'January','February','March','April','May','June','July','August','September','October','November','December'
+        ].indexOf(monthName);
+        if(monthIndex === -1 || isNaN(year)) return null;
+        return {year, month: monthIndex+1};
+    }
+
+    function navigate(delta){
+        const parsed = parseLabel(monthLabel);
+        if(!parsed) return;
+        let {year, month} = parsed;
+        month += delta;
+        if(month === 0){ month = 12; year -= 1; }
+        if(month === 13){ month = 1; year += 1; }
+        const params = new URLSearchParams(window.location.search);
+        params.set('year', year);
+        params.set('month', month);
+        window.location.search = params.toString();
+    }
+
+    if(prevBtn){ prevBtn.addEventListener('click', () => navigate(-1)); }
+    if(nextBtn){ nextBtn.addEventListener('click', () => navigate(1)); }
+
+    // Unread total on dashboard
+    const unreadEl = document.getElementById('unread-total');
+    const sidebarUnread = document.getElementById('sidebar-unread');
+    if (unreadEl) {
+      fetch('/api/chats/unread')
+        .then(r => r.ok ? r.json() : {})
+        .then(map => {
+          const total = Object.values(map || {}).reduce((a, b) => a + (parseInt(b, 10) || 0), 0);
+          unreadEl.textContent = total;
+          if (sidebarUnread) {
+            sidebarUnread.textContent = total;
+            sidebarUnread.style.display = total > 0 ? 'inline-flex' : 'none';
+          }
+        })
+        .catch(() => {});
+    }
     
     // Also update when the page becomes visible (user switches back to tab)
     document.addEventListener('visibilitychange', function() {

@@ -88,12 +88,13 @@
     </div>
 </div>
 
-<!-- Floating Chat Button (top right, SVG icon) -->
-<button id="open-chat-btn" style="position: fixed; top: 32px; right: 32px; z-index: 1000; background: #2563eb; color: white; border: none; border-radius: 50%; width: 56px; height: 56px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+<!-- Floating Chat Button (top right, now links to full chat page) -->
+<a id="open-chat-btn" href="/stokvel/{{ stokvel.id }}/chat" style="position: fixed; top: 32px; right: 32px; z-index: 1000; background: #2563eb; color: white; border: none; border-radius: 50%; width: 56px; height: 56px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
   <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="white">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8L3 21l1.8-4A8.96 8.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
   </svg>
-</button>
+  <span class="sr-only">Open Chat</span>
+</a>
 
 <!-- Chat Modal -->
 <div id="chat-modal" style="display:none; position: fixed; bottom: 100px; right: 32px; z-index: 1100; background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.18); width: 350px; max-width: 95vw;">
@@ -122,17 +123,16 @@
   const chatModal = document.getElementById('chat-modal');
   const closeChatBtn = document.getElementById('close-chat-btn');
 
-  openChatBtn.addEventListener('click', function() {
-    chatModal.style.display = 'block';
-    // Fetch chat history every time modal opens
-    socket.emit('fetch_messages', { stokvel_id: stokvelId });
+  // Override click to navigate to full-page chat
+  openChatBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    window.location.href = '/stokvel/' + stokvelId + '/chat';
   });
   closeChatBtn.addEventListener('click', function() {
     chatModal.style.display = 'none';
   });
 
-  // Join the stokvel chat room (once)
-  socket.emit('join_stokvel_room', { stokvel_id: stokvelId });
+  // Do not auto-join socket rooms on the members page anymore; full chat page handles realtime
 
   // Display chat history
   socket.on('chat_history', function(data) {
@@ -142,6 +142,8 @@
       appendMessage(msg);
     });
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    // Mark as read after loading history
+    fetch('/api/chats/mark-read', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({stokvel_id: stokvelId})});
   });
 
   // Display new incoming messages
@@ -154,10 +156,37 @@
   // Helper to append a message
   function appendMessage(msg) {
     const chatMessages = document.getElementById('chat-messages');
-    const div = document.createElement('div');
-    div.className = 'mb-1';
-    div.innerHTML = '<span style="font-weight:600; color:#222;">' + (msg.username || 'User') + ':</span> <span style="color:#222;">' + msg.message + '</span> <span style="font-size:0.9em;color:#555; margin-left:8px;">' + (msg.timestamp ? new Date(msg.timestamp).toLocaleString() : '') + '</span>';
-    chatMessages.appendChild(div);
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'flex-start';
+    row.style.marginBottom = '8px';
+
+    const avatar = document.createElement('div');
+    avatar.style.width = '28px';
+    avatar.style.height = '28px';
+    avatar.style.borderRadius = '50%';
+    avatar.style.background = '#c7d2fe';
+    avatar.style.display = 'flex';
+    avatar.style.alignItems = 'center';
+    avatar.style.justifyContent = 'center';
+    avatar.style.fontWeight = '700';
+    avatar.style.marginRight = '8px';
+    const initial = (msg.username || 'U').trim().charAt(0).toUpperCase();
+    avatar.textContent = initial;
+
+    const bubble = document.createElement('div');
+    bubble.style.background = '#fff';
+    bubble.style.border = '1px solid #e5e7eb';
+    bubble.style.borderRadius = '12px';
+    bubble.style.padding = '6px 8px';
+    bubble.style.maxWidth = '75%';
+    bubble.innerHTML = '<div style="font-weight:600;color:#111;">' + (msg.username || 'User') + '</div>' +
+      '<div style="color:#111;">' + msg.message + '</div>' +
+      '<div style="font-size:0.8em;color:#6b7280;">' + (msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '') + '</div>';
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    chatMessages.appendChild(row);
   }
 
   // Send message
@@ -169,6 +198,31 @@
       socket.emit('send_message', { stokvel_id: stokvelId, message: message });
       input.value = '';
     }
+  });
+
+  // Typing indicator
+  const typingId = 'typing-indicator';
+  let typingTimeout;
+  const inputEl = document.getElementById('chat-input');
+  inputEl.addEventListener('input', function(){
+    socket.emit('typing', { stokvel_id: stokvelId });
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => socket.emit('stop_typing', { stokvel_id: stokvelId }), 1000);
+  });
+  socket.on('show_typing', function(){
+    const chatMessages = document.getElementById('chat-messages');
+    if (!document.getElementById(typingId)) {
+      const div = document.createElement('div');
+      div.id = typingId;
+      div.style.cssText = 'font-size:0.9em;color:#666;margin:4px 0;';
+      div.textContent = 'Someone is typing…';
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  });
+  socket.on('hide_typing', function(){
+    const el = document.getElementById(typingId);
+    if (el) el.remove();
   });
 </script>
 {% endblock %} 

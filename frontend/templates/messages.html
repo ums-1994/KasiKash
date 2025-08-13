@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold" style="color:#60efff;">Messages</h1>
+    <div class="text-sm" style="color:#b2f7ef;">Tap a group to open chat</div>
+  </div>
+  {% if groups %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for g in groups %}
+    <a href="/stokvel/{{ g[0] }}/chat" class="block rounded-lg p-4" style="background:#1e3357;border:1px solid #22304a;color:#eaf6fb;text-decoration:none;">
+      <div class="flex items-center justify-between">
+        <div class="font-semibold">{{ g[1] }}</div>
+        {% if g[2] and g[2] > 0 %}
+          <span class="inline-flex items-center justify-center text-xs font-bold" style="background:#ff5a5f;color:white;border-radius:9999px;min-width:24px;height:24px;padding:0 8px;">{{ g[2] }}</span>
+        {% endif %}
+      </div>
+      <div class="text-sm opacity-80 mt-2">Tap to open chat</div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center text-gray-300">You have no groups yet.</div>
+  {% endif %}
+</div>
+{% endblock %}
+
+

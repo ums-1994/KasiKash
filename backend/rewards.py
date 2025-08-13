@@ -157,11 +157,12 @@ def create_voucher(firebase_uid, voucher_type, amount):
         voucher_code = generate_voucher_code()
     
     # Insert voucher
+    # Note: Keep legacy "code" column populated to satisfy NOT NULL constraint in older schemas
     cur.execute("""
-        INSERT INTO vouchers (user_id, voucher_type, voucher_code, amount)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO vouchers (user_id, voucher_type, voucher_code, amount, code)
+        VALUES (%s, %s, %s, %s, %s)
         RETURNING id
-    """, (firebase_uid, voucher_type, voucher_code, amount))
+    """, (firebase_uid, voucher_type, voucher_code, amount, voucher_code))
     
     voucher_id = cur.fetchone()[0]
     conn.commit()
