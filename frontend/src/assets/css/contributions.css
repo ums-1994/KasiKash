@@ -1,0 +1,191 @@
+.contributions-banner {
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  color: #60efff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  padding: 2rem 2.5rem 2rem 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 110px;
+  border: 2px solid #22304a;
+}
+.contributions-banner h1 {
+  color: #60efff;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+.contributions-banner p {
+  color: #eaf6fb;
+  font-size: 1.2rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+.glass-card {
+  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  border: 2px solid #22304a;
+  color: #eaf6fb;
+  padding: 2rem;
+  position: relative;
+  transition: transform 0.18s, box-shadow 0.18s, border 0.18s, background 0.18s;
+}
+.glass-card:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 8px 32px rgba(35,41,70,0.16);
+  border: 2px solid #60efff;
+  background: linear-gradient(120deg, #22304a 0%, #60efff 100%);
+}
+.accent {
+  background: linear-gradient(90deg, #7B61FF, #61DAFB);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.glass-card h2, .glass-card .accent {
+  color: #60efff;
+}
+.glass-card p, .glass-card span, .glass-card .text-base {
+  color: #b2f7ef;
+}
+.btn-primary, .contributions-btn {
+  background: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
+  color: #101c2c;
+  border: none;
+  border-radius: 7px !important;
+  padding: 0.6rem 1.7rem !important;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  min-width: 110px;
+  vertical-align: middle;
+  line-height: 1.2;
+  box-shadow: 0 2px 8px rgba(96,239,255,0.10);
+  gap: 0.5em;
+  justify-content: center;
+}
+.btn-primary:hover, .contributions-btn:hover {
+  background: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
+  color: #101c2c;
+  box-shadow: 0 4px 16px rgba(0,255,135,0.18);
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.08);
+  color: #60efff;
+  border: 1.5px solid #22304a;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.btn-secondary:hover {
+  background: #22304a;
+  color: #fff;
+}
+.contributions-btn--danger {
+  color: #ff4d4f;
+}
+.contributions-btn--danger:hover {
+  color: #fff;
+  background: #ff4d4f;
+  border-radius: 7px;
+  transition: background 0.2s, color 0.2s;
+}
+.contributions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+}
+.contributions-table thead th {
+  color: #a0aec0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+}
+.contributions-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s ease-in-out;
+}
+.contributions-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.contributions-table tbody td {
+  padding: 1rem 1.5rem;
+  color: #e2e2f0;
+}
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.status-completed {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: #48BB78;
+}
+.status-pending {
+  background-color: rgba(236, 201, 75, 0.1);
+  color: #ECC94B;
+}
+.status-failed, .status-cancelled {
+  background-color: rgba(245, 101, 101, 0.1);
+  color: #F56565;
+}
+.form-input, .form-select {
+  background: rgba(30, 30, 46, 0.7);
+  border: 1.5px solid #22304a;
+  color: #E2E2F0;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.form-input:focus, .form-select:focus {
+  background: rgba(30, 30, 46, 0.9);
+  border-color: #60efff;
+  box-shadow: 0 0 15px rgba(96,239,255,0.15);
+  outline: none;
+}
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+@media (max-width: 900px) {
+  .glass-card {
+    max-width: 100%;
+    padding: 1.5rem 1rem 1rem 1rem;
+  }
+}
+@media (max-width: 700px) {
+  .glass-card {
+    padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+  }
+  .contributions-table thead th, .contributions-table tbody td {
+    padding: 0.7rem 0.5rem;
+    font-size: 0.98rem;
+  }
+} 

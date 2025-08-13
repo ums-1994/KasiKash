@@ -1,0 +1,39 @@
+import { Routes } from '@angular/router';
+import { Home } from './features/home/home';
+import { Login } from './features/login/login';
+import { Register } from './features/register/register';
+import { Dashboard } from './features/dashboard/dashboard';
+import { Profile } from './features/profile/profile';
+import { Settings } from './features/settings/settings';
+import { Notifications } from './features/notifications/notifications';
+import { SavingsGoals } from './features/savings-goals/savings-goals';
+import { Stokvels } from './features/stokvels/stokvels';
+import { Contributions } from './features/contributions/contributions';
+import { Payouts } from './features/payouts/payouts';
+import { PaymentMethods } from './features/payment-methods/payment-methods';
+import { RequestLoan } from './features/request-loan/request-loan';
+import { PayBackLoan } from './features/pay-back-loan/pay-back-loan';
+import { Analysis } from './features/analysis/analysis';
+import { FinancialInsight } from './features/financial-insight/financial-insight';
+import { NotFound } from './features/not-found/not-found';
+
+export const routes: Routes = [
+  { path: '', component: Home },
+  { path: 'home', component: Home },
+  { path: 'login', component: Login },
+  { path: 'register', component: Register },
+  { path: 'dashboard', component: Dashboard },
+  { path: 'profile', component: Profile },
+  { path: 'settings', component: Settings },
+  { path: 'notifications', component: Notifications },
+  { path: 'savings_goals', component: SavingsGoals },
+  { path: 'stokvels', component: Stokvels },
+  { path: 'contributions', component: Contributions },
+  { path: 'payouts', component: Payouts },
+  { path: 'payment_methods', component: PaymentMethods },
+  { path: 'request_loan', component: RequestLoan },
+  { path: 'pay_back_loan', component: PayBackLoan },
+  { path: 'analysis', component: Analysis },
+  { path: 'financial_insight', component: FinancialInsight },
+  { path: '**', component: NotFound },
+];
