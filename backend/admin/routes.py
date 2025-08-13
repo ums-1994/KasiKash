@@ -95,10 +95,10 @@ def manage_users():
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                # Fetch users with their stokvel name (if any)
+                # Fetch users with their stokvel name (if any) and status
                 if search_query:
                     cur.execute("""
-                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, s.name AS stokvel_name
+                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, u.status, s.name AS stokvel_name
                         FROM users u
                         LEFT JOIN stokvel_members sm ON CAST(u.id AS VARCHAR) = sm.user_id
                         LEFT JOIN stokvels s ON sm.stokvel_id = s.id
@@ -107,7 +107,7 @@ def manage_users():
                     """, (f'%{search_query}%', f'%{search_query}%'))
                 else:
                     cur.execute("""
-                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, s.name AS stokvel_name
+                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, u.status, s.name AS stokvel_name
                         FROM users u
                         LEFT JOIN stokvel_members sm ON CAST(u.id AS VARCHAR) = sm.user_id
                         LEFT JOIN stokvels s ON sm.stokvel_id = s.id
@@ -176,6 +176,60 @@ def add_user():
             except Exception:
                 pass
         return jsonify({'success': False, 'message': f'An error occurred: {e}'}), 500
+
+@admin_bp.route('/users/block/<int:user_id>', methods=['POST'])
+@login_required
+def block_user(user_id):
+    if session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Permission denied'}), 403
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("SELECT username, email, firebase_uid FROM users WHERE id = %s", (user_id,))
+                user_data = cur.fetchone()
+                if not user_data:
+                    return jsonify({'success': False, 'message': 'User not found'}), 404
+
+                cur.execute("UPDATE users SET status = 'blocked' WHERE id = %s", (user_id,))
+                conn.commit()
+
+                if user_data.get('firebase_uid'):
+                    message = "Your account has been blocked by an administrator. Please contact support for assistance."
+                    create_notification(user_data['firebase_uid'], message, notification_type='account_blocked')
+
+        flash(f"User {user_data['username']} ({user_data['email']}) has been blocked successfully!", 'success')
+        return jsonify({'success': True, 'message': 'User blocked successfully'})
+    except Exception as e:
+        print(f"Error blocking user: {e}")
+        return jsonify({'success': False, 'message': 'Failed to block user'}), 500
+
+@admin_bp.route('/users/unblock/<int:user_id>', methods=['POST'])
+@login_required
+def unblock_user(user_id):
+    if session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Permission denied'}), 403
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("SELECT username, email, firebase_uid FROM users WHERE id = %s", (user_id,))
+                user_data = cur.fetchone()
+                if not user_data:
+                    return jsonify({'success': False, 'message': 'User not found'}), 404
+
+                cur.execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+                conn.commit()
+
+                if user_data.get('firebase_uid'):
+                    message = "Your account has been unblocked. You can now access the platform again."
+                    create_notification(user_data['firebase_uid'], message, notification_type='account_unblocked')
+
+        flash(f"User {user_data['username']} ({user_data['email']}) has been unblocked successfully!", 'success')
+        return jsonify({'success': True, 'message': 'User unblocked successfully'})
+    except Exception as e:
+        print(f"Error unblocking user: {e}")
+        return jsonify({'success': False, 'message': 'Failed to unblock user'}), 500
 
 @admin_bp.route('/loan-approvals')
 @login_required

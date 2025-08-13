@@ -13,6 +13,7 @@
     <tr>
       <th>Email</th>
       <th>Role</th>
+      <th>Status</th>
       <th>Created At</th>
       <th>Stokvel</th>
       <th>Actions</th>
@@ -20,19 +21,29 @@
   </thead>
   <tbody>
     {% for user in users %}
-    <tr>
+    <tr class="{{ 'bg-red-50' if user.status == 'blocked' else '' }}">
       <td>{{ user.email }}</td>
       <td>{{ user.role }}</td>
+      <td>
+        <span class="px-2 py-1 rounded text-xs font-semibold {{ 'bg-red-100 text-red-800' if user.status == 'blocked' else 'bg-green-100 text-green-800' }}">
+          {{ user.status|default('active')|title }}
+        </span>
+      </td>
       <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
       <td>{{ user.stokvel_name|default('None') }}</td>
       <td class="flex gap-2">
         <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}', '{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'|e }}', '{{ user.stokvel_name|default('None')|replace("'", "&#39;")|e }}')">View</button>
         <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}')">Edit</button>
+        {% if user.status == 'blocked' %}
+          <button class="bg-green-600 text-white px-2 py-1 rounded" onclick="unblockUser({{ user.id }})">Unblock</button>
+        {% else %}
+          <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="blockUser({{ user.id }})">Block</button>
+        {% endif %}
         <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="deleteUser('{{ user.email|replace("'", "&#39;")|e }}')">Delete</button>
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="5">No users found.</td></tr>
+    <tr><td colspan="6">No users found.</td></tr>
     {% endfor %}
   </tbody>
 </table>
@@ -162,6 +173,47 @@ function deleteUser(email) {
   })
   .catch(function() { alert('Failed to delete user.'); });
 }
+  
+  function csrfToken() {
+    var el = document.querySelector('input[name="csrf_token"]');
+    return el ? el.value : '';
+  }
+  
+  function blockUser(userId) {
+    if (!confirm('Are you sure you want to block this user?')) return;
+    fetch(`/admin/users/block/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken()
+      }
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) { showToast('User blocked'); setTimeout(() => window.location.reload(), 600); }
+      else alert(d.message || 'Failed to block user.');
+    })
+    .catch(() => alert('Failed to block user.'));
+  }
+  
+  function unblockUser(userId) {
+    if (!confirm('Are you sure you want to unblock this user?')) return;
+    fetch(`/admin/users/unblock/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken()
+      }
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) { showToast('User unblocked'); setTimeout(() => window.location.reload(), 600); }
+      else alert(d.message || 'Failed to unblock user.');
+    })
+    .catch(() => alert('Failed to unblock user.'));
+  }
 // Toast logic
 function showToast(message) {
   let toast = document.getElementById('actionToast');

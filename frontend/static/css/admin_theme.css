@@ -144,7 +144,6 @@ input[type="range"]::-ms-thumb, .form-range::-ms-thumb {
 }
 input[type="range"]:focus, .form-range:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #60efff44;
 }
 input[type="range"]::-webkit-slider-runnable-track, .form-range::-webkit-slider-runnable-track {
   background: #2a3b4d !important;

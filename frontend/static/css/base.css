@@ -550,7 +550,6 @@ body.light-mode .card, body.light-theme .card, body.light-mode .main-content .ca
 .notification-unread, .notification-unread * {
   background: #22304a !important;
   color: #60efff !important;
-  border-color: #60efff !important;
 }
 
 /* Remove any box-shadow that may look like a white border */
@@ -570,7 +569,6 @@ html, body {
 main, .container, .max-w-4xl, .shadow-md, .rounded-lg, .p-6, .mb-4 {
   background: #22304a !important;
   color: #60efff !important;
-  border-color: #60efff !important;
 }
 main *, .container *, .max-w-4xl *, .shadow-md *, .rounded-lg *, .p-6 *, .mb-4 * {
   color: #60efff !important;
@@ -592,7 +590,6 @@ body.light-mode .p-6, body.light-theme .p-6,
 body.light-mode .mb-4, body.light-theme .mb-4 {
   background: #ffffff !important;
   color: #222b45 !important;
-  border-color: #e2e8f0 !important;
 }
 
 body.light-mode main *, body.light-theme main *, 
@@ -618,5 +615,4 @@ body.light-mode .admin-main .card, body.light-theme .admin-main .card,
 body.light-mode .card, body.light-theme .card {
     background: #ffffff !important;
     color: #222b45 !important;
-    border: 1px solid #e2e8f0 !important;
 } 

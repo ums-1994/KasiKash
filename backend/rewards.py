@@ -182,19 +182,28 @@ def create_voucher(firebase_uid, voucher_type, amount):
             break
         voucher_code = generate_voucher_code()
     
-    # Insert voucher
+    try:
+        # Insert voucher
         cur.execute("""
             INSERT INTO vouchers (user_id, voucher_type, code, amount)
             VALUES (%s, %s, %s, %s)
             RETURNING id
         """, (firebase_uid, voucher_type, voucher_code, amount))
-    
-    voucher_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    conn.close()
-    
-    return voucher_code
+        
+        result = cur.fetchone()
+        if result is None:
+            conn.rollback()
+            raise ValueError("Failed to create voucher - no ID returned")
+            
+        voucher_id = result[0]
+        conn.commit()
+        return voucher_code
+    except Exception as e:
+        conn.rollback()
+        raise ValueError(f"Failed to create voucher: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
 
 @rewards_bp.route('/api/rewards/airtime', methods=['POST'])
 def purchase_airtime():
@@ -617,8 +626,16 @@ def buy_marketplace_item(item_id):
                 voucher_type = item_name.lower().replace(' voucher', '').replace(' ', '_')
                 voucher_amount = price
             
-            voucher_code = create_voucher(firebase_uid, voucher_type, voucher_amount)
-            vouchers_created.append(voucher_code)
+            try:
+                voucher_code = create_voucher(firebase_uid, voucher_type, voucher_amount)
+                if voucher_code:
+                    vouchers_created.append(voucher_code)
+                else:
+                    flash('Error creating voucher: No voucher code returned', 'error')
+                    return redirect(url_for('rewards.marketplace'))
+            except ValueError as e:
+                flash(f'Error creating voucher: {str(e)}', 'error')
+                return redirect(url_for('rewards.marketplace'))
         
         # Create order with 'completed' status since vouchers are generated
         cur.execute("""
