@@ -172,6 +172,11 @@ def create_voucher(firebase_uid, voucher_type, amount):
     conn = get_db_connection()
     cur = conn.cursor()
     
+    # Get internal user ID
+    user_id = get_internal_user_id(firebase_uid)
+    if not user_id:
+        raise ValueError("User not found")
+    
     # Generate unique voucher code
     voucher_code = generate_voucher_code()
     
@@ -188,7 +193,7 @@ def create_voucher(firebase_uid, voucher_type, amount):
             INSERT INTO vouchers (user_id, voucher_type, code, amount)
             VALUES (%s, %s, %s, %s)
             RETURNING id
-        """, (firebase_uid, voucher_type, voucher_code, amount))
+        """, (user_id, voucher_type, voucher_code, amount))
         
         result = cur.fetchone()
         if result is None:
@@ -626,12 +631,18 @@ def buy_marketplace_item(item_id):
             # Calculate total points
             total_points = amount_per_voucher * quantity
             
+            # Get internal user ID for database operations
+            internal_user_id = get_internal_user_id(firebase_uid)
+            if not internal_user_id:
+                flash('User account not found. Please contact support.', 'error')
+                return redirect(url_for('rewards.marketplace'))
+
             # Get user's current balance
             cur.execute("""
                 SELECT id, balance 
                 FROM virtual_reward_cards 
                 WHERE user_id = %s
-            """, (firebase_uid,))
+            """, (internal_user_id,))
             
             card = cur.fetchone()
             if not card:
@@ -656,14 +667,14 @@ def buy_marketplace_item(item_id):
                 INSERT INTO reward_transactions 
                 (card_id, user_id, amount, transaction_type, description)
                 VALUES (%s, %s, %s, %s, %s)
-            """, (card_id, firebase_uid, -total_points, 'marketplace_purchase', f'Bought {item_name} x{quantity}'))
+            """, (card_id, internal_user_id, -total_points, 'marketplace_purchase', f'Bought {item_name} x{quantity}'))
             
             # Create order record
             cur.execute("""
                 INSERT INTO marketplace_orders 
                 (user_id, item_id, quantity, total_points, status)
                 VALUES (%s, %s, %s, %s, %s)
-            """, (firebase_uid, item_id, quantity, total_points, 'completed'))
+            """, (internal_user_id, item_id, quantity, total_points, 'completed'))
             
             conn.commit()
             
@@ -953,6 +964,12 @@ def view_vouchers():
         flash('Please log in to view your vouchers.', 'error')
         return redirect(url_for('login'))
     
+    # Get internal user ID
+    user_id = get_internal_user_id(firebase_uid)
+    if not user_id:
+        flash('User account not found.', 'error')
+        return redirect(url_for('login'))
+    
     conn = None
     cur = None
     try:
@@ -965,7 +982,7 @@ def view_vouchers():
             FROM vouchers 
             WHERE user_id = %s 
             ORDER BY created_at DESC
-        """, (firebase_uid,))
+        """, (user_id,))
         
         vouchers = [
             {
@@ -997,6 +1014,11 @@ def redeem_voucher(voucher_code):
     firebase_uid = session.get('user_id')
     if not firebase_uid:
         return jsonify({'error': 'User not authenticated'}), 401
+        
+    # Get internal user ID
+    user_id = get_internal_user_id(firebase_uid)
+    if not user_id:
+        return jsonify({'error': 'User account not found'}), 404
     
     conn = get_db_connection()
     cur = conn.cursor()
@@ -1006,7 +1028,7 @@ def redeem_voucher(voucher_code):
         SELECT id, voucher_type, amount, status 
         FROM vouchers 
         WHERE code = %s AND user_id = %s
-    """, (voucher_code, firebase_uid))
+    """, (voucher_code, user_id))
     
     voucher = cur.fetchone()
     if not voucher:
