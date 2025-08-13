@@ -512,42 +512,98 @@ def spend_donate_form():
 
 @rewards_bp.route('/marketplace', methods=['GET'])
 def marketplace():
-    firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
-        return redirect(url_for('login'))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT id, name, description, price_in_points, image_url FROM marketplace_items WHERE is_active = TRUE ORDER BY created_at DESC")
-    items = [
-        {'id': row[0], 'name': row[1], 'description': row[2], 'price': row[3], 'image_url': row[4]} for row in cur.fetchall()
-    ]
-    # Get user's card balance
-    cur.execute("SELECT balance FROM virtual_reward_cards WHERE user_id = %s", (user_id,))
-    card = cur.fetchone()
-    balance = card[0] if card else 0
-    cur.close()
-    conn.close()
-    return render_template('marketplace.html', items=items, balance=balance)
+    try:
+        firebase_uid = session.get('user_id')
+        if not firebase_uid:
+            flash('Please log in to access the marketplace.', 'error')
+            return redirect(url_for('login'))
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # First, ensure the user has a rewards card
+        cur.execute("""
+            SELECT balance FROM virtual_reward_cards 
+            WHERE user_id = %s
+        """, (firebase_uid,))
+        card = cur.fetchone()
+        
+        if not card:
+            # Create a new card if user doesn't have one
+            card_number = generate_card_number()
+            cur.execute("""
+                INSERT INTO virtual_reward_cards (user_id, card_number, balance) 
+                VALUES (%s, %s, %s)
+                RETURNING balance
+            """, (firebase_uid, card_number, 0))
+            card = cur.fetchone()
+            conn.commit()
+            
+        balance = card[0] if card else 0
+        
+        # Get marketplace items
+        cur.execute("""
+            SELECT id, name, description, price_in_points, image_url 
+            FROM marketplace_items 
+            WHERE is_active = TRUE 
+            ORDER BY created_at DESC
+        """)
+        items = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'description': row[2],
+                'price': row[3],
+                'image_url': row[4]
+            } for row in cur.fetchall()
+        ]
+        
+        return render_template('marketplace.html', items=items, balance=balance)
+        
+    except Exception as e:
+        flash(f'Error loading marketplace: {str(e)}', 'error')
+        return redirect(url_for('rewards.rewards_card_page'))
+        
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
 
 @rewards_bp.route('/marketplace/buy/<int:item_id>', methods=['POST'])
 def buy_marketplace_item(item_id):
-    print(f"DEBUG: Marketplace purchase attempt for item_id: {item_id}")
-    firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
-        print("DEBUG: User not authenticated")
-        return redirect(url_for('login'))
-    quantity = int(request.form.get('quantity', 1))
-    print(f"DEBUG: Quantity requested: {quantity}")
-    conn = get_db_connection()
-    cur = conn.cursor()
-    # Get item info
-    cur.execute("SELECT name, price_in_points, description FROM marketplace_items WHERE id = %s AND is_active = TRUE", (item_id,))
-    item = cur.fetchone()
-    if not item:
-        print(f"DEBUG: Item {item_id} not found or not active")
-        flash('Item not found or not available.', 'danger')
+    conn = None
+    cur = None
+    try:
+        firebase_uid = session.get('user_id')
+        if not firebase_uid:
+            flash('Please log in to make purchases.', 'error')
+            return redirect(url_for('login'))
+
+        # Get the quantity from form data
+        try:
+            quantity = int(request.form.get('quantity', 1))
+            if quantity < 1:
+                flash('Please select a valid quantity.', 'error')
+                return redirect(url_for('rewards.marketplace'))
+        except ValueError:
+            flash('Invalid quantity specified.', 'error')
+            return redirect(url_for('rewards.marketplace'))
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Get item info
+        cur.execute("""
+            SELECT name, price_in_points, description 
+            FROM marketplace_items 
+            WHERE id = %s AND is_active = TRUE
+        """, (item_id,))
+        item = cur.fetchone()
+
+        if not item:
+            flash('Item not found or not available.', 'error')
+            return redirect(url_for('rewards.marketplace'))
         return redirect(url_for('rewards.marketplace'))
     
     item_name, price, description = item
