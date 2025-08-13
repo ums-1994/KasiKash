@@ -725,24 +725,40 @@ def buy_marketplace_item(item_id):
 @rewards_bp.route('/marketplace/orders', methods=['GET'])
 def marketplace_orders():
     firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
+    if not firebase_uid:
         return redirect(url_for('login'))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT o.id, i.name, o.quantity, o.total_points, o.status, o.created_at
-        FROM marketplace_orders o
-        JOIN marketplace_items i ON o.item_id = i.id
-        WHERE o.user_id = %s
-        ORDER BY o.created_at DESC
-    """, (user_id,))
-    orders = [
-        {'id': row[0], 'item_name': row[1], 'quantity': row[2], 'total_points': row[3], 'status': row[4], 'created_at': row[5]} for row in cur.fetchall()
-    ]
-    cur.close()
-    conn.close()
-    return render_template('marketplace_orders.html', orders=orders)
+        
+    conn = None
+    cur = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT o.id, i.name, o.quantity, o.total_points, o.status, o.created_at
+            FROM marketplace_orders o
+            JOIN marketplace_items i ON o.item_id = i.id
+            WHERE o.user_id = %s
+            ORDER BY o.created_at DESC
+        """, (firebase_uid,))
+        orders = [
+            {
+                'id': row[0], 
+                'item_name': row[1], 
+                'quantity': row[2], 
+                'total_points': row[3], 
+                'status': row[4], 
+                'created_at': row[5]
+            } for row in cur.fetchall()
+        ]
+        return render_template('marketplace_orders.html', orders=orders)
+    except Exception as e:
+        flash(f'Error retrieving orders: {str(e)}', 'error')
+        return redirect(url_for('rewards.marketplace'))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 @rewards_bp.route('/marketplace/redeem/<item>', methods=['POST'])
 def redeem_marketplace_item(item):
