@@ -518,6 +518,12 @@ def marketplace():
             flash('Please log in to access the marketplace.', 'error')
             return redirect(url_for('login'))
 
+        # Get internal user ID
+        user_id = get_internal_user_id(firebase_uid)
+        if not user_id:
+            flash('User account not found.', 'error')
+            return redirect(url_for('login'))
+
         conn = get_db_connection()
         cur = conn.cursor()
         
@@ -525,7 +531,7 @@ def marketplace():
         cur.execute("""
             SELECT balance FROM virtual_reward_cards 
             WHERE user_id = %s
-        """, (firebase_uid,))
+        """, (user_id,))
         card = cur.fetchone()
         
         if not card:
@@ -535,7 +541,7 @@ def marketplace():
                 INSERT INTO virtual_reward_cards (user_id, card_number, balance) 
                 VALUES (%s, %s, %s)
                 RETURNING balance
-            """, (firebase_uid, card_number, 0))
+            """, (user_id, card_number, 0))
             card = cur.fetchone()
             conn.commit()
             
