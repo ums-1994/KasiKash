@@ -637,17 +637,30 @@ def buy_marketplace_item(item_id):
                 flash(f'Error creating voucher: {str(e)}', 'error')
                 return redirect(url_for('rewards.marketplace'))
         
-        # Create order with 'completed' status since vouchers are generated
-        cur.execute("""
-            INSERT INTO marketplace_orders (user_id, item_id, quantity, total_points, status)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, item_id, quantity, total_points, 'completed'))
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-        
-        # Create notification with voucher codes
+        try:
+            # Create order with 'completed' status since vouchers are generated
+            cur.execute("""
+                INSERT INTO marketplace_orders (user_id, item_id, quantity, total_points, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (firebase_uid, item_id, quantity, total_points, 'completed'))
+            
+            conn.commit()
+            
+            # Create success message with voucher codes
+            if vouchers_created:
+                codes_list = ', '.join(vouchers_created)
+                flash(f'Vouchers created successfully! Your codes: {codes_list}', 'success')
+            return redirect(url_for('rewards.marketplace'))
+            
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error creating order: {str(e)}', 'error')
+            return redirect(url_for('rewards.marketplace'))
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
         if 'airtime' in item_name.lower():
             network_display = network.upper()
             if len(vouchers_created) == 1:
