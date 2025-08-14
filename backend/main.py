@@ -48,17 +48,28 @@ from calendar import monthrange
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from flask_mail import Mail, Message
 from flask_wtf.csrf import generate_csrf
+from psycopg2.extras import Json
+import uuid
+import hmac
+import hashlib
+from .paystack import initialize_add_card, verify_transaction
+from .paystack import charge_authorization
 import calendar
 from flask import g
 from flask_babel import _
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, template_folder="../frontend/templates", static_folder="../frontend/static")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_proto=1)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 babel = Babel(app)
 
@@ -1291,32 +1302,15 @@ def contributions():
                 """, (firebase_uid,))
                 stokvels = cur.fetchall()
 
-                # Fetch default payment method for display
-                cur.execute(
-    "SELECT type, details FROM payment_methods WHERE user_id = %s AND is_default = TRUE",
-    (firebase_uid,
-    ))
-                payment_method = cur.fetchone()
-                payment_info_text = "No default payment method set. Please add one in settings."
-                if payment_method:
-                    method_type, details = payment_method
-                    if isinstance(details, str):
-                        try:
-                            details = json.loads(details)
-                        except json.JSONDecodeError:
-                            details = {}
-                    # Ensure details is a dict
-                    if not isinstance(details, dict):
-                        details = {}
-                    if method_type in ['credit_card', 'debit_card', 'card']:
-                        card_number = details.get('card_number', '')
-                        last4 = card_number[-4:] if len(card_number) >= 4 else card_number
-                        payment_info_text = f"Using card ending in {last4}"
-                    elif method_type == 'bank_account':
-                        bank_name = details.get('bank_name', 'bank')
-                        account_number = details.get('account_number', '')
-                        last4 = account_number[-4:] if len(account_number) >= 4 else account_number
-                        payment_info_text = f"Using {bank_name} account ending in {last4}"
+                # Show Wallet as default funding source
+                cur.execute("SELECT balance, currency FROM wallets WHERE user_id = %s", (firebase_uid,))
+                w = cur.fetchone()
+                if not w:
+                    cur.execute("INSERT INTO wallets (user_id, balance, currency) VALUES (%s, %s, %s) RETURNING balance, currency", (firebase_uid, 0.00, 'ZAR'))
+                    w = cur.fetchone()
+                    conn.commit()
+                wallet_balance, wallet_currency = float(w[0] or 0.0), w[1] or 'ZAR'
+                payment_info_text = f"Wallet ({wallet_currency} {wallet_balance:.2f})"
 
         # Process and render as before
                 contributions_list = []
@@ -1412,16 +1406,28 @@ def make_contribution():
                         user_info = cur.fetchone()
                         user_name = user_info[0] if user_info else "A member"
                     
-                    # Insert the contribution transaction
+                    # Insert the contribution transaction (funded from wallet)
                     cur.execute("""
                         INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
                         VALUES (%s, %s, %s, 'contribution', %s, CURRENT_DATE, 'completed')
                     """, (firebase_uid, stokvel_id, amount, description))
+
+                    # Deduct from wallet if sufficient balance
+                    cur.execute("SELECT balance FROM wallets WHERE user_id=%s FOR UPDATE", (firebase_uid,))
+                    w = cur.fetchone()
+                    if not w:
+                        cur.execute("INSERT INTO wallets (user_id, balance, currency) VALUES (%s,%s,%s)", (firebase_uid, 0.00, 'ZAR'))
+                        current_balance = 0.00
+                    else:
+                        current_balance = float(w[0] or 0.0)
+                    if current_balance < float(amount):
+                        raise Exception('Insufficient wallet balance')
+                    cur.execute("UPDATE wallets SET balance = balance - %s WHERE user_id=%s", (float(amount), firebase_uid))
                     conn.commit()
-            flash("Contribution successful!", "success")
+            flash("Contribution successful from Wallet!", "success")
         except Exception as e:
             print(f"Error making contribution: {e}")
-            flash("An error occurred while making your contribution.", "danger")
+            flash("An error occurred. Ensure your wallet has sufficient balance.", "danger")
         return redirect(url_for('contributions'))
     # GET request fallback
     # ... existing code ...
@@ -1704,11 +1710,23 @@ def contribute_to_goal():
                     WHERE id = %s
                 """, (new_amount, new_amount, goal_id))
 
-                # Record the transaction
+                # Record the transaction (funded from wallet)
                 cur.execute("""
                     INSERT INTO transactions (user_id, amount, type, description, savings_goal_id)
                     VALUES (%s, %s, 'savings_contribution', 'Contribution to savings goal', %s)
                 """, (firebase_uid, amount, goal_id))
+
+                # Deduct from wallet if sufficient balance
+                cur.execute("SELECT balance FROM wallets WHERE user_id=%s FOR UPDATE", (firebase_uid,))
+                w = cur.fetchone()
+                if not w:
+                    cur.execute("INSERT INTO wallets (user_id, balance, currency) VALUES (%s,%s,%s)", (firebase_uid, 0.00, 'ZAR'))
+                    current_balance = 0.00
+                else:
+                    current_balance = float(w[0] or 0.0)
+                if current_balance < float(amount):
+                    raise Exception('Insufficient wallet balance')
+                cur.execute("UPDATE wallets SET balance = balance - %s WHERE user_id=%s", (float(amount), firebase_uid))
 
                 # Get default payment method for flash message
                 cur.execute(
@@ -1735,7 +1753,7 @@ def contribute_to_goal():
 
                 conn.commit()
 
-        flash(f"Successfully contributed R{amount:.2f} to your savings goal{payment_info}!")
+        flash(f"Successfully contributed R{amount:.2f} to your savings goal from Wallet!")
         return redirect('/savings_goals')
 
     except InvalidOperation:
@@ -1743,7 +1761,7 @@ def contribute_to_goal():
         return redirect('/savings_goals')
     except Exception as e:
         print(f"Error contributing to savings goal: {e}")
-        flash("An error occurred while processing your contribution. Please try again.")
+        flash("An error occurred while processing your contribution. Please ensure your wallet has sufficient balance.")
         return redirect('/savings_goals')
 
 
@@ -2156,9 +2174,20 @@ def payment_methods():
                     try:
                         details = pm_dict['details']
                         if isinstance(details, str):
-                            details_json = json.loads(details)
-                        else:
+                            try:
+                                details_json = json.loads(details)
+                            except Exception:
+                                details_json = {}
+                        elif isinstance(details, dict):
                             details_json = details
+                        else:
+                            # Handle JSON/JSONB or None
+                            try:
+                                details_json = dict(details) if details is not None else {}
+                            except Exception:
+                                details_json = {}
+                        # Ensure templates receive a parsed dictionary for details
+                        pm_dict['details'] = details_json
                         if pm_dict['type'] in [
     'credit_card', 'debit_card', 'card']:
                             card_number = details_json.get('card_number', '')
@@ -2191,15 +2220,314 @@ def payment_methods():
                     except Exception as e:
                         masked_details = 'Payment details unavailable'
                     pm_dict['masked_details'] = masked_details
+                    # Provide a safe string date for templates
+                    try:
+                        created = pm_dict.get('created_at')
+                        pm_dict['created_at_str'] = created.strftime('%Y-%m-%d') if hasattr(created, 'strftime') else (str(created)[:10] if created else '')
+                    except Exception:
+                        pm_dict['created_at_str'] = ''
                     payment_methods_list.append(pm_dict)
-        return render_template(
-    'payment_methods.html',
-     payment_methods=payment_methods_list)
+                # fetch wallet balance (create if missing)
+                cur.execute("SELECT id, balance, currency FROM wallets WHERE user_id = %s", (firebase_uid,))
+                wallet = cur.fetchone()
+                if not wallet:
+                    cur.execute("INSERT INTO wallets (user_id, balance, currency) VALUES (%s, %s, %s) RETURNING id, balance, currency", (firebase_uid, 0.00, 'ZAR'))
+                    wallet = cur.fetchone()
+                    conn.commit()
+                wallet_dict = { 'id': wallet[0], 'balance': float(wallet[1] or 0.0), 'currency': wallet[2] }
+        return render_template('payment_methods.html', payment_methods=payment_methods_list, wallet=wallet_dict)
     except Exception as e:
         print(f"Payment methods page error: {e}")
         flash("An error occurred while loading your payment methods. Please try again.")
         return render_template('payment_methods.html', payment_methods=[])
 
+
+@app.route('/add_paystack_card', methods=['POST'])
+@login_required
+def add_paystack_card():
+    """Start Paystack add-card flow by initializing a small verification transaction.
+    Redirects the user to Paystack authorization_url.
+    """
+    user_id = session['user_id']
+    user_email = session.get('email') or request.form.get('email')
+    if not user_email:
+        flash('Email is required to link a card', 'danger')
+        return redirect(url_for('payment_methods'))
+
+    reference = f"kk_addcard_{uuid.uuid4().hex[:16]}"
+    callback_url = url_for('paystack_callback', _external=True)
+
+    # persist pending transaction
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO payment_transactions (user_id, reference, amount, currency, status, metadata)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (user_id, reference, 1.00, 'ZAR', 'pending', Json({'flow': 'add_card'}))
+                )
+                conn.commit()
+    except Exception as e:
+        print(f"Error creating pending transaction: {e}")
+        flash('Failed to start card linking. Please try again.', 'danger')
+        return redirect(url_for('payment_methods'))
+
+    try:
+        auth_url = initialize_add_card(user_email, 100, reference, callback_url, metadata={'flow': 'add_card'})
+        return redirect(auth_url)
+    except Exception as e:
+        print(f"Paystack init error: {e}")
+        flash('Failed to contact payment provider. Try again later.', 'danger')
+        return redirect(url_for('payment_methods'))
+
+
+@app.route('/paystack/callback')
+@login_required
+def paystack_callback():
+    """Handle Paystack redirect after user completes add-card verification."""
+    reference = request.args.get('reference')
+    if not reference:
+        flash('Missing payment reference', 'danger')
+        return redirect(url_for('payment_methods'))
+
+    try:
+        verify = verify_transaction(reference)
+        data = verify.get('data', {})
+        status = data.get('status')
+        metadata = data.get('metadata') or {}
+        flow = metadata.get('flow')
+        if status == 'success' and flow == 'add_card':
+            auth = data.get('authorization') or {}
+            customer = data.get('customer') or {}
+            details = {
+                'provider': 'paystack',
+                'customer_code': customer.get('customer_code') or customer.get('code'),
+                'authorization_code': auth.get('authorization_code'),
+                'signature': auth.get('signature'),
+                'reusable': auth.get('reusable', False),
+                'brand': auth.get('card_type') or auth.get('brand'),
+                'last4': auth.get('last4'),
+                'exp_month': auth.get('exp_month'),
+                'exp_year': auth.get('exp_year'),
+            }
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    # clear default and insert new method as default
+                    cur.execute("UPDATE payment_methods SET is_default = FALSE WHERE user_id = %s", (session['user_id'],))
+                    cur.execute(
+                        """
+                        INSERT INTO payment_methods (user_id, type, details, is_default)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        (session['user_id'], 'paystack_card', json.dumps(details), True)
+                    )
+                    cur.execute("SELECT status, metadata FROM payment_transactions WHERE reference=%s", (reference,))
+                    tx = cur.fetchone()
+                    if tx and tx[0] != 'success':
+                        cur.execute(
+                            "UPDATE payment_transactions SET status='success', provider_response=%s WHERE reference=%s",
+                            (Json(data), reference)
+                        )
+                    conn.commit()
+            create_notification(session['user_id'], 'Card linked via Paystack', link_url=url_for('payment_methods'), notification_type='payment_method_added')
+            flash('Card added successfully!', 'success')
+        else:
+            with support.db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "UPDATE payment_transactions SET status='failed', provider_response=%s WHERE reference=%s",
+                        (Json(verify), reference)
+                    )
+                    conn.commit()
+            flash('Card linking failed.', 'danger')
+    except Exception as e:
+        print(f"Paystack callback error: {e}")
+        flash('Verification failed. Please try again.', 'danger')
+    return redirect(url_for('payment_methods'))
+
+
+@app.route('/paystack/webhook', methods=['POST'])
+@csrf.exempt
+def paystack_webhook():
+    """Paystack webhook: verify HMAC, then mark transaction as success/failed.
+    Keep it idempotent via reference updates.
+    """
+    secret = os.getenv('PAYSTACK_SECRET_KEY', '')
+    raw = request.get_data()
+    recv_sig = request.headers.get('x-paystack-signature', '')
+    comp = hmac.new(secret.encode(), raw, hashlib.sha512).hexdigest()
+    if not hmac.compare_digest(recv_sig, comp):
+        return ('', 401)
+    event = request.json or {}
+    try:
+        if event.get('event') == 'charge.success':
+            data = event.get('data') or {}
+            ref = data.get('reference')
+            amount_kobo = data.get('amount') or 0
+            amount = (amount_kobo or 0)/100.0
+            if ref:
+                with support.db_connection() as conn:
+                    with conn.cursor() as cur:
+                        # Mark tx success; credit wallet if this is a wallet topup flow
+                        cur.execute(
+                            "UPDATE payment_transactions SET status='success', provider_response=%s WHERE reference=%s RETURNING user_id, metadata",
+                            (Json(data), ref)
+                        )
+                        row = cur.fetchone()
+                        if row:
+                            user_id, metadata = row[0], row[1]
+                            flow = (metadata or {}).get('flow') if isinstance(metadata, dict) else None
+                            if flow == 'wallet_topup' and amount > 0:
+                                # ensure wallet exists
+                                cur.execute("SELECT id FROM wallets WHERE user_id=%s", (user_id,))
+                                if not cur.fetchone():
+                                    cur.execute("INSERT INTO wallets (user_id, balance, currency) VALUES (%s, %s, %s)", (user_id, 0.00, 'ZAR'))
+                                cur.execute("UPDATE wallets SET balance = balance + %s WHERE user_id=%s", (amount, user_id))
+                        conn.commit()
+    except Exception as e:
+        print(f"Webhook processing error: {e}")
+    return ('', 200)
+
+
+@app.route('/paystack/init')
+@login_required
+def init_payment():
+    """Initialize a Paystack payment to top up the wallet.
+    Usage: /paystack/init?amount=50  (amount in ZAR)
+    Creates a pending payment_transactions row; wallet is credited on webhook charge.success.
+    """
+    user_id = session['user_id']
+    user_email = session.get('email') or 'customer@example.com'
+
+    amount_str = request.args.get('amount', '50')
+    try:
+        amount = float(amount_str)
+        if amount <= 0:
+            raise ValueError()
+    except Exception:
+        flash('Invalid amount', 'danger')
+        return redirect(url_for('payment_methods'))
+
+    amount_cents = int(amount * 100)
+    reference = f"kk_init_{uuid.uuid4().hex[:16]}"
+
+    # Build callback URL from APP_BASE_URL (preferred) or current request root
+    base = os.getenv('APP_BASE_URL') or request.url_root
+    callback_url = f"{base.rstrip('/')}/paystack/callback"
+
+    # Persist pending transaction with flow=wallet_topup
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO payment_transactions (user_id, reference, amount, currency, status, metadata)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (user_id, reference, amount, 'ZAR', 'pending', Json({'flow': 'wallet_topup'}))
+                )
+                conn.commit()
+    except Exception as e:
+        print(f"[paystack/init] DB error: {e}")
+        flash('Failed to start payment.', 'danger')
+        return redirect(url_for('payment_methods'))
+
+    headers = {
+        "Authorization": f"Bearer {os.getenv('PAYSTACK_SECRET_KEY')}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "email": user_email,
+        "amount": amount_cents,
+        "reference": reference,
+        "callback_url": callback_url,
+        "currency": "ZAR",
+        "metadata": {"flow": "wallet_topup"},
+    }
+
+    try:
+        base_url = os.getenv('PAYSTACK_BASE_URL', 'https://api.paystack.co')
+        resp = requests.post(f"{base_url}/transaction/initialize", headers=headers, json=payload, timeout=30)
+        data = resp.json()
+        if data.get('status') and data.get('data', {}).get('authorization_url'):
+            return redirect(data['data']['authorization_url'])
+        else:
+            msg = data.get('message') or 'Unknown error'
+            flash(f'Paystack init failed: {msg}', 'danger')
+            return redirect(url_for('payment_methods'))
+    except Exception as e:
+        print(f"[paystack/init] Paystack error: {e}")
+        flash('Failed to contact payment provider.', 'danger')
+        return redirect(url_for('payment_methods'))
+
+@app.route('/wallet/topup', methods=['POST'])
+@login_required
+def wallet_topup():
+    """Charge a saved Paystack authorization to top up user's wallet."""
+    user_id = session['user_id']
+    user_email = session.get('email')
+    amount_str = request.form.get('amount')
+    method_id = request.form.get('method_id')
+    try:
+        amount = float(amount_str)
+        if amount <= 0:
+            raise ValueError('Amount must be positive')
+    except Exception:
+        flash('Invalid amount provided.', 'danger')
+        return redirect(url_for('payment_methods'))
+
+    # load method and authorization_code
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT type, details FROM payment_methods WHERE id=%s AND user_id=%s", (method_id, user_id))
+                row = cur.fetchone()
+                if not row:
+                    flash('Payment method not found.', 'danger')
+                    return redirect(url_for('payment_methods'))
+                pm_type, details_json = row[0], row[1]
+                details = details_json
+                if isinstance(details_json, str):
+                    try:
+                        details = json.loads(details_json)
+                    except Exception:
+                        details = {}
+                if pm_type != 'paystack_card':
+                    flash('Only Paystack card methods can be used for wallet top-up.', 'danger')
+                    return redirect(url_for('payment_methods'))
+                auth_code = (details or {}).get('authorization_code')
+                if not auth_code:
+                    flash('Selected method is missing authorization code.', 'danger')
+                    return redirect(url_for('payment_methods'))
+
+        reference = f"kk_topup_{uuid.uuid4().hex[:16]}"
+        # persist pending tx with metadata flow=wallet_topup
+        with support.db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO payment_transactions (user_id, reference, amount, currency, status, metadata, method_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (user_id, reference, amount, 'ZAR', 'pending', Json({'flow': 'wallet_topup'}), method_id)
+                )
+                conn.commit()
+
+        # attempt charge
+        resp = charge_authorization(user_email, int(amount * 100), auth_code, reference, currency='ZAR', metadata={'flow': 'wallet_topup'})
+        status = (resp.get('data') or {}).get('status') or resp.get('status')
+        # We rely on webhook for final crediting; provide immediate feedback
+        if status == 'success':
+            flash('Top-up processing. Your wallet will be updated shortly.', 'success')
+        else:
+            flash('Top-up initiated. Awaiting confirmation.', 'info')
+        return redirect(url_for('payment_methods'))
+    except Exception as e:
+        print(f"Topup error: {e}")
+        flash('Failed to process top-up. Please try again later.', 'danger')
+        return redirect(url_for('payment_methods'))
 
 @app.route('/add_payment_method', methods=['POST'])
 @login_required
@@ -3346,11 +3674,24 @@ def pay_back_loan():
                         flash('Repayment amount must be greater than 0.', 'danger')
                         return redirect(url_for('pay_back_loan'))
                     
-                    # Record the repayment transaction
+                    # Deduct from wallet first (default funding source)
+                    cur.execute("SELECT balance FROM wallets WHERE user_id=%s FOR UPDATE", (user_id,))
+                    w = cur.fetchone()
+                    if not w:
+                        cur.execute("INSERT INTO wallets (user_id, balance, currency) VALUES (%s,%s,%s)", (user_id, 0.00, 'ZAR'))
+                        current_balance = 0.00
+                    else:
+                        current_balance = float(w[0] or 0.0)
+                    if current_balance < repayment_amount:
+                        flash('Insufficient wallet balance to process repayment. Please top up your wallet.', 'danger')
+                        return redirect(url_for('pay_back_loan'))
+                    cur.execute("UPDATE wallets SET balance = balance - %s WHERE user_id=%s", (repayment_amount, user_id))
+
+                    # Record the repayment transaction (funded from wallet)
                     cur.execute("""
                         INSERT INTO transactions (user_id, stokvel_id, amount, type, description, transaction_date, status)
                         VALUES (%s, %s, %s, 'loan_repayment', %s, NOW(), 'completed')
-                    """, (user_id, stokvel_id, repayment_amount, f"Loan repayment for: {loan_description}"))
+                    """, (user_id, stokvel_id, repayment_amount, f"Loan repayment for: {loan_description} (from Wallet)"))
                     
                     # Update the original loan with repayment info
                     cur.execute("""

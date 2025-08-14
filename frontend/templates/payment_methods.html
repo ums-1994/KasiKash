@@ -2,12 +2,37 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
+    {% if wallet %}
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-2xl p-5" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm opacity-80">Wallet Balance</span>
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="text-3xl font-extrabold">{{ wallet.currency }} {{ '%.2f'|format((wallet.balance or 0)|float) }}</div>
+            <div class="mt-4">
+                <button onclick="document.getElementById('topupModal').classList.remove('hidden')"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                    Top Up
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold" style="color: #60efff; font-weight: 600;">Payment Methods</h1>
+        <div class="space-x-2">
+            <form action="/add_paystack_card" method="POST" class="inline" aria-label="Link Paystack Card">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" title="Link Paystack Card">
+                    Link Paystack Card
+                </button>
+            </form>
         <button onclick="document.getElementById('addPaymentMethodModal').classList.remove('hidden')" 
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Add Payment Method
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" title="Add Bank Account">
+                Add Bank Account
         </button>
+        </div>
     </div>
 
     <!-- Payment Methods Grid -->
@@ -32,7 +57,16 @@
                 </div>
                 
                 <div class="relative z-10">
-                    {% if method.type in ['credit_card', 'debit_card', 'card'] %}
+                    {# Prefer structured card fields when available (e.g., Paystack saved card) #}
+                    {% set d = method.details %}
+                    {% if d and d.last4 %}
+                        {% set exp_year_str = (d.exp_year|string) %}
+                        <div class="card-details-row">
+                            <div class="card-number glow">•••• •••• •••• {{ d.last4 }}</div>
+                            <span class="card-expiry">Exp: {{ '%02d'|format((d.exp_month|default(0))|int) }}/{{ exp_year_str[-2:] if exp_year_str else '' }}</span>
+                        </div>
+                        <div class="card-holder-name">{{ method.card_holder_name|default('Card Holder') }}</div>
+                    {% elif method.type in ['credit_card', 'debit_card', 'card'] %}
                         {% set parts = method.masked_details.split('Exp:') %}
                         <div class="card-details-row">
                             <div class="card-number glow">{{ parts[0].strip().replace('*', '•') }}</div>
@@ -52,11 +86,11 @@
                 </div>
 
                 <div class="flex justify-between items-end mt-auto relative z-10">
-                    <span class="card-added">Added on {{ method.created_at.strftime('%Y-%m-%d') }}</span>
-                    {% if method.type in ['credit_card', 'debit_card', 'card'] %}
+                    <span class="card-added">Added on {{ method.created_at_str }}</span>
+                    {% if (method.details and method.details.last4) or method.type in ['credit_card', 'debit_card', 'card'] %}
                     <span class="card-brand">
-                        {% set card_number_for_brand = method.details.card_number|string|replace(' ', '') %}
-                        {% if card_number_for_brand and card_number_for_brand.startswith('4') %}
+                        {% set brand = (method.details.brand if method.details else '')|lower %}
+                        {% if brand.startswith('visa') %}
                             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="height:22px;filter:drop-shadow(0 0 4px #232347cc);">
                         {% else %}
                             <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height:22px;filter:drop-shadow(0 0 4px #232347cc);">
@@ -89,51 +123,28 @@
         {% endfor %}
     </div>
 
-    <!-- Add Payment Method Modal -->
+    <!-- Add Payment Method Modal (Bank accounts only; cards use Paystack link) -->
     <div id="addPaymentMethodModal" class="hidden fixed inset-0" style="background: rgba(30,51,87,0.85);">
         <div class="relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 border w-full max-w-lg shadow-2xl rounded-2xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
             <div class="mt-3">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-2xl font-semibold text-gray-800">Add New Payment Method</h3>
-                    <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600" aria-label="Close add payment method modal" title="Close">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
                 <form action="/add_payment_method" method="POST" id="paymentMethodForm">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-5">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="type">
-                            Payment Type
-                        </label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="type">Payment Type</label>
                         <select name="type" id="type" onchange="togglePaymentFields()" required
                                 class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="credit_card" selected>Credit Card</option>
-                            <option value="debit_card">Debit Card</option>
-                            <option value="bank_account">Bank Account</option>
+                            <option value="bank_account" selected>Bank Account</option>
                         </select>
                     </div>
 
-                    <!-- Card Details Fields -->
-                    <div id="card_fields">
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="card_holder_name">Cardholder Name</label>
-                            <input type="text" name="card_holder_name" id="card_holder_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="John Doe">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="card_number">Card Number</label>
-                            <input type="text" name="card_number" id="card_number" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="•••• •••• •••• ••••">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="expiry_date">Expiry Date</label>
-                                <input type="text" name="expiry_date" id="expiry_date" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="MM/YY">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="cvv">CVV</label>
-                                <input type="text" name="cvv" id="cvv" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="•••">
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Card fields removed: cards are linked via Paystack flow -->
+                    <div id="card_fields" class="hidden"></div>
 
                     <!-- Bank Account Fields -->
                     <div id="bank_fields" class="hidden">
@@ -171,6 +182,44 @@
             </div>
         </div>
     </div>
+
+    <!-- Wallet Top Up Modal -->
+    <div id="topupModal" class="hidden fixed inset-0" style="background: rgba(30,51,87,0.85);">
+        <div class="relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 border w-full max-w-md shadow-2xl rounded-2xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
+            <div class="mt-1">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Top Up Wallet</h3>
+                    <button type="button" onclick="document.getElementById('topupModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-200" aria-label="Close top up modal" title="Close">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form method="POST" action="/wallet/topup">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-1" for="topup_amount">Amount ({{ wallet.currency if wallet else 'ZAR' }})</label>
+                        <input id="topup_amount" type="number" name="amount" step="0.01" min="1" required class="w-full px-3 py-2 rounded text-gray-900" placeholder="0.00">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-1" for="topup_method_id">Payment Method</label>
+                        <select id="topup_method_id" name="method_id" required class="w-full px-3 py-2 rounded text-gray-900" title="Select payment method">
+                            {% for method in payment_methods %}
+                                {% set d = method.details %}
+                                <option value="{{ method.id }}">
+                                    {{ method.type|title }}
+                                    {% if d and d.last4 %}- **** {{ d.last4 }}{% endif %}
+                                    {% if method.is_default %}(Default){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onclick="document.getElementById('topupModal').classList.add('hidden')" title="Cancel top up">Cancel</button>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded" title="Confirm top up">Top Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -190,12 +239,12 @@ function togglePaymentFields() {
         // Make bank inputs required and card inputs not
         bankInputs.forEach(input => input.required = true);
         cardInputs.forEach(input => input.required = false);
-    } else { // credit_card or debit_card
-        cardFields.classList.remove('hidden');
-        bankFields.classList.add('hidden');
-        // Make card inputs required and bank inputs not
-        cardInputs.forEach(input => input.required = true);
-        bankInputs.forEach(input => input.required = false);
+    } else {
+        // default to bank account only in this modal
+        bankFields.classList.remove('hidden');
+        cardFields.classList.add('hidden');
+        bankInputs.forEach(input => input.required = true);
+        cardInputs.forEach(input => input.required = false);
     }
 }
 
@@ -215,6 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
   box-shadow: 0 6px 24px 0 rgba(31,38,135,0.32), 0 1.5px 8px 0 #3a2e7b55;
   border: 1.5px solid #232347;
   overflow: hidden;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   transition: box-shadow 0.3s, border 0.3s;
   min-height: 170px;
