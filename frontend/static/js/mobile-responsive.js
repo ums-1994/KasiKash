@@ -259,17 +259,63 @@ document.addEventListener('DOMContentLoaded', function() {
             mainContent.id = 'main-content';
         }
         
-        // Improve keyboard navigation
+        // Improve keyboard navigation & mobile hamburger
         const focusableElements = document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        
+
+        // Do not hijack typing keys for text inputs/areas
         focusableElements.forEach(element => {
             element.addEventListener('keydown', function(e) {
+                const tag = (this.tagName || '').toLowerCase();
+                const isTypingField = tag === 'input' || tag === 'textarea' || this.isContentEditable;
+                if (isTypingField) {
+                    // Allow space and enter to behave normally in text fields
+                    return;
+                }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     this.click();
                 }
             });
         });
+
+        // Mobile hamburger toggle for welcome/home (base.html sidebar)
+        const sidebar = document.querySelector('.sidebar');
+        let mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        let mobileOverlay = document.getElementById('mobile-overlay');
+        if (!mobileMenuBtn) {
+            mobileMenuBtn = document.createElement('button');
+            mobileMenuBtn.id = 'mobile-menu-btn';
+            mobileMenuBtn.className = 'mobile-menu-btn';
+            mobileMenuBtn.setAttribute('aria-label', 'Toggle menu');
+            mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            document.body.appendChild(mobileMenuBtn);
+        }
+        if (!mobileOverlay) {
+            mobileOverlay = document.createElement('div');
+            mobileOverlay.id = 'mobile-overlay';
+            mobileOverlay.className = 'mobile-overlay';
+            document.body.appendChild(mobileOverlay);
+        }
+        function toggleSidebar(open) {
+            if (!sidebar) return;
+            if (open) {
+                sidebar.classList.add('active');
+                mobileOverlay.classList.add('active');
+            } else {
+                sidebar.classList.remove('active');
+                mobileOverlay.classList.remove('active');
+            }
+        }
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isOpen = sidebar && sidebar.classList.contains('active');
+                toggleSidebar(!isOpen);
+            });
+        }
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', function() { toggleSidebar(false); });
+        }
     }
     
     // Initialize all mobile improvements
