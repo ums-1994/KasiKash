@@ -46,24 +46,24 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
           <input type="hidden" name="comment" value="">
-          <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;">Approve</button>
+          <button type="submit" class="admin-btn admin-btn--primary">Approve</button>
         </form>
         <form method="POST" action="{{ url_for('admin.reject_loan') }}" style="display:inline;" class="js-reject-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
           <input type="hidden" name="comment" value="">
-          <button type="submit" class="admin-card btn px-4 py-1 text-lg font-semibold shadow" style="background:linear-gradient(90deg,#ff5858 0%,#f09819 100%);color:#101c2c;">Reject</button>
+          <button type="submit" class="admin-btn admin-btn--primary">Reject</button>
         </form>
-        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-view-loan-details-btn" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" data-loan-id="{{ loan[0] }}">View</button>
-        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-user-history-btn" style="background:linear-gradient(90deg,#22304a 0%,#60efff 100%);color:#eaf6fb;" data-user-email="{{ loan[2] }}">History</button>
+        <button type="button" class="admin-btn admin-btn--primary js-view-loan-details-btn" data-loan-id="{{ loan[0] }}">View</button>
+        <button type="button" class="admin-btn admin-btn--primary js-user-history-btn" data-user-email="{{ loan[2] }}">History</button>
         {% elif current_status in ['approved', 'rejected'] %}
         <form method="POST" action="{{ url_for('admin.undo_loan') }}" style="display:inline;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="loan_id" value="{{ loan[0] }}">
-          <button type="submit" class="admin-card btn px-4 py-1 text-lg font-semibold shadow" style="background:linear-gradient(90deg,#f09819 0%,#ff5858 100%);color:#101c2c;">Undo</button>
+          <button type="submit" class="admin-btn admin-btn--primary">Undo</button>
         </form>
-        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-view-loan-details-btn" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" data-loan-id="{{ loan[0] }}">View</button>
-        <button type="button" class="admin-card btn px-4 py-1 text-sm font-semibold shadow js-user-history-btn" style="background:linear-gradient(90deg,#22304a 0%,#60efff 100%);color:#eaf6fb;" data-user-email="{{ loan[2] }}">History</button>
+        <button type="button" class="admin-btn admin-btn--primary js-view-loan-details-btn" data-loan-id="{{ loan[0] }}">View</button>
+        <button type="button" class="admin-btn admin-btn--primary js-user-history-btn" data-user-email="{{ loan[2] }}">History</button>
         {% endif %}
       </td>
     </tr>

@@ -339,7 +339,7 @@
                     <h4><i class="bi bi-journal-text"></i> Audit Logs</h4>
                     <div class="theme-toggle-settings" style="display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 0.9rem; color: #6b7280;">Theme:</span>
-                        <button class="btn btn-outline-primary btn-sm" id="settingsThemeToggle" title="Toggle Light/Dark Mode">
+                        <button class="admin-btn admin-btn--primary" id="settingsThemeToggle" title="Toggle Light/Dark Mode">
                             <i class="fas fa-moon" id="settingsThemeIcon"></i>
                         </button>
                     </div>
@@ -519,11 +519,11 @@
                 <div class="setting-controls">
                     <form id="member-export-form" method="GET" action="{{ url_for('admin.export_members') }}" style="display:inline;">
                         <input type="hidden" name="format" value="csv">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-download"></i> Export Member Data</button>
+                        <button type="submit" class="admin-btn admin-btn--primary"><i class="bi bi-download"></i> Export Member Data</button>
                     </form>
                     <form id="transaction-export-form" method="GET" action="{{ url_for('admin.export_transactions') }}" style="display:inline;">
                         <input type="hidden" name="format" value="csv">
-                        <button type="submit" class="btn btn-primary ms-2"><i class="bi bi-download"></i> Export Transactions</button>
+                        <button type="submit" class="admin-btn admin-btn--primary ms-2"><i class="bi bi-download"></i> Export Transactions</button>
                     </form>
                     <select class="form-select ms-2" style="width: 120px; display:inline-block;" id="export-format-select">
                         <option value="csv">CSV</option>
@@ -569,8 +569,8 @@
         </div>
     </div>
     <div class="d-flex justify-content-end mt-4">
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
-        <button type="submit" class="btn btn-primary">Save Settings</button>
+        <a href="{{ url_for('admin.dashboard') }}" class="admin-btn me-2" style="background:#374151;color:#e5e7eb;border:1px solid #4b5563;">Cancel</a>
+        <button type="submit" class="admin-btn admin-btn--primary">Save Settings</button>
     </div>
 </div>
 </form>

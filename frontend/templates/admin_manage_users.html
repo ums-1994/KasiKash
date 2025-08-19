@@ -5,8 +5,8 @@
 <!-- Search/filter bar -->
 <form method="GET" action="{{ url_for('admin.manage_users') }}" class="mb-4 flex items-center gap-4">
   <input type="text" name="search" class="border rounded px-3 py-2" placeholder="Search Username or Email" value="{{ search_query or '' }}">
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
-  <button type="button" class="bg-green-600 text-white px-4 py-2 rounded" onclick="openAddUserModal()">Add User</button>
+  <button type="submit" class="admin-btn admin-btn--primary">Search</button>
+  <button type="button" class="admin-btn admin-btn--primary" onclick="openAddUserModal()">Add User</button>
 </form>
 <table class="table-auto w-full mt-2 text-sm">
   <thead>
@@ -32,14 +32,14 @@
       <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
       <td>{{ user.stokvel_name|default('None') }}</td>
       <td class="flex gap-2">
-        <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="openViewUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}', '{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'|e }}', '{{ user.stokvel_name|default('None')|replace("'", "&#39;")|e }}')">View</button>
-        <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEditUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}')">Edit</button>
+        <button class="admin-btn admin-btn--primary" onclick="openViewUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}', '{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'|e }}', '{{ user.stokvel_name|default('None')|replace("'", "&#39;")|e }}')">View</button>
+        <button class="admin-btn admin-btn--primary" onclick="openEditUserModal('{{ user.username|replace("'", "&#39;")|e }}', '{{ user.email|replace("'", "&#39;")|e }}', '{{ user.role|replace("'", "&#39;")|e }}')">Edit</button>
         {% if user.status == 'blocked' %}
-          <button class="bg-green-600 text-white px-2 py-1 rounded" onclick="unblockUser({{ user.id }})">Unblock</button>
+          <button class="admin-btn admin-btn--primary" onclick="unblockUser({{ user.id }})">Unblock</button>
         {% else %}
-          <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="blockUser({{ user.id }})">Block</button>
+          <button class="admin-btn admin-btn--primary" onclick="blockUser({{ user.id }})">Block</button>
         {% endif %}
-        <button class="bg-red-600 text-white px-2 py-1 rounded" onclick="deleteUser('{{ user.email|replace("'", "&#39;")|e }}')">Delete</button>
+        <button class="admin-btn admin-btn--primary" onclick="deleteUser('{{ user.email|replace("'", "&#39;")|e }}')">Delete</button>
       </td>
     </tr>
     {% else %}
@@ -78,7 +78,7 @@
           {% endfor %}
         </select>
       </div>
-      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full mt-2">Add User</button>
+      <button type="submit" class="admin-btn admin-btn--primary w-full mt-2">Add User</button>
     </form>
   </div>
 </div>
@@ -103,7 +103,7 @@
           <option>Admin</option>
         </select>
       </div>
-      <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mt-2" disabled title="Coming soon">Save Changes</button>
+      <button type="submit" class="admin-btn admin-btn--primary w-full mt-2" disabled title="Coming soon">Save Changes</button>
     </form>
   </div>
 </div>

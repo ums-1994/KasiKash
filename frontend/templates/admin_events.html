@@ -44,7 +44,7 @@
       <input type="checkbox" id="sendNotification" name="send_notification" class="mr-2">
       <label for="sendNotification" style="color:#eaf6fb;">Send notification to all members of this stokvel</label>
     </div>
-    <button type="submit" class="admin-card btn px-6 py-2 text-base font-semibold shadow-md w-full mt-2" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Create Event</button>
+    <button type="submit" class="admin-btn admin-btn--primary w-full mt-2">Create Event</button>
   </form>
 </div>
 <!-- Events table -->
@@ -70,9 +70,9 @@
       <td>{{ event.target_date.strftime('%Y-%m-%d') if event.target_date else 'N/A' }}</td>
       <td>{{ event.created_at.strftime('%Y-%m-%d %H:%M') if event.created_at else 'N/A' }}</td>
       <td class="flex gap-2 justify-center">
-        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;" onclick="openViewEventModal('{{ event.id }}', '{{ event.name | e }}', '{{ event.description | e }}', '{{ event.target_date }}', '{{ event.created_at }}', '{{ event.stokvel_name | e }}')">View</button>
-        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" onclick="openEditEventModal('{{ event.id }}', '{{ event.name | e }}', '{{ event.description | e }}', '{{ event.target_date }}')">Edit</button>
-        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#ff4e50 0%,#f9d423 100%);color:#101c2c;opacity:0.7;" disabled title="Coming soon">Delete</button>
+        <button class="admin-btn admin-btn--primary" onclick="openViewEventModal('{{ event.id }}', '{{ event.name | e }}', '{{ event.description | e }}', '{{ event.target_date }}', '{{ event.created_at }}', '{{ event.stokvel_name | e }}')">View</button>
+        <button class="admin-btn admin-btn--primary" onclick="openEditEventModal('{{ event.id }}', '{{ event.name | e }}', '{{ event.description | e }}', '{{ event.target_date }}')">Edit</button>
+        <button class="admin-btn admin-btn--primary" disabled title="Coming soon">Delete</button>
       </td>
     </tr>
     {% else %}
@@ -98,7 +98,7 @@
         <label class="block font-semibold mb-1">Target Date</label>
         <input id="editEventDate" type="date" class="border border-[#22304a] rounded-lg px-4 py-2 w-full" required disabled title="Coming soon">
       </div>
-      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;" disabled title="Coming soon">Save Changes</button>
+      <button type="submit" class="admin-btn admin-btn--primary w-full mt-4" disabled title="Coming soon">Save Changes</button>
     </form>
   </div>
 </div>
