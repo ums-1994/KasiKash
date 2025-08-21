@@ -2,22 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#60efff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KasiKash">
+    <meta name="msapplication-TileColor" content="#60efff">
+    <meta name="msapplication-config" content="/static/browserconfig.xml">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/kasikash-logo.svg">
     <title>KasiKash - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-responsive.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
     {% block extra_css %}{% endblock %}
     <style>
+        /* Mobile menu button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 60;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        /* Overlay for mobile menu */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        /* Base styles */
         body {
             min-height: 100vh;
             background: linear-gradient(135deg, #1E1E2E 0%, #2D2D44 100%) fixed;
             font-family: 'Inter', 'Montserrat', sans-serif;
             color: #E2E2F0;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
+
+        /* Improved touch targets for mobile */
+        button, 
+        input, 
+        select, 
+        a {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Better text readability on mobile */
+        p, li, input, select, textarea {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        /* Responsive container padding */
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        /* Sidebar improvements */
         .sidebar {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
@@ -26,9 +97,42 @@
             box-shadow: 
                 0 20px 40px rgba(0, 0, 0, 0.2),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease;
         }
+
+        /* Mobile sidebar handling */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                bottom: 0;
+                width: 80%;
+                max-width: 300px;
+                z-index: 50;
+                transform: translateX(0);
+            }
+
+            .sidebar.active {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Improved nav links for touch */
         .nav-link {
             color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        /* Better touch feedback */
+        @media (hover: none) {
+            .nav-link:active {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        }
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid transparent;
             background: rgba(255, 255, 255, 0);
@@ -176,6 +280,127 @@
         .shake {
             animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
         }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        
+        /* Light theme styles */
+        body.light-theme {
+            background: #f8fafc !important;
+            color: #1e293b !important;
+        }
+        body.light-theme .sidebar {
+            background: #1e3a8a !important;
+            border-right: 1px solid #e2e8f0 !important;
+        }
+        body.light-theme .top-bar {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        body.light-theme .page-title {
+            color: #1e293b !important;
+        }
+        body.light-theme .notification-icon,
+        body.light-theme .profile-icon {
+            color: #64748b !important;
+        }
+        body.light-theme .notification-icon:hover,
+        body.light-theme .profile-icon:hover {
+            color: #3b82f6 !important;
+        }
+        body.light-theme .theme-toggle {
+            background: rgba(59, 130, 246, 0.1) !important;
+            border: 1px solid rgba(59, 130, 246, 0.2) !important;
+            color: #3b82f6 !important;
+        }
+        body.light-theme .theme-toggle:hover {
+            background: rgba(59, 130, 246, 0.2) !important;
+            color: #1d4ed8 !important;
+        }
+        /* Additional light theme styles for all components */
+        body.light-theme .card,
+        body.light-theme .glass-card,
+        body.light-theme .dashboard-card {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+        body.light-theme .card:hover,
+        body.light-theme .glass-card:hover,
+        body.light-theme .dashboard-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        body.light-theme .btn {
+            background: #3b82f6 !important;
+            color: #ffffff !important;
+            border: 1px solid #3b82f6 !important;
+        }
+        body.light-theme .btn:hover {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+        }
+        body.light-theme input,
+        body.light-theme select,
+        body.light-theme textarea {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #d1d5db !important;
+        }
+        body.light-theme input:focus,
+        body.light-theme select:focus,
+        body.light-theme textarea:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+        body.light-theme .nav-link {
+            color: #ffffff !important;
+        }
+        body.light-theme .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        body.light-theme .logo-text {
+            color: #ffffff !important;
+        }
+        body.light-theme main {
+            background: #f8fafc !important;
+        }
+        body.light-theme .alert {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        body.light-theme .alert-info {
+            background: #dbeafe !important;
+            color: #1e40af !important;
+            border-color: #93c5fd !important;
+        }
+        body.light-theme .alert-success {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border-color: #86efac !important;
+        }
+        body.light-theme .alert-warning {
+            background: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #fcd34d !important;
+        }
+        body.light-theme .alert-danger {
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            border-color: #fca5a5 !important;
+        }
     </style>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
@@ -271,6 +496,10 @@
             <div class="flex items-center justify-between w-full px-6 py-4">
                 <h2 class="text-xl page-title">{% block page_title %}{% endblock %}</h2>
                 <div class="flex items-center space-x-6">
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="theme-toggle p-2 rounded-lg transition-all duration-300">
+                        <i id="theme-icon" class="fas fa-sun text-xl"></i>
+                    </button>
                     <a href="{{ url_for('notifications') }}" id="notification-icon" class="notification-icon relative">
                         <i class="fa-solid fa-bell w-6 h-6 text-xl"></i>
                         <span id="notification-badge"
@@ -307,8 +536,68 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile-responsive.js') }}"></script>
     {% include 'chatbot.html' %}
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    
+    <!-- Theme Switching JavaScript -->
+    <script>
+        // Theme switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
+            
+            // Check for saved theme preference or default to dark
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            body.className = currentTheme === 'light' ? 'light-theme' : '';
+            updateThemeIcon(currentTheme);
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    
+                    console.log('Switching theme from', currentTheme, 'to', newTheme);
+                    
+                    // Toggle theme class
+                    body.classList.toggle('light-theme');
+                    
+                    // Update icon
+                    updateThemeIcon(newTheme);
+                    
+                    // Save preference
+                    localStorage.setItem('theme', newTheme);
+                    
+                    // Send to server and reload
+                    fetch('/switch_theme', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    }).then(response => {
+                        console.log('Theme switched successfully');
+                        window.location.reload();
+                    }).catch(error => {
+                        console.log('Theme preference saved locally');
+                        window.location.reload();
+                    });
+                });
+            }
+            
+            function updateThemeIcon(theme) {
+                if (themeIcon) {
+                    if (theme === 'light') {
+                        themeIcon.className = 'fas fa-moon text-xl';
+                    } else {
+                        themeIcon.className = 'fas fa-sun text-xl';
+                    }
+                }
+            }
+        });
+    </script>
+    
     {% block extra_js %}{% endblock %}
     
     <!-- Removed <div id="myDiv"></div> which was used for the demo graph -->

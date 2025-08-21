@@ -149,6 +149,115 @@
         width: 2.2em;
         height: 1.2em;
     }
+    
+    /* Light mode overrides */
+    body.light-mode .admin-settings-title {
+        color: #1e293b !important;
+        text-shadow: 0 2px 8px rgba(30, 41, 59, 0.1);
+    }
+    
+    body.light-mode .admin-settings-subtitle {
+        color: #64748b !important;
+        text-shadow: 0 1px 6px rgba(100, 116, 139, 0.1);
+    }
+    
+    body.light-mode .settings-container {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        box-shadow: 0 2px 16px rgba(59, 130, 246, 0.1);
+    }
+    
+    body.light-mode .settings-tabs {
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    body.light-mode .settings-tab {
+        color: #64748b !important;
+    }
+    
+    body.light-mode .settings-tab.active {
+        color: #ffffff !important;
+        background: #3b82f6 !important;
+        border-bottom-color: #3b82f6;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    }
+    
+    body.light-mode .settings-tab:hover {
+        color: #ffffff !important;
+        background: #3b82f6 !important;
+        border-bottom-color: #3b82f6;
+    }
+    
+    body.light-mode .settings-section {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    body.light-mode .settings-card {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0;
+    }
+    
+    body.light-mode .settings-card h4 {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .settings-card .help-text {
+        color: #64748b !important;
+    }
+    
+    body.light-mode .setting-label {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .setting-controls {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .control-group {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .form-select,
+    body.light-mode .form-control,
+    body.light-mode .input-group-text {
+        color: #1e293b !important;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+    }
+    
+    body.light-mode .form-check-label {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .switch-user-label {
+        background: #ffffff !important;
+        color: #3b82f6 !important;
+        border: 2px solid #3b82f6;
+        box-shadow: 0 1px 4px rgba(59, 130, 246, 0.1);
+    }
+    
+    body.light-mode #switchToUserView:checked + .switch-user-label {
+        background: #3b82f6 !important;
+        color: #ffffff !important;
+        border-color: #3b82f6;
+    }
+    
+    body.light-mode .audit-log-table th {
+        background-color: #f8fafc !important;
+        color: #374151 !important;
+    }
+    
+    body.light-mode .audit-log-table td {
+        color: #1e293b !important;
+    }
+    
+    body.light-mode .setting-item {
+        border-bottom: 1px dashed #e2e8f0;
+    }
 </style>
 <form action="{{ url_for('admin.settings') }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -230,7 +339,7 @@
                     <h4><i class="bi bi-journal-text"></i> Audit Logs</h4>
                     <div class="theme-toggle-settings" style="display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 0.9rem; color: #6b7280;">Theme:</span>
-                        <button class="btn btn-outline-primary btn-sm" id="settingsThemeToggle" title="Toggle Light/Dark Mode">
+                        <button class="admin-btn admin-btn--primary" id="settingsThemeToggle" title="Toggle Light/Dark Mode">
                             <i class="fas fa-moon" id="settingsThemeIcon"></i>
                         </button>
                     </div>
@@ -410,11 +519,11 @@
                 <div class="setting-controls">
                     <form id="member-export-form" method="GET" action="{{ url_for('admin.export_members') }}" style="display:inline;">
                         <input type="hidden" name="format" value="csv">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-download"></i> Export Member Data</button>
+                        <button type="submit" class="admin-btn admin-btn--primary"><i class="bi bi-download"></i> Export Member Data</button>
                     </form>
                     <form id="transaction-export-form" method="GET" action="{{ url_for('admin.export_transactions') }}" style="display:inline;">
                         <input type="hidden" name="format" value="csv">
-                        <button type="submit" class="btn btn-primary ms-2"><i class="bi bi-download"></i> Export Transactions</button>
+                        <button type="submit" class="admin-btn admin-btn--primary ms-2"><i class="bi bi-download"></i> Export Transactions</button>
                     </form>
                     <select class="form-select ms-2" style="width: 120px; display:inline-block;" id="export-format-select">
                         <option value="csv">CSV</option>
@@ -460,8 +569,8 @@
         </div>
     </div>
     <div class="d-flex justify-content-end mt-4">
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
-        <button type="submit" class="btn btn-primary">Save Settings</button>
+        <a href="{{ url_for('admin.dashboard') }}" class="admin-btn me-2" style="background:#374151;color:#e5e7eb;border:1px solid #4b5563;">Cancel</a>
+        <button type="submit" class="admin-btn admin-btn--primary">Save Settings</button>
     </div>
 </div>
 </form>

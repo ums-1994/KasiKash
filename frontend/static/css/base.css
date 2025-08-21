@@ -1,7 +1,7 @@
 /* === THEME VARIABLES === */
 :root {
-  --primary-blue: #60efff;
-  --secondary-dark-blue: #22304a;
+  --primary-blue: #1976d2;
+  --secondary-dark-blue: #1565c0;
   --accent-green: #00ff87;
   --background-dark: #101c2c;
   --text-light: #eaf6fb;
@@ -35,6 +35,10 @@
   --text-gradient: linear-gradient(90deg, #059669, #10b981);
   --white: #ffffff;
   --black: #000000;
+  --background-light: #ffffff;
+  --text-dark: #222b45;
+  --card-bg-light: #ffffff;
+  --border-light: #e2e8f0;
 }
 
 body {
@@ -45,10 +49,10 @@ body {
   padding: 0;
 }
 
-body.light-mode {
-  --bg: linear-gradient(135deg, #eaf6fb 60%, #e3f0ff 100%);
-  background: var(--bg) !important;
-  color: var(--text);
+body.light-mode, body.light-theme {
+  --bg: #ffffff;
+  background: #ffffff !important;
+  color: var(--text-dark) !important;
 }
 
 .main-content, .admin-main, .dashboard-main {
@@ -74,9 +78,23 @@ body.light-mode {
   color: #60efff !important; /* Bright cyan for all sidebar children */
 }
 
-body.light-mode .sidebar {
-  background: #b3d4fc !important;
-  border-radius: 18px 18px 0 0;
+body.light-mode .sidebar, body.light-theme .sidebar {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+  border-right: 2px solid var(--border-light) !important;
+}
+
+body.light-mode .sidebar .nav a, body.light-theme .sidebar .nav a,
+body.light-mode .sidebar .nav i, body.light-theme .sidebar .nav i,
+body.light-mode .sidebar .nav svg, body.light-theme .sidebar .nav svg {
+  color: #fff !important;
+  fill: #fff !important;
+}
+
+body.light-mode .sidebar .nav a.active, body.light-theme .sidebar .nav a.active,
+body.light-mode .sidebar .nav a:hover, body.light-theme .sidebar .nav a:hover {
+  background: var(--secondary-dark-blue) !important;
+  color: #fff !important;
 }
 
 /* Main content area */
@@ -218,22 +236,126 @@ body.light-mode .sidebar {
   background: var(--accent-gradient);
   color: white;
 }
-body.light-mode .management-card.card-loans {
+body.light-mode .management-card.card-loans, body.light-theme .management-card.card-loans {
   background: linear-gradient(135deg, #f59e42 0%, #ff9f43 100%);
 }
-body.light-mode .management-card.card-reports {
+body.light-mode .management-card.card-reports, body.light-theme .management-card.card-reports {
   background: linear-gradient(135deg, #8e44ad 0%, #4facfe 100%);
 }
 
-/* Responsive design */
+body.light-mode .admin-card, body.light-theme .admin-card,
+body.light-mode .card, body.light-theme .card,
+body.light-mode .section, body.light-theme .section {
+  background: var(--card-bg-light) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+body.light-mode .btn, body.light-theme .btn,
+body.light-mode .primary-btn, body.light-theme .primary-btn {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* Responsive design - Enhanced mobile support */
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
     height: auto;
     position: relative;
+    border-radius: 0;
+    margin-bottom: 1rem;
   }
-  .main-content {
+  .main-content, .admin-main, .dashboard-main {
     margin-left: 0;
+    padding: 1rem;
+  }
+  
+  .top-bar {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .card, .glass-card, .dashboard-card {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .admin-dashboard-banner {
+    padding: 1.5rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .admin-dashboard-banner h1 {
+    font-size: 1.5rem;
+  }
+  
+  .admin-dashboard-banner p {
+    font-size: 1rem;
+  }
+  
+  /* Mobile navigation improvements */
+  .nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .nav-link {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+  }
+  
+  /* Mobile form improvements */
+  .form-control, input, select, textarea {
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  /* Mobile button improvements */
+  .btn, .dashboard-btn {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    min-height: 44px;
+  }
+  
+  /* Mobile table improvements */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mobile modal improvements */
+  .modal-dialog {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+  
+  .modal-content {
+    border-radius: 12px;
   }
 }
 
@@ -400,13 +522,13 @@ body.light-mode .management-card.card-reports {
   border: 1px solid var(--border-color) !important;
   box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
 }
-body.light-mode .main-content .card,
-body.light-mode .dashboard-main .card,
-body.light-mode .admin-main .card,
-body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) {
-  background: #fafdff !important;
+body.light-mode .main-content .card, body.light-theme .main-content .card,
+body.light-mode .dashboard-main .card, body.light-theme .dashboard-main .card,
+body.light-mode .admin-main .card, body.light-theme .admin-main .card,
+body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card), body.light-theme .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) {
+  background: #ffffff !important;
   color: #222b45 !important;
-  border: 1px solid #b3d4fc !important;
+  border: 1px solid #e2e8f0 !important;
 } 
 
 /* Force all user-facing cards and their content to use dashboard colors */
@@ -416,10 +538,10 @@ body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-car
   border: 1px solid var(--border-color) !important;
   box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
 }
-body.light-mode .card, body.light-mode .main-content .card, body.light-mode .dashboard-main .card, body.light-mode .admin-main .card, body.light-mode .card * {
-  background: #fafdff !important;
+body.light-mode .card, body.light-theme .card, body.light-mode .main-content .card, body.light-theme .main-content .card, body.light-mode .dashboard-main .card, body.light-theme .dashboard-main .card, body.light-mode .admin-main .card, body.light-theme .admin-main .card, body.light-mode .card *, body.light-theme .card * {
+  background: #ffffff !important;
   color: #222b45 !important;
-  border: 1px solid #b3d4fc !important;
+  border: 1px solid #e2e8f0 !important;
 } 
 
 /* Force notifications dark theme */
@@ -428,7 +550,6 @@ body.light-mode .card, body.light-mode .main-content .card, body.light-mode .das
 .notification-unread, .notification-unread * {
   background: #22304a !important;
   color: #60efff !important;
-  border-color: #60efff !important;
 }
 
 /* Remove any box-shadow that may look like a white border */
@@ -448,8 +569,50 @@ html, body {
 main, .container, .max-w-4xl, .shadow-md, .rounded-lg, .p-6, .mb-4 {
   background: #22304a !important;
   color: #60efff !important;
-  border-color: #60efff !important;
 }
 main *, .container *, .max-w-4xl *, .shadow-md *, .rounded-lg *, .p-6 *, .mb-4 * {
   color: #60efff !important;
+}
+
+/* Light mode overrides for global elements */
+body.light-mode html, body.light-theme html, 
+body.light-mode body, body.light-theme body {
+  background: #ffffff !important;
+  color: #222b45 !important;
+}
+
+body.light-mode main, body.light-theme main, 
+body.light-mode .container, body.light-theme .container, 
+body.light-mode .max-w-4xl, body.light-theme .max-w-4xl, 
+body.light-mode .shadow-md, body.light-theme .shadow-md, 
+body.light-mode .rounded-lg, body.light-theme .rounded-lg, 
+body.light-mode .p-6, body.light-theme .p-6, 
+body.light-mode .mb-4, body.light-theme .mb-4 {
+  background: #ffffff !important;
+  color: #222b45 !important;
+}
+
+body.light-mode main *, body.light-theme main *, 
+body.light-mode .container *, body.light-theme .container *, 
+body.light-mode .max-w-4xl *, body.light-theme .max-w-4xl *, 
+body.light-mode .shadow-md *, body.light-theme .shadow-md *, 
+body.light-mode .rounded-lg *, body.light-theme .rounded-lg *, 
+body.light-mode .p-6 *, body.light-theme .p-6 *, 
+body.light-mode .mb-4 *, body.light-theme .mb-4 * {
+  color: #222b45 !important;
+} 
+
+body.light-mode .main-content, body.light-theme .main-content,
+body.light-mode .dashboard-main, body.light-theme .dashboard-main,
+body.light-mode .admin-main, body.light-theme .admin-main {
+    background: #ffffff !important;
+    color: #222b45 !important;
+}
+
+body.light-mode .main-content .card, body.light-theme .main-content .card,
+body.light-mode .dashboard-main .card, body.light-theme .dashboard-main .card,
+body.light-mode .admin-main .card, body.light-theme .admin-main .card,
+body.light-mode .card, body.light-theme .card {
+    background: #ffffff !important;
+    color: #222b45 !important;
 } 

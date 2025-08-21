@@ -1,20 +1,46 @@
+# --- Voucher Purchase Route for Member Interface ---
+
+# --- Voucher Purchase Route for Member Interface ---
+
+
+
 import os
+import psycopg2
 import random
 import string
 from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for, flash
-import psycopg2
-
-rewards_bp = Blueprint('rewards', __name__)
 
 def get_db_connection():
     return psycopg2.connect(
-        dbname=os.getenv('DB_NAME'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        host=os.getenv('DB_HOST', 'localhost'),
-        port=os.getenv('DB_PORT', 5432)
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT"),
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD")
     )
 
+rewards_bp = Blueprint('rewards', __name__)
+
+@rewards_bp.route('/purchase_voucher', methods=['POST'])
+def purchase_voucher():
+    firebase_uid = session.get('user_id')
+    if not firebase_uid:
+        flash('You must be logged in to purchase a voucher.', 'danger')
+        return redirect(url_for('login'))
+    voucher_type = request.form.get('voucher_type')
+    amount = request.form.get('amount')
+    if not voucher_type or not amount:
+        flash('Please select a voucher type and amount.', 'danger')
+        return redirect(url_for('rewards.rewards_card_page'))
+    try:
+        amount = float(amount)
+        # Optionally: Check if user has enough balance, deduct, etc.
+        voucher_code = create_voucher(firebase_uid, voucher_type, amount)
+        flash(f'Voucher purchased! Code: {voucher_code}', 'success')
+    except Exception as e:
+        print('Voucher purchase error:', e)
+        flash('Failed to purchase voucher. Please try again.', 'danger')
+    return redirect(url_for('rewards.rewards_card_page'))
 def generate_card_number():
     return ''.join([str(random.randint(0, 9)) for _ in range(16)])
 
@@ -146,6 +172,9 @@ def create_voucher(firebase_uid, voucher_type, amount):
     conn = get_db_connection()
     cur = conn.cursor()
     
+    # For vouchers, we'll use the firebase_uid directly since that's how the table is structured
+    # This maintains consistency with the string-based user_id in the vouchers table
+    
     # Generate unique voucher code
     voucher_code = generate_voucher_code()
     
@@ -156,19 +185,28 @@ def create_voucher(firebase_uid, voucher_type, amount):
             break
         voucher_code = generate_voucher_code()
     
-    # Insert voucher
+    try:
+        # Insert voucher using firebase_uid directly
         cur.execute("""
             INSERT INTO vouchers (user_id, voucher_type, code, amount)
             VALUES (%s, %s, %s, %s)
             RETURNING id
         """, (firebase_uid, voucher_type, voucher_code, amount))
-    
-    voucher_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    conn.close()
-    
-    return voucher_code
+        
+        result = cur.fetchone()
+        if result is None:
+            conn.rollback()
+            raise ValueError("Failed to create voucher - no ID returned")
+            
+        voucher_id = result[0]
+        conn.commit()
+        return voucher_code
+    except Exception as e:
+        conn.rollback()
+        raise ValueError(f"Failed to create voucher: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
 
 @rewards_bp.route('/api/rewards/airtime', methods=['POST'])
 def purchase_airtime():
@@ -477,229 +515,314 @@ def spend_donate_form():
 
 @rewards_bp.route('/marketplace', methods=['GET'])
 def marketplace():
-    firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
-        return redirect(url_for('login'))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT id, name, description, price_in_points, image_url FROM marketplace_items WHERE is_active = TRUE ORDER BY created_at DESC")
-    items = [
-        {'id': row[0], 'name': row[1], 'description': row[2], 'price': row[3], 'image_url': row[4]} for row in cur.fetchall()
-    ]
-    # Get user's card balance
-    cur.execute("SELECT balance FROM virtual_reward_cards WHERE user_id = %s", (user_id,))
-    card = cur.fetchone()
-    balance = card[0] if card else 0
-    cur.close()
-    conn.close()
-    return render_template('marketplace.html', items=items, balance=balance)
+    try:
+        firebase_uid = session.get('user_id')
+        if not firebase_uid:
+            flash('Please log in to access the marketplace.', 'error')
+            return redirect(url_for('login'))
+
+        # Get internal user ID
+        user_id = get_internal_user_id(firebase_uid)
+        if not user_id:
+            flash('User account not found.', 'error')
+            return redirect(url_for('login'))
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # First, ensure the user has a rewards card
+        cur.execute("""
+            SELECT balance FROM virtual_reward_cards 
+            WHERE user_id = %s
+        """, (user_id,))
+        card = cur.fetchone()
+        
+        if not card:
+            # Create a new card if user doesn't have one
+            card_number = generate_card_number()
+            cur.execute("""
+                INSERT INTO virtual_reward_cards (user_id, card_number, balance) 
+                VALUES (%s, %s, %s)
+                RETURNING balance
+            """, (user_id, card_number, 0))
+            card = cur.fetchone()
+            conn.commit()
+            
+        balance = card[0] if card else 0
+        
+        # Get marketplace items
+        cur.execute("""
+            SELECT id, name, description, price_in_points, image_url 
+            FROM marketplace_items 
+            WHERE is_active = TRUE 
+            ORDER BY created_at DESC
+        """)
+        items = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'description': row[2],
+                'price': row[3],
+                'image_url': row[4]
+            } for row in cur.fetchall()
+        ]
+        
+        return render_template('marketplace.html', items=items, balance=balance)
+        
+    except Exception as e:
+        flash(f'Error loading marketplace: {str(e)}', 'error')
+        return redirect(url_for('rewards.rewards_card_page'))
+        
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
 
 @rewards_bp.route('/marketplace/buy/<int:item_id>', methods=['POST'])
 def buy_marketplace_item(item_id):
-    print(f"DEBUG: Marketplace purchase attempt for item_id: {item_id}")
-    firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
-        print("DEBUG: User not authenticated")
-        return redirect(url_for('login'))
-    quantity = int(request.form.get('quantity', 1))
-    print(f"DEBUG: Quantity requested: {quantity}")
-    conn = get_db_connection()
-    cur = conn.cursor()
-    # Get item info
-    cur.execute("SELECT name, price_in_points, description FROM marketplace_items WHERE id = %s AND is_active = TRUE", (item_id,))
-    item = cur.fetchone()
-    if not item:
-        print(f"DEBUG: Item {item_id} not found or not active")
-        flash('Item not found or not available.', 'danger')
-        return redirect(url_for('rewards.marketplace'))
-    
-    item_name, price, description = item
-    
-    # For transport vouchers, calculate points based on custom amount
-    if 'transport' in item_name.lower():
-        custom_amount = int(request.form.get('custom_amount', 0))
-        # Convert R amount to points (1 point = R1 for transport)
-        total_points = custom_amount * quantity
-    else:
-        total_points = price * quantity
-    
-    print(f"DEBUG: Item: {item_name}, Price: {price}, Total points needed: {total_points}")
-    
-    # Get user card and balance
-    cur.execute("SELECT id, balance FROM virtual_reward_cards WHERE user_id = %s", (user_id,))
-    card = cur.fetchone()
-    if not card or card[1] < total_points:
-        flash('Insufficient points.', 'danger')
-        return redirect(url_for('rewards.marketplace'))
-    card_id = card[0]
-    
-    # Deduct points
-    cur.execute("UPDATE virtual_reward_cards SET balance = balance - %s WHERE id = %s", (total_points, card_id))
-    
-    # Log transaction
-    cur.execute("""
-        INSERT INTO reward_transactions (card_id, user_id, amount, transaction_type, description)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (card_id, user_id, -total_points, 'marketplace_purchase', f'Bought {item_name} x{quantity}'))
-    
-    # Check if this is a voucher-type item that should generate immediate vouchers
-    voucher_types = ['airtime', 'electricity', 'data', 'movie', 'transport', 'clothing', 'food', 'school', 'health']
-    is_voucher_item = any(voucher_type in item_name.lower() for voucher_type in voucher_types)
-    
-    if is_voucher_item:
-        # Get network selection for airtime and data vouchers
-        network = request.form.get('network', '')
-        if ('airtime' in item_name.lower() or 'data' in item_name.lower()) and not network:
-            flash('Please select a network for airtime and data vouchers.', 'danger')
+    conn = None
+    cur = None
+    try:
+        firebase_uid = session.get('user_id')
+        if not firebase_uid:
+            flash('Please log in to make purchases.', 'error')
+            return redirect(url_for('login'))
+
+        # Get the quantity from form data
+        try:
+            quantity = int(request.form.get('quantity', 1))
+            if quantity < 1:
+                flash('Please select a valid quantity.', 'error')
+                return redirect(url_for('rewards.marketplace'))
+        except ValueError:
+            flash('Invalid quantity specified.', 'error')
             return redirect(url_for('rewards.marketplace'))
-        
-        # Get transport voucher details
-        transport_company = request.form.get('transport_company', '')
-        card_number = request.form.get('card_number', '')
-        custom_amount = request.form.get('custom_amount', '')
-        
-        if 'transport' in item_name.lower():
-            if not transport_company or not card_number or not custom_amount:
-                flash('Please fill in all required fields for transport vouchers.', 'danger')
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Get item info
+        cur.execute("""
+            SELECT name, price_in_points, description 
+            FROM marketplace_items 
+            WHERE id = %s AND is_active = TRUE
+        """, (item_id,))
+        item = cur.fetchone()
+
+        if not item:
+            flash('Item not found or not available.', 'error')
+            return redirect(url_for('rewards.marketplace'))
+
+        item_name, price, description = item
+
+        try:
+            # Process voucher purchase and get voucher codes
+            vouchers, amount_per_voucher = process_voucher_purchase(
+                firebase_uid, 
+                item_name, 
+                request.form, 
+                price, 
+                quantity
+            )
+
+            # Calculate total points
+            total_points = amount_per_voucher * quantity
+            
+            # Get internal user ID for database operations
+            internal_user_id = get_internal_user_id(firebase_uid)
+            if not internal_user_id:
+                flash('User account not found. Please contact support.', 'error')
+                return redirect(url_for('rewards.marketplace'))
+
+            # Get user's current balance
+            cur.execute("""
+                SELECT id, balance 
+                FROM virtual_reward_cards 
+                WHERE user_id = %s
+            """, (internal_user_id,))
+            
+            card = cur.fetchone()
+            if not card:
+                flash('No rewards card found. Please contact support.', 'error')
+                return redirect(url_for('rewards.marketplace'))
+                
+            card_id, current_balance = card
+            
+            if current_balance < total_points:
+                flash(f'Insufficient points. You need {total_points} points but have {current_balance}.', 'error')
                 return redirect(url_for('rewards.marketplace'))
             
+            # Deduct points from card
+            cur.execute("""
+                UPDATE virtual_reward_cards 
+                SET balance = balance - %s 
+                WHERE id = %s
+            """, (total_points, card_id))
+            
+            # Record the transaction
+            cur.execute("""
+                INSERT INTO reward_transactions 
+                (card_id, user_id, amount, transaction_type, description)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (card_id, internal_user_id, -total_points, 'marketplace_purchase', f'Bought {item_name} x{quantity}'))
+            
+            # Create order record
+            cur.execute("""
+                INSERT INTO marketplace_orders 
+                (user_id, item_id, quantity, total_points, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (internal_user_id, item_id, quantity, total_points, 'completed'))
+            
+            conn.commit()
+            
+            # Create success message
+            if len(vouchers) > 1:
+                codes = ', '.join(vouchers)
+                message = f'Purchase successful! Your voucher codes: {codes}'
+            else:
+                message = f'Purchase successful! Your voucher code: {vouchers[0]}'
+                
+            flash(message, 'success')
+            return redirect(url_for('rewards.marketplace'))
+            
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            flash(f'Error processing purchase: {str(e)}', 'error')
+            return redirect(url_for('rewards.marketplace'))
+            
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+@rewards_bp.route('/marketplace/vouchers', methods=['GET'])
+def get_voucher_types():
+    try:
+        # Define available voucher types
+        voucher_types = ['airtime', 'electricity', 'data', 'movie', 'transport', 'clothing', 'food', 'school', 'health']
+        return jsonify({'voucher_types': voucher_types})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def validate_voucher_details(item_name, form_data):
+    try:
+        # Get network selection for airtime and data vouchers
+        network = form_data.get('network', '')
+        if ('airtime' in item_name.lower() or 'data' in item_name.lower()) and not network:
+            return False, 'Please select a network for airtime and data vouchers.'
+            
+        # Get transport voucher details if needed
+        if 'transport' in item_name.lower():
+            transport_company = form_data.get('transport_company', '')
+            card_number = form_data.get('card_number', '')
+            custom_amount = form_data.get('custom_amount', '')
+            
+            if not transport_company:
+                return False, 'Please select a transport company.'
+                
+            try:
+                amount = int(custom_amount)
+                if amount < 50:
+                    return False, 'Transport voucher amount must be at least R50.'
+            except ValueError:
+                return False, 'Please enter a valid amount for transport voucher.'
+                
+        return True, None
+        
+    except Exception as e:
+        return False, f'Error validating voucher details: {str(e)}'
+
+def process_voucher_purchase(firebase_uid, item_name, form_data, price, quantity=1):
+    try:
+        # For airtime and data vouchers, get network
+        network = None
+        if 'airtime' in item_name.lower() or 'data' in item_name.lower():
+            network = form_data.get('network')
+            if not network:
+                raise ValueError('Please select a network provider')
+
+        # For transport vouchers, handle custom amount
+        transport_company = None
+        custom_amount = None
+        if 'transport' in item_name.lower():
+            transport_company = form_data.get('transport_company')
+            custom_amount = form_data.get('custom_amount')
+            if not transport_company:
+                raise ValueError('Please select a transport company')
             try:
                 custom_amount = int(custom_amount)
                 if custom_amount < 50:
-                    flash('Transport voucher amount must be at least R50.', 'danger')
-                    return redirect(url_for('rewards.marketplace'))
-            except ValueError:
-                flash('Please enter a valid amount for transport voucher.', 'danger')
-                return redirect(url_for('rewards.marketplace'))
+                    raise ValueError('Transport voucher amount must be at least R50')
+            except (ValueError, TypeError):
+                raise ValueError('Please enter a valid amount for transport voucher')
         
-        # Generate vouchers immediately
-        vouchers_created = []
-        for i in range(quantity):
-            # For airtime and data vouchers, include network in the voucher type
-            if 'airtime' in item_name.lower():
-                voucher_type = f"airtime_{network}"
-                voucher_amount = price
-            elif 'data' in item_name.lower():
-                voucher_type = f"data_{network}"
-                voucher_amount = price
-            elif 'transport' in item_name.lower():
+        # Create vouchers
+        vouchers = []
+        for _ in range(quantity):
+            if 'transport' in item_name.lower():
+                amount = custom_amount
                 voucher_type = f"transport_{transport_company}"
-                voucher_amount = custom_amount  # Use custom amount for transport
+            elif 'airtime' in item_name.lower():
+                amount = price
+                voucher_type = f"airtime_{network}"
+            elif 'data' in item_name.lower():
+                amount = price
+                voucher_type = f"data_{network}"
             else:
+                amount = price
                 voucher_type = item_name.lower().replace(' voucher', '').replace(' ', '_')
-                voucher_amount = price
             
-            voucher_code = create_voucher(firebase_uid, voucher_type, voucher_amount)
-            vouchers_created.append(voucher_code)
-        
-        # Create order with 'completed' status since vouchers are generated
-        cur.execute("""
-            INSERT INTO marketplace_orders (user_id, item_id, quantity, total_points, status)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, item_id, quantity, total_points, 'completed'))
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-        
-        # Create notification with voucher codes
-        if 'airtime' in item_name.lower():
-            network_display = network.upper()
-            if len(vouchers_created) == 1:
-                message = f"Your {network_display} airtime voucher has been generated! Voucher Code: {vouchers_created[0]}"
+            code = create_voucher(firebase_uid, voucher_type, amount)
+            if code:
+                vouchers.append(code)
             else:
-                voucher_list = ', '.join(vouchers_created)
-                message = f"Your {quantity} {network_display} airtime vouchers have been generated! Voucher Codes: {voucher_list}"
-        elif 'data' in item_name.lower():
-            network_display = network.upper()
-            if len(vouchers_created) == 1:
-                message = f"Your {network_display} data voucher has been generated! Voucher Code: {vouchers_created[0]}"
-            else:
-                voucher_list = ', '.join(vouchers_created)
-                message = f"Your {quantity} {network_display} data vouchers have been generated! Voucher Codes: {voucher_list}"
-        elif 'transport' in item_name.lower():
-            company_display = transport_company.replace('_', ' ').title()
-            if len(vouchers_created) == 1:
-                message = f"Your {company_display} transport voucher (R{custom_amount}) has been generated! Voucher Code: {vouchers_created[0]}"
-            else:
-                voucher_list = ', '.join(vouchers_created)
-                message = f"Your {quantity} {company_display} transport vouchers (R{custom_amount} each) have been generated! Voucher Codes: {voucher_list}"
-        else:
-            if len(vouchers_created) == 1:
-                message = f"Your {item_name} voucher has been generated! Voucher Code: {vouchers_created[0]}"
-            else:
-                voucher_list = ', '.join(vouchers_created)
-                message = f"Your {quantity} {item_name} vouchers have been generated! Voucher Codes: {voucher_list}"
+                raise ValueError('Failed to create voucher')
         
-        add_reward(firebase_uid, 0, 'voucher_generated', message)
+        return vouchers, custom_amount if custom_amount else price
         
-        # Flash success message with voucher codes
-        if 'airtime' in item_name.lower():
-            network_display = network.upper()
-            if len(vouchers_created) == 1:
-                flash(f'Purchase successful! Your {network_display} airtime voucher code is: {vouchers_created[0]}', 'success')
-            else:
-                voucher_list = ', '.join(vouchers_created)
-                flash(f'Purchase successful! Your {network_display} airtime voucher codes are: {voucher_list}', 'success')
-        elif 'data' in item_name.lower():
-            network_display = network.upper()
-            if len(vouchers_created) == 1:
-                flash(f'Purchase successful! Your {network_display} data voucher code is: {vouchers_created[0]}', 'success')
-            else:
-                voucher_list = ', '.join(vouchers_created)
-                flash(f'Purchase successful! Your {network_display} data voucher codes are: {voucher_list}', 'success')
-        elif 'transport' in item_name.lower():
-            company_display = transport_company.replace('_', ' ').title()
-            if len(vouchers_created) == 1:
-                flash(f'Purchase successful! Your {company_display} transport voucher (R{custom_amount}) code is: {vouchers_created[0]}', 'success')
-            else:
-                voucher_list = ', '.join(vouchers_created)
-                flash(f'Purchase successful! Your {company_display} transport voucher codes are: {voucher_list}', 'success')
-        else:
-            if len(vouchers_created) == 1:
-                flash(f'Purchase successful! Your voucher code is: {vouchers_created[0]}', 'success')
-            else:
-                voucher_list = ', '.join(vouchers_created)
-                flash(f'Purchase successful! Your voucher codes are: {voucher_list}', 'success')
-        
-        return redirect(url_for('rewards.marketplace'))
-    else:
-        # For non-voucher items, create pending order as before
-        cur.execute("""
-            INSERT INTO marketplace_orders (user_id, item_id, quantity, total_points, status)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, item_id, quantity, total_points, 'pending'))
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-        
-        flash('Purchase successful! Your order is pending.', 'success')
-        return redirect(url_for('rewards.marketplace'))
+    except Exception as e:
+        raise ValueError(str(e))
 
 @rewards_bp.route('/marketplace/orders', methods=['GET'])
 def marketplace_orders():
     firebase_uid = session.get('user_id')
-    user_id = get_internal_user_id(firebase_uid)
-    if not user_id:
+    if not firebase_uid:
         return redirect(url_for('login'))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT o.id, i.name, o.quantity, o.total_points, o.status, o.created_at
-        FROM marketplace_orders o
-        JOIN marketplace_items i ON o.item_id = i.id
-        WHERE o.user_id = %s
-        ORDER BY o.created_at DESC
-    """, (user_id,))
-    orders = [
-        {'id': row[0], 'item_name': row[1], 'quantity': row[2], 'total_points': row[3], 'status': row[4], 'created_at': row[5]} for row in cur.fetchall()
-    ]
-    cur.close()
-    conn.close()
-    return render_template('marketplace_orders.html', orders=orders)
+        
+    conn = None
+    cur = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT o.id, i.name, o.quantity, o.total_points, o.status, o.created_at
+            FROM marketplace_orders o
+            JOIN marketplace_items i ON o.item_id = i.id
+            WHERE o.user_id = %s
+            ORDER BY o.created_at DESC
+        """, (firebase_uid,))
+        orders = [
+            {
+                'id': row[0], 
+                'item_name': row[1], 
+                'quantity': row[2], 
+                'total_points': row[3], 
+                'status': row[4], 
+                'created_at': row[5]
+            } for row in cur.fetchall()
+        ]
+        return render_template('marketplace_orders.html', orders=orders)
+    except Exception as e:
+        flash(f'Error retrieving orders: {str(e)}', 'error')
+        return redirect(url_for('rewards.marketplace'))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 @rewards_bp.route('/marketplace/redeem/<item>', methods=['POST'])
 def redeem_marketplace_item(item):
@@ -836,35 +959,47 @@ def redeem_marketplace_item(item):
 def view_vouchers():
     firebase_uid = session.get('user_id')
     if not firebase_uid:
+        flash('Please log in to view your vouchers.', 'error')
         return redirect(url_for('login'))
     
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Get user's vouchers
-    cur.execute("""
-        SELECT id, voucher_type, code, amount, status, created_at, redeemed_at
-        FROM vouchers 
-        WHERE user_id = %s 
-        ORDER BY created_at DESC
-    """, (firebase_uid,))
-    
-    vouchers = []
-    for row in cur.fetchall():
-        vouchers.append({
-            'id': row[0],
-            'type': row[1],
-            'code': row[2],
-            'amount': row[3],
-            'status': row[4],
-            'created_at': row[5],
-            'used_at': row[6]
-        })
-    
-    cur.close()
-    conn.close()
-    
-    return render_template('vouchers.html', vouchers=vouchers)
+    conn = None
+    cur = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Get user's vouchers using firebase_uid directly
+        cur.execute("""
+            SELECT id, voucher_type, code, amount, status, created_at, redeemed_at
+            FROM vouchers 
+            WHERE user_id = %s 
+            ORDER BY created_at DESC
+        """, (firebase_uid,))
+        
+        vouchers = [
+            {
+                'id': row[0],
+                'type': row[1],
+                'code': row[2],
+                'amount': row[3],
+                'status': row[4],
+                'created_at': row[5],
+                'redeemed_at': row[6]
+            }
+            for row in cur.fetchall()
+        ]
+        
+        return render_template('vouchers.html', vouchers=vouchers)
+        
+    except Exception as e:
+        flash(f'Error retrieving vouchers: {str(e)}', 'error')
+        return redirect(url_for('rewards.rewards_card_page'))
+        
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 @rewards_bp.route('/vouchers/redeem/<voucher_code>', methods=['POST'])
 def redeem_voucher(voucher_code):
@@ -875,7 +1010,7 @@ def redeem_voucher(voucher_code):
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # Check if voucher exists and belongs to user
+    # Check if voucher exists and belongs to user using firebase_uid
     cur.execute("""
         SELECT id, voucher_type, amount, status 
         FROM vouchers 

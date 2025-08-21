@@ -6,27 +6,27 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 .admin-dashboard-banner {
-  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-  color: #60efff;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: #ffffff;
   border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.15);
   padding: 2rem 2.5rem 2rem 2rem;
   margin-bottom: 2rem;
   position: relative;
   display: flex;
   align-items: center;
   min-height: 110px;
-  border: 2px solid #22304a;
+  border: 2px solid #e2e8f0;
 }
 .admin-dashboard-banner h1 {
-  color: #60efff;
+  color: #ffffff;
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
 }
 .admin-dashboard-banner p {
-  color: #eaf6fb;
+  color: #e0f2fe;
   font-size: 1.2rem;
   margin-top: 0.5rem;
   font-weight: 500;
@@ -153,27 +153,27 @@
   border: 1.5px solid #22304a;
 }
 .welcome-banner {
-  background: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
-  color: #60efff;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: #ffffff;
   border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(35,41,70,0.10);
+  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.15);
   padding: 2rem 2.5rem 2rem 2rem;
   margin-bottom: 2rem;
   position: relative;
   display: flex;
   align-items: center;
   min-height: 110px;
-  border: 2px solid #22304a;
+  border: 2px solid #e2e8f0;
 }
 .welcome-title {
-  color: #60efff;
+  color: #ffffff;
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
 }
 .welcome-subtitle {
-  color: #eaf6fb;
+  color: #e0f2fe;
   font-size: 1.2rem;
   margin-top: 0.5rem;
   font-weight: 500;
@@ -653,6 +653,16 @@
                     {% if event.type == 'repayment' %}<i class="fas fa-money-bill-wave" style="color: #ef4444;"></i>{% endif %}
                     {% if event.type == 'custom' %}<i class="fas fa-bell" style="color: #a78bfa;"></i>{% endif %}
                     <span style="margin-left: 0.25em;">{{ event.desc }}</span>
+                    <button class="add-to-calendar-btn" style="margin-left: 0.5em; font-size: 0.9em; padding: 2px 8px; border-radius: 6px; border: none; background: #60efff; color: #222; cursor: pointer;" 
+                      onclick="addToCalendar({
+                        title: '{{ event.desc|e }}',
+                        start: '{{ event.start if event.start else day.full_date }}T09:00:00',
+                        end: '{{ event.end if event.end else day.full_date }}T10:00:00',
+                        description: '{{ event.desc|e }}',
+                        location: '{{ event.location|default('', true)|e }}'
+                      }); event.stopPropagation();">
+                      📅 Add to Calendar
+                    </button>
                   </li>
                 {% endfor %}
               </ul>
@@ -728,6 +738,33 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 });
+</script>
+<script>
+function addToCalendar(event) {
+  const title = encodeURIComponent(event.title);
+  const location = encodeURIComponent(event.location || '');
+  const description = encodeURIComponent(event.description || '');
+  // Format: YYYYMMDDTHHMMSSZ
+  const start = new Date(event.start).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const end = new Date(event.end).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  // Google Calendar URL
+  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
+  // Show options to user
+  if (confirm('Add to Google Calendar? Click OK for Google, Cancel for Apple/Outlook (.ics file)')) {
+    window.open(googleUrl, '_blank');
+  } else {
+    // .ics content
+    const icsContent =
+`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${event.title}\nDTSTART:${start}\nDTEND:${end}\nDESCRIPTION:${event.description || ''}\nLOCATION:${event.location || ''}\nEND:VEVENT\nEND:VCALENDAR`;
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `${event.title.replace(/\s/g, '-')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
 </script>
 <script>
 // Keep other scripts like the progress bar one

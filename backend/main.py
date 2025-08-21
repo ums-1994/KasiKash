@@ -3367,9 +3367,8 @@ def download_stokvel_statement_pdf(stokvel_id):
     from reportlab.graphics.shapes import Drawing, Line
     from reportlab.lib.styles import ParagraphStyle
     from reportlab.lib.enums import TA_CENTER, TA_RIGHT
-    logo_path = os.path.join('static', 'kasikash-logo.png')
-    if not os.path.exists(logo_path):
-        logo_path = os.path.join('static', 'logo.png.png')
+    # Always use static/logo.png for the logo, matching admin side
+    logo_path = os.path.join('static', 'logo.png')
     logo_img = None
     if os.path.exists(logo_path):
         try:

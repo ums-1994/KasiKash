@@ -12,6 +12,7 @@ import pandas as pd
 from io import BytesIO
 from fpdf import FPDF
 import os
+import datetime
 from flask_babel import _
 from ..rewards import add_reward
 
@@ -94,10 +95,10 @@ def manage_users():
     try:
         with support.db_connection() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                # Fetch users with their stokvel name (if any)
+                # Fetch users with their stokvel name (if any) and status
                 if search_query:
                     cur.execute("""
-                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, s.name AS stokvel_name
+                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, u.status, s.name AS stokvel_name
                         FROM users u
                         LEFT JOIN stokvel_members sm ON CAST(u.id AS VARCHAR) = sm.user_id
                         LEFT JOIN stokvels s ON sm.stokvel_id = s.id
@@ -106,7 +107,7 @@ def manage_users():
                     """, (f'%{search_query}%', f'%{search_query}%'))
                 else:
                     cur.execute("""
-                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, s.name AS stokvel_name
+                        SELECT u.id, u.username, u.email, u.role, u.created_at, u.last_login, u.status, s.name AS stokvel_name
                         FROM users u
                         LEFT JOIN stokvel_members sm ON CAST(u.id AS VARCHAR) = sm.user_id
                         LEFT JOIN stokvels s ON sm.stokvel_id = s.id
@@ -175,6 +176,60 @@ def add_user():
             except Exception:
                 pass
         return jsonify({'success': False, 'message': f'An error occurred: {e}'}), 500
+
+@admin_bp.route('/users/block/<int:user_id>', methods=['POST'])
+@login_required
+def block_user(user_id):
+    if session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Permission denied'}), 403
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("SELECT username, email, firebase_uid FROM users WHERE id = %s", (user_id,))
+                user_data = cur.fetchone()
+                if not user_data:
+                    return jsonify({'success': False, 'message': 'User not found'}), 404
+
+                cur.execute("UPDATE users SET status = 'blocked' WHERE id = %s", (user_id,))
+                conn.commit()
+
+                if user_data.get('firebase_uid'):
+                    message = "Your account has been blocked by an administrator. Please contact support for assistance."
+                    create_notification(user_data['firebase_uid'], message, notification_type='account_blocked')
+
+        flash(f"User {user_data['username']} ({user_data['email']}) has been blocked successfully!", 'success')
+        return jsonify({'success': True, 'message': 'User blocked successfully'})
+    except Exception as e:
+        print(f"Error blocking user: {e}")
+        return jsonify({'success': False, 'message': 'Failed to block user'}), 500
+
+@admin_bp.route('/users/unblock/<int:user_id>', methods=['POST'])
+@login_required
+def unblock_user(user_id):
+    if session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Permission denied'}), 403
+
+    try:
+        with support.db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("SELECT username, email, firebase_uid FROM users WHERE id = %s", (user_id,))
+                user_data = cur.fetchone()
+                if not user_data:
+                    return jsonify({'success': False, 'message': 'User not found'}), 404
+
+                cur.execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+                conn.commit()
+
+                if user_data.get('firebase_uid'):
+                    message = "Your account has been unblocked. You can now access the platform again."
+                    create_notification(user_data['firebase_uid'], message, notification_type='account_unblocked')
+
+        flash(f"User {user_data['username']} ({user_data['email']}) has been unblocked successfully!", 'success')
+        return jsonify({'success': True, 'message': 'User unblocked successfully'})
+    except Exception as e:
+        print(f"Error unblocking user: {e}")
+        return jsonify({'success': False, 'message': 'Failed to unblock user'}), 500
 
 @admin_bp.route('/loan-approvals')
 @login_required
@@ -355,6 +410,12 @@ def events():
         event_type = request.form.get('event_type')
         target_date = request.form.get('target_date')
         send_notification = 'send_notification' in request.form
+        # Debug: Log all form values
+        print(f"[DEBUG] Event creation form values: stokvel_id={stokvel_id}, name={name}, description={description}, event_type={event_type}, target_date={target_date}, send_notification={send_notification}")
+        if not stokvel_id or not name or not description or not event_type or not target_date:
+            flash('All fields are required to create an event.', 'danger')
+            print('[ERROR] Missing required event fields.')
+            return redirect(url_for('admin.events'))
         try:
             with support.db_connection() as conn:
                 with conn.cursor() as cur:
@@ -369,7 +430,8 @@ def events():
                     members = cur.fetchall()
                     # Add event to each member's diary (calendar)
                     if not members:
-                        print(f"No members found for stokvel {stokvel_id}, event {event_id}")
+                        print(f"[ERROR] No members found for stokvel {stokvel_id}, event {event_id}")
+                        flash('No members found for the selected stokvel.', 'danger')
                     for member in members:
                         user_id = member[0]
                         if user_id:
@@ -377,7 +439,7 @@ def events():
                                 cur.execute("INSERT INTO diary (user_id, event_id, event_name, event_date, description) VALUES (%s, %s, %s, %s, %s)",
                                     (user_id, event_id, event_type, target_date, description))
                             except Exception as diary_e:
-                                print(f"Could not add to diary for user {user_id}: {diary_e}")
+                                print(f"[ERROR] Could not add to diary for user {user_id}: {diary_e}")
                     conn.commit()
                     # Notify all members and the creator
                     if send_notification:
@@ -393,10 +455,10 @@ def events():
                             message = f"You have created a new event '{event_type}' for your stokvel."
                             link = url_for('admin.events')
                             create_notification(creator_id, message, link_url=link, notification_type='event')
-            flash('Event created and notifications sent!', 'success')
+                flash('Event created and notifications sent!', 'success')
         except Exception as e:
-            print(f"Error creating event: {e}")
-            flash('Failed to create event.', 'danger')
+            print(f"[ERROR] Exception creating event: {e}")
+            flash('Failed to create event. Check logs for details.', 'danger')
         return redirect(url_for('admin.events'))
 
     events, stokvels = [], []
@@ -1222,9 +1284,15 @@ def financial_reports():
 
 class PDF(FPDF):
     def header(self):
-        logo_path = os.path.join('static', 'logo.png.png')
+        # Use the correct logo path and add the logo if it exists
+        logo_path = os.path.join('static', 'logo.png')
+        if not os.path.exists(logo_path):
+            logo_path = os.path.join('static', 'logo.png.png')
         if os.path.exists(logo_path):
-            self.image(logo_path, 10, 8, 25)
+            self.image(logo_path, x=10, y=8, w=25)
+            self.set_xy(40, 10)
+        else:
+            self.set_xy(10, 10)
         self.set_font('Arial', 'B', 16)
         self.cell(0, 10, 'KasiKash Financial Report', ln=True, align='C')
         self.set_draw_color(34, 211, 238)
@@ -1282,7 +1350,7 @@ def export_financial_report_pdf():
     # Timestamp and generated by
     pdf.set_font("Arial", '', 10)
     pdf.set_text_color(100)
-    pdf.cell(0, 8, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} by KasiKash", ln=True, align='R')
+    pdf.cell(0, 8, f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} by KasiKash", ln=True, align='R')
     pdf.ln(5)
 
     # Summary Table

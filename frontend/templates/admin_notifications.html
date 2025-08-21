@@ -4,7 +4,7 @@
 <p style="color:#eaf6fb;">Here you can send notifications to users.</p>
 <!-- Search/filter bar -->
 <div class="mb-6 flex items-center gap-4 bg-[#101c2c] rounded-xl shadow-lg p-4">
-  <button class="admin-card btn px-6 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#00ff87 0%,#60efff 100%);color:#101c2c;min-width:180px;" onclick="openSendNotificationModal()">Create Notification</button>
+  <button class="admin-btn admin-btn--primary" style="min-width:180px;" onclick="openSendNotificationModal()">Create Notification</button>
   <form method="get" action="" class="ml-4">
     <label for="type_filter" class="mr-2 font-semibold">Type:</label>
     <select name="type" id="type_filter" class="border border-[#22304a] rounded-lg px-4 py-2 text-black" onchange="this.form.submit()">
@@ -46,8 +46,7 @@
         {% endif %}
       </td>
       <td class="flex gap-2 justify-center">
-        <button class="admin-card btn px-4 py-1 text-sm font-semibold shadow view-notification-btn" 
-                style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;"
+        <button class="admin-btn admin-btn--primary view-notification-btn" 
                 data-id="{{ n[0] }}"
                 data-user="{{ n[5] or n[1] }}"
                 data-message="{{ n[2] }}"
@@ -57,7 +56,7 @@
         </button>
         <form method="POST" action="{{ url_for('admin.delete_notification', notification_id=n[0]) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this notification?')">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <button type="submit" class="admin-card btn px-4 py-1 text-sm font-semibold shadow" style="background:linear-gradient(90deg,#ff4e50 0%,#f9d423 100%);color:#101c2c;">Delete</button>
+          <button type="submit" class="admin-btn admin-btn--primary">Delete</button>
         </form>
       </td>
     </tr>
@@ -116,7 +115,7 @@
           <option value="Update">Update</option>
         </select>
       </div>
-      <button type="submit" class="admin-card btn w-full mt-4 py-2 text-base font-semibold shadow-md" style="background:linear-gradient(90deg,#60efff 0%,#00ff87 100%);color:#101c2c;">Send</button>
+      <button type="submit" class="admin-btn admin-btn--primary w-full mt-4">Send</button>
     </form>
   </div>
 </div>

@@ -1,27 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
 <div class="container mx-auto py-8 px-4">
     <div class="max-w-6xl mx-auto">
       <!-- Header Section -->
-      <div class="text-center mb-12">
-        <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-4 tracking-tight">
+      <div class="text-center mb-8 px-4">
+        <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 mb-3 md:mb-4 tracking-tight">
           My Rewards Card
         </h1>
-        <p class="text-xl text-gray-300 font-light">Earn rewards, track spending, and grow your savings</p>
+        <p class="text-lg md:text-xl text-gray-700 font-light">Earn rewards, track spending, and grow your savings</p>
       </div>
 
       <!-- Virtual Card - Enhanced Design -->
-      <div class="w-full max-w-md mx-auto mb-12">
-        <div class="animated-border relative rounded-3xl shadow-2xl p-8 flex flex-col justify-between h-72" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 3px solid; border-image-slice: 1; border-width: 3px; border-image-source: linear-gradient(45deg, #60efff, #00ff87, #7B61FF, #60efff);">
+      <div class="w-full max-w-3xl mx-auto mb-8 md:mb-12 px-4">
+        <div class="relative rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[260px] md:h-72"
+             style="background: radial-gradient(1200px 400px at -10% -10%, rgba(96,239,255,0.25), transparent 40%),
+                            radial-gradient(800px 300px at 110% 10%, rgba(0,255,135,0.18), transparent 40%),
+                            linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0b1220 100%); border:1px solid rgba(96,239,255,0.15)">
           <!-- Shimmer Effect -->
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-pulse"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-pulse pointer-events-none"></div>
           
         <!-- Card Brand and Chip -->
           <div class="flex items-center justify-between mb-8 relative z-10">
           <div>
               <div class="text-3xl font-black tracking-wider text-white drop-shadow-lg">KASIKASH</div>
-              <div class="text-xs tracking-widest text-white/80 font-medium">STOKVEL REWARDS</div>
+              <div class="text-xs tracking-widest text-white/70 font-medium">STOKVEL REWARDS</div>
           </div>
             <div class="w-14 h-10 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-lg flex items-center justify-center shadow-lg">
               <svg width="32" height="20" viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +46,7 @@
           <div class="flex items-center justify-between mt-4 relative z-10">
           <div>
               <div class="text-xs text-white/70 font-medium">AVAILABLE BALANCE</div>
-              <div class="text-4xl font-black text-white drop-shadow-lg">R{{ '%.2f' % (card.balance or 0) }}</div>
+              <div class="text-4xl md:text-5xl font-black text-white drop-shadow-lg">R{{ '%.2f' % (card.balance or 0) }}</div>
           </div>
           <div class="text-right">
               <div class="text-xs text-white/70 font-medium">VALID THRU</div>
@@ -54,103 +57,90 @@
     </div>
 
       <!-- Enhanced Stats Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative z-10 flex items-center justify-between">
-        <div>
-              <div class="text-sm text-blue-100 font-medium mb-1">Current Balance</div>
-              <div class="text-2xl font-bold text-white">R{{ '%.2f' % (card.balance or 0) }}</div>
-            </div>
-            <div class="bg-blue-500 p-4 rounded-xl shadow-lg">
-              <i class="fas fa-wallet text-white text-xl"></i>
-        </div>
-      </div>
-    </div>
-
-        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative z-10 flex items-center justify-between">
-        <div>
-              <div class="text-sm text-emerald-100 font-medium mb-1">Total Earned</div>
-              <div class="text-2xl font-bold text-white">R{{ '%.2f' % (total_earned or 0) }}</div>
-            </div>
-            <div class="bg-emerald-500 p-4 rounded-xl shadow-lg">
-              <i class="fas fa-arrow-up text-white text-xl"></i>
-            </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 px-2 md:px-0">
+        <div class="flex items-center justify-between p-2">
+          <div>
+            <div class="text-sm text-blue-400 font-medium mb-1">Current Balance</div>
+            <div class="text-3xl font-extrabold">R{{ '%.2f' % (card.balance or 0) }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-300">
+            <i class="fas fa-wallet"></i>
           </div>
         </div>
-        
-        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative z-10 flex items-center justify-between">
-            <div>
-              <div class="text-sm text-purple-100 font-medium mb-1">Total Spent</div>
-              <div class="text-2xl font-bold text-white">R{{ '%.2f' % (total_spent or 0) }}</div>
-            </div>
-            <div class="bg-purple-500 p-4 rounded-xl shadow-lg">
-              <i class="fas fa-shopping-cart text-white text-xl"></i>
-            </div>
-      </div>
+        <div class="flex items-center justify-between p-2">
+          <div>
+            <div class="text-sm text-emerald-400 font-medium mb-1">Total Earned</div>
+            <div class="text-3xl font-extrabold">R{{ '%.2f' % (total_earned or 0) }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-300">
+            <i class="fas fa-arrow-up"></i>
+          </div>
         </div>
-        
-        <div class="group relative rewards-stats-card rounded-2xl p-6 shadow-xl border hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative z-10 flex items-center justify-between">
-            <div>
-              <div class="text-sm text-amber-100 font-medium mb-1">Active Programs</div>
-              <div class="text-2xl font-bold text-white">{{ active_programs or 0 }}</div>
-            </div>
-            <div class="bg-amber-500 p-4 rounded-xl shadow-lg">
-              <i class="fas fa-award text-white text-xl"></i>
-            </div>
-      </div>
+        <div class="flex items-center justify-between p-2">
+          <div>
+            <div class="text-sm text-purple-400 font-medium mb-1">Total Spent</div>
+            <div class="text-3xl font-extrabold">R{{ '%.2f' % (total_spent or 0) }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-300">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+        </div>
+        <div class="flex items-center justify-between p-2">
+          <div>
+            <div class="text-sm text-amber-400 font-medium mb-1">Active Programs</div>
+            <div class="text-3xl font-extrabold">{{ active_programs or 0 }}</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-300">
+            <i class="fas fa-award"></i>
+          </div>
         </div>
       </div>
 
       <!-- Enhanced Tabs -->
-      <div class="rounded-2xl p-2 mb-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
-        <div class="flex space-x-2" id="reward-tabs">
-          <button id="tab-activity" class="flex-1 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold focus:outline-none transition-all duration-300 shadow-lg">
-            <i class="fas fa-chart-line mr-3"></i>Recent Activity
+      <div class="p-1 mb-6 overflow-x-auto">
+        <div class="flex space-x-2 min-w-fit w-full" id="reward-tabs">
+          <button id="tab-activity" class="flex-1 px-4 md:px-8 py-3 md:py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold focus:outline-none transition-all duration-300 shadow text-sm md:text-base whitespace-nowrap">
+            <i class="fas fa-chart-line mr-2 md:mr-3"></i><span class="hidden sm:inline">Recent </span>Activity
           </button>
-          <button id="tab-rewards" class="flex-1 px-8 py-4 rounded-xl bg-white/10 text-gray-300 font-bold focus:outline-none transition-all duration-300 hover:bg-white/20">
-            <i class="fas fa-gift mr-3"></i>Reward Programs
+          <button id="tab-rewards" class="flex-1 px-4 md:px-8 py-3 md:py-4 rounded-xl bg-transparent text-slate-200 font-semibold focus:outline-none transition-all duration-300 hover:bg-slate-900/20 text-sm md:text-base whitespace-nowrap">
+            <i class="fas fa-gift mr-2 md:mr-3"></i><span class="hidden sm:inline">Reward </span>Programs
           </button>
-          <button id="tab-marketplace" class="flex-1 px-8 py-4 rounded-xl bg-white/10 text-gray-300 font-bold focus:outline-none transition-all duration-300 hover:bg-white/20">
-            <i class="fas fa-ticket-alt mr-3"></i>Vouchers
+          <button id="tab-marketplace" class="flex-1 px-4 md:px-8 py-3 md:py-4 rounded-xl bg-transparent text-slate-200 font-semibold focus:outline-none transition-all duration-300 hover:bg-slate-900/20 text-sm md:text-base whitespace-nowrap">
+            <i class="fas fa-ticket-alt mr-2 md:mr-3"></i>Vouchers
           </button>
-    </div>
-    </div>
+        </div>
+      </div>
 
     <!-- Tab Content -->
     <div id="tab-content-activity">
       <!-- Recent Transactions -->
-        <div class="rounded-2xl shadow-xl p-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
-          <h3 class="text-2xl font-bold mb-6 text-white flex items-center">
+        <div class="p-2 md:p-0">
+          <h3 class="text-2xl font-bold mb-6 flex items-center">
             <i class="fas fa-chart-line mr-3 text-blue-400"></i>Recent Transactions
           </h3>
         {% if transactions %}
-          <div class="space-y-4">
+          <div class="divide-y divide-slate-700/40">
           {% for tx in transactions %}
-            <div class="rounded-xl p-4 border hover:bg-white/10 transition-all duration-300" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
-              <div class="flex items-center">
-                <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center {% if tx.amount > 0 %}bg-gradient-to-br from-emerald-500 to-emerald-600{% else %}bg-gradient-to-br from-red-500 to-red-600{% endif %} shadow-lg">
-              {% if tx.amount > 0 %}
-                    <i class="fas fa-arrow-up text-white text-lg"></i>
-              {% else %}
-                    <i class="fas fa-arrow-down text-white text-lg"></i>
-              {% endif %}
-            </div>
-            <div class="ml-4 flex-1">
-                  <div class="font-bold text-white text-lg">{{ tx.description }}</div>
-                  <div class="text-sm text-gray-400">{{ tx.date.strftime('%B %d, %Y') if tx.date else '' }}</div>
-            </div>
-            <div class="text-right">
-                  <div class="font-bold text-xl {% if tx.amount > 0 %}text-emerald-400{% else %}text-red-400{% endif %}">
-                {% if tx.amount > 0 %}+{% endif %}R{{ '%.2f' % (tx.amount or 0) }}
+            <div class="py-4">
+              <div class="grid grid-cols-12 gap-4 items-center">
+                <div class="col-span-2 sm:col-span-1 flex justify-center">
+                  <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg ring-1 ring-inset ring-white/10 {% if tx.amount > 0 %}bg-gradient-to-br from-emerald-500 to-emerald-600{% else %}bg-gradient-to-br from-rose-500 to-red-600{% endif %}">
+                    {% if tx.amount > 0 %}
+                      <i class="fas fa-arrow-up text-white"></i>
+                    {% else %}
+                      <i class="fas fa-arrow-down text-white"></i>
+                    {% endif %}
                   </div>
-                  <div class="text-xs bg-white/10 text-white px-3 py-1 rounded-full inline-block mt-2 font-medium">{{ tx.type }}</div>
+                </div>
+                <div class="col-span-7 sm:col-span-8">
+                  <div class="font-semibold text-base md:text-lg">{{ tx.description }}</div>
+                  <div class="text-xs md:text-sm opacity-75">{{ tx.date.strftime('%B %d, %Y') if tx.date else '' }}</div>
+                </div>
+                <div class="col-span-3 sm:col-span-3 text-right">
+                  <div class="font-extrabold text-lg md:text-xl {% if tx.amount > 0 %}text-emerald-400{% else %}text-red-400{% endif %}">
+                    {% if tx.amount > 0 %}+{% endif %}R{{ '%.2f' % (tx.amount or 0) }}
+                  </div>
+                  <div class="text-[11px] md:text-xs px-2 py-0.5 rounded-full inline-block mt-2 font-medium bg-slate-800/30">{{ tx.type }}</div>
                 </div>
               </div>
             </div>
@@ -158,11 +148,11 @@
           </div>
         {% else %}
           <div class="text-center py-12">
-            <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i class="fas fa-chart-line text-white text-2xl"></i>
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-slate-900/20">
+              <i class="fas fa-chart-line text-slate-300 text-2xl"></i>
             </div>
-            <p class="text-gray-400 text-lg">No transactions yet.</p>
-            <p class="text-gray-500 text-sm mt-2">Start earning rewards to see your activity here.</p>
+            <p class="opacity-80 text-lg">No transactions yet.</p>
+            <p class="opacity-60 text-sm mt-2">Start earning rewards to see your activity here.</p>
           </div>
         {% endif %}
       </div>
@@ -170,105 +160,130 @@
 
     <div id="tab-content-rewards" style="display:none;">
       <!-- Reward Programs Section -->
-        <div class="rounded-2xl shadow-xl p-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
-          <h3 class="text-2xl font-bold mb-8 text-white flex items-center">
-            <i class="fas fa-gift mr-3 text-purple-400"></i>Reward Programs
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Welcome Bonus -->
-            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-              <div class="flex items-center justify-between mb-4">
-                <div class="text-xl font-bold text-white">Welcome Bonus</div>
-                <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R15</span>
+          <div class="p-0">
+            <h3 class="text-xl font-bold mb-6">Reward Programs</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Welcome Bonus -->
+              <div class="p-6 bg-white border border-gray-100">
+                <div class="mb-2">
+                  <div class="font-bold text-lg">Welcome Bonus</div>
+                </div>
+                <div class="text-gray-600 text-sm mb-4">Get R15 when you join KasiKash</div>
+                <a href="/join" class="text-blue-600 hover:underline text-sm">Join now</a>
               </div>
-              <div class="text-blue-100 mb-6 text-sm">Get R15 when you join KasiKash</div>
-              <a href="/join" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center group-hover:scale-105">
-                <i class="fas fa-gift mr-3"></i>Join now
-              </a>
+              <!-- Friend Referral -->
+              <div class="p-6 bg-white border border-gray-100">
+                <div class="mb-2">
+                  <div class="font-bold text-lg">Friend Referral</div>
+                </div>
+                <div class="text-gray-600 text-sm mb-4">Earn R10 for each friend you refer</div>
+                <a href="/referral" class="text-blue-600 hover:underline text-sm">Refer friends</a>
+              </div>
+              <!-- Monthly Contributor -->
+              <div class="p-6 bg-white border border-gray-100">
+                <div class="mb-2">
+                  <div class="font-bold text-lg">Monthly Contributor</div>
+                </div>
+                <div class="text-gray-600 text-sm mb-4">Monthly bonus for contributions of R500+</div>
+                <a href="/contributions" class="text-blue-600 hover:underline text-sm">Contribute R500+</a>
+              </div>
+              <!-- Event Attendance -->
+              <div class="p-6 bg-white border border-gray-100">
+                <div class="mb-2">
+                  <div class="font-bold text-lg">Event Attendance</div>
+                </div>
+                <div class="text-gray-600 text-sm mb-4">Attend stokvel meetings and events</div>
+                <a href="/events" class="text-blue-600 hover:underline text-sm">View events</a>
+              </div>
+              <!-- Loan Payment Bonus -->
+              <div class="p-6 bg-white border border-gray-100">
+                <div class="mb-2">
+                  <div class="font-bold text-lg">Loan Payment Bonus</div>
+                </div>
+                <div class="text-gray-600 text-sm mb-4">Bonus for on-time loan payments</div>
+                <a href="/loans" class="text-blue-600 hover:underline text-sm">Pay on time</a>
+              </div>
             </div>
-            
-            <!-- Friend Referral -->
-            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-              <div class="flex items-center justify-between mb-4">
-                <div class="text-xl font-bold text-white">Friend Referral</div>
-                <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R10</span>
           </div>
-              <div class="text-purple-100 mb-6 text-sm">Earn R10 for each friend you refer</div>
-              <a href="/referral" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center group-hover:scale-105">
-                <i class="fas fa-user-plus mr-3"></i>Refer friends
-              </a>
-            </div>
-            
-            <!-- Monthly Contributor -->
-            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-              <div class="flex items-center justify-between mb-4">
-                <div class="text-xl font-bold text-white">Monthly Contributor</div>
-                <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R5</span>
-          </div>
-              <div class="text-emerald-100 mb-6 text-sm">Monthly bonus for contributions of R500+</div>
-              <a href="/contributions" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center group-hover:scale-105">
-                <i class="fas fa-hand-holding-usd mr-3"></i>Contribute R500+
-              </a>
-            </div>
-            
-            <!-- Event Attendance -->
-            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-              <div class="flex items-center justify-between mb-4">
-                <div class="text-xl font-bold text-white">Event Attendance</div>
-                <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R5</span>
-          </div>
-              <div class="text-pink-100 mb-6 text-sm">Attend stokvel meetings and events</div>
-              <a href="/events" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center group-hover:scale-105">
-                <i class="fas fa-calendar-alt mr-3"></i>View events
-              </a>
-            </div>
-            
-            <!-- Loan Payment Bonus -->
-            <div class="group rewards-stats-card rounded-2xl p-6 border hover:scale-105 transition-all duration-300 shadow-xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33;">
-              <div class="flex items-center justify-between mb-4">
-                <div class="text-xl font-bold text-white">Loan Payment Bonus</div>
-                <span class="bg-emerald-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">R10</span>
-          </div>
-              <div class="text-orange-100 mb-6 text-sm">Bonus for on-time loan payments</div>
-              <a href="/loans" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center group-hover:scale-105">
-                <i class="fas fa-clock mr-3"></i>Pay on time
-              </a>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div id="tab-content-marketplace" style="display:none;">
       <!-- Marketplace Section -->
-        <div class="rounded-2xl shadow-xl p-8 border" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
-          <h3 class="text-2xl font-bold text-white mb-8 flex items-center">
-            <i class="fas fa-ticket-alt mr-3 text-emerald-400"></i>My Vouchers
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- My Vouchers Section -->
-            <div class="group rewards-stats-card rounded-2xl p-8 border border-emerald-500/20 hover:scale-105 transition-all duration-300 shadow-xl">
-              <div class="flex items-center justify-between mb-6">
-                <div class="text-2xl font-bold text-white">My Vouchers</div>
-                <div class="text-emerald-300 text-3xl">
-                  <i class="fas fa-ticket-alt"></i>
-                </div>
-                </div>
-              <div class="text-emerald-100 mb-8 text-lg">View and manage your voucher codes</div>
-              <a href="{{ url_for('rewards.view_vouchers') }}" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center group-hover:scale-105 shadow-lg">
-                <i class="fas fa-ticket-alt mr-3 text-xl"></i>
-                View My Vouchers
-              </a>
+        <div class="p-0">
+          <h3 class="text-xl font-bold mb-6">My Vouchers</h3>
+          <div class="flex justify-center">
+            <div class="max-w-md w-full p-6 bg-white border border-gray-100">
+              <div class="mb-2">
+                <div class="font-bold text-lg">Purchase Voucher</div>
+              </div>
+              <div class="text-gray-600 text-sm mb-4">Buy airtime, electricity, or grocery vouchers</div>
+              <div class="space-y-2">
+                <button id="purchaseVoucherBtn" class="text-blue-600 hover:underline text-sm block">Purchase New Voucher</button>
+                <a href="{{ url_for('rewards.view_vouchers') }}" class="text-blue-600 hover:underline text-sm block">View My Vouchers</a>
+                <a href="{{ url_for('rewards.marketplace') }}" class="text-blue-600 hover:underline text-sm block">More Vouchers</a>
+              </div>
+            </div>
           </div>
+            <!-- Purchase Voucher Modal -->
+            <div id="purchaseVoucherModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden p-4">
+              <div class="bg-white max-w-md w-full p-6 relative">
+                <button id="closeVoucherModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">&times;</button>
+                <div class="mb-6">
+                  <h2 class="text-xl font-bold mb-2">Purchase Voucher</h2>
+                  <p class="text-gray-600 text-sm">Select type and enter amount</p>
+                </div>
+                <form id="voucherPurchaseForm" method="POST" action="{{ url_for('rewards.purchase_voucher') }}" class="space-y-4">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <div>
+                    <label for="voucherType" class="block text-gray-700 text-sm mb-2">Voucher Type</label>
+                    <select id="voucherType" name="voucher_type" class="w-full border border-gray-200 p-2 bg-white">
+                      <option value="airtime">Airtime</option>
+                      <option value="electricity">Electricity</option>
+                      <option value="grocery">Grocery</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="voucherAmount" class="block text-gray-700 text-sm mb-2">Amount (R)</label>
+                    <input type="number" id="voucherAmount" name="amount" min="1" step="1" class="w-full border border-gray-200 p-2" required>
+                  </div>
+                  <button type="submit" class="w-full bg-blue-600 hover:underline text-white p-2">
+                    Buy Voucher
+                  </button>
+                </form>
+              </div>
+            </div>
         </div>
       </div>
     </div>
 
     <script>
+      // Modal logic for voucher purchase
+      document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('purchaseVoucherModal');
+        const openBtn = document.getElementById('purchaseVoucherBtn');
+        const closeBtn = document.getElementById('closeVoucherModal');
+        
+        // Check if we're on the marketplace URL and show appropriate content
+        if (window.location.pathname === '/rewards/marketplace') {
+          showTab('marketplace');
+          if (modal) {
+            modal.classList.remove('hidden');
+          }
+        }
+
+        if (openBtn && modal && closeBtn) {
+          openBtn.onclick = () => { modal.classList.remove('hidden'); };
+          closeBtn.onclick = () => { modal.classList.add('hidden'); };
+          window.onclick = function(event) {
+            if (event.target === modal) { modal.classList.add('hidden'); }
+          };
+        }
+      });
       function showTab(tab) {
         // Tab buttons
-          document.getElementById('tab-activity').className = 'flex-1 px-8 py-4 rounded-xl bg-white/10 text-gray-300 font-bold focus:outline-none transition-all duration-300 hover:bg-white/20';
-          document.getElementById('tab-rewards').className = 'flex-1 px-8 py-4 rounded-xl bg-white/10 text-gray-300 font-bold focus:outline-none transition-all duration-300 hover:bg-white/20';
-          document.getElementById('tab-marketplace').className = 'flex-1 px-8 py-4 rounded-xl bg-white/10 text-gray-300 font-bold focus:outline-none transition-all duration-300 hover:bg-white/20';
+          document.getElementById('tab-activity').className = 'flex-1 px-8 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold focus:outline-none transition-all duration-300 hover:bg-gray-200';
+          document.getElementById('tab-rewards').className = 'flex-1 px-8 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold focus:outline-none transition-all duration-300 hover:bg-gray-200';
+          document.getElementById('tab-marketplace').className = 'flex-1 px-8 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold focus:outline-none transition-all duration-300 hover:bg-gray-200';
           
         // Tab content
         document.getElementById('tab-content-activity').style.display = 'none';

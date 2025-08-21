@@ -17,9 +17,12 @@ def dashboard_financial():
                 for i in range(6, -1, -1):
                     day = (datetime.now() - timedelta(days=i)).date()
                     cur.execute("""
-                        SELECT COALESCE(SUM(CASE WHEN type='deposit' THEN amount WHEN type='withdrawal' THEN -amount ELSE 0 END), 0) as balance
+                        SELECT COALESCE(SUM(CASE 
+                            WHEN type='deposit' THEN amount 
+                            WHEN type='withdrawal' OR LOWER(type)='payout' THEN -amount 
+                            ELSE 0 END), 0) as balance
                         FROM transactions
-                        WHERE DATE(created_at) <= %s
+                        WHERE DATE(COALESCE(transaction_date, created_at)) <= %s
                     """, (day,))
                     row = cur.fetchone()
                     labels.append(day.strftime('%b %d'))
@@ -41,7 +44,7 @@ def dashboard_user_growth():
                     cur.execute("""
                         SELECT COUNT(*) as new_users
                         FROM users
-                        WHERE DATE(created_at) = %s
+                        WHERE DATE(COALESCE(created_at, NOW())) = %s
                     """, (day,))
                     row = cur.fetchone()
                     labels.append(day.strftime('%b %d'))

@@ -38,21 +38,21 @@
     <!-- Payment Methods Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
         {% for method in payment_methods %}
-        <div class="relative flex flex-col min-h-[170px] payment-method-card" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1.5px solid #60efff33; border-radius: 1.5rem; box-shadow: 0 6px 24px 0 rgba(31,38,135,0.32), 0 1.5px 8px 0 #3a2e7b55;">
+        <div class="relative flex flex-col min-h-[170px] payment-method-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); color: #1e293b; border: 1.5px solid #e2e8f0; border-radius: 1.5rem; box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.15), 0 1.5px 8px 0 rgba(59, 130, 246, 0.1);">
             <div class="card-glass flex-1 flex flex-col justify-between border border-blue-900/40">
                 <div class="border-glow"></div>
                 <div class="shine"></div>
                 <div class="flex justify-between items-center mb-2 relative z-10">
                     <div class="card-label">
                         <svg class="card-chip" viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="44" height="32" rx="8" fill="#44446a"/>
-                            <rect x="6" y="10" width="32" height="12" rx="4" fill="#232347"/>
-                            <rect x="14" y="14" width="16" height="4" rx="2" fill="#3a2e7b"/>
+                            <rect width="44" height="32" rx="8" fill="#e2e8f0"/>
+                            <rect x="6" y="10" width="32" height="12" rx="4" fill="#cbd5e1"/>
+                            <rect x="14" y="14" width="16" height="4" rx="2" fill="#94a3b8"/>
                         </svg>
                         {{ method.type|replace('_', ' ')|title }}
                     </div>
                     {% if method.is_default %}
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-900/80 text-white shadow">Default</span>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white shadow">Default</span>
                     {% endif %}
                 </div>
                 
@@ -149,28 +149,28 @@
                     <!-- Bank Account Fields -->
                     <div id="bank_fields" class="hidden">
                         <div class="mb-4">
-                             <label class="block text-gray-700 text-sm font-bold mb-2" for="account_holder_name">Account Holder Name</label>
-                            <input type="text" name="account_holder_name" id="account_holder_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="John Doe">
+                             <label class="block text-sm font-bold mb-2" for="account_holder_name" style="color: #60efff;">Account Holder Name</label>
+                            <input type="text" name="account_holder_name" id="account_holder_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4" placeholder="John Doe" style="background: #22304a; color: #60efff; border-color: #3a2e7b;">
                         </div>
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="account_number">Account Number</label>
-                            <input type="text" name="account_number" id="account_number" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="1234567890">
+                            <label class="block text-sm font-bold mb-2" for="account_number" style="color: #60efff;">Account Number</label>
+                            <input type="text" name="account_number" id="account_number" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4" placeholder="1234567890" style="background: #22304a; color: #60efff; border-color: #3a2e7b;">
                         </div>
                          <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="bank_name">Bank Name</label>
-                            <input type="text" name="bank_name" id="bank_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700" placeholder="Example Bank">
+                            <label class="block text-sm font-bold mb-2" for="bank_name" style="color: #60efff;">Bank Name</label>
+                            <input type="text" name="bank_name" id="bank_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4" placeholder="Example Bank" style="background: #22304a; color: #60efff; border-color: #3a2e7b;">
                         </div>
                     </div>
                     
                     <div class="mb-6">
                         <label class="flex items-center">
                             <input type="checkbox" name="is_default" value="true" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
-                            <span class="ml-3 text-gray-700">Set as default payment method</span>
+                            <span class="ml-3" style="color: #60efff;">Set as default payment method</span>
                         </label>
                     </div>
                     <div class="flex justify-end space-x-4">
                         <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')"
-                                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">
+                                class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">
                             Cancel
                         </button>
                         <button type="submit"
@@ -259,10 +259,10 @@ document.addEventListener('DOMContentLoaded', function() {
 <style>
 .card-glass {
   position: relative;
-  background: rgba(24, 26, 44, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 1.5rem;
-  box-shadow: 0 6px 24px 0 rgba(31,38,135,0.32), 0 1.5px 8px 0 #3a2e7b55;
-  border: 1.5px solid #232347;
+  box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.15), 0 1.5px 8px 0 rgba(59, 130, 246, 0.1);
+  border: 1.5px solid #e2e8f0;
   overflow: hidden;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
   position: absolute;
   inset: 0;
   border-radius: 1.5rem;
-  background: linear-gradient(120deg, rgba(44,34,84,0.45) 0%, rgba(34,37,68,0.32) 100%);
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.03) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
   position: absolute;
   inset: 0;
   border-radius: 1.5rem;
-  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 20px);
+  background: repeating-linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0 2px, transparent 2px 20px);
   z-index: 2;
   pointer-events: none;
 }
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
   left: -60%;
   width: 220%;
   height: 220%;
-  background: linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 60%);
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.01) 60%);
   transform: rotate(8deg);
   filter: blur(1.5px);
   animation: shine-move 3.5s linear infinite;
@@ -309,9 +309,9 @@ document.addEventListener('DOMContentLoaded', function() {
   position: absolute;
   inset: -2px;
   border-radius: 1.5rem;
-  background: linear-gradient(120deg, #2d1e5a, #3a2e7b 60%, #232347 100%);
+  background: linear-gradient(120deg, #3b82f6, #8b5cf6 60%, #6366f1 100%);
   filter: blur(6px);
-  opacity: 0.22;
+  opacity: 0.15;
   z-index: 0;
   pointer-events: none;
   animation: border-glow-anim 4s linear infinite;
@@ -340,13 +340,13 @@ document.addEventListener('DOMContentLoaded', function() {
     font-family: 'Montserrat', 'Inter', monospace;
     font-size: 1.1rem;
     letter-spacing: 0.1em;
-    color: #e6e6f7;
-    text-shadow: 0 1.5px 6px #181a2c99;
+    color: #1e293b;
+    text-shadow: 0 1px 3px rgba(30, 41, 59, 0.1);
 }
 .card-holder-name {
     font-size: 1rem;
     font-weight: 500;
-    color: #c3c3e1;
+    color: #475569;
     letter-spacing: 0.05em;
     margin-bottom: 0.7rem;
 }
@@ -354,13 +354,13 @@ document.addEventListener('DOMContentLoaded', function() {
   font-family: 'Montserrat', 'Inter', monospace;
   font-size: 1.25rem;
   letter-spacing: 0.22em;
-  color: #e6e6f7;
-  text-shadow: 0 1.5px 6px #181a2c99;
+  color: #1e293b;
+  text-shadow: 0 1px 3px rgba(30, 41, 59, 0.1);
   font-variant-numeric: tabular-nums;
 }
 .card-expiry {
   font-size: 1rem;
-  color: #a3a3c2;
+  color: #64748b;
   letter-spacing: 0.12em;
   margin-left: 1.1rem;
 }
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .card-label {
   font-size: 1rem;
   font-weight: 700;
-  color: #b3b3d1;
+  color: #374151;
   letter-spacing: 0.08em;
   display: flex;
   align-items: center;
@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 .card-added {
   font-size: 0.8rem;
-  color: #b3b3d1cc;
+  color: #6b7280;
   margin-top: 0.2rem;
 }
 .card-actions {

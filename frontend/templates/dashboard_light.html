@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>KasiKash - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
+    <style>
+        /* LIGHT THEME STYLES - OVERRIDE ALL OTHER STYLES */
+        body {
+            min-height: 100vh !important;
+            background: #ffffff !important;
+            font-family: 'Inter', 'Montserrat', sans-serif !important;
+            color: #1e293b !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Sidebar - Dark Blue */
+        .sidebar {
+            background: #1e3a8a !important;
+            border-right: 1px solid #e2e8f0 !important;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 256px !important;
+            height: 100vh !important;
+            z-index: 50 !important;
+        }
+        
+        /* Navigation links - White text on dark blue */
+        .nav-link {
+            color: #ffffff !important;
+            transition: all 0.3s ease !important;
+            border: 1px solid transparent !important;
+            background: transparent !important;
+            border-radius: 8px !important;
+            margin: 2px 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 0.75rem 1rem !important;
+            text-decoration: none !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .nav-link:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+        }
+        
+        /* Logo Section */
+        .logo-section {
+            background: #1e40af !important;
+            border-bottom: 1px solid #3b82f6 !important;
+            padding: 1rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        
+        .logo-text {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px !important;
+            font-size: 1.5rem !important;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 256px !important;
+            right: 0 !important;
+            height: 64px !important;
+            z-index: 40 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0 1.5rem !important;
+        }
+        
+        .page-title {
+            color: #1e293b !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.5px !important;
+            font-size: 1.25rem !important;
+        }
+        
+        .notification-icon, .profile-icon {
+            color: #64748b !important;
+            transition: all 0.3s ease !important;
+            font-size: 1.25rem !important;
+        }
+        
+        .notification-icon:hover, .profile-icon:hover {
+            color: #3b82f6 !important;
+            transform: translateY(-1px) !important;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(59, 130, 246, 0.1) !important;
+            border: 1px solid rgba(59, 130, 246, 0.2) !important;
+            color: #3b82f6 !important;
+            transition: all 0.3s ease !important;
+            padding: 0.5rem !important;
+            border-radius: 0.5rem !important;
+            cursor: pointer !important;
+        }
+        .theme-toggle:hover {
+            background: rgba(59, 130, 246, 0.2) !important;
+            color: #1d4ed8 !important;
+        }
+        
+        /* Main Content */
+        main {
+            margin-left: 256px !important;
+            margin-top: 64px !important;
+            min-height: calc(100vh - 64px) !important;
+            background: #f8fafc !important;
+            padding: 1.5rem !important;
+        }
+        
+        /* Welcome Banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+            color: #ffffff !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15) !important;
+            padding: 2rem 2.5rem !important;
+            margin-bottom: 2rem !important;
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+            min-height: 110px !important;
+        }
+        
+        .welcome-banner h1 {
+            color: #60efff !important;
+            font-size: 2rem !important;
+            font-weight: 700 !important;
+            line-height: 1.2 !important;
+            margin: 0 !important;
+        }
+        
+        .welcome-banner p {
+            color: #e0f2fe !important;
+            font-size: 1.1rem !important;
+            margin-top: 0.5rem !important;
+            font-weight: 500 !important;
+            margin-bottom: 0 !important;
+        }
+        
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+            gap: 2rem !important;
+        }
+        
+        /* Stat Cards */
+        .stat-card {
+            background: #ffffff !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #1e293b !important;
+            padding: 2rem !important;
+            position: relative !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+        }
+        
+        .stat-card h3 {
+            color: #475569 !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .stat-card h4 {
+            color: #1e293b !important;
+            font-weight: 600 !important;
+        }
+        
+        .stat-card p {
+            color: #64748b !important;
+        }
+        
+        .stat-value {
+            color: #1e293b !important;
+            font-size: 2.5rem !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        /* User Summary Card */
+        .user-summary {
+            background: #ffffff !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 2rem !important;
+        }
+        
+        .user-avatar {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+            color: #ffffff !important;
+            width: 4rem !important;
+            height: 4rem !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: bold !important;
+            font-size: 1.5rem !important;
+        }
+        
+        /* Quick Actions */
+        .quick-action-card {
+            background: #ffffff !important;
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 1rem !important;
+            transition: all 0.3s ease !important;
+            cursor: pointer !important;
+            position: relative !important;
+        }
+        
+        .quick-action-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        .action-icon {
+            background: #dbeafe !important;
+            color: #3b82f6 !important;
+            width: 3rem !important;
+            height: 3rem !important;
+            border-radius: 0.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.25rem !important;
+        }
+        
+        .profile-badge {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+            color: #ffffff !important;
+            width: 2rem !important;
+            height: 2rem !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.75rem !important;
+            position: absolute !important;
+            bottom: 0.5rem !important;
+            right: 0.5rem !important;
+        }
+        
+        /* Override any dark theme styles */
+        .bg-gray-900, .bg-gray-800, .bg-gray-700 {
+            background-color: #ffffff !important;
+        }
+        
+        .text-white {
+            color: #1e293b !important;
+        }
+        
+        .text-gray-200, .text-gray-300 {
+            color: #64748b !important;
+        }
+        
+        .text-gray-400 {
+            color: #94a3b8 !important;
+        }
+        
+        .text-gray-600 {
+            color: #475569 !important;
+        }
+        
+        .text-gray-800 {
+            color: #1e293b !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Logo -->
+        <div class="logo-section">
+            <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+                <img src="{{ url_for('static', filename='logo_admin.png') }}" alt="KasiKash Logo" style="height:48px;width:48px;border-radius:50%;box-shadow:0 0 16px #3b82f6;margin-right:12px;">
+                <span class="logo-text">KasiKash</span>
+            </a>
+        </div>
+        
+        <!-- Navigation -->
+        <nav style="padding: 1rem 0;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a href="/home" class="nav-link"><i class="fas fa-home mr-2"></i> Home</a></li>
+                <li><a href="/stokvels" class="nav-link"><i class="fas fa-users mr-2"></i> Stokvels</a></li>
+                <li><a href="/contributions" class="nav-link"><i class="fas fa-dollar-sign mr-2"></i> Contributions</a></li>
+                <li><a href="/payouts" class="nav-link"><i class="fas fa-wallet mr-2"></i> Payouts</a></li>
+                <li><a href="/savings_goals" class="nav-link"><i class="fas fa-chart-line mr-2"></i> Savings Goals</a></li>
+                <li><a href="/payment_methods" class="nav-link"><i class="fas fa-credit-card mr-2"></i> Payment Methods</a></li>
+                <li><a href="/rewards/card" class="nav-link"><i class="fas fa-gift mr-2"></i> My Rewards Card</a></li>
+                <li><a href="/settings" class="nav-link"><i class="fas fa-cog mr-2"></i> Settings</a></li>
+                <li><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+    
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h2 class="page-title">Dashboard</h2>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="theme-toggle">
+                <i id="theme-icon" class="fas fa-moon"></i>
+            </button>
+            <a href="/notifications" class="notification-icon">
+                <i class="fas fa-bell"></i>
+            </a>
+            <a href="/profile" class="profile-icon">
+                <i class="fas fa-user-circle"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main>
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div>
+                <h1>Sawubona, {{ user.username }}! 👋</h1>
+                <p>Welcome back to your dashboard. You're doing great on your financial journey. Keep up the excellent work!</p>
+            </div>
+        </div>
+        
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- User Summary Card -->
+            <div class="stat-card">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <div class="user-avatar mr-4">
+                        {{ user.username[0]|upper if user.username else 'U' }}
+                    </div>
+                    <div>
+                        <h3 style="color: #8b5cf6; font-size: 1.125rem; font-weight: 600; margin: 0;">{{ user.username }}</h3>
+                        <p style="color: #64748b; font-size: 0.875rem; margin: 0;">{{ user.email }}</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="background: #ffffff; border-radius: 0.5rem; padding: 0.75rem; border: 1px solid #e2e8f0;">
+                        <div style="color: #1e293b; font-size: 1.5rem; font-weight: 700;">7</div>
+                        <div style="color: #64748b; font-size: 0.875rem;">Stokvels</div>
+                    </div>
+                    <div style="background: #ffffff; border-radius: 0.5rem; padding: 0.75rem; border: 1px solid #e2e8f0;">
+                        <div style="color: #1e293b; font-size: 1.5rem; font-weight: 700;">R94,345</div>
+                        <div style="color: #64748b; font-size: 0.875rem;">Contributed</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-users mr-2" style="color: #3b82f6;"></i>
+                    <h4 style="font-weight: 600; color: #1e293b; margin: 0;">My Stokvels</h4>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="stat-card">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <i class="fas fa-bolt mr-2" style="color: #3b82f6;"></i>
+                    <h3 style="font-size: 1.125rem; font-weight: 600; color: #1e293b; margin: 0;">Quick Actions</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Loan Repayment Card -->
+                    <div class="quick-action-card">
+                        <div style="display: flex; align-items: center;">
+                            <div class="action-icon mr-4">
+                                <i class="fas fa-hand-holding-dollar"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-weight: 600; color: #1e293b; margin: 0 0 0.25rem 0;">Loan Repayment</h4>
+                                <p style="color: #64748b; font-size: 0.875rem; margin: 0;">Pay back your outstanding loans easily.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loan Application Card -->
+                    <div class="quick-action-card" style="position: relative;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="action-icon mr-4">
+                                <i class="fas fa-file-pen"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-weight: 600; color: #1e293b; margin: 0 0 0.25rem 0;">Loan Application</h4>
+                                <p style="color: #64748b; font-size: 0.875rem; margin: 0;">Apply for a new loan in seconds.</p>
+                            </div>
+                        </div>
+                        <div class="profile-badge">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Theme Switching JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    console.log('Switching to dark theme...');
+                    window.location.href = '/dashboard'; // Redirect to dark theme
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
