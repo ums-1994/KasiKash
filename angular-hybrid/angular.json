@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "angular-app": {
+    "angular-hybrid": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -63,11 +63,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "angular-app:build:production"
+              "buildTarget": "angular-hybrid:build:production"
             },
             "development": {
-              "buildTarget": "angular-app:build:development",
-              "proxyConfig": "proxy.conf.json"
+              "buildTarget": "angular-hybrid:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -93,8 +92,5 @@
         }
       }
     }
-  },
-  "cli": {
-    "analytics": "53b2a32b-c550-4fe5-8609-a88cb1954765"
   }
 }
