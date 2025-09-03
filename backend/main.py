@@ -68,8 +68,13 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_proto=1)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 app.config['PREFERRED_URL_SCHEME'] = 'https'
-app.config['SESSION_COOKIE_SECURE'] = True
+# Use secure cookies only in production; in development over HTTP this breaks CSRF/session
+env = os.getenv('FLASK_ENV', 'production')
+app.config['SESSION_COOKIE_SECURE'] = True if env == 'production' else False
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+# Ensure CSRF tokens are set via cookie even on HTTP in development
+if env != 'production':
+    app.config['WTF_CSRF_SSL_STRICT'] = False
 
 babel = Babel(app)
 
