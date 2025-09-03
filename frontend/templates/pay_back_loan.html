@@ -87,6 +87,8 @@
                                             - {{ method.details.account_number }}
                                         {% elif method.details.card_number %}
                                             - Card ending in {{ method.details.card_number[-4:] }}
+                                        {% elif method.details.last4 %}
+                                            - Card ending in {{ method.details.last4 }}
                                         {% endif %}
                                         {% if method.is_default %}(Default){% endif %}
                                     </option>

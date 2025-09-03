@@ -68,7 +68,30 @@ function initUpload() {
   form.onsubmit = async function(e) {
     e.preventDefault();
     const container = document.getElementById('upload-results');
-    container.innerHTML = '<div class="text-blue-600">Analyzing your statement...</div>';
+    // Show progress with explicit AI step notice
+    container.innerHTML = '';
+    // Also immediately reflect state in the overview section so old analysis isn't shown during processing
+    (function() {
+      const host = document.getElementById('overview-advice-analysis');
+      if (!host) return;
+      let analysisDiv = host.querySelector('.advisor-analysis-html');
+      if (analysisDiv) {
+        analysisDiv.innerHTML = '<div class="text-sm text-cyan-200">Analyzing statement…</div>';
+      } else {
+        host.innerHTML = `
+          <div class="mt-8">
+            <h2 class="text-lg font-bold mb-2">AI Financial Analysis & Advice</h2>
+            <div class="p-4 border rounded bg-gray-50 text-gray-900 advisor-analysis-html"><div class="text-sm">Analyzing statement…</div></div>
+          </div>
+        `;
+      }
+    })();
+    const statusBox = document.createElement('div');
+    statusBox.id = 'advisor-status';
+    statusBox.className = 'mb-3 p-3 rounded border border-blue-400 bg-blue-900 text-cyan-100';
+    statusBox.innerHTML = '<div class="font-semibold text-cyan-300">Analyzing your statement…</div>' +
+      '<div class="text-sm opacity-90">Uploading, extracting text, and sending a prompt to the AI with your statement data.</div>';
+    container.appendChild(statusBox);
     const data = new FormData(form);
     try {
       const res = await fetch(form.action || '/financial_advisor/upload', {
@@ -79,13 +102,22 @@ function initUpload() {
         body: data
       });
       const json = await res.json();
-      container.innerHTML = '';
+      // Update status but keep it visible
+      const statusEl = document.getElementById('advisor-status');
+      if (statusEl) {
+        statusEl.innerHTML = '<div class="font-semibold text-green-300">Analysis complete</div>' +
+          '<div class="text-sm opacity-90">Results are shown below.</div>';
+      }
       if (json.error) {
         container.innerHTML = '<div class="text-red-600">' + json.error + '</div>';
         return;
       }
       if (json.success) {
-        container.innerHTML = '<div class="text-green-600">Statement uploaded and analysis complete!</div>';
+        const meta = document.createElement('div');
+        meta.className = 'text-green-600 mb-2';
+        const ts = json.uploaded_at ? new Date(json.uploaded_at).toLocaleString() : '';
+        meta.textContent = `Statement uploaded${json.file_name ? ' ('+json.file_name+')' : ''}${ts ? ' at '+ts : ''}.`;
+        container.appendChild(meta);
       }
       if (json.alerts) {
         json.alerts.forEach(function(a) {
@@ -96,9 +128,10 @@ function initUpload() {
         });
       }
       if (json.pdf_url) {
-        // Display the PDF in an iframe
+        // Display the PDF in an iframe (add cache-busting to always show the latest)
         const pdfFrame = document.createElement('iframe');
-        pdfFrame.src = json.pdf_url;
+        const bust = (json.pdf_url.indexOf('?') !== -1 ? '&' : '?') + 't=' + Date.now();
+        pdfFrame.src = json.pdf_url + bust;
         pdfFrame.width = '100%';
         pdfFrame.height = '600px';
         pdfFrame.style.border = '1px solid #ccc';
@@ -107,11 +140,11 @@ function initUpload() {
       }
       // Transaction table rendering removed as per user request
       if (json.analysis) {
-        const analysisCard = document.createElement('div');
-        analysisCard.className = 'mt-6 p-4 rounded-lg border border-cyan-400 bg-blue-900 text-cyan-100 shadow-lg';
-        analysisCard.innerHTML = '<h3 class="font-semibold text-cyan-300 mb-2">AI Financial Analysis & Advice</h3>' +
-          '<div style="white-space: pre-line;">' + json.analysis + '</div>';
-        container.appendChild(analysisCard);
+        // Render analysis ONLY in the overview section to avoid duplicates
+        showOverviewFromAnalysis(json.analysis);
+        // Switch to overview tab so user sees the new analysis immediately
+        const overviewBtn = document.querySelector('.tab-btn[data-tab="overview"]');
+        if (overviewBtn) overviewBtn.click();
       }
       // --- Trigger chart update after upload ---
       if (json.transactions && Array.isArray(json.transactions) && json.transactions.length > 0) {
@@ -122,6 +155,61 @@ function initUpload() {
       container.innerHTML = '<div class="text-red-600">An error occurred. Please try again.</div>';
     }
   };
+}
+
+// --- Charts renderer (safe no-op if canvases are missing) ---
+function renderAdvisorCharts(transactions) {
+  try {
+    if (!Array.isArray(transactions) || transactions.length === 0) return;
+    const pieCtx = document.getElementById('advisor-pie-chart')?.getContext('2d');
+    const lineCtx = document.getElementById('advisor-bar-chart')?.getContext('2d');
+    // Aggregate categories
+    const categories = {};
+    const timeline = [];
+    transactions.forEach((tx, idx) => {
+      const cat = tx.category || 'Uncategorized';
+      const amt = Math.abs(Number(tx.amount) || 0);
+      categories[cat] = (categories[cat] || 0) + amt;
+      timeline.push({ date: tx.date || `Step ${idx + 1}`, amount: amt });
+    });
+    if (pieCtx && window.Chart) {
+      if (window.advisorPieChartInstance) window.advisorPieChartInstance.destroy();
+      window.advisorPieChartInstance = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(categories),
+          datasets: [{
+            data: Object.values(categories),
+            backgroundColor: [
+              '#60efff', '#38bdf8', '#7B61FF', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#f472b6', '#facc15', '#818cf8'
+            ]
+          }]
+        },
+        options: { responsive: true }
+      });
+    }
+    if (lineCtx && window.Chart) {
+      if (window.advisorLineChartInstance) window.advisorLineChartInstance.destroy();
+      window.advisorLineChartInstance = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+          labels: timeline.map(t => t.date),
+          datasets: [{
+            label: 'Cash Flow',
+            data: timeline.map(t => t.amount),
+            borderColor: '#60efff',
+            backgroundColor: 'rgba(96,239,255,0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: { responsive: true }
+      });
+    }
+  } catch (err) {
+    // Silently ignore chart errors to not break analysis display
+    console && console.warn && console.warn('[advisor] chart error:', err);
+  }
 }
 
 // Add this function at the top
@@ -348,11 +436,34 @@ function renderOverviewFromAnalysis(analysisHtml) {
 }
 
 // --- Hook into upload and tab switching ---
-function showOverviewFromAnalysis() {
-  // Find the analysis HTML in the Overview tab
-  const analysisDiv = document.querySelector('#overview-advice-analysis .advisor-analysis-html');
-  if (analysisDiv) {
-    renderOverviewFromAnalysis(analysisDiv.innerHTML);
+function showOverviewFromAnalysis(analysisHtml) {
+  // If new analysis provided, update/replace overview section
+  if (analysisHtml !== undefined) {
+    let analysisDiv = document.querySelector('#overview-advice-analysis .advisor-analysis-html');
+    if (analysisDiv) {
+      analysisDiv.innerHTML = analysisHtml;
+    } else {
+      const host = document.getElementById('overview-advice-analysis');
+      if (host) {
+        host.innerHTML = `
+          <div class="mt-8">
+            <h2 class="text-lg font-bold mb-2">AI Financial Analysis & Advice</h2>
+            <div class="p-4 border rounded bg-gray-50 text-gray-900 advisor-analysis-html"></div>
+          </div>
+        `;
+        analysisDiv = host.querySelector('.advisor-analysis-html');
+        if (analysisDiv) analysisDiv.innerHTML = analysisHtml;
+      }
+    }
+    if (analysisDiv) {
+      renderOverviewFromAnalysis(analysisHtml);
+    }
+    return;
+  }
+  // No new analysis passed: if existing overview content is present, render charts/metrics from it
+  const existing = document.querySelector('#overview-advice-analysis .advisor-analysis-html');
+  if (existing) {
+    renderOverviewFromAnalysis(existing.innerHTML);
   }
 }
 // On tab switch

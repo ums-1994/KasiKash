@@ -191,6 +191,68 @@ def analyze_financial_advisor_database():
                 print(f"Statement Analysis Table: {sizes[0]}")
                 print(f"Advisor Chat Table: {sizes[1]}")
                 
+                # 10. Data integrity check
+                print("\n🔒 Data Integrity Check:")
+                print("-" * 30)
+                
+                # Check for orphaned chat messages
+                cur.execute("""
+                    SELECT COUNT(*) FROM financial_advisor_chat fac
+                    LEFT JOIN financial_statement_analysis fsa ON fac.statement_analysis_id = fsa.id
+                    WHERE fsa.id IS NULL
+                """)
+                orphaned_chats = cur.fetchone()[0]
+                print(f"Orphaned chat messages: {orphaned_chats}")
+                
+                # Check for foreign key violations
+                cur.execute("""
+                    SELECT COUNT(*) FROM financial_statement_analysis fsa
+                    LEFT JOIN users u ON fsa.user_id = u.firebase_uid
+                    WHERE u.firebase_uid IS NULL
+                """)
+                invalid_users = cur.fetchone()[0]
+                print(f"Analyses with invalid user references: {invalid_users}")
+                
+                # 11. Growth trends
+                print("\n📈 Growth Trends (Last 30 days):")
+                print("-" * 30)
+                
+                cur.execute("""
+                    SELECT DATE(uploaded_at) as date, COUNT(*) as count
+                    FROM financial_statement_analysis
+                    WHERE uploaded_at >= NOW() - INTERVAL '30 days'
+                    GROUP BY DATE(uploaded_at)
+                    ORDER BY date DESC
+                    LIMIT 10
+                """)
+                
+                daily_growth = cur.fetchall()
+                if daily_growth:
+                    print("Daily uploads (last 10 days):")
+                    for date, count in daily_growth:
+                        print(f"  {date}: {count} analyses")
+                else:
+                    print("No activity in the last 30 days")
+                
+                # 12. Average analysis size
+                print("\n📊 Content Analysis:")
+                print("-" * 30)
+                
+                cur.execute("""
+                    SELECT 
+                        AVG(LENGTH(statement_text)) as avg_text_length,
+                        AVG(LENGTH(ai_analysis)) as avg_analysis_length,
+                        COUNT(*) as total_analyses
+                    FROM financial_statement_analysis
+                    WHERE statement_text IS NOT NULL AND ai_analysis IS NOT NULL
+                """)
+                
+                content_stats = cur.fetchone()
+                if content_stats[2] > 0:
+                    print(f"Average statement text length: {content_stats[0]:.0f} characters")
+                    print(f"Average AI analysis length: {content_stats[1]:.0f} characters")
+                    print(f"Total valid analyses: {content_stats[2]}")
+                
         print("\n" + "=" * 50)
         print("✅ Database analysis completed successfully!")
         
@@ -247,9 +309,179 @@ def run_migration_check():
                 else:
                     print("❌ No performance indexes found")
                     print("💡 Run the migration script to add indexes")
+                
+                # Check for check constraints
+                cur.execute("""
+                    SELECT constraint_name, table_name
+                    FROM information_schema.table_constraints
+                    WHERE constraint_type = 'CHECK'
+                    AND table_name IN ('financial_statement_analysis', 'financial_advisor_chat')
+                """)
+                
+                check_constraints = cur.fetchall()
+                
+                if check_constraints:
+                    print("✅ Check constraints found:")
+                    for constraint, table in check_constraints:
+                        print(f"  • {constraint} on {table}")
+                else:
+                    print("❌ No check constraints found")
+                    print("💡 Run the migration script to add data validation constraints")
+                
+                # Check for row-level security
+                cur.execute("""
+                    SELECT schemaname, tablename, rowsecurity
+                    FROM pg_tables
+                    WHERE tablename IN ('financial_statement_analysis', 'financial_advisor_chat')
+                """)
+                
+                rls_status = cur.fetchall()
+                for schema, table, rls in rls_status:
+                    status = "✅ Enabled" if rls else "❌ Disabled"
+                    print(f"Row-level security on {table}: {status}")
+
+def run_performance_analysis():
+    """Run detailed performance analysis"""
+    
+    try:
+        from backend.support import db_connection
+        
+        print("\n⚡ Performance Analysis:")
+        print("-" * 30)
+        
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                
+                # Check index usage statistics
+                cur.execute("""
+                    SELECT 
+                        schemaname,
+                        tablename,
+                        indexname,
+                        idx_scan,
+                        idx_tup_read,
+                        idx_tup_fetch
+                    FROM pg_stat_user_indexes
+                    WHERE tablename IN ('financial_statement_analysis', 'financial_advisor_chat')
+                    ORDER BY idx_scan DESC
+                """)
+                
+                index_stats = cur.fetchall()
+                
+                if index_stats:
+                    print("📊 Index Usage Statistics:")
+                    for schema, table, index, scans, reads, fetches in index_stats:
+                        print(f"  • {index} on {table}: {scans} scans, {reads} reads, {fetches} fetches")
+                else:
+                    print("No index usage statistics available")
+                
+                # Check table statistics
+                cur.execute("""
+                    SELECT 
+                        schemaname,
+                        tablename,
+                        n_tup_ins,
+                        n_tup_upd,
+                        n_tup_del,
+                        n_live_tup,
+                        n_dead_tup
+                    FROM pg_stat_user_tables
+                    WHERE tablename IN ('financial_statement_analysis', 'financial_advisor_chat')
+                """)
+                
+                table_stats = cur.fetchall()
+                
+                if table_stats:
+                    print("\n📈 Table Statistics:")
+                    for schema, table, inserts, updates, deletes, live, dead in table_stats:
+                        print(f"  • {table}: {inserts} inserts, {updates} updates, {deletes} deletes")
+                        print(f"    Live tuples: {live}, Dead tuples: {dead}")
+                
+                # Check for slow queries (if available)
+                cur.execute("""
+                    SELECT query, calls, total_time, mean_time
+                    FROM pg_stat_statements
+                    WHERE query LIKE '%financial_statement_analysis%' 
+                       OR query LIKE '%financial_advisor_chat%'
+                    ORDER BY mean_time DESC
+                    LIMIT 5
+                """)
+                
+                slow_queries = cur.fetchall()
+                
+                if slow_queries:
+                    print("\n🐌 Slowest Queries:")
+                    for query, calls, total_time, mean_time in slow_queries:
+                        print(f"  • {mean_time:.2f}ms avg ({calls} calls): {query[:100]}...")
         
     except Exception as e:
-        print(f"❌ Error checking migration status: {e}")
+        print(f"❌ Error in performance analysis: {e}")
+
+def generate_recommendations():
+    """Generate recommendations based on analysis"""
+    
+    print("\n💡 Recommendations:")
+    print("-" * 30)
+    
+    try:
+        from backend.support import db_connection
+        
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                
+                # Check data volume
+                cur.execute("SELECT COUNT(*) FROM financial_statement_analysis")
+                analysis_count = cur.fetchone()[0]
+                
+                cur.execute("SELECT COUNT(*) FROM financial_advisor_chat")
+                chat_count = cur.fetchone()[0]
+                
+                # Generate recommendations based on data volume
+                if analysis_count > 1000:
+                    print("📊 High volume detected - Consider:")
+                    print("  • Implementing data archiving strategy")
+                    print("  • Adding more aggressive cleanup policies")
+                    print("  • Monitoring storage growth")
+                
+                if chat_count > 5000:
+                    print("💬 High chat volume detected - Consider:")
+                    print("  • Implementing chat message retention policies")
+                    print("  • Adding chat search functionality")
+                    print("  • Optimizing chat storage")
+                
+                # Check for performance issues
+                cur.execute("""
+                    SELECT COUNT(*) FROM pg_indexes 
+                    WHERE tablename IN ('financial_statement_analysis', 'financial_advisor_chat')
+                """)
+                index_count = cur.fetchone()[0]
+                
+                if index_count < 5:
+                    print("⚡ Performance optimization needed:")
+                    print("  • Add more indexes for frequently queried columns")
+                    print("  • Consider composite indexes for common query patterns")
+                
+                # Check for data quality issues
+                cur.execute("""
+                    SELECT COUNT(*) FROM financial_statement_analysis 
+                    WHERE statement_text IS NULL OR LENGTH(TRIM(statement_text)) = 0
+                """)
+                empty_texts = cur.fetchone()[0]
+                
+                if empty_texts > 0:
+                    print("🔍 Data quality issues detected:")
+                    print(f"  • {empty_texts} analyses with empty text")
+                    print("  • Review OCR processing pipeline")
+                    print("  • Implement better error handling")
+                
+                print("\n🛠️ General recommendations:")
+                print("  • Run regular data integrity checks")
+                print("  • Monitor database performance metrics")
+                print("  • Implement automated backup strategies")
+                print("  • Consider implementing data retention policies")
+        
+    except Exception as e:
+        print(f"❌ Error generating recommendations: {e}")
 
 if __name__ == "__main__":
     print("🚀 Starting Financial Advisor Database Analysis...")
@@ -261,14 +493,24 @@ if __name__ == "__main__":
         # Run migration check
         run_migration_check()
         
+        # Run performance analysis
+        run_performance_analysis()
+        
+        # Generate recommendations
+        generate_recommendations()
+        
         print("\n📋 Summary:")
         print("-" * 30)
         print("✅ Database analysis completed")
         print("📊 Check the statistics above for insights")
         print("🔧 Review migration status for improvements")
-        print("\n💡 Next steps:")
+        print("⚡ Performance analysis completed")
+        print("💡 Recommendations generated")
+        print("\n🔄 Next steps:")
         print("  • Run migrations if needed")
         print("  • Monitor data quality")
         print("  • Consider data cleanup for old records")
+        print("  • Implement performance optimizations")
+        print("  • Set up regular monitoring")
     else:
         print("❌ Analysis failed - check database connection") 
