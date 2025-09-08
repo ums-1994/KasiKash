@@ -13,6 +13,8 @@ export class ApiService {
     settings: 'kk_settings',
     stokvels: 'kk_stokvels',
     contributions: 'kk_contributions',
+    payouts: 'kk_payouts',
+    paymentMethods: 'kk_payment_methods',
     notifications: 'kk_notifications',
     points: 'kk_points',
     earnedRewards: 'kk_earned_rewards',
@@ -347,6 +349,130 @@ export class ApiService {
   checkout(): { success: boolean; message: string } {
     this.write(this.STORAGE_KEYS.cart, []);
     return { success: true, message: 'Checkout complete' };
+  }
+
+  // Payment Methods
+  getPaymentMethods() {
+    return this.read(this.STORAGE_KEYS.paymentMethods, [
+      { id: 'pm1', type: 'bank', name: 'FNB Savings', details: '****1234', provider: 'First National Bank', isDefault: true, addedDate: '15 Nov 2024' },
+      { id: 'pm2', type: 'card', name: 'Visa Card', details: '****5678', provider: 'Standard Bank', isDefault: false, addedDate: '10 Nov 2024' }
+    ]);
+  }
+
+  addPaymentMethod(method: { type: string; name: string; details: string; provider: string; isDefault: boolean }): any {
+    const methods = this.getPaymentMethods();
+    const newMethod = {
+      id: 'pm' + Date.now().toString(),
+      ...method,
+      addedDate: new Date().toLocaleDateString('en-ZA')
+    };
+    
+    // If this is set as default, unset all others
+    if (method.isDefault) {
+      methods.forEach(m => m.isDefault = false);
+    }
+    
+    methods.unshift(newMethod);
+    this.write(this.STORAGE_KEYS.paymentMethods, methods);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payment',
+      title: 'Payment Method Added',
+      description: `Added ${method.name} (${method.type})`,
+      time: 'Just now'
+    });
+    
+    return newMethod;
+  }
+
+  updatePaymentMethod(id: string, method: { type: string; name: string; details: string; provider: string; isDefault: boolean }): any {
+    const methods = this.getPaymentMethods();
+    const index = methods.findIndex(m => m.id === id);
+    
+    if (index === -1) {
+      return null;
+    }
+    
+    // If this is set as default, unset all others
+    if (method.isDefault) {
+      methods.forEach(m => m.isDefault = false);
+    }
+    
+    methods[index] = { ...methods[index], ...method };
+    this.write(this.STORAGE_KEYS.paymentMethods, methods);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payment',
+      title: 'Payment Method Updated',
+      description: `Updated ${method.name} (${method.type})`,
+      time: 'Just now'
+    });
+    
+    return methods[index];
+  }
+
+  deletePaymentMethod(id: string): { success: boolean; message: string } {
+    const methods = this.getPaymentMethods();
+    const index = methods.findIndex(m => m.id === id);
+    
+    if (index === -1) {
+      return { success: false, message: 'Payment method not found' };
+    }
+    
+    const methodToDelete = methods[index];
+    methods.splice(index, 1);
+    this.write(this.STORAGE_KEYS.paymentMethods, methods);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payment',
+      title: 'Payment Method Deleted',
+      description: `Deleted ${methodToDelete.name}`,
+      time: 'Just now'
+    });
+    
+    return { success: true, message: 'Payment method deleted successfully' };
+  }
+
+  // Payouts
+  getPayouts() {
+    return this.read(this.STORAGE_KEYS.payouts, [
+      { id: 'po1', stokvelName: 'Family Savings', amount: 2000, date: '01 Dec 2024', method: 'bank', status: 'completed' },
+      { id: 'po2', stokvelName: 'Business Investment', amount: 5000, date: '28 Nov 2024', method: 'card', status: 'pending' },
+      { id: 'po3', stokvelName: 'Family Savings', amount: 1500, date: '15 Nov 2024', method: 'bank', status: 'completed' }
+    ]);
+  }
+
+  requestPayout(payload: { stokvelId: string; amount: number; method: string; reason?: string }): any {
+    const stokvels = this.getStokvels();
+    const stokvel = stokvels.find(s => s.id === payload.stokvelId);
+    const payouts = this.getPayouts();
+    
+    const payout = {
+      id: 'po' + Date.now().toString(),
+      stokvelName: stokvel?.name || 'Unknown',
+      amount: payload.amount,
+      date: new Date().toLocaleDateString('en-ZA'),
+      method: payload.method,
+      status: 'pending',
+      reason: payload.reason || ''
+    };
+    
+    payouts.unshift(payout);
+    this.write(this.STORAGE_KEYS.payouts, payouts);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payout',
+      title: 'Payout Requested',
+      description: `R${payload.amount} payout requested from ${payout.stokvelName}`,
+      time: 'Just now',
+      amount: payload.amount
+    });
+    
+    return payout;
   }
 }
 

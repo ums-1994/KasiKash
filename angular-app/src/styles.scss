@@ -3,39 +3,40 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 :root {
-  --primary-color: #2563eb;    /* Modern Blue - User-friendly & Corporate */
-  --primary-light: #3b82f6;    /* Bright Blue - Catchy & Engaging */
-  --primary-dark: #1d4ed8;     /* Darker Blue - Professional */
-  --secondary-color: #06b6d4;  /* Cyan - Cool & Modern */
-  --accent-color: #10b981;     /* Emerald Green - Success & Growth */
-  --success-color: #059669;
-  --warning-color: #f59e0b;
+  /* Welcome palette (default across app) */
+  --primary-color: #2E8B57;    /* Sea Green */
+  --primary-light: #3aa86b;    /* Lighter Sea Green */
+  --primary-dark: #207046;     /* Darker Sea Green */
+  --secondary-color: #009879;  /* Teal Green */
+  --accent-color: #F5A623;     /* Golden Orange */
+  --success-color: #2E8B57;
+  --warning-color: #F5A623;
   --error-color: #dc2626;
-  --info-color: #3b82f6;
+  --info-color: #009879;
   
-  /* Modern Corporate Colors */
+  /* Legacy references retained */
   --modern-blue: #2563eb;
   --bright-blue: #3b82f6;
   --cyan: #06b6d4;
   --emerald: #10b981;
   --white: #ffffff;
   
-  --text-primary: #1e293b;     /* Slate 800 - Easy to read */
-  --text-secondary: #475569;   /* Slate 600 - Secondary text */
-  --text-muted: #64748b;       /* Slate 500 - Muted text */
+  --text-primary: #1a1a1a;
+  --text-secondary: #2b2b2b;
+  --text-muted: #4a4a4a;
   
-  --bg-primary: #ffffff;       /* Pure white - Clean & Professional */
-  --bg-secondary: #f8fafc;     /* Slate 50 - Subtle background */
-  --bg-tertiary: #f1f5f9;     /* Slate 100 - Light background */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
   --bg-card: rgba(255, 255, 255, 0.98);
   --bg-overlay: rgba(0, 0, 0, 0.05);
 
-  /* Modern Gradient */
-  --bg-gradient-start: #2563eb;
-  --bg-gradient-end: #06b6d4;
+  /* Gradient updated to welcome palette */
+  --bg-gradient-start: #2E8B57;
+  --bg-gradient-end: #009879;
   
-  --border-color: rgba(148, 163, 184, 0.2);  /* Slate 300 with transparency */
-  --border-light: rgba(148, 163, 184, 0.1);  /* Slate 300 with less transparency */
+  --border-color: rgba(148, 163, 184, 0.2);
+  --border-light: rgba(148, 163, 184, 0.1);
   
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -48,6 +49,38 @@
   --radius-xl: 1rem;
   
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Legacy theme (blue/cyan) preserved */
+.theme-legacy {
+  --primary-color: #2563eb;
+  --primary-light: #3b82f6;
+  --primary-dark: #1d4ed8;
+  --secondary-color: #06b6d4;
+  --accent-color: #10b981;
+  --info-color: #3b82f6;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --bg-gradient-start: #2563eb;
+  --bg-gradient-end: #06b6d4;
+}
+
+/* Dark mode theme variables */
+.theme-dark {
+  --text-primary: #e5e7eb;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --bg-primary: #0b0f14;
+  --bg-secondary: #111827;
+  --bg-tertiary: #0f172a;
+  --bg-card: rgba(17, 24, 39, 0.85);
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --border-color: rgba(148, 163, 184, 0.15);
+  --border-light: rgba(148, 163, 184, 0.08);
+  /* Keep welcome palette colors in dark for brand consistency */
+  --bg-gradient-start: #2E8B57;
+  --bg-gradient-end: #009879;
 }
 
 * {
@@ -74,7 +107,12 @@ body {
 /* Navigation */
 .main-nav {
   width: 280px;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  position: relative;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -84,9 +122,27 @@ body {
   z-index: 1000;
 }
 
+.main-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.9) 0%,
+    rgba(30, 41, 59, 0.85) 50%,
+    rgba(46, 139, 87, 0.8) 100%
+  );
+  z-index: -1;
+}
+
 .nav-header {
   padding: 2rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
 }
 
 .logo h2 {
@@ -121,6 +177,8 @@ body {
   list-style: none;
   padding: 1rem 0;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .nav-link {
@@ -168,6 +226,8 @@ body {
 .nav-footer {
   padding: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
 }
 
 .logout-btn {
@@ -197,6 +257,188 @@ body {
   padding: 2rem;
   min-height: 100vh;
   background: transparent;
+  position: relative;
+}
+
+/* Shared full-bleed background for all pages */
+.page-background {
+  background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -2;
+}
+
+.page-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(46, 139, 87, 0.85) 0%,
+    rgba(0, 152, 121, 0.75) 50%,
+    rgba(245, 166, 35, 0.15) 100%
+  );
+  z-index: -1;
+}
+
+/* Responsive content wrapper for consistent spacing */
+.content-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.25rem; /* 20px */
+}
+
+@media (min-width: 768px) {
+  .content-container {
+    padding: 2rem; /* 32px */
+  }
+}
+
+/* Dashboard Background */
+.dashboard-background {
+  background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -2;
+}
+
+.dashboard-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(46, 139, 87, 0.85) 0%,
+    rgba(0, 152, 121, 0.75) 50%,
+    rgba(245, 166, 35, 0.15) 100%
+  );
+  z-index: -1;
+}
+
+/* Enhanced text readability on dashboard */
+.dashboard-content {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-content .glass-card,
+.dashboard-content .summary-card,
+.dashboard-content .stokvel-card,
+.dashboard-content .product-card,
+.dashboard-content .reward-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-content h1,
+.dashboard-content h2,
+.dashboard-content h3,
+.dashboard-content h4,
+.dashboard-content h5,
+.dashboard-content h6 {
+  color: #1a1a1a;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
+}
+
+.dashboard-content p,
+.dashboard-content .text-muted {
+  color: #2b2b2b;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+/* Global text visibility improvements on image background */
+.dashboard-content {
+  color: #1a1a1a;
+}
+
+.dashboard-content a {
+  color: #207046;
+  font-weight: 600;
+  text-decoration: none;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.dashboard-content a:hover {
+  color: #2E8B57;
+  text-decoration: underline;
+}
+
+.dashboard-content .badge,
+.dashboard-content .chip,
+.dashboard-content .tag {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a1a;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-shadow: none;
+}
+
+.dashboard-content table th,
+.dashboard-content table td {
+  background: rgba(255, 255, 255, 0.88);
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Utility for forcing high-contrast text when needed */
+.text-contrast {
+  color: #111 !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Dark theme adjustments for readability */
+.theme-dark .dashboard-content {
+  color: #e5e7eb;
+}
+
+.theme-dark .dashboard-content h1,
+.theme-dark .dashboard-content h2,
+.theme-dark .dashboard-content h3,
+.theme-dark .dashboard-content h4,
+.theme-dark .dashboard-content h5,
+.theme-dark .dashboard-content h6 {
+  color: #f3f4f6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.theme-dark .dashboard-content p,
+.theme-dark .dashboard-content .text-muted {
+  color: #d1d5db;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.theme-dark .dashboard-content a {
+  color: #8ee0c9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.theme-dark .dashboard-content .glass-card,
+.theme-dark .dashboard-content .summary-card,
+.theme-dark .dashboard-content .stokvel-card,
+.theme-dark .dashboard-content .product-card,
+.theme-dark .dashboard-content .reward-card {
+  background: rgba(17, 24, 39, 0.85);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 /* Common Components */

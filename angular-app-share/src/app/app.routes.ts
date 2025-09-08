@@ -24,7 +24,8 @@ import { ActivitiesPage } from './pages/activities/activities.page';
 export class ReportsPlaceholderComponent {}
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: '/welcome', pathMatch: 'full' },
+  { path: 'welcome', loadComponent: () => import('./pages/welcome/welcome.component').then(m => m.WelcomeComponent) },
   { path: 'dashboard', component: DashboardPage },
   { path: 'login', component: LoginPage },
   { path: 'stokvels', component: StokvelsPage },

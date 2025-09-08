@@ -1,11 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { catchError, delay } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
+  private readonly apiBaseUrl: string = environment?.apiBaseUrl || '/api';
   
   // Local storage keys
   private readonly STORAGE_KEYS = {
@@ -13,6 +15,8 @@ export class ApiService {
     settings: 'kk_settings',
     stokvels: 'kk_stokvels',
     contributions: 'kk_contributions',
+    payouts: 'kk_payouts',
+    paymentMethods: 'kk_payment_methods',
     notifications: 'kk_notifications',
     points: 'kk_points',
     earnedRewards: 'kk_earned_rewards',
@@ -43,21 +47,22 @@ export class ApiService {
     store.setItem(key, JSON.stringify(value));
   }
 
-  // Admin dashboard stats (requires session auth)
+  // Admin dashboard stats: try backend first, fallback to mock
   getAdminStats(): Observable<any> {
-    // Temporarily return mock data until Flask is running
-    return of({
-      total_users: 150,
-      total_members: 89,
-      pending_loans: 12,
-      kyc_pending: 23,
-      total_deposits: 45000.5,
-      new_notifications: this.getNotifications().length,
-      members_change: 12.5,
-      deposits_change: 8.3,
-      timestamp: new Date().toISOString(),
-      note: 'Mock data - Flask backend not running'
-    }).pipe(delay(400));
+    return this.http.get(`${this.apiBaseUrl}/admin/stats`).pipe(
+      catchError(() => of({
+        total_users: 150,
+        total_members: 89,
+        pending_loans: 12,
+        kyc_pending: 23,
+        total_deposits: 45000.5,
+        new_notifications: this.getNotifications().length,
+        members_change: 12.5,
+        deposits_change: 8.3,
+        timestamp: new Date().toISOString(),
+        note: 'Mock data - Flask backend not reachable'
+      }).pipe(delay(400)))
+    );
   }
 
   // Auth
@@ -172,7 +177,7 @@ export class ApiService {
 
   // Backend integration method (for when Flask is running)
   private deleteStokvelFromBackend(stokvelId: string): Observable<any> {
-    return this.http.post(`/stokvel/${stokvelId}/delete`, {}, {
+    return this.http.post(`${this.apiBaseUrl}/stokvel/${stokvelId}/delete`, {}, {
       headers: { 'Content-Type': 'application/json' }
     });
   }
@@ -347,6 +352,138 @@ export class ApiService {
   checkout(): { success: boolean; message: string } {
     this.write(this.STORAGE_KEYS.cart, []);
     return { success: true, message: 'Checkout complete' };
+  }
+
+  // Payment Methods
+  getPaymentMethods() {
+    return this.read(this.STORAGE_KEYS.paymentMethods, [
+      { id: 'pm1', type: 'bank', name: 'FNB Savings Account', details: '****1234', provider: 'First National Bank', isDefault: true, addedDate: '15 Nov 2024' },
+      { id: 'pm2', type: 'card', name: 'Visa Credit Card', details: '****5678', provider: 'Standard Bank', isDefault: false, addedDate: '20 Nov 2024' },
+      { id: 'pm3', type: 'mobile', name: 'MTN Mobile Money', details: '082***1234', provider: 'MTN', isDefault: false, addedDate: '25 Nov 2024' }
+    ]);
+  }
+
+  addPaymentMethod(method: { type: string; name: string; details: string; provider: string; isDefault: boolean }): any {
+    const methods = this.getPaymentMethods();
+    
+    // If this is set as default, remove default from others
+    if (method.isDefault) {
+      methods.forEach(m => m.isDefault = false);
+    }
+    
+    const newMethod = {
+      id: 'pm' + Date.now().toString(),
+      ...method,
+      addedDate: new Date().toLocaleDateString('en-ZA')
+    };
+    
+    methods.unshift(newMethod);
+    this.write(this.STORAGE_KEYS.paymentMethods, methods);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payment',
+      title: 'Payment Method Added',
+      description: `Added ${method.name} payment method`,
+      time: 'Just now'
+    });
+    
+    return newMethod;
+  }
+
+  updatePaymentMethod(id: string, method: { type: string; name: string; details: string; provider: string; isDefault: boolean }): any {
+    const methods = this.getPaymentMethods();
+    const index = methods.findIndex(m => m.id === id);
+    
+    if (index === -1) {
+      throw new Error('Payment method not found');
+    }
+    
+    // If this is set as default, remove default from others
+    if (method.isDefault) {
+      methods.forEach(m => m.isDefault = false);
+    }
+    
+    const updatedMethod = {
+      ...methods[index],
+      ...method,
+      addedDate: methods[index].addedDate // Keep original date
+    };
+    
+    methods[index] = updatedMethod;
+    this.write(this.STORAGE_KEYS.paymentMethods, methods);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payment',
+      title: 'Payment Method Updated',
+      description: `Updated ${method.name} payment method`,
+      time: 'Just now'
+    });
+    
+    return updatedMethod;
+  }
+
+  deletePaymentMethod(id: string): { success: boolean; message: string } {
+    const methods = this.getPaymentMethods();
+    const index = methods.findIndex(m => m.id === id);
+    
+    if (index === -1) {
+      return { success: false, message: 'Payment method not found' };
+    }
+    
+    const methodToDelete = methods[index];
+    methods.splice(index, 1);
+    this.write(this.STORAGE_KEYS.paymentMethods, methods);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payment',
+      title: 'Payment Method Deleted',
+      description: `Deleted ${methodToDelete.name} payment method`,
+      time: 'Just now'
+    });
+    
+    return { success: true, message: `Successfully deleted ${methodToDelete.name}` };
+  }
+
+  // Payouts
+  getPayouts() {
+    return this.read(this.STORAGE_KEYS.payouts, [
+      { id: 'p1', stokvelName: 'Family Savings', amount: 2000, date: '01 Dec 2024', method: 'bank', status: 'completed' },
+      { id: 'p2', stokvelName: 'Business Investment', amount: 5000, date: '28 Nov 2024', method: 'card', status: 'pending' },
+      { id: 'p3', stokvelName: 'Family Savings', amount: 1500, date: '15 Nov 2024', method: 'mobile', status: 'completed' },
+      { id: 'p4', stokvelName: 'Business Investment', amount: 3000, date: '10 Nov 2024', method: 'bank', status: 'rejected' }
+    ]);
+  }
+
+  requestPayout(payload: { stokvelId: string; amount: number; method: string; reason?: string }): any {
+    const stokvels = this.getStokvels();
+    const stokvel = stokvels.find(s => s.id === payload.stokvelId);
+    const payouts = this.getPayouts();
+    
+    const payout = {
+      id: 'p' + Date.now().toString(),
+      stokvelName: stokvel?.name || 'Unknown',
+      amount: payload.amount,
+      date: new Date().toLocaleDateString('en-ZA'),
+      method: payload.method,
+      status: 'pending'
+    };
+    
+    payouts.unshift(payout);
+    this.write(this.STORAGE_KEYS.payouts, payouts);
+    
+    // Log activity
+    this.addActivity({
+      type: 'payout',
+      title: 'Payout Requested',
+      description: `R${payload.amount} payout requested from ${payout.stokvelName}`,
+      time: 'Just now',
+      amount: payload.amount
+    });
+    
+    return payout;
   }
 }
 

@@ -13,6 +13,16 @@ import { ApiService } from '../../services/api.service';
       <div class="dashboard-header">
         <h1>Welcome back, {{ userProfile.name }}!</h1>
         <p class="subtitle">Here's what's happening with your stokvels today</p>
+
+        <!-- Backend connectivity status -->
+        <div *ngIf="apiConnected; else mockNotice" style="margin-top:1rem">
+          <span style="background: rgba(46,139,87,0.15); color:#6ee7b7; border:1px solid rgba(46,139,87,0.35); padding:0.5rem 0.75rem; border-radius:0.5rem; font-weight:600;">Backend Connected</span>
+        </div>
+        <ng-template #mockNotice>
+          <div style="margin-top:1rem">
+            <span style="background: rgba(245,166,35,0.15); color:#F5A623; border:1px solid rgba(245,166,35,0.35); padding:0.5rem 0.75rem; border-radius:0.5rem; font-weight:600;">Using mock data (start Flask API to enable live data)</span>
+          </div>
+        </ng-template>
       </div>
       
       <!-- Quick Stats -->
@@ -719,6 +729,7 @@ export class DashboardPage implements OnInit {
   userProfile = {
     name: 'John Doe'
   };
+  apiConnected = false;
   
   stats = {
     activeStokvels: 3,
@@ -814,6 +825,7 @@ export class DashboardPage implements OnInit {
   loadDashboardData() {
     this.apiService.getAdminStats().subscribe({
       next: (data) => {
+        this.apiConnected = !data?.note; // note exists only on mock fallback
         console.log('Dashboard data loaded:', data);
       },
       error: (err) => {
