@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>KasiKash - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700,800|Montserrat:700&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    <style>
+        body {
+            min-height: 100vh;
+            background: #ffffff;
+            font-family: 'Inter', 'Montserrat', sans-serif;
+            color: #1e293b;
+        }
+        
+        /* Main content area - Light background */
+        main {
+            background: #f8fafc;
+            min-height: calc(100vh - 64px);
+        }
+        
+        /* Sidebar - Dark Blue like i-STOKVEL */
+        .sidebar {
+            background: #1e3a8a;
+            border-right: 1px solid #e2e8f0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation links - White text on dark blue */
+        .nav-link {
+            color: #ffffff;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            background: transparent;
+            border-radius: 8px;
+            margin: 2px 8px;
+        }
+        
+        .nav-link:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .nav-link.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-link svg {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover svg {
+            color: #ffffff;
+        }
+        
+        /* Logo Section */
+        .logo-section {
+            background: #1e40af;
+            border-bottom: 1px solid #3b82f6;
+        }
+        
+        .logo-text {
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .page-title {
+            color: #1e293b;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .notification-icon, .profile-icon {
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-icon:hover, .profile-icon:hover {
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+        
+        .notification-badge {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* User Section */
+        .user-section {
+            background: #1e40af;
+            border-top: 1px solid #3b82f6;
+        }
+        
+        .user-avatar {
+            background: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .logout-link {
+            color: #94a3b8;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-link:hover {
+            color: #ffffff;
+        }
+        
+        /* Cards and Content */
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+        }
+        
+        .stat-value {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        /* Alerts */
+        .alert {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            color: #1e293b;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .alert-success {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        
+        .alert-info {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: #3b82f6;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        
+        /* Main Content */
+        main {
+            min-height: calc(100vh - 64px);
+            background: #f8fafc;
+        }
+        
+        /* Progress elements */
+        .progress-circle-bg {
+            stroke: #e2e8f0;
+        }
+        
+        .progress-circle {
+            stroke: #3b82f6;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Calendar styling */
+        .calendar-day {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .calendar-day:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        
+        .calendar-day.today {
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+        
+        /* Bell shake animation for new notifications */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+        
+        .shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Table styling */
+        .table-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-header {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+        }
+        
+        .table-row:hover {
+            background: #f8fafc;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #1d4ed8;
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col max-h-screen overflow-y-auto">
+        <!-- Logo -->
+        <div class="flex items-center justify-center h-16 logo-section flex-shrink-0">
+            <a href="/" class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='logo_admin.png') }}" alt="KasiKash Logo" style="height:48px;width:48px;border-radius:50%;box-shadow:0 0 16px #3b82f6;">
+                <span class="text-2xl logo-text">KasiKash</span>
+            </a>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="mt-4 flex-1 overflow-y-auto">
+            <ul class="space-y-1">
+                <nav class="mt-8" style="flex: 1 1 auto; min-height: 0;">
+                    <ul class="space-y-2" style="overflow-y: auto; max-height: calc(100vh - 180px);">
+                        <li>
+                            <a href="/home" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-home mr-2"></i> Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/stokvels" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-users mr-2"></i> Stokvels
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/contributions" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-dollar-sign mr-2"></i> Contributions
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/payouts" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-wallet mr-2"></i> Payouts
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/savings_goals" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-chart-line mr-2"></i> Savings Goals
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/payment_methods" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-credit-card mr-2"></i> Payment Methods
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('rewards.rewards_card_page') }}" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-gift mr-2"></i> My Rewards Card
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/settings" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-cog mr-2"></i> Settings
+                            </a>
+                        </li>
+                        {% if session.role == 'admin' %}
+                        <li>
+                            <a href="/admin/dashboard" class="nav-link flex items-center px-3 py-2 text-sm">
+                                <i class="fas fa-user-shield mr-2"></i> Admin
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a href="{{ url_for('advisor.dashboard') }}" class="nav-link flex items-center px-4 py-2">
+                                <i class="fas fa-user-tie mr-3"></i> Financial Advisor
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </ul>
+        </nav>
+        
+        <!-- User Section -->
+        <div class="w-full p-4 user-section flex-shrink-0 mt-auto">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-xl user-avatar flex items-center justify-center text-white font-bold text-base">
+                        {% set name = username if username else 'User' %}
+                        {% set name_parts = name.split() %}
+                        {% set initials = (name_parts[0][0] ~ (name_parts[1][0] if name_parts|length > 1 else '')) | upper %}
+                        {{ initials }}
+                    </div>
+                </div>
+                <div class="ml-3">
+                    <a href="/logout" class="text-sm logout-link">{{ 'Logout' }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="ml-64">
+        <!-- Top Bar with Profile and Notifications -->
+        <div class="top-bar">
+            <div class="flex items-center justify-between w-full px-6 py-4">
+                <h2 class="text-xl page-title">{% block page_title %}{% endblock %}</h2>
+                <div class="flex items-center space-x-6">
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="theme-toggle p-2 rounded-lg transition-all duration-300">
+                        <i id="theme-icon" class="fas fa-moon text-xl"></i>
+                    </button>
+                    <a href="{{ url_for('notifications') }}" id="notification-icon" class="notification-icon relative">
+                        <i class="fa-solid fa-bell w-6 h-6 text-xl"></i>
+                        <span id="notification-badge"
+                              class="notification-badge absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white{% if not (notification_count and notification_count > 0) %} hidden{% endif %}">
+                            {% if notification_count and notification_count > 0 %}{{ notification_count }}{% endif %}
+                        </span>
+                    </a>
+                    <a href="{{ url_for('profile') }}" class="profile-icon">
+                        <i class="fa-solid fa-user-circle w-6 h-6 text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <main class="p-6">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flashes space-y-3 mb-6">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category|default('info') }} px-4 py-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="float-right" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    
+    <!-- Scripts at the end of body, in correct order -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% include 'chatbot.html' %}
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    
+    <!-- Theme Switching JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
+            
+            // Set initial theme to light
+            body.className = 'light-theme';
+            updateThemeIcon('light');
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    console.log('Switching theme from', currentTheme, 'to', newTheme);
+                    
+                    if (newTheme === 'dark') {
+                        body.classList.remove('light-theme');
+                        window.location.href = '/dashboard'; // Redirect to dark theme
+                    } else {
+                        body.classList.add('light-theme');
+                        window.location.href = '/dashboard_light'; // Redirect to light theme
+                    }
+                    
+                    updateThemeIcon(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    
+                    fetch('/switch_theme', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    }).then(response => {
+                        console.log('Theme switched successfully');
+                    }).catch(error => {
+                        console.log('Theme preference saved locally');
+                    });
+                });
+            }
+            
+            function updateThemeIcon(theme) {
+                if (themeIcon) {
+                    if (theme === 'light') {
+                        themeIcon.className = 'fas fa-moon text-xl';
+                    } else {
+                        themeIcon.className = 'fas fa-sun text-xl';
+                    }
+                }
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

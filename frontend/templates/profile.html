@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - KasiKash{% endblock %}
+
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<!-- KYC Status Toast Notification (Standardized Logic) -->
+{% if user.kyc_status in ['approved', 'rejected', 'pending'] %}
+<div id="kycStatusToast" class="fixed top-6 right-6 z-50">
+    {% if user.kyc_status == 'approved' %}
+        <div class='flex items-center gap-2 px-6 py-4 rounded-lg bg-green-100 border border-green-300 shadow-lg text-green-900 font-semibold'>
+            <svg class='w-5 h-5 text-green-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>
+            Your KYC has been <b>approved</b> and you are fully verified.
+        </div>
+    {% elif user.kyc_status == 'rejected' %}
+        <div class='flex items-center gap-2 px-6 py-4 rounded-lg bg-red-100 border border-red-300 shadow-lg text-red-900 font-semibold'>
+            <svg class='w-5 h-5 text-red-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>
+            Your KYC was <b>rejected</b>. Please review and re-upload your documents.
+        </div>
+    {% elif user.kyc_status == 'pending' %}
+        <div class='flex items-center gap-2 px-6 py-4 rounded-lg bg-yellow-100 border border-yellow-300 shadow-lg text-yellow-900 font-semibold'>
+            <svg class='w-5 h-5 text-yellow-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4m0 4h.01'/></svg>
+            Your KYC is <b>under review</b>. You will be notified once a decision is made.
+        </div>
+    {% endif %}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var toast = document.getElementById('kycStatusToast');
+    if (toast) {
+        setTimeout(function() {
+            toast.classList.add('hidden');
+        }, 5000);
+    }
+});
+</script>
+{% endif %}
+<!-- End KYC Status Toast Notification -->
+<!-- Professional Profile Header -->
+<div class="relative w-full bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl shadow-xl text-white overflow-hidden mb-8">
+    <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+    <div class="relative z-10 p-8">
+        <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+            <!-- Profile Picture Section -->
+            <div class="relative group">
+                <div class="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white border-opacity-30 hover:border-opacity-50 transition-all duration-300 shadow-lg" onclick="document.getElementById('profilePicInput').click()">
+                {% if user.profile_picture %}
+                        <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_picture) }}" alt="Profile Picture" class="w-24 h-24 object-cover rounded-full">
+                {% else %}
+                        <svg class="w-12 h-12 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                {% endif %}
+                </div>
+                
+                <!-- Hidden form for file upload -->
+                <form id="avatarUploadForm" method="POST" action="{{ url_for('upload_profile_picture') }}" enctype="multipart/form-data" style="display: none;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input id="profilePicInput" type="file" name="profile_picture" accept="image/*" onchange="uploadProfilePicture()">
+            </form>
+                
+                <!-- Hover overlay -->
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-full transition-all duration-300 flex items-center justify-center pointer-events-none">
+                    <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+                
+                <!-- Camera icon indicator -->
+                <div class="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1 shadow-lg">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+        </div>
+            
+            <!-- User Info Section -->
+            <div class="flex-1 text-center md:text-left">
+            {% set hour = current_time.hour %}
+                <h1 class="text-3xl font-bold mb-2">
+                {% if hour < 12 %}
+                    Good morning,
+                {% elif hour < 18 %}
+                    Good afternoon,
+                {% else %}
+                    Good evening,
+                {% endif %}
+                {{ (user.full_name if user.full_name else (user.username if user.username else 'User')) }}!
+            </h1>
+                
+                <!-- Verification Status -->
+                <div class="flex items-center justify-center md:justify-start space-x-3 mb-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium shadow-sm {% if user.is_verified %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {% if user.is_verified %}
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                            Email Verified
+                    {% else %}
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                            Email Not Verified
+                        {% endif %}
+                    </span>
+                    
+                    {% if not user.is_verified %}
+                        <button onclick="resendVerification()" class="text-blue-200 hover:text-white text-sm underline transition-colors duration-200 hover:no-underline">
+                            Resend Verification
+                        </button>
+                    {% endif %}
+                </div>
+                
+                {% if user.last_login %}
+                    <p class="text-blue-100 text-sm">Last active: {{ user.last_login.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content: Stack sections vertically -->
+<div class="space-y-8">
+  <!-- Personal Information Card -->
+  <div class="rounded-xl shadow-lg border overflow-hidden" style="background: #22304a; color: #60efff; border: 1px solid #22304a;">
+    <div class="px-6 py-4 border-b" style="border-color: #60efff;">
+      <h2 class="text-xl font-semibold flex items-center" style="color: #60efff;">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="#60efff" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+        Personal Information
+      </h2>
+    </div>
+    <div class="p-6">
+      <!-- Personal Info Form (as before) -->
+      <form method="POST" action="{{ url_for('update_profile') }}" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium mb-2" style="color: #60efff;">Full Name</label>
+            <input type="text" name="full_name" value="{{ user.full_name if user.full_name else '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" style="color: #60efff;">Username</label>
+            <input type="text" name="username" value="{{ user.username if user.username else 'User' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" style="color: #60efff;">Email</label>
+            <input type="email" value="{{ user.email if user.email else 'No email on file' }}" disabled class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb]" style="border: 1px solid #60efff;">
+            <p class="text-xs mt-1" style="color: #b6c2e2;">Email cannot be changed</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" style="color: #60efff;">Phone Number</label>
+            <input type="tel" name="phone" value="{{ user.phone or '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" style="color: #60efff;">ID Number</label>
+            <input type="text" name="id_number" value="{{ user.id_number if user.id_number else '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" style="color: #60efff;">Date of Birth</label>
+            <input type="date" name="date_of_birth" value="{{ user.date_of_birth if user.date_of_birth else '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-2" style="color: #60efff;">Address</label>
+            <input type="text" name="address" value="{{ user.address or '' }}" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+        </div>
+        <div class="flex justify-end pt-4 border-t" style="border-color: #60efff;">
+          <button type="submit" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; font-weight: bold; padding: 0.75rem 2rem; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10); transition: background 0.3s;">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- KYC DOCUMENTS CARD -->
+  <div class="rounded-xl shadow-lg border overflow-hidden" style="background: #22304a; color: #60efff; border: 1px solid #22304a;">
+    <div class="px-6 py-4 border-b" style="border-color: #60efff;">
+      <h2 class="text-xl font-semibold flex items-center" style="color: #60efff;">
+        <svg class="w-6 h-6 mr-3" fill="none" stroke="#60efff" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.242 0 3 3 0 00-4.242 0z"></path>
+        </svg>
+        KYC Documents
+      </h2>
+    </div>
+    <div class="p-6">
+      <div class="mb-4 flex items-center">
+        <span class="inline-block px-4 py-2 rounded-lg" style="background: #18304a; color: #60efff; font-weight: bold;">Overall KYC Status:</span>
+        {% if user.kyc_status == 'approved' %}
+            <span class="inline-block ml-4 bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-lg">✔ Approved</span>
+        {% elif user.kyc_status == 'pending' %}
+            <span class="inline-block ml-4 bg-yellow-500 text-white text-sm font-semibold px-4 py-2 rounded-lg">⏳ Pending</span>
+        {% elif user.kyc_status == 'rejected' %}
+            <span class="inline-block ml-4 bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-lg">✖ Rejected</span>
+        {% else %}
+            <span class="inline-block ml-4 bg-gray-500 text-white text-sm font-semibold px-4 py-2 rounded-lg">Unknown</span>
+        {% endif %}
+      </div>
+      <form action="{{ url_for('upload_kyc') }}" method="post" enctype="multipart/form-data" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="id_document" class="block text-sm font-medium mb-2" style="color: #60efff;">ID Document (PDF, JPG, PNG)</label>
+            <input type="file" id="id_document" name="id_document" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] file:bg-[#22304a] file:text-[#60efff] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+          <div>
+            <label for="address_document" class="block text-sm font-medium mb-2" style="color: #60efff;">Proof of Address (PDF, JPG, PNG)</label>
+            <input type="file" id="address_document" name="address_document" class="w-full px-4 py-3 border rounded-lg bg-[#1e3357] text-[#eaf6fb] file:bg-[#22304a] file:text-[#60efff] focus:outline-none focus:ring-2 focus:ring-[#60efff] focus:border-transparent transition-all duration-200" style="border: 1px solid #60efff;">
+          </div>
+        </div>
+        <div class="flex justify-end pt-4 border-t" style="border-color: #60efff;">
+          <button type="submit" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; font-weight: bold; padding: 0.75rem 2rem; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10); transition: background 0.3s;">Upload KYC Documents</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL CARD -->
+  {% if session.role == 'admin' %}
+  <div class="rounded-xl shadow-lg border overflow-hidden" style="background: #22304a; color: #60efff; border: 1px solid #22304a;">
+    <div class="px-6 py-4 border-b" style="border-color: #60efff;">
+      <h3 class="text-xl font-semibold flex items-center" style="color: #60efff;">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="#60efff" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+        Admin Panel
+      </h3>
+    </div>
+    <div class="p-6 text-center">
+      <p class="mb-4" style="color: #eaf6fb;">You have administrative privileges.</p>
+      <a href="{{ url_for('admin.dashboard') }}" style="display: inline-block; background: linear-gradient(90deg, #3b82f6, #60a5fa); color: #fff; font-weight: bold; padding: 0.75rem 2rem; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10); transition: background 0.3s;" class="shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+        Go to Admin Dashboard
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function resendVerification() {
+    fetch('/resend-verification', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+        }
+    })
+    .then(response => response.json())
+    .then(function(data) {
+        if (data.success) {
+            alert('Verification email sent successfully!');
+        } else {
+            alert(data.message || 'Failed to send verification email');
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        alert('An error occurred while sending verification email');
+    });
+}
+
+function uploadProfilePicture() {
+    const fileInput = document.getElementById('profilePicInput');
+    const form = document.getElementById('avatarUploadForm');
+    
+    if (fileInput.files && fileInput.files[0]) {
+        // Show loading state
+        const profileDiv = document.querySelector('.relative.group .w-24');
+        const originalContent = profileDiv.innerHTML;
+        
+        // Add loading indicator
+        profileDiv.innerHTML = `
+            <div class="flex items-center justify-center w-full h-full">
+                <svg class="animate-spin w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </div>
+        `;
+        
+        // Submit the form
+        form.submit();
+        
+        // Reset the form after a short delay
+        setTimeout(() => {
+            fileInput.value = '';
+        }, 100);
+    }
+}
+
+// Add click handler for the entire profile picture area
+document.addEventListener('DOMContentLoaded', function() {
+    const profilePictureArea = document.querySelector('.relative.group .w-24');
+    if (profilePictureArea) {
+        profilePictureArea.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('profilePicInput').click();
+        });
+    }
+});
+</script>
+{% endblock %}

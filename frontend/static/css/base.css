@@ -1,0 +1,618 @@
+/* === THEME VARIABLES === */
+:root {
+  --primary-blue: #1976d2;
+  --secondary-dark-blue: #1565c0;
+  --accent-green: #00ff87;
+  --background-dark: #101c2c;
+  --text-light: #eaf6fb;
+  --bg: var(--background-dark);
+  --text: var(--text-light);
+  --subtext: #b6c2e2;
+  --card-bg: #1e3357;
+  --sidebar-bg: var(--background-dark);
+  --border: #3a4a6a;
+  --accent: var(--primary-blue);
+  --accent-gradient: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  --main-gradient: linear-gradient(135deg, #101c2c 60%, #1e3357 100%);
+  --accent-gradient-2: linear-gradient(90deg, #60efff 0%, #00ff87 100%);
+  --accent-gradient-reverse: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
+  --purple-gradient: linear-gradient(90deg, #7B61FF, #61DAFB);
+  --hover-gradient: linear-gradient(120deg, #22304a 0%, #60efff 100%);
+  --success: #00ff87;
+  --danger: #ff4e50;
+  --warning: #f9d423;
+  --info: #60efff;
+  --main-background: #101c2c;
+  --card-background: #1e3357;
+  --light-gray: #1e3357;
+  --dark-gray: #101c2c;
+  --border-color: #3a4a6a;
+  --icon-users: #232b47;
+  --icon-loans: #f59e42;
+  --icon-deposits: #1edb8a;
+  --icon-kyc: #b13be0;
+  --notification-badge: #ef4444;
+  --text-gradient: linear-gradient(90deg, #059669, #10b981);
+  --white: #ffffff;
+  --black: #000000;
+  --background-light: #ffffff;
+  --text-dark: #222b45;
+  --card-bg-light: #ffffff;
+  --border-light: #e2e8f0;
+}
+
+body {
+  background: linear-gradient(180deg, #22304a 0%, #101c2c 100%) !important;
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body.light-mode, body.light-theme {
+  --bg: #ffffff;
+  background: #ffffff !important;
+  color: var(--text-dark) !important;
+}
+
+.main-content, .admin-main, .dashboard-main {
+  background: var(--bg) !important;
+  color: var(--text);
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 64px;
+  background: linear-gradient(180deg, #22304a 0%, #101c2c 100%) !important;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 0 2px 12px rgba(34, 48, 74, 0.15);
+  border-radius: 18px 18px 0 0;
+  border-right: 1px solid var(--border-color);
+  color: var(--text);
+}
+
+.sidebar * {
+  color: #60efff !important; /* Bright cyan for all sidebar children */
+}
+
+body.light-mode .sidebar, body.light-theme .sidebar {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+  border-right: 2px solid var(--border-light) !important;
+}
+
+body.light-mode .sidebar .nav a, body.light-theme .sidebar .nav a,
+body.light-mode .sidebar .nav i, body.light-theme .sidebar .nav i,
+body.light-mode .sidebar .nav svg, body.light-theme .sidebar .nav svg {
+  color: #fff !important;
+  fill: #fff !important;
+}
+
+body.light-mode .sidebar .nav a.active, body.light-theme .sidebar .nav a.active,
+body.light-mode .sidebar .nav a:hover, body.light-theme .sidebar .nav a:hover {
+  background: var(--secondary-dark-blue) !important;
+  color: #fff !important;
+}
+
+/* Main content area */
+.main-content {
+  margin-left: 64px;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Navigation links */
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  color: var(--text);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  background-color: var(--icon-users);
+  color: var(--accent);
+}
+
+.nav-link.active {
+  background-color: var(--icon-users);
+  color: var(--accent);
+}
+
+/* User section */
+.user-section {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Top bar */
+.top-bar {
+  background-color: var(--card-bg);
+  padding: 16px 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+}
+
+/* Notifications */
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: var(--notification-badge);
+    color: white;
+    border-radius: 9999px;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+.notification-badge.hidden-badge {
+    display: none;
+}
+
+/* Profile section */
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Card styles */
+.quick-actions-panel, .chart-card, .activity-section, .notifications-section, .glass-card, .stat-card, .card {
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06);
+}
+
+.quick-action-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
+}
+
+.quick-action-btn:hover {
+  background: var(--icon-users);
+}
+
+/* Stat card icons */
+.stat-card .stat-icon {
+  background: var(--icon-users);
+  color: var(--accent);
+}
+.stat-card.stat-loans .stat-icon {
+  background: var(--icon-loans);
+  color: var(--warning);
+}
+.stat-card.stat-deposits .stat-icon {
+  background: var(--icon-deposits);
+  color: var(--success);
+}
+.stat-card.stat-kyc .stat-icon {
+  background: var(--icon-kyc);
+  color: #8e44ad;
+}
+
+.stat-card .stat-label {
+  color: var(--subtext) !important;
+}
+.stat-card .stat-value, .stat-card .stat-extra, .stat-card .stat-icon {
+  color: var(--text) !important;
+}
+.stat-card .stat-delta {
+  color: var(--success) !important;
+}
+.stat-card .stat-delta.negative {
+  color: var(--danger) !important;
+}
+
+/* Utility classes */
+.text-green-600 {
+  color: var(--success);
+}
+.bg-green-50 {
+  background-color: #ecfdf5;
+}
+.hover\:bg-green-50:hover {
+  background-color: #ecfdf5;
+}
+.hover\:text-green-600:hover {
+  color: var(--success);
+}
+
+/* Management cards */
+.management-card {
+  background: var(--accent-gradient);
+  color: white;
+}
+body.light-mode .management-card.card-loans, body.light-theme .management-card.card-loans {
+  background: linear-gradient(135deg, #f59e42 0%, #ff9f43 100%);
+}
+body.light-mode .management-card.card-reports, body.light-theme .management-card.card-reports {
+  background: linear-gradient(135deg, #8e44ad 0%, #4facfe 100%);
+}
+
+body.light-mode .admin-card, body.light-theme .admin-card,
+body.light-mode .card, body.light-theme .card,
+body.light-mode .section, body.light-theme .section {
+  background: var(--card-bg-light) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+body.light-mode .btn, body.light-theme .btn,
+body.light-mode .primary-btn, body.light-theme .primary-btn {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* Responsive design - Enhanced mobile support */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-radius: 0;
+    margin-bottom: 1rem;
+  }
+  .main-content, .admin-main, .dashboard-main {
+    margin-left: 0;
+    padding: 1rem;
+  }
+  
+  .top-bar {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .card, .glass-card, .dashboard-card {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .admin-dashboard-banner {
+    padding: 1.5rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .admin-dashboard-banner h1 {
+    font-size: 1.5rem;
+  }
+  
+  .admin-dashboard-banner p {
+    font-size: 1rem;
+  }
+  
+  /* Mobile navigation improvements */
+  .nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .nav-link {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+  }
+  
+  /* Mobile form improvements */
+  .form-control, input, select, textarea {
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  /* Mobile button improvements */
+  .btn, .dashboard-btn {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    min-height: 44px;
+  }
+  
+  /* Mobile table improvements */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mobile modal improvements */
+  .modal-dialog {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+  
+  .modal-content {
+    border-radius: 12px;
+  }
+}
+
+/* Logo animations */
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.text-gradient {
+    background: var(--text-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.glow {
+    text-shadow: 0 0 10px rgba(5, 150, 105, 0.3);
+}
+
+/* Custom animations */
+@keyframes shake {
+  10%, 90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%, 80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%, 50%, 70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%, 60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+.shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Financial Advisor Dark Theme */
+.financial-advisor-dark {
+    background: #181f2a !important;
+    color: #e6f6ff !important;
+}
+.financial-advisor-dark .card, .financial-advisor-dark .rounded, .financial-advisor-dark .border {
+    background: #232c3d !important;
+    border-color: #22304a !important;
+    color: #e6f6ff !important;
+}
+.financial-advisor-dark .text-primary, .financial-advisor-dark .text-cyan {
+    color: #3deaff !important;
+}
+.financial-advisor-dark .text-accent {
+    color: #00e0ff !important;
+}
+.financial-advisor-dark .highlight {
+    color: #00e0ff !important;
+    font-weight: bold;
+}
+.financial-advisor-dark .btn-indigo, .financial-advisor-dark .btn-green {
+    background: linear-gradient(90deg, #00e0ff 0%, #3deaff 100%);
+    color: #181f2a !important;
+    border: none;
+}
+.financial-advisor-dark .btn-indigo:hover, .financial-advisor-dark .btn-green:hover {
+    background: #3deaff;
+    color: #181f2a !important;
+}
+.financial-advisor-dark .border {
+    border-color: #22304a !important;
+}
+.financial-advisor-dark .bg-blue-50, .financial-advisor-dark .bg-green-50, .financial-advisor-dark .bg-orange-50 {
+    background: #232c3d !important;
+}
+.financial-advisor-dark .text-gray-800, .financial-advisor-dark .text-gray-600, .financial-advisor-dark .text-gray-700, .financial-advisor-dark .text-gray-500 {
+    color: #e6f6ff !important;
+}
+.financial-advisor-dark .border-blue-400, .financial-advisor-dark .border-green-400, .financial-advisor-dark .border-orange-400 {
+    border-color: #00e0ff !important;
+}
+.financial-advisor-dark .bg-indigo-50 {
+    background: #22304a !important;
+}
+.financial-advisor-dark .text-indigo-600, .financial-advisor-dark .text-indigo-700 {
+    color: #3deaff !important;
+} 
+
+/* Status colors */
+.status-success {
+  color: var(--success);
+}
+.status-danger {
+  color: var(--danger);
+}
+.status-warning {
+  color: var(--warning);
+}
+.status-info {
+  color: var(--info);
+}
+
+/* Icon backgrounds */
+.icon-users {
+  background: var(--icon-users);
+}
+.icon-loans {
+  background: var(--icon-loans);
+}
+.icon-deposits {
+  background: var(--icon-deposits);
+}
+.icon-kyc {
+  background: var(--icon-kyc);
+}
+
+/* Utility classes for backgrounds */
+.bg-main-gradient {
+  background: var(--main-gradient);
+}
+.bg-accent-gradient {
+  background: var(--accent-gradient-2);
+}
+.bg-accent-gradient-reverse {
+  background: var(--accent-gradient-reverse);
+}
+.bg-purple-gradient {
+  background: var(--purple-gradient);
+}
+.bg-hover-gradient:hover {
+  background: var(--hover-gradient);
+}
+
+/* Gradients for buttons, cards, etc. */
+.btn-primary, .btn-accent {
+    background: var(--accent-gradient-2);
+    color: var(--white);
+    border: none;
+}
+.btn-primary:hover, .btn-accent:hover {
+    background: var(--hover-gradient);
+    color: var(--white);
+} 
+
+/* Force user-facing cards to use dashboard card gradient */
+.main-content .card,
+.dashboard-main .card,
+.admin-main .card,
+.card:not(.admin-card):not(.admin-content-card):not(.pricing-card) {
+  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
+}
+body.light-mode .main-content .card, body.light-theme .main-content .card,
+body.light-mode .dashboard-main .card, body.light-theme .dashboard-main .card,
+body.light-mode .admin-main .card, body.light-theme .admin-main .card,
+body.light-mode .card:not(.admin-card):not(.admin-content-card):not(.pricing-card), body.light-theme .card:not(.admin-card):not(.admin-content-card):not(.pricing-card) {
+  background: #ffffff !important;
+  color: #222b45 !important;
+  border: 1px solid #e2e8f0 !important;
+} 
+
+/* Force all user-facing cards and their content to use dashboard colors */
+.card, .main-content .card, .dashboard-main .card, .admin-main .card, .card * {
+  background: linear-gradient(135deg, #16243a 0%, #22304a 100%) !important;
+  color: #eaf6fb !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 12px rgba(67, 233, 123, 0.06) !important;
+}
+body.light-mode .card, body.light-theme .card, body.light-mode .main-content .card, body.light-theme .main-content .card, body.light-mode .dashboard-main .card, body.light-theme .dashboard-main .card, body.light-mode .admin-main .card, body.light-theme .admin-main .card, body.light-mode .card *, body.light-theme .card * {
+  background: #ffffff !important;
+  color: #222b45 !important;
+  border: 1px solid #e2e8f0 !important;
+} 
+
+/* Force notifications dark theme */
+.notifications-section, .notifications-section *,
+.notification-list-item, .notification-list-item *,
+.notification-unread, .notification-unread * {
+  background: #22304a !important;
+  color: #60efff !important;
+}
+
+/* Remove any box-shadow that may look like a white border */
+.notifications-section, .notification-list-item, .notification-unread {
+  box-shadow: none !important;
+} 
+
+/* Remove any remaining white backgrounds globally */
+* {
+  background-color: transparent !important;
+}
+
+html, body {
+  background: #101c2c !important;
+  color: #60efff !important;
+}
+main, .container, .max-w-4xl, .shadow-md, .rounded-lg, .p-6, .mb-4 {
+  background: #22304a !important;
+  color: #60efff !important;
+}
+main *, .container *, .max-w-4xl *, .shadow-md *, .rounded-lg *, .p-6 *, .mb-4 * {
+  color: #60efff !important;
+}
+
+/* Light mode overrides for global elements */
+body.light-mode html, body.light-theme html, 
+body.light-mode body, body.light-theme body {
+  background: #ffffff !important;
+  color: #222b45 !important;
+}
+
+body.light-mode main, body.light-theme main, 
+body.light-mode .container, body.light-theme .container, 
+body.light-mode .max-w-4xl, body.light-theme .max-w-4xl, 
+body.light-mode .shadow-md, body.light-theme .shadow-md, 
+body.light-mode .rounded-lg, body.light-theme .rounded-lg, 
+body.light-mode .p-6, body.light-theme .p-6, 
+body.light-mode .mb-4, body.light-theme .mb-4 {
+  background: #ffffff !important;
+  color: #222b45 !important;
+}
+
+body.light-mode main *, body.light-theme main *, 
+body.light-mode .container *, body.light-theme .container *, 
+body.light-mode .max-w-4xl *, body.light-theme .max-w-4xl *, 
+body.light-mode .shadow-md *, body.light-theme .shadow-md *, 
+body.light-mode .rounded-lg *, body.light-theme .rounded-lg *, 
+body.light-mode .p-6 *, body.light-theme .p-6 *, 
+body.light-mode .mb-4 *, body.light-theme .mb-4 * {
+  color: #222b45 !important;
+} 
+
+body.light-mode .main-content, body.light-theme .main-content,
+body.light-mode .dashboard-main, body.light-theme .dashboard-main,
+body.light-mode .admin-main, body.light-theme .admin-main {
+    background: #ffffff !important;
+    color: #222b45 !important;
+}
+
+body.light-mode .main-content .card, body.light-theme .main-content .card,
+body.light-mode .dashboard-main .card, body.light-theme .dashboard-main .card,
+body.light-mode .admin-main .card, body.light-theme .admin-main .card,
+body.light-mode .card, body.light-theme .card {
+    background: #ffffff !important;
+    color: #222b45 !important;
+} 

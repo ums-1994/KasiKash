@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Financial Advisor{% endblock %}
+
+{% block content %}
+<div class="p-6">
+  <div class="max-w-6xl mx-auto">
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-cyan-300">KasiKash Financial Advisor</h1>
+        <p class="text-gray-400 mt-1">Upload statements and chat with your AI advisor</p>
+      </div>
+    </header>
+
+    <div class="flex space-x-2 mb-4 border-b border-gray-700">
+      <button class="tab-btn py-2 px-4 font-medium bg-blue-900 rounded-t" data-tab="upload">Upload</button>
+      <button class="tab-btn py-2 px-4 font-medium" data-tab="ai">AI Advice</button>
+      </div>
+            
+    <div id="tab-upload" class="tab-content">
+      <div class="bg-blue-950 bg-opacity-50 p-5 rounded-lg border border-blue-800">
+        <h2 class="text-lg font-semibold text-cyan-200 mb-2">Upload Financial Statement</h2>
+        <p class="text-gray-300 mb-4">PDF or image files supported. You'll get an AI analysis and can continue the conversation in chat.</p>
+        <form id="upload-form" action="/financial_advisor/upload" method="post" enctype="multipart/form-data" class="space-y-3">
+          <input type="hidden" name="user_id" value="{{ session.get('user_id','') }}">
+          <input class="block w-full text-sm text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-800 file:text-cyan-200 hover:file:bg-blue-700" type="file" name="file" accept=".pdf,.png,.jpg,.jpeg" required>
+          <button type="submit" class="px-4 py-2 rounded bg-blue-800 text-cyan-200 hover:bg-blue-700">Analyze Statement</button>
+        </form>
+        <div id="upload-results" class="mt-4 text-gray-200"></div>
+      </div>
+    </div>
+
+    <div id="tab-ai" class="tab-content hidden">
+      <div class="bg-blue-950 bg-opacity-50 p-5 rounded-lg border border-blue-800">
+        <h2 class="text-lg font-semibold text-cyan-200 mb-3">AI Financial Advisor</h2>
+        <div id="messages" class="h-64 overflow-y-auto p-3 bg-blue-900 bg-opacity-40 rounded text-gray-100 mb-3"></div>
+        <div class="flex gap-2">
+          <input id="chat-input" type="text" class="flex-1 px-3 py-2 rounded bg-blue-900 text-gray-100 border border-blue-800" placeholder="Ask about your finances...">
+          <button id="chat-send" class="px-4 py-2 rounded bg-blue-800 text-cyan-200 hover:bg-blue-700">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="overview-advice-analysis" class="mt-6"></div>
+    </div>
+  </div>
+
+  <script>
+(function(){
+  // Tab switching
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('bg-blue-900'));
+      btn.classList.add('bg-blue-900');
+      const tab = btn.getAttribute('data-tab');
+      tabContents.forEach(tc => tc.classList.add('hidden'));
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+    });
+  });
+  if (tabBtns.length) tabBtns[0].click();
+
+  // CSRF helper
+  function getCSRFToken(){
+    const m = document.querySelector('meta[name="csrf-token"]');
+    return m ? m.getAttribute('content') : '';
+  }
+
+  // Upload handler
+  const form = document.getElementById('upload-form');
+  if (form) {
+    form.addEventListener('submit', async function(e){
+        e.preventDefault();
+      const container = document.getElementById('upload-results');
+      container.innerHTML = '<div class="p-3 rounded border border-blue-400 bg-blue-900 text-cyan-100">Analyzing your statement…</div>';
+      const data = new FormData(form);
+      try{
+        const res = await fetch(form.action, { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() }, body:data });
+        const json = await res.json();
+        if (!res.ok || json.error){
+          container.innerHTML = '<div class="text-red-400">' + (json.error || 'Upload failed') + '</div>';
+          return;
+        }
+        const parts = [];
+        if (json.pdf_url){
+          const bust = (json.pdf_url.indexOf('?') !== -1 ? '&':'?') + 't=' + Date.now();
+          parts.push('<iframe src="' + json.pdf_url + bust + '" width="100%" height="480" style="border:1px solid #1f2937" title="Statement"></iframe>');
+        }
+        if (json.analysis){
+          parts.push('<div class="mt-4"><h3 class="text-cyan-200 font-semibold mb-2">AI Financial Analysis & Advice</h3><div class="p-3 rounded bg-gray-50 text-gray-900 advisor-analysis-html">' + json.analysis + '</div></div>');
+          const host = document.getElementById('overview-advice-analysis');
+          if (host){
+            host.innerHTML = '<div class="mt-4"><h3 class="text-cyan-200 font-semibold mb-2">AI Financial Analysis & Advice</h3><div class="p-3 rounded bg-gray-50 text-gray-900 advisor-analysis-html">' + json.analysis + '</div></div>';
+          }
+        }
+        container.innerHTML = parts.join('');
+        // Switch to AI tab so user can ask follow-ups
+        const aiBtn = document.querySelector('.tab-btn[data-tab="ai"]');
+        if (aiBtn) aiBtn.click();
+      } catch(err){
+        container.innerHTML = '<div class="text-red-400">An error occurred. Please try again.</div>';
+      }
+    });
+  }
+
+  // Chat
+  const sendBtn = document.getElementById('chat-send');
+  const input = document.getElementById('chat-input');
+  const box = document.getElementById('messages');
+  function append(who, text){
+    const el = document.createElement('div');
+    el.className = who === 'You' ? 'text-right text-green-300 mb-2' : 'text-left text-cyan-200 mb-2';
+    el.textContent = who + ': ' + text;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+  }
+  if (sendBtn && input){
+    sendBtn.addEventListener('click', async function(){
+      const msg = (input.value || '').trim();
+      if (!msg) return;
+      append('You', msg);
+      input.value = '';
+      const loading = document.createElement('div');
+      loading.className = 'text-left text-gray-400 mb-2';
+      loading.textContent = 'Advisor is typing…';
+      box.appendChild(loading);
+      try{
+        const res = await fetch('/financial_advisor/chat', { method:'POST', headers:{ 'Content-Type':'application/json', 'X-CSRFToken': getCSRFToken() }, body: JSON.stringify({ user_id: (window.USER_ID || ''), message: msg }) });
+        const data = await res.json();
+        box.removeChild(loading);
+        append('Advisor', data.response || data.error || 'No response');
+      }catch(err){
+        box.removeChild(loading);
+        append('Advisor', 'Error contacting advisor');
+      }
+    });
+    input.addEventListener('keypress', function(e){ if (e.key === 'Enter') sendBtn.click(); });
+  }
+
+  // Expose USER_ID for chat
+  window.USER_ID = "{{ session.get('user_id','')|e }}";
+})();
+  </script>
+{% endblock %}

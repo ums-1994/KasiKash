@@ -1,0 +1,135 @@
+<!-- Admin Language Switcher Component -->
+<div class="language-switcher-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-weight:bold; font-size:1.1rem; color:#007bff;">🌐 Language:</span>
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-translate"></i>
+                {% if user_language == 'en' %}English
+                {% elif user_language == 'af' %}Afrikaans
+                {% elif user_language == 'nr' %}Southern Ndebele
+                {% elif user_language == 'xh' %}Xhosa
+                {% elif user_language == 'zu' %}Zulu
+                {% elif user_language == 'nso' %}Northern Sotho
+                {% elif user_language == 'st' %}Southern Sotho
+                {% elif user_language == 'tn' %}Tswana
+                {% elif user_language == 'ss' %}Swati
+                {% elif user_language == 've' %}Venda
+                {% elif user_language == 'ts' %}Tsonga
+                {% else %}English
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+                <li><a class="dropdown-item" data-lang="en">English</a></li>
+                <li><a class="dropdown-item" data-lang="af">Afrikaans</a></li>
+                <li><a class="dropdown-item" data-lang="nr">Southern Ndebele</a></li>
+                <li><a class="dropdown-item" data-lang="xh">Xhosa</a></li>
+                <li><a class="dropdown-item" data-lang="zu">Zulu</a></li>
+                <li><a class="dropdown-item" data-lang="nso">Northern Sotho</a></li>
+                <li><a class="dropdown-item" data-lang="st">Southern Sotho</a></li>
+                <li><a class="dropdown-item" data-lang="tn">Tswana</a></li>
+                <li><a class="dropdown-item" data-lang="ss">Swati</a></li>
+                <li><a class="dropdown-item" data-lang="ve">Venda</a></li>
+                <li><a class="dropdown-item" data-lang="ts">Tsonga</a></li>
+            </ul>
+        </div>
+    </div>
+    <form id="language-switcher-form" action="/admin/set-language" method="POST" style="display:none;">
+        <input type="hidden" name="language" id="language-input">
+    </form>
+</div>
+
+<style>
+.language-switcher-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 24px rgba(0, 123, 255, 0.15), 0 2px 10px rgba(0,0,0,0.08);
+    border: 2px solid #007bff;
+    backdrop-filter: blur(10px);
+    transition: box-shadow 0.3s;
+}
+.language-switcher-container:hover {
+    box-shadow: 0 8px 32px rgba(0, 123, 255, 0.25), 0 4px 20px rgba(0,0,0,0.12);
+}
+.language-switcher-container .btn {
+    font-size: 1rem;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 2px solid #007bff;
+    color: #007bff;
+    background: #f8f9fa;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+.language-switcher-container .btn:hover {
+    background: #007bff;
+    color: #fff;
+}
+.language-switcher-container .dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.language-switcher-container .dropdown-item {
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease;
+}
+.language-switcher-container .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+.language-switcher-container .dropdown-item:active, .language-switcher-container .dropdown-item.active {
+    background-color: #007bff;
+    color: white;
+}
+</style>
+
+<script>
+// Add Bootstrap dropdown functionality if not already loaded
+if (typeof bootstrap === 'undefined') {
+    // Load Bootstrap CSS and JS if not already loaded
+    if (!document.querySelector('link[href*="bootstrap"]')) {
+        const bootstrapCSS = document.createElement('link');
+        bootstrapCSS.rel = 'stylesheet';
+        bootstrapCSS.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
+        document.head.appendChild(bootstrapCSS);
+    }
+    
+    if (!document.querySelector('script[src*="bootstrap"]')) {
+        const bootstrapJS = document.createElement('script');
+        bootstrapJS.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+        document.head.appendChild(bootstrapJS);
+    }
+}
+
+// Language switcher functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const languageDropdown = document.getElementById('languageDropdown');
+    const dropdownMenu = languageDropdown.nextElementSibling;
+    const languageForm = document.getElementById('language-switcher-form');
+    const languageInput = document.getElementById('language-input');
+
+    dropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lang = this.getAttribute('data-lang');
+            languageInput.value = lang;
+            languageForm.submit();
+        });
+    });
+
+    // Highlight current language
+    const currentLang = '{{ user_language }}' || 'en';
+    dropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        const itemLang = item.getAttribute('data-lang');
+        if (itemLang === currentLang) {
+            item.classList.add('active');
+            item.style.backgroundColor = '#007bff';
+            item.style.color = 'white';
+        }
+    });
+});
+</script> 

@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {% if wallet %}
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-2xl p-5" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm opacity-80">Wallet Balance</span>
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="text-3xl font-extrabold">{{ wallet.currency }} {{ '%.2f'|format((wallet.balance or 0)|float) }}</div>
+            <div class="mt-4">
+                <button onclick="document.getElementById('topupModal').classList.remove('hidden')"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                    Top Up
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold" style="color: #60efff; font-weight: 600;">Payment Methods</h1>
+        <div class="space-x-2">
+            <form action="/add_paystack_card" method="POST" class="inline" aria-label="Link Paystack Card">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" title="Link Paystack Card">
+                    Link Paystack Card
+                </button>
+            </form>
+        <button onclick="document.getElementById('addPaymentMethodModal').classList.remove('hidden')" 
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" title="Add Bank Account">
+                Add Bank Account
+        </button>
+        </div>
+    </div>
+
+    <!-- Payment Methods Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+        {% for method in payment_methods %}
+        <div class="relative flex flex-col min-h-[170px] payment-method-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); color: #1e293b; border: 1.5px solid #e2e8f0; border-radius: 1.5rem; box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.15), 0 1.5px 8px 0 rgba(59, 130, 246, 0.1);">
+            <div class="card-glass flex-1 flex flex-col justify-between border border-blue-900/40">
+                <div class="border-glow"></div>
+                <div class="shine"></div>
+                <div class="flex justify-between items-center mb-2 relative z-10">
+                    <div class="card-label">
+                        <svg class="card-chip" viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="44" height="32" rx="8" fill="#e2e8f0"/>
+                            <rect x="6" y="10" width="32" height="12" rx="4" fill="#cbd5e1"/>
+                            <rect x="14" y="14" width="16" height="4" rx="2" fill="#94a3b8"/>
+                        </svg>
+                        {{ method.type|replace('_', ' ')|title }}
+                    </div>
+                    {% if method.is_default %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white shadow">Default</span>
+                    {% endif %}
+                </div>
+                
+                <div class="relative z-10">
+                    {# Prefer structured card fields when available (e.g., Paystack saved card) #}
+                    {% set d = method.details %}
+                    {% if d and d.last4 %}
+                        {% set exp_year_str = (d.exp_year|string) %}
+                        <div class="card-details-row">
+                            <div class="card-number glow">•••• •••• •••• {{ d.last4 }}</div>
+                            <span class="card-expiry">Exp: {{ '%02d'|format((d.exp_month|default(0))|int) }}/{{ exp_year_str[-2:] if exp_year_str else '' }}</span>
+                        </div>
+                        <div class="card-holder-name">{{ method.card_holder_name|default('Card Holder') }}</div>
+                    {% elif method.type in ['credit_card', 'debit_card', 'card'] %}
+                        {% set parts = method.masked_details.split('Exp:') %}
+                        <div class="card-details-row">
+                            <div class="card-number glow">{{ parts[0].strip().replace('*', '•') }}</div>
+                            <span class="card-expiry">Exp: {{ parts[1].strip() if parts|length > 1 else '' }}</span>
+                        </div>
+                        <div class="card-holder-name">{{ method.card_holder_name|default('Card Holder') }}</div>
+                    {% elif method.type == 'bank_account' %}
+                        <div class="bank-details-row">
+                             <span class="bank-info">{{ method.masked_details }}</span>
+                        </div>
+                        <div class="card-holder-name">{{ method.account_holder_name|default('Account Holder') }}</div>
+                    {% else %}
+                        <div class="card-details-row">
+                            <span>{{ method.masked_details }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-between items-end mt-auto relative z-10">
+                    <span class="card-added">Added on {{ method.created_at_str }}</span>
+                    {% if (method.details and method.details.last4) or method.type in ['credit_card', 'debit_card', 'card'] %}
+                    <span class="card-brand">
+                        {% set brand = (method.details.brand if method.details else '')|lower %}
+                        {% if brand.startswith('visa') %}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="height:22px;filter:drop-shadow(0 0 4px #232347cc);">
+                        {% else %}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height:22px;filter:drop-shadow(0 0 4px #232347cc);">
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-actions">
+                {% if not method.is_default %}
+                <form action="/set_default_payment_method" method="POST" class="inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="method_id" value="{{ method.id }}">
+                    <button type="submit" 
+                            class="bg-gray-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded shadow">
+                        Set as Default
+                    </button>
+                </form>
+                {% endif %}
+                <form action="/delete_payment_method" method="POST" class="inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="method_id" value="{{ method.id }}">
+                    <button type="submit" 
+                            class="bg-red-700 hover:bg-red-900 text-white font-bold py-2 px-4 rounded shadow">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Add Payment Method Modal (Bank accounts only; cards use Paystack link) -->
+    <div id="addPaymentMethodModal" class="hidden fixed inset-0" style="background: rgba(30,51,87,0.85);">
+        <div class="relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 border w-full max-w-lg shadow-2xl rounded-2xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-gray-800">Add New Payment Method</h3>
+                    <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600" aria-label="Close add payment method modal" title="Close">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form action="/add_payment_method" method="POST" id="paymentMethodForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-5">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="type">Payment Type</label>
+                        <select name="type" id="type" onchange="togglePaymentFields()" required
+                                class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="bank_account" selected>Bank Account</option>
+                        </select>
+                    </div>
+
+                    <!-- Card fields removed: cards are linked via Paystack flow -->
+                    <div id="card_fields" class="hidden"></div>
+
+                    <!-- Bank Account Fields -->
+                    <div id="bank_fields" class="hidden">
+                        <div class="mb-4">
+                             <label class="block text-sm font-bold mb-2" for="account_holder_name" style="color: #60efff;">Account Holder Name</label>
+                            <input type="text" name="account_holder_name" id="account_holder_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4" placeholder="John Doe" style="background: #22304a; color: #60efff; border-color: #3a2e7b;">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold mb-2" for="account_number" style="color: #60efff;">Account Number</label>
+                            <input type="text" name="account_number" id="account_number" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4" placeholder="1234567890" style="background: #22304a; color: #60efff; border-color: #3a2e7b;">
+                        </div>
+                         <div class="mb-4">
+                            <label class="block text-sm font-bold mb-2" for="bank_name" style="color: #60efff;">Bank Name</label>
+                            <input type="text" name="bank_name" id="bank_name" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4" placeholder="Example Bank" style="background: #22304a; color: #60efff; border-color: #3a2e7b;">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="is_default" value="true" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                            <span class="ml-3" style="color: #60efff;">Set as default payment method</span>
+                        </label>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="document.getElementById('addPaymentMethodModal').classList.add('hidden')"
+                                class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
+                            Add Method
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Top Up Modal -->
+    <div id="topupModal" class="hidden fixed inset-0" style="background: rgba(30,51,87,0.85);">
+        <div class="relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6 border w-full max-w-md shadow-2xl rounded-2xl" style="background: linear-gradient(135deg, #1e3357 0%, #22304a 100%); color: #60efff; border: 1px solid #22304a;">
+            <div class="mt-1">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Top Up Wallet</h3>
+                    <button type="button" onclick="document.getElementById('topupModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-200" aria-label="Close top up modal" title="Close">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form method="POST" action="/wallet/topup">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-1" for="topup_amount">Amount ({{ wallet.currency if wallet else 'ZAR' }})</label>
+                        <input id="topup_amount" type="number" name="amount" step="0.01" min="1" required class="w-full px-3 py-2 rounded text-gray-900" placeholder="0.00">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-1" for="topup_method_id">Payment Method</label>
+                        <select id="topup_method_id" name="method_id" required class="w-full px-3 py-2 rounded text-gray-900" title="Select payment method">
+                            {% for method in payment_methods %}
+                                {% set d = method.details %}
+                                <option value="{{ method.id }}">
+                                    {{ method.type|title }}
+                                    {% if d and d.last4 %}- **** {{ d.last4 }}{% endif %}
+                                    {% if method.is_default %}(Default){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onclick="document.getElementById('topupModal').classList.add('hidden')" title="Cancel top up">Cancel</button>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded" title="Confirm top up">Top Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePaymentFields() {
+    const type = document.getElementById('type').value;
+    const cardFields = document.getElementById('card_fields');
+    const bankFields = document.getElementById('bank_fields');
+    
+    const cardInputs = cardFields.querySelectorAll('input');
+    const bankInputs = bankFields.querySelectorAll('input');
+
+    if (type === 'bank_account') {
+        bankFields.classList.remove('hidden');
+        cardFields.classList.add('hidden');
+        // Make bank inputs required and card inputs not
+        bankInputs.forEach(input => input.required = true);
+        cardInputs.forEach(input => input.required = false);
+    } else {
+        // default to bank account only in this modal
+        bankFields.classList.remove('hidden');
+        cardFields.classList.add('hidden');
+        bankInputs.forEach(input => input.required = true);
+        cardInputs.forEach(input => input.required = false);
+    }
+}
+
+// Initial call to set the correct fields on page load
+document.addEventListener('DOMContentLoaded', function() {
+    togglePaymentFields();
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card-glass {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1.5rem;
+  box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.15), 0 1.5px 8px 0 rgba(59, 130, 246, 0.1);
+  border: 1.5px solid #e2e8f0;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition: box-shadow 0.3s, border 0.3s;
+  min-height: 170px;
+  padding: 1.5rem 1.3rem 1.1rem 1.3rem !important;
+}
+.card-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.03) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+.card-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  background: repeating-linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0 2px, transparent 2px 20px);
+  z-index: 2;
+  pointer-events: none;
+}
+.card-glass .shine {
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.01) 60%);
+  transform: rotate(8deg);
+  filter: blur(1.5px);
+  animation: shine-move 3.5s linear infinite;
+  z-index: 3;
+  pointer-events: none;
+}
+@keyframes shine-move {
+  0% { transform: translateX(-60%) rotate(8deg); }
+  100% { transform: translateX(60%) rotate(8deg); }
+}
+.card-glass .border-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.5rem;
+  background: linear-gradient(120deg, #3b82f6, #8b5cf6 60%, #6366f1 100%);
+  filter: blur(6px);
+  opacity: 0.15;
+  z-index: 0;
+  pointer-events: none;
+  animation: border-glow-anim 4s linear infinite;
+}
+@keyframes border-glow-anim {
+  0% { filter: blur(6px) brightness(1); }
+  50% { filter: blur(10px) brightness(1.08); }
+  100% { filter: blur(6px) brightness(1); }
+}
+.card-chip {
+  width: 38px;
+  height: 28px;
+  margin-bottom: 0.3rem;
+}
+.card-details-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+.bank-details-row {
+    margin-bottom: 0.4rem;
+}
+.bank-info {
+    font-family: 'Montserrat', 'Inter', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: #1e293b;
+    text-shadow: 0 1px 3px rgba(30, 41, 59, 0.1);
+}
+.card-holder-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #475569;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.7rem;
+}
+.card-number {
+  font-family: 'Montserrat', 'Inter', monospace;
+  font-size: 1.25rem;
+  letter-spacing: 0.22em;
+  color: #1e293b;
+  text-shadow: 0 1px 3px rgba(30, 41, 59, 0.1);
+  font-variant-numeric: tabular-nums;
+}
+.card-expiry {
+  font-size: 1rem;
+  color: #64748b;
+  letter-spacing: 0.12em;
+  margin-left: 1.1rem;
+}
+.card-brand {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.card-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.card-added {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.2rem;
+}
+.card-actions {
+  margin-top: 1.1rem;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+</style>
+{% endblock %} 
